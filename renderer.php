@@ -16,22 +16,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains a custom renderer class used by the forum module.
+ * This file contains a custom renderer class used by the digestforum module.
  *
- * @package mod-forum
+ * @package mod-digestforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
  * A custom renderer class that extends the plugin_renderer_base and
- * is used by the forum module.
+ * is used by the digestforum module.
  *
- * @package mod-forum
+ * @package mod-digestforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
-class mod_forum_renderer extends plugin_renderer_base {
+class mod_digestforum_renderer extends plugin_renderer_base {
     /**
      * This method is used to generate HTML for a subscriber selection form that
      * uses two user_selector controls
@@ -77,16 +77,16 @@ class mod_forum_renderer extends plugin_renderer_base {
      * the subscribers page if editing was turned off
      *
      * @param array $users
-     * @param object $forum
+     * @param object $digestforum
      * @param object $course
      * @return string
      */
-    public function subscriber_overview($users, $forum , $course) {
+    public function subscriber_overview($users, $digestforum , $course) {
         $output = '';
         if (!$users || !is_array($users) || count($users)===0) {
-            $output .= $this->output->heading(get_string("nosubscribers", "forum"));
+            $output .= $this->output->heading(get_string("nosubscribers", "digestforum"));
         } else {
-            $output .= $this->output->heading(get_string("subscribersto","forum", "'".format_string($forum->name)."'"));
+            $output .= $this->output->heading(get_string("subscribersto","digestforum", "'".format_string($digestforum->name)."'"));
             $table = new html_table();
             $table->cellpadding = 5;
             $table->cellspacing = 5;
@@ -109,7 +109,7 @@ class mod_forum_renderer extends plugin_renderer_base {
      */
     public function subscribed_users(user_selector_base $existingusers) {
         $output  = $this->output->box_start('subscriberdiv boxaligncenter');
-        $output .= html_writer::tag('p', get_string('forcessubscribe', 'forum'));
+        $output .= html_writer::tag('p', get_string('forcessubscribe', 'digestforum'));
         $output .= $existingusers->display(true);
         $output .= $this->output->box_end();
         return $output;

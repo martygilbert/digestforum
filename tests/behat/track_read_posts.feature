@@ -1,12 +1,12 @@
-@mod @mod_forum
-Feature: A teacher can set one of 3 possible options for tracking read forum posts
-  In order to ease the forum posts follow up
+@mod @mod_digestforum
+Feature: A teacher can set one of 3 possible options for tracking read digestforum posts
+  In order to ease the digestforum posts follow up
   As a user
   I need to distinct the unread posts from the read ones
 
   Background:
     Given the following "users" exists:
-      | username | firstname | lastname | email | trackforums |
+      | username | firstname | lastname | email | trackdigestforums |
       | student1 | Student | 1 | student1@asd.com | 1 |
     And the following "courses" exists:
       | fullname | shortname | category |
@@ -19,13 +19,13 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
     And I turn editing mode on
 
   @javascript
-  Scenario: Tracking forum posts on
+  Scenario: Tracking digestforum posts on
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-      | Read tracking for this forum | On |
-    And I add a new discussion to "Test forum name" forum with:
+      | Forum name | Test digestforum name |
+      | Forum type | Standard digestforum for general use |
+      | Description | Test digestforum description |
+      | Read tracking for this digestforum | On |
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I wait "6" seconds
@@ -40,13 +40,13 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
     And I should not see "1 unread post"
 
   @javascript
-  Scenario: Tracking forum posts off
+  Scenario: Tracking digestforum posts off
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-      | Read tracking for this forum | Off |
-    And I add a new discussion to "Test forum name" forum with:
+      | Forum name | Test digestforum name |
+      | Forum type | Standard digestforum for general use |
+      | Description | Test digestforum description |
+      | Read tracking for this digestforum | Off |
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I wait "6" seconds
@@ -54,17 +54,17 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
     When I log in as "student1"
     And I follow "Course 1"
     Then I should not see "1 unread post"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I should not see "Track unread posts"
 
   @javascript
-  Scenario: Tracking forum posts optional
+  Scenario: Tracking digestforum posts optional
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
-      | Read tracking for this forum | Optional |
-    And I add a new discussion to "Test forum name" forum with:
+      | Forum name | Test digestforum name |
+      | Forum type | Standard digestforum for general use |
+      | Description | Test digestforum description |
+      | Read tracking for this digestforum | Optional |
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I wait "6" seconds
@@ -72,12 +72,12 @@ Feature: A teacher can set one of 3 possible options for tracking read forum pos
     When I log in as "student1"
     And I follow "Course 1"
     Then I should see "1 unread post"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Don't track unread posts"
     And I wait "4" seconds
     And I follow "Course 1"
     And I should not see "1 unread post"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Track unread posts"
     And I wait "4" seconds
     And I follow "1"

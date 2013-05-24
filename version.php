@@ -18,14 +18,14 @@
  * Version information
  *
  * @package    mod
- * @subpackage forum
+ * @subpackage digestforum
  * @copyright  1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2013050100;       // The current module version (Date: YYYYMMDDXX)
+$module->version   = 2013052300;       // The current module version (Date: YYYYMMDDXX)
 $module->requires  = 2013050100;       // Requires this Moodle version
-$module->component = 'mod_forum';      // Full name of the plugin (used for diagnostics)
+$module->component = 'mod_digestforum';      // Full name of the plugin (used for diagnostics)
 $module->cron      = 60;

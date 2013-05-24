@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The module forums external functions unit tests
+ * The module digestforums external functions unit tests
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @category   external
  * @copyright  2012 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -30,7 +30,7 @@ global $CFG;
 
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 
-class mod_forum_external_testcase extends externallib_advanced_testcase {
+class mod_digestforum_external_testcase extends externallib_advanced_testcase {
 
     /**
      * Tests set up
@@ -38,13 +38,13 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
     protected function setUp() {
         global $CFG;
 
-        require_once($CFG->dirroot . '/mod/forum/externallib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/externallib.php');
     }
 
     /**
-     * Test get forums
+     * Test get digestforums
      */
-    public function test_mod_forum_get_forums_by_courses() {
+    public function test_mod_digestforum_get_digestforums_by_courses() {
         global $USER, $CFG, $DB;
 
         $this->resetAfterTest(true);
@@ -59,21 +59,21 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $course1 = self::getDataGenerator()->create_course();
         $course2 = self::getDataGenerator()->create_course();
 
-        // First forum.
+        // First digestforum.
         $record = new stdClass();
         $record->introformat = FORMAT_HTML;
         $record->course = $course1->id;
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
-        // Second forum.
+        // Second digestforum.
         $record = new stdClass();
         $record->introformat = FORMAT_HTML;
         $record->course = $course2->id;
-        $forum2 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum2 = self::getDataGenerator()->create_module('digestforum', $record);
 
-        // Check the forum was correctly created.
-        $this->assertEquals(2, $DB->count_records_select('forum', 'id = :forum1 OR id = :forum2',
-                array('forum1' => $forum1->id, 'forum2' => $forum2->id)));
+        // Check the digestforum was correctly created.
+        $this->assertEquals(2, $DB->count_records_select('digestforum', 'id = :digestforum1 OR id = :digestforum2',
+                array('digestforum1' => $digestforum1->id, 'digestforum2' => $digestforum2->id)));
 
         // Enrol the user in two courses.
         // DataGenerator->enrol_user automatically sets a role for the user with the permission mod/form:viewdiscussion.
@@ -89,48 +89,48 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         }
         $enrol->enrol_user($instance2, $user->id);
 
-        // Assign capabilities to view forums for forum 2.
-        $cm2 = get_coursemodule_from_id('forum', $forum2->id, 0, false, MUST_EXIST);
+        // Assign capabilities to view digestforums for digestforum 2.
+        $cm2 = get_coursemodule_from_id('digestforum', $digestforum2->id, 0, false, MUST_EXIST);
         $context2 = context_module::instance($cm2->id);
         $newrole = create_role('Role 2', 'role2', 'Role 2 description');
-        $roleid2 = $this->assignUserCapability('mod/forum:viewdiscussion', $context2->id, $newrole);
+        $roleid2 = $this->assignUserCapability('mod/digestforum:viewdiscussion', $context2->id, $newrole);
 
         // Create what we expect to be returned when querying the two courses.
-        $expectedforums = array();
-        $expectedforums[$forum1->id] = (array) $forum1;
-        $expectedforums[$forum2->id] = (array) $forum2;
+        $expecteddigestforums = array();
+        $expecteddigestforums[$digestforum1->id] = (array) $digestforum1;
+        $expecteddigestforums[$digestforum2->id] = (array) $digestforum2;
 
         // Call the external function passing course ids.
-        $forums = mod_forum_external::get_forums_by_courses(array($course1->id, $course2->id));
-        external_api::clean_returnvalue(mod_forum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $digestforums = mod_digestforum_external::get_digestforums_by_courses(array($course1->id, $course2->id));
+        external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $this->assertEquals($expecteddigestforums, $digestforums);
 
         // Call the external function without passing course id.
-        $forums = mod_forum_external::get_forums_by_courses();
-        external_api::clean_returnvalue(mod_forum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $digestforums = mod_digestforum_external::get_digestforums_by_courses();
+        external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $this->assertEquals($expecteddigestforums, $digestforums);
 
-        // Unenrol user from second course and alter expected forums.
+        // Unenrol user from second course and alter expected digestforums.
         $enrol->unenrol_user($instance2, $user->id);
-        unset($expectedforums[$forum2->id]);
+        unset($expecteddigestforums[$digestforum2->id]);
 
         // Call the external function without passing course id.
-        $forums = mod_forum_external::get_forums_by_courses();
-        external_api::clean_returnvalue(mod_forum_external::get_forums_by_courses_returns(), $forums);
-        $this->assertEquals($expectedforums, $forums);
+        $digestforums = mod_digestforum_external::get_digestforums_by_courses();
+        external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $this->assertEquals($expecteddigestforums, $digestforums);
 
         // Call for the second course we unenrolled the user from, ensure exception thrown.
         try {
-            mod_forum_external::get_forums_by_courses(array($course2->id));
+            mod_digestforum_external::get_digestforums_by_courses(array($course2->id));
             $this->fail('Exception expected due to being unenrolled from the course.');
         } catch (moodle_exception $e) {
             $this->assertEquals('requireloginerror', $e->errorcode);
         }
 
         // Call without required capability, ensure exception thrown.
-        $this->unassignUserCapability('mod/forum:viewdiscussion', null, null, $course1->id);
+        $this->unassignUserCapability('mod/digestforum:viewdiscussion', null, null, $course1->id);
         try {
-            $forums = mod_forum_external::get_forums_by_courses(array($course1->id));
+            $digestforums = mod_digestforum_external::get_digestforums_by_courses(array($course1->id));
             $this->fail('Exception expected due to missing capability.');
         } catch (moodle_exception $e) {
             $this->assertEquals('nopermissions', $e->errorcode);
@@ -138,19 +138,19 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
     }
 
     /**
-     * Test get forum discussions
+     * Test get digestforum discussions
      */
-    public function test_mod_forum_get_forum_discussions() {
+    public function test_mod_digestforum_get_digestforum_discussions() {
         global $USER, $CFG, $DB;
 
         $this->resetAfterTest(true);
 
-        // Set the CFG variable to allow track forums.
-        $CFG->forum_trackreadposts = true;
+        // Set the CFG variable to allow track digestforums.
+        $CFG->digestforum_trackreadposts = true;
 
-        // Create a user who can track forums.
+        // Create a user who can track digestforums.
         $record = new stdClass();
-        $record->trackforums = true;
+        $record->trackdigestforums = true;
         $user1 = self::getDataGenerator()->create_user($record);
         // Create a bunch of other users to post.
         $user2 = self::getDataGenerator()->create_user();
@@ -164,84 +164,84 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $course1 = self::getDataGenerator()->create_course();
         $course2 = self::getDataGenerator()->create_course();
 
-        // First forum with tracking off.
+        // First digestforum with tracking off.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->trackingtype = FORUM_TRACKING_OFF;
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
-        // Second forum of type 'qanda' with tracking enabled.
+        // Second digestforum of type 'qanda' with tracking enabled.
         $record = new stdClass();
         $record->course = $course2->id;
         $record->type = 'qanda';
         $record->trackingtype = FORUM_TRACKING_ON;
-        $forum2 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum2 = self::getDataGenerator()->create_module('digestforum', $record);
 
-        // Third forum where we will only have one discussion with no replies.
+        // Third digestforum where we will only have one discussion with no replies.
         $record = new stdClass();
         $record->course = $course2->id;
-        $forum3 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum3 = self::getDataGenerator()->create_module('digestforum', $record);
 
-        // Add discussions to the forums.
+        // Add discussions to the digestforums.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum1->id;
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $record->digestforum = $digestforum1->id;
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         $record = new stdClass();
         $record->course = $course2->id;
         $record->userid = $user2->id;
-        $record->forum = $forum2->id;
-        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $record->digestforum = $digestforum2->id;
+        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         $record = new stdClass();
         $record->course = $course2->id;
         $record->userid = $user2->id;
-        $record->forum = $forum3->id;
-        $discussion3 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $record->digestforum = $digestforum3->id;
+        $discussion3 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add three replies to the discussion 1 from different users.
         $record = new stdClass();
         $record->discussion = $discussion1->id;
         $record->parent = $discussion1->firstpost;
         $record->userid = $user2->id;
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $record->parent = $discussion1reply1->id;
         $record->userid = $user3->id;
-        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $record->userid = $user4->id;
-        $discussion1reply3 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply3 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         // Add two replies to discussion 2 from different users.
         $record = new stdClass();
         $record->discussion = $discussion2->id;
         $record->parent = $discussion2->firstpost;
         $record->userid = $user1->id;
-        $discussion2reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion2reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $record->parent = $discussion2reply1->id;
         $record->userid = $user3->id;
-        $discussion2reply2 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion2reply2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        // Check the forums were correctly created.
-        $this->assertEquals(3, $DB->count_records_select('forum', 'id = :forum1 OR id = :forum2 OR id = :forum3',
-                array('forum1' => $forum1->id, 'forum2' => $forum2->id, 'forum3' => $forum3->id)));
+        // Check the digestforums were correctly created.
+        $this->assertEquals(3, $DB->count_records_select('digestforum', 'id = :digestforum1 OR id = :digestforum2 OR id = :digestforum3',
+                array('digestforum1' => $digestforum1->id, 'digestforum2' => $digestforum2->id, 'digestforum3' => $digestforum3->id)));
 
         // Check the discussions were correctly created.
-        $this->assertEquals(3, $DB->count_records_select('forum_discussions', 'forum = :forum1 OR forum = :forum2
-                OR id = :forum3', array('forum1' => $forum1->id, 'forum2' => $forum2->id, 'forum3' => $forum3->id)));
+        $this->assertEquals(3, $DB->count_records_select('digestforum_discussions', 'digestforum = :digestforum1 OR digestforum = :digestforum2
+                OR id = :digestforum3', array('digestforum1' => $digestforum1->id, 'digestforum2' => $digestforum2->id, 'digestforum3' => $digestforum3->id)));
 
         // Check the posts were correctly created, don't forget each discussion created also creates a post.
-        $this->assertEquals(7, $DB->count_records_select('forum_posts', 'discussion = :discussion1 OR discussion = :discussion2',
+        $this->assertEquals(7, $DB->count_records_select('digestforum_posts', 'discussion = :discussion1 OR discussion = :discussion2',
                 array('discussion1' => $discussion1->id, 'discussion2' => $discussion2->id)));
 
         // Enrol the user in the first course.
         $enrol = enrol_get_plugin('manual');
         // Following line enrol and assign default role id to the user.
-        // So the user automatically gets mod/forum:viewdiscussion on all forums of the course.
+        // So the user automatically gets mod/digestforum:viewdiscussion on all digestforums of the course.
         $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
 
         // Now enrol into the second course.
@@ -255,23 +255,23 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         }
         $enrol->enrol_user($instance2, $user1->id);
 
-        // Assign capabilities to view discussions for forum 2.
-        $cm = get_coursemodule_from_id('forum', $forum2->id, 0, false, MUST_EXIST);
+        // Assign capabilities to view discussions for digestforum 2.
+        $cm = get_coursemodule_from_id('digestforum', $digestforum2->id, 0, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
         $newrole = create_role('Role 2', 'role2', 'Role 2 description');
-        $this->assignUserCapability('mod/forum:viewdiscussion', $context->id, $newrole);
+        $this->assignUserCapability('mod/digestforum:viewdiscussion', $context->id, $newrole);
 
-        // Assign capabilities to view discussions for forum 3.
-        $cm = get_coursemodule_from_id('forum', $forum3->id, 0, false, MUST_EXIST);
+        // Assign capabilities to view discussions for digestforum 3.
+        $cm = get_coursemodule_from_id('digestforum', $digestforum3->id, 0, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
-        $this->assignUserCapability('mod/forum:viewdiscussion', $context->id, $newrole);
+        $this->assignUserCapability('mod/digestforum:viewdiscussion', $context->id, $newrole);
 
-        // Create what we expect to be returned when querying the forums.
+        // Create what we expect to be returned when querying the digestforums.
         $expecteddiscussions = array();
         $expecteddiscussions[$discussion1->id] = array(
                 'id' => $discussion1->id,
                 'course' => $discussion1->course,
-                'forum' => $discussion1->forum,
+                'digestforum' => $discussion1->digestforum,
                 'name' => $discussion1->name,
                 'firstpost' => $discussion1->firstpost,
                 'userid' => $discussion1->userid,
@@ -298,7 +298,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
         $expecteddiscussions[$discussion2->id] = array(
                 'id' => $discussion2->id,
                 'course' => $discussion2->course,
-                'forum' => $discussion2->forum,
+                'digestforum' => $discussion2->digestforum,
                 'name' => $discussion2->name,
                 'firstpost' => $discussion2->firstpost,
                 'userid' => $discussion2->userid,
@@ -325,7 +325,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
             $expecteddiscussions[$discussion3->id] = array(
                 'id' => $discussion3->id,
                 'course' => $discussion3->course,
-                'forum' => $discussion3->forum,
+                'digestforum' => $discussion3->digestforum,
                 'name' => $discussion3->name,
                 'firstpost' => $discussion3->firstpost,
                 'userid' => $discussion3->userid,
@@ -350,24 +350,24 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
                 'lastuseremail' => $user2->email
             );
 
-        // Call the external function passing forum ids.
-        $discussions = mod_forum_external::get_forum_discussions(array($forum1->id, $forum2->id, $forum3->id));
-        external_api::clean_returnvalue(mod_forum_external::get_forum_discussions_returns(), $discussions);
+        // Call the external function passing digestforum ids.
+        $discussions = mod_digestforum_external::get_digestforum_discussions(array($digestforum1->id, $digestforum2->id, $digestforum3->id));
+        external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
         $this->assertEquals($expecteddiscussions, $discussions);
 
-        // Remove the users post from the qanda forum and ensure they can not return the discussion.
-        $DB->delete_records('forum_posts', array('id' => $discussion2reply1->id));
+        // Remove the users post from the qanda digestforum and ensure they can not return the discussion.
+        $DB->delete_records('digestforum_posts', array('id' => $discussion2reply1->id));
         try {
-            mod_forum_external::get_forum_discussions(array($forum2->id));
-            $this->fail('Exception expected due to attempting to access qanda forum without posting.');
+            mod_digestforum_external::get_digestforum_discussions(array($digestforum2->id));
+            $this->fail('Exception expected due to attempting to access qanda digestforum without posting.');
         } catch (moodle_exception $e) {
             $this->assertEquals('nopermissions', $e->errorcode);
         }
 
         // Call without required view discussion capability.
-        $this->unassignUserCapability('mod/forum:viewdiscussion', null, null, $course1->id);
+        $this->unassignUserCapability('mod/digestforum:viewdiscussion', null, null, $course1->id);
         try {
-            mod_forum_external::get_forum_discussions(array($forum1->id));
+            mod_digestforum_external::get_digestforum_discussions(array($digestforum1->id));
             $this->fail('Exception expected due to missing capability.');
         } catch (moodle_exception $e) {
             $this->assertEquals('nopermissions', $e->errorcode);
@@ -378,7 +378,7 @@ class mod_forum_external_testcase extends externallib_advanced_testcase {
 
         // Call for the second course we unenrolled the user from, make sure exception thrown.
         try {
-            mod_forum_external::get_forum_discussions(array($forum2->id));
+            mod_digestforum_external::get_digestforum_discussions(array($digestforum2->id));
             $this->fail('Exception expected due to being unenrolled from the course.');
         } catch (moodle_exception $e) {
             $this->assertEquals('requireloginerror', $e->errorcode);

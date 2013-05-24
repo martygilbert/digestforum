@@ -18,7 +18,7 @@
 /**
  * Edit and save a new post to a discussion
  *
- * @package mod-forum
+ * @package mod-digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,7 +28,7 @@ require_once('lib.php');
 require_once($CFG->libdir.'/completionlib.php');
 
 $reply   = optional_param('reply', 0, PARAM_INT);
-$forum   = optional_param('forum', 0, PARAM_INT);
+$digestforum   = optional_param('digestforum', 0, PARAM_INT);
 $edit    = optional_param('edit', 0, PARAM_INT);
 $delete  = optional_param('delete', 0, PARAM_INT);
 $prune   = optional_param('prune', 0, PARAM_INT);
@@ -36,9 +36,9 @@ $name    = optional_param('name', '', PARAM_CLEAN);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $groupid = optional_param('groupid', null, PARAM_INT);
 
-$PAGE->set_url('/mod/forum/post.php', array(
+$PAGE->set_url('/mod/digestforum/post.php', array(
         'reply' => $reply,
-        'forum' => $forum,
+        'digestforum' => $digestforum,
         'edit'  => $edit,
         'delete'=> $delete,
         'prune' => $prune,
@@ -47,7 +47,7 @@ $PAGE->set_url('/mod/forum/post.php', array(
         'groupid'=>$groupid,
         ));
 //these page_params will be passed as hidden variables later in the form.
-$page_params = array('reply'=>$reply, 'forum'=>$forum, 'edit'=>$edit);
+$page_params = array('reply'=>$reply, 'digestforum'=>$digestforum, 'edit'=>$edit);
 
 $sitecontext = context_system::instance();
 
@@ -58,58 +58,58 @@ if (!isloggedin() or isguestuser()) {
         require_login();
     }
 
-    if (!empty($forum)) {      // User is starting a new discussion in a forum
-        if (! $forum = $DB->get_record('forum', array('id' => $forum))) {
-            print_error('invalidforumid', 'forum');
+    if (!empty($digestforum)) {      // User is starting a new discussion in a digestforum
+        if (! $digestforum = $DB->get_record('digestforum', array('id' => $digestforum))) {
+            print_error('invaliddigestforumid', 'digestforum');
         }
     } else if (!empty($reply)) {      // User is writing a new reply
-        if (! $parent = forum_get_post_full($reply)) {
-            print_error('invalidparentpostid', 'forum');
+        if (! $parent = digestforum_get_post_full($reply)) {
+            print_error('invalidparentpostid', 'digestforum');
         }
-        if (! $discussion = $DB->get_record('forum_discussions', array('id' => $parent->discussion))) {
-            print_error('notpartofdiscussion', 'forum');
+        if (! $discussion = $DB->get_record('digestforum_discussions', array('id' => $parent->discussion))) {
+            print_error('notpartofdiscussion', 'digestforum');
         }
-        if (! $forum = $DB->get_record('forum', array('id' => $discussion->forum))) {
-            print_error('invalidforumid');
+        if (! $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum))) {
+            print_error('invaliddigestforumid');
         }
     }
-    if (! $course = $DB->get_record('course', array('id' => $forum->course))) {
+    if (! $course = $DB->get_record('course', array('id' => $digestforum->course))) {
         print_error('invalidcourseid');
     }
 
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id)) { // For the logs
         print_error('invalidcoursemodule');
     } else {
         $modcontext = context_module::instance($cm->id);
     }
 
-    $PAGE->set_cm($cm, $course, $forum);
+    $PAGE->set_cm($cm, $course, $digestforum);
     $PAGE->set_context($modcontext);
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
 
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguestpost', 'forum').'<br /><br />'.get_string('liketologin'), get_login_url(), get_referer(false));
+    echo $OUTPUT->confirm(get_string('noguestpost', 'digestforum').'<br /><br />'.get_string('liketologin'), get_login_url(), get_referer(false));
     echo $OUTPUT->footer();
     exit;
 }
 
 require_login(0, false);   // Script is useless unless they're logged in
 
-if (!empty($forum)) {      // User is starting a new discussion in a forum
-    if (! $forum = $DB->get_record("forum", array("id" => $forum))) {
-        print_error('invalidforumid', 'forum');
+if (!empty($digestforum)) {      // User is starting a new discussion in a digestforum
+    if (! $digestforum = $DB->get_record("digestforum", array("id" => $digestforum))) {
+        print_error('invaliddigestforumid', 'digestforum');
     }
-    if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
+    if (! $course = $DB->get_record("course", array("id" => $digestforum->course))) {
         print_error('invalidcourseid');
     }
-    if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (! $cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id)) {
         print_error("invalidcoursemodule");
     }
 
     $coursecontext = context_course::instance($course->id);
 
-    if (! forum_user_can_post_discussion($forum, $groupid, -1, $cm)) {
+    if (! digestforum_user_can_post_discussion($digestforum, $groupid, -1, $cm)) {
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {
                 if (enrol_selfenrol_available($course->id)) {
@@ -119,7 +119,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                 }
             }
         }
-        print_error('nopostforum', 'forum');
+        print_error('nopostdigestforum', 'digestforum');
     }
 
     if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $coursecontext)) {
@@ -137,7 +137,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $post = new stdClass();
     $post->course        = $course->id;
-    $post->forum         = $forum->id;
+    $post->digestforum         = $digestforum->id;
     $post->discussion    = 0;           // ie discussion # not defined yet
     $post->parent        = 0;
     $post->subject       = '';
@@ -152,33 +152,33 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $post->groupid = groups_get_activity_group($cm);
     }
 
-    forum_set_return();
+    digestforum_set_return();
 
 } else if (!empty($reply)) {      // User is writing a new reply
 
-    if (! $parent = forum_get_post_full($reply)) {
-        print_error('invalidparentpostid', 'forum');
+    if (! $parent = digestforum_get_post_full($reply)) {
+        print_error('invalidparentpostid', 'digestforum');
     }
-    if (! $discussion = $DB->get_record("forum_discussions", array("id" => $parent->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
+    if (! $discussion = $DB->get_record("digestforum_discussions", array("id" => $parent->discussion))) {
+        print_error('notpartofdiscussion', 'digestforum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
-        print_error('invalidforumid', 'forum');
+    if (! $digestforum = $DB->get_record("digestforum", array("id" => $discussion->digestforum))) {
+        print_error('invaliddigestforumid', 'digestforum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
         print_error('invalidcourseid');
     }
-    if (! $cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (! $cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id)) {
         print_error('invalidcoursemodule');
     }
 
     // Ensure lang, theme, etc. is set up properly. MDL-6926
-    $PAGE->set_cm($cm, $course, $forum);
+    $PAGE->set_cm($cm, $course, $digestforum);
 
     $coursecontext = context_course::instance($course->id);
     $modcontext    = context_module::instance($cm->id);
 
-    if (! forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
+    if (! digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $modcontext)) {
         if (!isguestuser()) {
             if (!is_enrolled($coursecontext)) {  // User is a guest here!
                 $SESSION->wantsurl = qualified_me();
@@ -186,7 +186,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
                 redirect($CFG->wwwroot.'/enrol/index.php?id='.$course->id, get_string('youneedtoenrol'));
             }
         }
-        print_error('nopostforum', 'forum');
+        print_error('nopostdigestforum', 'digestforum');
     }
 
     // Make sure user can post here
@@ -197,10 +197,10 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
     }
     if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
         if ($discussion->groupid == -1) {
-            print_error('nopostforum', 'forum');
+            print_error('nopostdigestforum', 'digestforum');
         } else {
             if (!groups_is_member($discussion->groupid)) {
-                print_error('nopostforum', 'forum');
+                print_error('nopostdigestforum', 'digestforum');
             }
         }
     }
@@ -213,7 +213,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $post = new stdClass();
     $post->course      = $course->id;
-    $post->forum       = $forum->id;
+    $post->digestforum       = $digestforum->id;
     $post->discussion  = $parent->discussion;
     $post->parent      = $parent->id;
     $post->subject     = $parent->subject;
@@ -222,7 +222,7 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
-    $strre = get_string('re', 'forum');
+    $strre = get_string('re', 'digestforum');
     if (!(substr($post->subject, 0, strlen($strre)) == $strre)) {
         $post->subject = $strre.' '.$post->subject;
     }
@@ -231,48 +231,48 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
 } else if (!empty($edit)) {  // User is editing their own post
 
-    if (! $post = forum_get_post_full($edit)) {
-        print_error('invalidpostid', 'forum');
+    if (! $post = digestforum_get_post_full($edit)) {
+        print_error('invalidpostid', 'digestforum');
     }
     if ($post->parent) {
-        if (! $parent = forum_get_post_full($post->parent)) {
-            print_error('invalidparentpostid', 'forum');
+        if (! $parent = digestforum_get_post_full($post->parent)) {
+            print_error('invalidparentpostid', 'digestforum');
         }
     }
 
-    if (! $discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
+    if (! $discussion = $DB->get_record("digestforum_discussions", array("id" => $post->discussion))) {
+        print_error('notpartofdiscussion', 'digestforum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
-        print_error('invalidforumid', 'forum');
+    if (! $digestforum = $DB->get_record("digestforum", array("id" => $discussion->digestforum))) {
+        print_error('invaliddigestforumid', 'digestforum');
     }
     if (! $course = $DB->get_record("course", array("id" => $discussion->course))) {
         print_error('invalidcourseid');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+    if (!$cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id)) {
         print_error('invalidcoursemodule');
     } else {
         $modcontext = context_module::instance($cm->id);
     }
 
-    $PAGE->set_cm($cm, $course, $forum);
+    $PAGE->set_cm($cm, $course, $digestforum);
 
-    if (!($forum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
+    if (!($digestforum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (((time() - $post->created) > $CFG->maxeditingtime) and
-                    !has_capability('mod/forum:editanypost', $modcontext)) {
-            print_error('maxtimehaspassed', 'forum', '', format_time($CFG->maxeditingtime));
+                    !has_capability('mod/digestforum:editanypost', $modcontext)) {
+            print_error('maxtimehaspassed', 'digestforum', '', format_time($CFG->maxeditingtime));
         }
     }
     if (($post->userid <> $USER->id) and
-                !has_capability('mod/forum:editanypost', $modcontext)) {
-        print_error('cannoteditposts', 'forum');
+                !has_capability('mod/digestforum:editanypost', $modcontext)) {
+        print_error('cannoteditposts', 'digestforum');
     }
 
 
     // Load up the $post variable.
     $post->edit   = $edit;
     $post->course = $course->id;
-    $post->forum  = $forum->id;
+    $post->digestforum  = $digestforum->id;
     $post->groupid = ($discussion->groupid == -1) ? 0 : $discussion->groupid;
 
     $post = trusttext_pre_edit($post, 'message', $modcontext);
@@ -282,113 +282,113 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
 }else if (!empty($delete)) {  // User is deleting a post
 
-    if (! $post = forum_get_post_full($delete)) {
-        print_error('invalidpostid', 'forum');
+    if (! $post = digestforum_get_post_full($delete)) {
+        print_error('invalidpostid', 'digestforum');
     }
-    if (! $discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
+    if (! $discussion = $DB->get_record("digestforum_discussions", array("id" => $post->discussion))) {
+        print_error('notpartofdiscussion', 'digestforum');
     }
-    if (! $forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
-        print_error('invalidforumid', 'forum');
+    if (! $digestforum = $DB->get_record("digestforum", array("id" => $discussion->digestforum))) {
+        print_error('invaliddigestforumid', 'digestforum');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $forum->course)) {
+    if (!$cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $digestforum->course)) {
         print_error('invalidcoursemodule');
     }
-    if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
+    if (!$course = $DB->get_record('course', array('id' => $digestforum->course))) {
         print_error('invalidcourseid');
     }
 
     require_login($course, false, $cm);
     $modcontext = context_module::instance($cm->id);
 
-    if ( !(($post->userid == $USER->id && has_capability('mod/forum:deleteownpost', $modcontext))
-                || has_capability('mod/forum:deleteanypost', $modcontext)) ) {
-        print_error('cannotdeletepost', 'forum');
+    if ( !(($post->userid == $USER->id && has_capability('mod/digestforum:deleteownpost', $modcontext))
+                || has_capability('mod/digestforum:deleteanypost', $modcontext)) ) {
+        print_error('cannotdeletepost', 'digestforum');
     }
 
 
-    $replycount = forum_count_replies($post);
+    $replycount = digestforum_count_replies($post);
 
     if (!empty($confirm) && confirm_sesskey()) {    // User has confirmed the delete
         //check user capability to delete post.
         $timepassed = time() - $post->created;
-        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/forum:deleteanypost', $modcontext)) {
-            print_error("cannotdeletepost", "forum",
-                      forum_go_back_to("discuss.php?d=$post->discussion"));
+        if (($timepassed > $CFG->maxeditingtime) && !has_capability('mod/digestforum:deleteanypost', $modcontext)) {
+            print_error("cannotdeletepost", "digestforum",
+                      digestforum_go_back_to("discuss.php?d=$post->discussion"));
         }
 
         if ($post->totalscore) {
             notice(get_string('couldnotdeleteratings', 'rating'),
-                    forum_go_back_to("discuss.php?d=$post->discussion"));
+                    digestforum_go_back_to("discuss.php?d=$post->discussion"));
 
-        } else if ($replycount && !has_capability('mod/forum:deleteanypost', $modcontext)) {
-            print_error("couldnotdeletereplies", "forum",
-                    forum_go_back_to("discuss.php?d=$post->discussion"));
+        } else if ($replycount && !has_capability('mod/digestforum:deleteanypost', $modcontext)) {
+            print_error("couldnotdeletereplies", "digestforum",
+                    digestforum_go_back_to("discuss.php?d=$post->discussion"));
 
         } else {
             if (! $post->parent) {  // post is a discussion topic as well, so delete discussion
-                if ($forum->type == 'single') {
+                if ($digestforum->type == 'single') {
                     notice("Sorry, but you are not allowed to delete that discussion!",
-                            forum_go_back_to("discuss.php?d=$post->discussion"));
+                            digestforum_go_back_to("discuss.php?d=$post->discussion"));
                 }
-                forum_delete_discussion($discussion, false, $course, $cm, $forum);
+                digestforum_delete_discussion($discussion, false, $course, $cm, $digestforum);
 
-                add_to_log($discussion->course, "forum", "delete discussion",
-                           "view.php?id=$cm->id", "$forum->id", $cm->id);
+                add_to_log($discussion->course, "digestforum", "delete discussion",
+                           "view.php?id=$cm->id", "$digestforum->id", $cm->id);
 
-                redirect("view.php?f=$discussion->forum");
+                redirect("view.php?f=$discussion->digestforum");
 
-            } else if (forum_delete_post($post, has_capability('mod/forum:deleteanypost', $modcontext),
-                $course, $cm, $forum)) {
+            } else if (digestforum_delete_post($post, has_capability('mod/digestforum:deleteanypost', $modcontext),
+                $course, $cm, $digestforum)) {
 
-                if ($forum->type == 'single') {
-                    // Single discussion forums are an exception. We show
-                    // the forum itself since it only has one discussion
+                if ($digestforum->type == 'single') {
+                    // Single discussion digestforums are an exception. We show
+                    // the digestforum itself since it only has one discussion
                     // thread.
-                    $discussionurl = "view.php?f=$forum->id";
+                    $discussionurl = "view.php?f=$digestforum->id";
                 } else {
                     $discussionurl = "discuss.php?d=$post->discussion";
                 }
 
-                add_to_log($discussion->course, "forum", "delete post", $discussionurl, "$post->id", $cm->id);
+                add_to_log($discussion->course, "digestforum", "delete post", $discussionurl, "$post->id", $cm->id);
 
-                redirect(forum_go_back_to($discussionurl));
+                redirect(digestforum_go_back_to($discussionurl));
             } else {
-                print_error('errorwhiledelete', 'forum');
+                print_error('errorwhiledelete', 'digestforum');
             }
         }
 
 
     } else { // User just asked to delete something
 
-        forum_set_return();
-        $PAGE->navbar->add(get_string('delete', 'forum'));
+        digestforum_set_return();
+        $PAGE->navbar->add(get_string('delete', 'digestforum'));
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
 
         if ($replycount) {
-            if (!has_capability('mod/forum:deleteanypost', $modcontext)) {
-                print_error("couldnotdeletereplies", "forum",
-                      forum_go_back_to("discuss.php?d=$post->discussion"));
+            if (!has_capability('mod/digestforum:deleteanypost', $modcontext)) {
+                print_error("couldnotdeletereplies", "digestforum",
+                      digestforum_go_back_to("discuss.php?d=$post->discussion"));
             }
             echo $OUTPUT->header();
-            echo $OUTPUT->confirm(get_string("deletesureplural", "forum", $replycount+1),
+            echo $OUTPUT->confirm(get_string("deletesureplural", "digestforum", $replycount+1),
                          "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+                         $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
 
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+            digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false);
 
             if (empty($post->edit)) {
-                $forumtracked = forum_tp_is_tracked($forum);
-                $posts = forum_get_all_discussion_posts($discussion->id, "created ASC", $forumtracked);
-                forum_print_posts_nested($course, $cm, $forum, $discussion, $post, false, false, $forumtracked, $posts);
+                $digestforumtracked = digestforum_tp_is_tracked($digestforum);
+                $posts = digestforum_get_all_discussion_posts($discussion->id, "created ASC", $digestforumtracked);
+                digestforum_print_posts_nested($course, $cm, $digestforum, $discussion, $post, false, false, $digestforumtracked, $posts);
             }
         } else {
             echo $OUTPUT->header();
-            echo $OUTPUT->confirm(get_string("deletesure", "forum", $replycount),
+            echo $OUTPUT->confirm(get_string("deletesure", "digestforum", $replycount),
                          "post.php?delete=$delete&confirm=$delete",
-                         $CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#p'.$post->id);
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+                         $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.'#p'.$post->id);
+            digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false);
         }
 
     }
@@ -398,35 +398,35 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
 } else if (!empty($prune)) {  // Pruning
 
-    if (!$post = forum_get_post_full($prune)) {
-        print_error('invalidpostid', 'forum');
+    if (!$post = digestforum_get_post_full($prune)) {
+        print_error('invalidpostid', 'digestforum');
     }
-    if (!$discussion = $DB->get_record("forum_discussions", array("id" => $post->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
+    if (!$discussion = $DB->get_record("digestforum_discussions", array("id" => $post->discussion))) {
+        print_error('notpartofdiscussion', 'digestforum');
     }
-    if (!$forum = $DB->get_record("forum", array("id" => $discussion->forum))) {
-        print_error('invalidforumid', 'forum');
+    if (!$digestforum = $DB->get_record("digestforum", array("id" => $discussion->digestforum))) {
+        print_error('invaliddigestforumid', 'digestforum');
     }
-    if ($forum->type == 'single') {
-        print_error('cannotsplit', 'forum');
+    if ($digestforum->type == 'single') {
+        print_error('cannotsplit', 'digestforum');
     }
     if (!$post->parent) {
-        print_error('alreadyfirstpost', 'forum');
+        print_error('alreadyfirstpost', 'digestforum');
     }
-    if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $forum->course)) { // For the logs
+    if (!$cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $digestforum->course)) { // For the logs
         print_error('invalidcoursemodule');
     } else {
         $modcontext = context_module::instance($cm->id);
     }
-    if (!has_capability('mod/forum:splitdiscussions', $modcontext)) {
-        print_error('cannotsplit', 'forum');
+    if (!has_capability('mod/digestforum:splitdiscussions', $modcontext)) {
+        print_error('cannotsplit', 'digestforum');
     }
 
     if (!empty($name) && confirm_sesskey()) {    // User has confirmed the prune
 
         $newdiscussion = new stdClass();
         $newdiscussion->course       = $discussion->course;
-        $newdiscussion->forum        = $discussion->forum;
+        $newdiscussion->digestforum        = $discussion->digestforum;
         $newdiscussion->name         = $name;
         $newdiscussion->firstpost    = $post->id;
         $newdiscussion->userid       = $discussion->userid;
@@ -436,43 +436,43 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
         $newdiscussion->timestart    = $discussion->timestart;
         $newdiscussion->timeend      = $discussion->timeend;
 
-        $newid = $DB->insert_record('forum_discussions', $newdiscussion);
+        $newid = $DB->insert_record('digestforum_discussions', $newdiscussion);
 
         $newpost = new stdClass();
         $newpost->id      = $post->id;
         $newpost->parent  = 0;
         $newpost->subject = $name;
 
-        $DB->update_record("forum_posts", $newpost);
+        $DB->update_record("digestforum_posts", $newpost);
 
-        forum_change_discussionid($post->id, $newid);
+        digestforum_change_discussionid($post->id, $newid);
 
         // update last post in each discussion
-        forum_discussion_update_last_post($discussion->id);
-        forum_discussion_update_last_post($newid);
+        digestforum_discussion_update_last_post($discussion->id);
+        digestforum_discussion_update_last_post($newid);
 
-        add_to_log($discussion->course, "forum", "prune post",
+        add_to_log($discussion->course, "digestforum", "prune post",
                        "discuss.php?d=$newid", "$post->id", $cm->id);
 
-        redirect(forum_go_back_to("discuss.php?d=$newid"));
+        redirect(digestforum_go_back_to("discuss.php?d=$newid"));
 
     } else { // User just asked to prune something
 
-        $course = $DB->get_record('course', array('id' => $forum->course));
+        $course = $DB->get_record('course', array('id' => $digestforum->course));
 
         $PAGE->set_cm($cm);
         $PAGE->set_context($modcontext);
-        $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/forum/discuss.php', array('d'=>$discussion->id)));
-        $PAGE->navbar->add(get_string("prune", "forum"));
+        $PAGE->navbar->add(format_string($post->subject, true), new moodle_url('/mod/digestforum/discuss.php', array('d'=>$discussion->id)));
+        $PAGE->navbar->add(get_string("prune", "digestforum"));
         $PAGE->set_title(format_string($discussion->name).": ".format_string($post->subject));
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
-        echo $OUTPUT->heading(get_string('pruneheading', 'forum'));
+        echo $OUTPUT->heading(get_string('pruneheading', 'digestforum'));
         echo '<center>';
 
         include('prune.html');
 
-        forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
+        digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false);
         echo '</center>';
     }
     echo $OUTPUT->footer();
@@ -484,13 +484,13 @@ if (!empty($forum)) {      // User is starting a new discussion in a forum
 
 if (!isset($coursecontext)) {
     // Has not yet been set by post.php.
-    $coursecontext = context_course::instance($forum->course);
+    $coursecontext = context_course::instance($digestforum->course);
 }
 
 
 // from now on user must be logged on properly
 
-if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) { // For the logs
+if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id)) { // For the logs
     print_error('invalidcoursemodule');
 }
 $modcontext = context_module::instance($cm->id);
@@ -501,24 +501,24 @@ if (isguestuser()) {
     print_error('noguest');
 }
 
-if (!isset($forum->maxattachments)) {  // TODO - delete this once we add a field to the forum table
-    $forum->maxattachments = 3;
+if (!isset($digestforum->maxattachments)) {  // TODO - delete this once we add a field to the digestforum table
+    $digestforum->maxattachments = 3;
 }
 
 require_once('post_form.php');
 
-$thresholdwarning = forum_check_throttling($forum, $cm);
-$mform_post = new mod_forum_post_form('post.php', array('course' => $course,
+$thresholdwarning = digestforum_check_throttling($digestforum, $cm);
+$mform_post = new mod_digestforum_post_form('post.php', array('course' => $course,
                                                         'cm' => $cm,
                                                         'coursecontext' => $coursecontext,
                                                         'modcontext' => $modcontext,
-                                                        'forum' => $forum,
+                                                        'digestforum' => $digestforum,
                                                         'post' => $post,
                                                         'thresholdwarning' => $thresholdwarning,
-                                                        'edit' => $edit), 'post', '', array('id' => 'mformforum'));
+                                                        'edit' => $edit), 'post', '', array('id' => 'mformdigestforum'));
 
 $draftitemid = file_get_submitted_draft_itemid('attachments');
-file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_forum', 'attachment', empty($post->id)?null:$post->id, mod_forum_post_form::attachment_options($forum));
+file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_digestforum', 'attachment', empty($post->id)?null:$post->id, mod_digestforum_post_form::attachment_options($digestforum));
 
 //load data into form NOW!
 
@@ -528,30 +528,30 @@ if ($USER->id != $post->userid) {   // Not the original author, so add a message
     if ($post->messageformat == FORMAT_HTML) {
         $data->name = '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$USER->id.'&course='.$post->course.'">'.
                        fullname($USER).'</a>';
-        $post->message .= '<p><span class="edited">('.get_string('editedby', 'forum', $data).')</span></p>';
+        $post->message .= '<p><span class="edited">('.get_string('editedby', 'digestforum', $data).')</span></p>';
     } else {
         $data->name = fullname($USER);
-        $post->message .= "\n\n(".get_string('editedby', 'forum', $data).')';
+        $post->message .= "\n\n(".get_string('editedby', 'digestforum', $data).')';
     }
     unset($data);
 }
 
 $formheading = '';
 if (!empty($parent)) {
-    $heading = get_string("yourreply", "forum");
-    $formheading = get_string('reply', 'forum');
+    $heading = get_string("yourreply", "digestforum");
+    $formheading = get_string('reply', 'digestforum');
 } else {
-    if ($forum->type == 'qanda') {
-        $heading = get_string('yournewquestion', 'forum');
+    if ($digestforum->type == 'qanda') {
+        $heading = get_string('yournewquestion', 'digestforum');
     } else {
-        $heading = get_string('yournewtopic', 'forum');
+        $heading = get_string('yournewtopic', 'digestforum');
     }
 }
 
-if (forum_is_subscribed($USER->id, $forum->id)) {
+if (digestforum_is_subscribed($USER->id, $digestforum->id)) {
     $subscribe = true;
 
-} else if (forum_user_has_posted($forum->id, 0, $USER->id)) {
+} else if (digestforum_user_has_posted($digestforum->id, 0, $USER->id)) {
     $subscribe = false;
 
 } else {
@@ -560,7 +560,7 @@ if (forum_is_subscribed($USER->id, $forum->id)) {
 }
 
 $draftid_editor = file_get_submitted_draft_itemid('message');
-$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_forum', 'post', empty($post->id) ? null : $post->id, mod_forum_post_form::editor_options(), $post->message);
+$currenttext = file_prepare_draft_area($draftid_editor, $modcontext->id, 'mod_digestforum', 'post', empty($post->id) ? null : $post->id, mod_digestforum_post_form::editor_options(), $post->message);
 $mform_post->set_data(array(        'attachments'=>$draftitemid,
                                     'general'=>$heading,
                                     'subject'=>$post->subject,
@@ -600,7 +600,7 @@ $mform_post->set_data(array(        'attachments'=>$draftitemid,
 if ($fromform = $mform_post->get_data()) {
 
     if (empty($SESSION->fromurl)) {
-        $errordestination = "$CFG->wwwroot/mod/forum/view.php?f=$forum->id";
+        $errordestination = "$CFG->wwwroot/mod/digestforum/view.php?f=$digestforum->id";
     } else {
         $errordestination = $SESSION->fromurl;
     }
@@ -611,7 +611,7 @@ if ($fromform = $mform_post->get_data()) {
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
 
-    $contextcheck = isset($fromform->groupinfo) && has_capability('mod/forum:movediscussions', $modcontext);
+    $contextcheck = isset($fromform->groupinfo) && has_capability('mod/digestforum:movediscussions', $modcontext);
 
     if ($fromform->edit) {           // Updating a post
         unset($fromform->groupid);
@@ -619,7 +619,7 @@ if ($fromform = $mform_post->get_data()) {
         $message = '';
 
         //fix for bug #4314
-        if (!$realpost = $DB->get_record('forum_posts', array('id' => $fromform->id))) {
+        if (!$realpost = $DB->get_record('digestforum_posts', array('id' => $fromform->id))) {
             $realpost = new stdClass();
             $realpost->userid = -1;
         }
@@ -629,10 +629,10 @@ if ($fromform = $mform_post->get_data()) {
         // or has either startnewdiscussion or reply capability and is editting own post
         // then he can proceed
         // MDL-7066
-        if ( !(($realpost->userid == $USER->id && (has_capability('mod/forum:replypost', $modcontext)
-                            || has_capability('mod/forum:startdiscussion', $modcontext))) ||
-                            has_capability('mod/forum:editanypost', $modcontext)) ) {
-            print_error('cannotupdatepost', 'forum');
+        if ( !(($realpost->userid == $USER->id && (has_capability('mod/digestforum:replypost', $modcontext)
+                            || has_capability('mod/digestforum:startdiscussion', $modcontext))) ||
+                            has_capability('mod/digestforum:editanypost', $modcontext)) ) {
+            print_error('cannotupdatepost', 'digestforum');
         }
 
         // If the user has access to all groups and they are changing the group, then update the post.
@@ -640,20 +640,20 @@ if ($fromform = $mform_post->get_data()) {
             if (empty($fromform->groupinfo)) {
                 $fromform->groupinfo = -1;
             }
-            $DB->set_field('forum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
+            $DB->set_field('digestforum_discussions' ,'groupid' , $fromform->groupinfo, array('firstpost' => $fromform->id));
         }
 
         $updatepost = $fromform; //realpost
-        $updatepost->forum = $forum->id;
-        if (!forum_update_post($updatepost, $mform_post, $message)) {
-            print_error("couldnotupdate", "forum", $errordestination);
+        $updatepost->digestforum = $digestforum->id;
+        if (!digestforum_update_post($updatepost, $mform_post, $message)) {
+            print_error("couldnotupdate", "digestforum", $errordestination);
         }
 
         // MDL-11818
-        if (($forum->type == 'single') && ($updatepost->parent == '0')){ // updating first post of single discussion type -> updating forum intro
-            $forum->intro = $updatepost->message;
-            $forum->timemodified = time();
-            $DB->update_record("forum", $forum);
+        if (($digestforum->type == 'single') && ($updatepost->parent == '0')){ // updating first post of single discussion type -> updating digestforum intro
+            $digestforum->intro = $updatepost->message;
+            $digestforum->timemodified = time();
+            $DB->update_record("digestforum", $digestforum);
         }
 
         $timemessage = 2;
@@ -662,89 +662,89 @@ if ($fromform = $mform_post->get_data()) {
         }
 
         if ($realpost->userid == $USER->id) {
-            $message .= '<br />'.get_string("postupdated", "forum");
+            $message .= '<br />'.get_string("postupdated", "digestforum");
         } else {
             $realuser = $DB->get_record('user', array('id' => $realpost->userid));
-            $message .= '<br />'.get_string("editedpostupdated", "forum", fullname($realuser));
+            $message .= '<br />'.get_string("editedpostupdated", "digestforum", fullname($realuser));
         }
 
-        if ($subscribemessage = forum_post_subscription($fromform, $forum)) {
+        if ($subscribemessage = digestforum_post_subscription($fromform, $digestforum)) {
             $timemessage = 4;
         }
-        if ($forum->type == 'single') {
-            // Single discussion forums are an exception. We show
-            // the forum itself since it only has one discussion
+        if ($digestforum->type == 'single') {
+            // Single discussion digestforums are an exception. We show
+            // the digestforum itself since it only has one discussion
             // thread.
-            $discussionurl = "view.php?f=$forum->id";
+            $discussionurl = "view.php?f=$digestforum->id";
         } else {
             $discussionurl = "discuss.php?d=$discussion->id#p$fromform->id";
         }
-        add_to_log($course->id, "forum", "update post",
+        add_to_log($course->id, "digestforum", "update post",
                 "$discussionurl&amp;parent=$fromform->id", "$fromform->id", $cm->id);
 
-        redirect(forum_go_back_to("$discussionurl"), $message.$subscribemessage, $timemessage);
+        redirect(digestforum_go_back_to("$discussionurl"), $message.$subscribemessage, $timemessage);
 
         exit;
 
 
     } else if ($fromform->discussion) { // Adding a new post to an existing discussion
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        forum_check_blocking_threshold($thresholdwarning);
+        digestforum_check_blocking_threshold($thresholdwarning);
 
         unset($fromform->groupid);
         $message = '';
         $addpost = $fromform;
-        $addpost->forum=$forum->id;
-        if ($fromform->id = forum_add_new_post($addpost, $mform_post, $message)) {
+        $addpost->digestforum=$digestforum->id;
+        if ($fromform->id = digestforum_add_new_post($addpost, $mform_post, $message)) {
 
             $timemessage = 2;
             if (!empty($message)) { // if we're printing stuff about the file upload
                 $timemessage = 4;
             }
 
-            if ($subscribemessage = forum_post_subscription($fromform, $forum)) {
+            if ($subscribemessage = digestforum_post_subscription($fromform, $digestforum)) {
                 $timemessage = 4;
             }
 
             if (!empty($fromform->mailnow)) {
-                $message .= get_string("postmailnow", "forum");
+                $message .= get_string("postmailnow", "digestforum");
                 $timemessage = 4;
             } else {
-                $message .= '<p>'.get_string("postaddedsuccess", "forum") . '</p>';
-                $message .= '<p>'.get_string("postaddedtimeleft", "forum", format_time($CFG->maxeditingtime)) . '</p>';
+                $message .= '<p>'.get_string("postaddedsuccess", "digestforum") . '</p>';
+                $message .= '<p>'.get_string("postaddedtimeleft", "digestforum", format_time($CFG->maxeditingtime)) . '</p>';
             }
 
-            if ($forum->type == 'single') {
-                // Single discussion forums are an exception. We show
-                // the forum itself since it only has one discussion
+            if ($digestforum->type == 'single') {
+                // Single discussion digestforums are an exception. We show
+                // the digestforum itself since it only has one discussion
                 // thread.
-                $discussionurl = "view.php?f=$forum->id";
+                $discussionurl = "view.php?f=$digestforum->id";
             } else {
                 $discussionurl = "discuss.php?d=$discussion->id";
             }
-            add_to_log($course->id, "forum", "add post",
+            add_to_log($course->id, "digestforum", "add post",
                       "$discussionurl&amp;parent=$fromform->id", "$fromform->id", $cm->id);
 
             // Update completion state
             $completion=new completion_info($course);
             if($completion->is_enabled($cm) &&
-                ($forum->completionreplies || $forum->completionposts)) {
+                ($digestforum->completionreplies || $digestforum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            redirect(forum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
+            redirect(digestforum_go_back_to("$discussionurl#p$fromform->id"), $message.$subscribemessage, $timemessage);
 
         } else {
-            print_error("couldnotadd", "forum", $errordestination);
+            print_error("couldnotadd", "digestforum", $errordestination);
         }
         exit;
 
     } else { // Adding a new discussion.
         // Before we add this we must check that the user will not exceed the blocking threshold.
-        forum_check_blocking_threshold($thresholdwarning);
+        digestforum_check_blocking_threshold($thresholdwarning);
 
-        if (!forum_user_can_post_discussion($forum, $fromform->groupid, -1, $cm, $modcontext)) {
-            print_error('cannotcreatediscussion', 'forum');
+        if (!digestforum_user_can_post_discussion($digestforum, $fromform->groupid, -1, $cm, $modcontext)) {
+            print_error('cannotcreatediscussion', 'digestforum');
         }
         // If the user has access all groups capability let them choose the group.
         if ($contextcheck) {
@@ -760,16 +760,16 @@ if ($fromform = $mform_post->get_data()) {
         $discussion->name    = $fromform->subject;
 
         $newstopic = false;
-        if ($forum->type == 'news' && !$fromform->parent) {
+        if ($digestforum->type == 'news' && !$fromform->parent) {
             $newstopic = true;
         }
         $discussion->timestart = $fromform->timestart;
         $discussion->timeend = $fromform->timeend;
 
         $message = '';
-        if ($discussion->id = forum_add_discussion($discussion, $mform_post, $message)) {
+        if ($discussion->id = digestforum_add_discussion($discussion, $mform_post, $message)) {
 
-            add_to_log($course->id, "forum", "add discussion",
+            add_to_log($course->id, "digestforum", "add discussion",
                     "discuss.php?d=$discussion->id", "$discussion->id", $cm->id);
 
             $timemessage = 2;
@@ -778,28 +778,28 @@ if ($fromform = $mform_post->get_data()) {
             }
 
             if ($fromform->mailnow) {
-                $message .= get_string("postmailnow", "forum");
+                $message .= get_string("postmailnow", "digestforum");
                 $timemessage = 4;
             } else {
-                $message .= '<p>'.get_string("postaddedsuccess", "forum") . '</p>';
-                $message .= '<p>'.get_string("postaddedtimeleft", "forum", format_time($CFG->maxeditingtime)) . '</p>';
+                $message .= '<p>'.get_string("postaddedsuccess", "digestforum") . '</p>';
+                $message .= '<p>'.get_string("postaddedtimeleft", "digestforum", format_time($CFG->maxeditingtime)) . '</p>';
             }
 
-            if ($subscribemessage = forum_post_subscription($discussion, $forum)) {
+            if ($subscribemessage = digestforum_post_subscription($discussion, $digestforum)) {
                 $timemessage = 4;
             }
 
             // Update completion status
             $completion=new completion_info($course);
             if($completion->is_enabled($cm) &&
-                ($forum->completiondiscussions || $forum->completionposts)) {
+                ($digestforum->completiondiscussions || $digestforum->completionposts)) {
                 $completion->update_state($cm,COMPLETION_COMPLETE);
             }
 
-            redirect(forum_go_back_to("view.php?f=$fromform->forum"), $message.$subscribemessage, $timemessage);
+            redirect(digestforum_go_back_to("view.php?f=$fromform->digestforum"), $message.$subscribemessage, $timemessage);
 
         } else {
-            print_error("couldnotadd", "forum", $errordestination);
+            print_error("couldnotadd", "digestforum", $errordestination);
         }
 
         exit;
@@ -812,16 +812,16 @@ if ($fromform = $mform_post->get_data()) {
 // variable will be loaded with all the particulars,
 // so bring up the form.
 
-// $course, $forum are defined.  $discussion is for edit and reply only.
+// $course, $digestforum are defined.  $discussion is for edit and reply only.
 
 if ($post->discussion) {
-    if (! $toppost = $DB->get_record("forum_posts", array("discussion" => $post->discussion, "parent" => 0))) {
-        print_error('cannotfindparentpost', 'forum', '', $post->id);
+    if (! $toppost = $DB->get_record("digestforum_posts", array("discussion" => $post->discussion, "parent" => 0))) {
+        print_error('cannotfindparentpost', 'digestforum', '', $post->id);
     }
 } else {
     $toppost = new stdClass();
-    $toppost->subject = ($forum->type == "news") ? get_string("addanewtopic", "forum") :
-                                                   get_string("addanewdiscussion", "forum");
+    $toppost->subject = ($digestforum->type == "news") ? get_string("addanewtopic", "digestforum") :
+                                                   get_string("addanewdiscussion", "digestforum");
 }
 
 if (empty($post->edit)) {
@@ -832,11 +832,11 @@ if (empty($discussion->name)) {
     if (empty($discussion)) {
         $discussion = new stdClass();
     }
-    $discussion->name = $forum->name;
+    $discussion->name = $digestforum->name;
 }
-if ($forum->type == 'single') {
-    // There is only one discussion thread for this forum type. We should
-    // not show the discussion name (same as forum name in this case) in
+if ($digestforum->type == 'single') {
+    // There is only one discussion thread for this digestforum type. We should
+    // not show the discussion name (same as digestforum name in this case) in
     // the breadcrumbs.
     $strdiscussionname = '';
 } else {
@@ -851,11 +851,11 @@ if (!empty($discussion->id)) {
 }
 
 if ($post->parent) {
-    $PAGE->navbar->add(get_string('reply', 'forum'));
+    $PAGE->navbar->add(get_string('reply', 'digestforum'));
 }
 
 if ($edit) {
-    $PAGE->navbar->add(get_string('edit', 'forum'));
+    $PAGE->navbar->add(get_string('edit', 'digestforum'));
 }
 
 $PAGE->set_title("$course->shortname: $strdiscussionname ".format_string($toppost->subject));
@@ -864,42 +864,42 @@ $PAGE->set_heading($course->fullname);
 echo $OUTPUT->header();
 
 // checkup
-if (!empty($parent) && !forum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
-    print_error('cannotreply', 'forum');
+if (!empty($parent) && !digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm)) {
+    print_error('cannotreply', 'digestforum');
 }
-if (empty($parent) && empty($edit) && !forum_user_can_post_discussion($forum, $groupid, -1, $cm, $modcontext)) {
-    print_error('cannotcreatediscussion', 'forum');
+if (empty($parent) && empty($edit) && !digestforum_user_can_post_discussion($digestforum, $groupid, -1, $cm, $modcontext)) {
+    print_error('cannotcreatediscussion', 'digestforum');
 }
 
-if ($forum->type == 'qanda'
-            && !has_capability('mod/forum:viewqandawithoutposting', $modcontext)
+if ($digestforum->type == 'qanda'
+            && !has_capability('mod/digestforum:viewqandawithoutposting', $modcontext)
             && !empty($discussion->id)
-            && !forum_user_has_posted($forum->id, $discussion->id, $USER->id)) {
-    echo $OUTPUT->notification(get_string('qandanotify','forum'));
+            && !digestforum_user_has_posted($digestforum->id, $discussion->id, $USER->id)) {
+    echo $OUTPUT->notification(get_string('qandanotify','digestforum'));
 }
 
 // If there is a warning message and we are not editing a post we need to handle the warning.
 if (!empty($thresholdwarning) && !$edit) {
     // Here we want to throw an exception if they are no longer allowed to post.
-    forum_check_blocking_threshold($thresholdwarning);
+    digestforum_check_blocking_threshold($thresholdwarning);
 }
 
 if (!empty($parent)) {
-    if (!$discussion = $DB->get_record('forum_discussions', array('id' => $parent->discussion))) {
-        print_error('notpartofdiscussion', 'forum');
+    if (!$discussion = $DB->get_record('digestforum_discussions', array('id' => $parent->discussion))) {
+        print_error('notpartofdiscussion', 'digestforum');
     }
 
-    forum_print_post($parent, $discussion, $forum, $cm, $course, false, false, false);
+    digestforum_print_post($parent, $discussion, $digestforum, $cm, $course, false, false, false);
     if (empty($post->edit)) {
-        if ($forum->type != 'qanda' || forum_user_can_see_discussion($forum, $discussion, $modcontext)) {
-            $forumtracked = forum_tp_is_tracked($forum);
-            $posts = forum_get_all_discussion_posts($discussion->id, "created ASC", $forumtracked);
-            forum_print_posts_threaded($course, $cm, $forum, $discussion, $parent, 0, false, $forumtracked, $posts);
+        if ($digestforum->type != 'qanda' || digestforum_user_can_see_discussion($digestforum, $discussion, $modcontext)) {
+            $digestforumtracked = digestforum_tp_is_tracked($digestforum);
+            $posts = digestforum_get_all_discussion_posts($discussion->id, "created ASC", $digestforumtracked);
+            digestforum_print_posts_threaded($course, $cm, $digestforum, $discussion, $parent, 0, false, $digestforumtracked, $posts);
         }
     }
 } else {
-    if (!empty($forum->intro)) {
-        echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
+    if (!empty($digestforum->intro)) {
+        echo $OUTPUT->box(format_module_intro('digestforum', $digestforum, $cm->id), 'generalbox', 'intro');
 
         if (!empty($CFG->enableplagiarism)) {
             require_once($CFG->libdir.'/plagiarismlib.php');

@@ -18,30 +18,30 @@
 /**
  * Forum external functions and service definitions.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2012 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $functions = array(
 
-    'mod_forum_get_forums_by_courses' => array(
-        'classname' => 'mod_forum_external',
-        'methodname' => 'get_forums_by_courses',
-        'classpath' => 'mod/forum/externallib.php',
-        'description' => 'Returns a list of forum instances in a provided set of courses, if
-            no courses are provided then all the forum instances the user has access to will be
+    'mod_digestforum_get_digestforums_by_courses' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'get_digestforums_by_courses',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Returns a list of digestforum instances in a provided set of courses, if
+            no courses are provided then all the digestforum instances the user has access to will be
             returned.',
         'type' => 'read',
-        'capabilities' => 'mod/forum:viewdiscussion'
+        'capabilities' => 'mod/digestforum:viewdiscussion'
     ),
 
-    'mod_forum_get_forum_discussions' => array(
-        'classname' => 'mod_forum_external',
-        'methodname' => 'get_forum_discussions',
-        'classpath' => 'mod/forum/externallib.php',
-        'description' => 'Returns a list of forum discussions contained within a given set of forums.',
+    'mod_digestforum_get_digestforum_discussions' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'get_digestforum_discussions',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Returns a list of digestforum discussions contained within a given set of digestforums.',
         'type' => 'read',
-        'capabilities' => 'mod/forum:viewdiscussion, mod/forum:viewqandawithoutposting'
+        'capabilities' => 'mod/digestforum:viewdiscussion, mod/digestforum:viewqandawithoutposting'
     )
 );

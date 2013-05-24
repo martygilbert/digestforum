@@ -1,8 +1,8 @@
-@mod @mod_forum
-Feature: Students can edit or delete their forum posts within a set time limit
-  In order to refine forum posts
+@mod @mod_digestforum
+Feature: Students can edit or delete their digestforum posts within a set time limit
+  In order to refine digestforum posts
   As a user
-  I need to edit or delete my forum posts within a certain period of time after posting
+  I need to edit or delete my digestforum posts within a certain period of time after posting
 
   Background:
     Given the following "users" exists:
@@ -24,19 +24,19 @@ Feature: Students can edit or delete their forum posts within a set time limit
     And I follow "Course 1"
     And I turn editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Forum type | Standard forum for general use |
-      | Description | Test forum description |
+      | Forum name | Test digestforum name |
+      | Forum type | Standard digestforum for general use |
+      | Description | Test digestforum description |
     And I log out
     And I follow "Course 1"
     And I log in as "student1"
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Forum post subject |
       | Message | This is the body |
     And I wait "6" seconds
 
   @javascript
-  Scenario: Edit forum post
+  Scenario: Edit digestforum post
     When I follow "Forum post subject"
     And I follow "Edit"
     And I fill the moodle form with:
@@ -48,7 +48,7 @@ Feature: Students can edit or delete their forum posts within a set time limit
     And I should see "Edited post body"
 
   @javascript
-  Scenario: Delete forum post
+  Scenario: Delete digestforum post
     When I follow "Forum post subject"
     And I follow "Delete"
     And I press "Continue"

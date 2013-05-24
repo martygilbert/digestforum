@@ -17,7 +17,7 @@
 
 /**
  * This file keeps track of upgrades to
- * the forum module
+ * the digestforum module
  *
  * Sometimes, changes between versions involve
  * alterations to database structures and other
@@ -36,52 +36,15 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package mod-forum
+ * @package mod-digestforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_forum_upgrade($oldversion) {
+function xmldb_digestforum_upgrade($oldversion) {
     global $CFG, $DB, $OUTPUT;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
-
-    // Moodle v2.2.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Moodle v2.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Moodle v2.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Moodle v2.5.0 release upgrade line.
-    // Put any upgrade step following this.
-    if ($oldversion < 2013020500) {
-
-        // Define field displaywordcount to be added to forum.
-        $table = new xmldb_table('forum');
-        $field = new xmldb_field('displaywordcount', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'completionposts');
-
-        // Conditionally launch add field displaywordcount.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2013020500, 'forum');
-    }
-
-    // Forcefully assign mod/forum:allowforcesubscribe to frontpage role, as we missed that when
-    // capability was introduced.
-    if ($oldversion < 2013021200) {
-        // If capability mod/forum:allowforcesubscribe is defined then set it for frontpage role.
-        if (get_capability_info('mod/forum:allowforcesubscribe')) {
-            assign_legacy_capabilities('mod/forum:allowforcesubscribe', array('frontpage' => CAP_ALLOW));
-        }
-        // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2013021200, 'forum');
-    }
 
     return true;
 }

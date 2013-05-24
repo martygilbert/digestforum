@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-forum
+ * @package mod-digestforum
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,10 +26,10 @@ require_once("lib.php");
 
 $confirm = optional_param('confirm', false, PARAM_BOOL);
 
-$PAGE->set_url('/mod/forum/unsubscribeall.php');
+$PAGE->set_url('/mod/digestforum/unsubscribeall.php');
 $PAGE->set_context(context_user::instance($USER->id));
 
-// Do not autologin guest. Only proper users can have forum subscriptions.
+// Do not autologin guest. Only proper users can have digestforum subscriptions.
 require_login(null, false);
 
 $return = $CFG->wwwroot.'/';
@@ -38,8 +38,8 @@ if (isguestuser()) {
     redirect($return);
 }
 
-$strunsubscribeall = get_string('unsubscribeall', 'forum');
-$PAGE->navbar->add(get_string('modulename', 'forum'));
+$strunsubscribeall = get_string('unsubscribeall', 'digestforum');
+$PAGE->navbar->add(get_string('modulename', 'digestforum'));
 $PAGE->navbar->add($strunsubscribeall);
 $PAGE->set_title($strunsubscribeall);
 $PAGE->set_heading(format_string($COURSE->fullname));
@@ -47,29 +47,29 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 
 if (data_submitted() and $confirm and confirm_sesskey()) {
-    $forums = forum_get_optional_subscribed_forums();
+    $digestforums = digestforum_get_optional_subscribed_digestforums();
 
-    foreach($forums as $forum) {
-        forum_unsubscribe($USER->id, $forum->id);
+    foreach($digestforums as $digestforum) {
+        digestforum_unsubscribe($USER->id, $digestforum->id);
     }
     $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
 
-    echo $OUTPUT->box(get_string('unsubscribealldone', 'forum'));
+    echo $OUTPUT->box(get_string('unsubscribealldone', 'digestforum'));
     echo $OUTPUT->continue_button($return);
     echo $OUTPUT->footer();
     die;
 
 } else {
-    $a = count(forum_get_optional_subscribed_forums());
+    $a = count(digestforum_get_optional_subscribed_digestforums());
 
     if ($a) {
-        $msg = get_string('unsubscribeallconfirm', 'forum', $a);
+        $msg = get_string('unsubscribeallconfirm', 'digestforum', $a);
         echo $OUTPUT->confirm($msg, new moodle_url('unsubscribeall.php', array('confirm'=>1)), $return);
         echo $OUTPUT->footer();
         die;
 
     } else {
-        echo $OUTPUT->box(get_string('unsubscribeallempty', 'forum'));
+        echo $OUTPUT->box(get_string('unsubscribeallempty', 'digestforum'));
         echo $OUTPUT->continue_button($return);
         echo $OUTPUT->footer();
         die;

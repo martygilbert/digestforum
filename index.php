@@ -16,20 +16,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-forum
+ * @package mod-digestform
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->dirroot . '/course/lib.php');
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/digestform/lib.php');
 require_once($CFG->libdir . '/rsslib.php');
 
 $id = optional_param('id', 0, PARAM_INT);                   // Course id
-$subscribe = optional_param('subscribe', null, PARAM_INT);  // Subscribe/Unsubscribe all forums
+$subscribe = optional_param('subscribe', null, PARAM_INT);  // Subscribe/Unsubscribe all digestforms
 
-$url = new moodle_url('/mod/forum/index.php', array('id'=>$id));
+$url = new moodle_url('/mod/digestform/index.php', array('id'=>$id));
 if ($subscribe !== null) {
     require_sesskey();
     $url->param('subscribe', $subscribe);
@@ -51,35 +51,35 @@ $coursecontext = context_course::instance($course->id);
 
 unset($SESSION->fromdiscussion);
 
-add_to_log($course->id, 'forum', 'view forums', "index.php?id=$course->id");
+add_to_log($course->id, 'digestform', 'view digestforms', "index.php?id=$course->id");
 
-$strforums       = get_string('forums', 'forum');
-$strforum        = get_string('forum', 'forum');
+$strdigestforms       = get_string('digestforms', 'digestform');
+$strdigestform        = get_string('digestform', 'digestform');
 $strdescription  = get_string('description');
-$strdiscussions  = get_string('discussions', 'forum');
-$strsubscribed   = get_string('subscribed', 'forum');
-$strunreadposts  = get_string('unreadposts', 'forum');
-$strtracking     = get_string('tracking', 'forum');
-$strmarkallread  = get_string('markallread', 'forum');
-$strtrackforum   = get_string('trackforum', 'forum');
-$strnotrackforum = get_string('notrackforum', 'forum');
-$strsubscribe    = get_string('subscribe', 'forum');
-$strunsubscribe  = get_string('unsubscribe', 'forum');
+$strdiscussions  = get_string('discussions', 'digestform');
+$strsubscribed   = get_string('subscribed', 'digestform');
+$strunreadposts  = get_string('unreadposts', 'digestform');
+$strtracking     = get_string('tracking', 'digestform');
+$strmarkallread  = get_string('markallread', 'digestform');
+$strtrackdigestform   = get_string('trackdigestform', 'digestform');
+$strnotrackdigestform = get_string('notrackdigestform', 'digestform');
+$strsubscribe    = get_string('subscribe', 'digestform');
+$strunsubscribe  = get_string('unsubscribe', 'digestform');
 $stryes          = get_string('yes');
 $strno           = get_string('no');
 $strrss          = get_string('rss');
 
-$searchform = forum_search_form($course);
+$searchform = digestform_search_form($course);
 
 
 // Start of the table for General Forums
 
 $generaltable = new html_table();
-$generaltable->head  = array ($strforum, $strdescription, $strdiscussions);
+$generaltable->head  = array ($strdigestform, $strdescription, $strdiscussions);
 $generaltable->align = array ('left', 'left', 'center');
 
-if ($usetracking = forum_tp_can_track_forums()) {
-    $untracked = forum_tp_get_untracked_forums($USER->id, $course->id);
+if ($usetracking = digestform_tp_can_track_digestforms()) {
+    $untracked = digestform_tp_get_untracked_digestforms($USER->id, $course->id);
 
     $generaltable->head[] = $strunreadposts;
     $generaltable->align[] = 'center';
@@ -88,7 +88,7 @@ if ($usetracking = forum_tp_can_track_forums()) {
     $generaltable->align[] = 'center';
 }
 
-$subscribed_forums = forum_get_subscribed_forums($course);
+$subscribed_digestforms = digestform_get_subscribed_digestforms($course);
 
 $can_subscribe = is_enrolled($coursecontext);
 if ($can_subscribe) {
@@ -97,8 +97,8 @@ if ($can_subscribe) {
 }
 
 if ($show_rss = (($can_subscribe || $course->id == SITEID) &&
-                 isset($CFG->enablerssfeeds) && isset($CFG->forum_enablerssfeeds) &&
-                 $CFG->enablerssfeeds && $CFG->forum_enablerssfeeds)) {
+                 isset($CFG->enablerssfeeds) && isset($CFG->digestform_enablerssfeeds) &&
+                 $CFG->enablerssfeeds && $CFG->digestform_enablerssfeeds)) {
     $generaltable->head[] = $strrss;
     $generaltable->align[] = 'center';
 }
@@ -107,44 +107,44 @@ $usesections = course_format_uses_sections($course->format);
 
 $table = new html_table();
 
-// Parse and organise all the forums.  Most forums are course modules but
-// some special ones are not.  These get placed in the general forums
-// category with the forums in section 0.
+// Parse and organise all the digestforms.  Most digestforms are course modules but
+// some special ones are not.  These get placed in the general digestforms
+// category with the digestforms in section 0.
 
-$forums = $DB->get_records('forum', array('course' => $course->id));
+$digestforms = $DB->get_records('digestform', array('course' => $course->id));
 
-$generalforums  = array();
-$learningforums = array();
+$generaldigestforms  = array();
+$learningdigestforms = array();
 $modinfo = get_fast_modinfo($course);
 
-if (!isset($modinfo->instances['forum'])) {
-    $modinfo->instances['forum'] = array();
+if (!isset($modinfo->instances['digestform'])) {
+    $modinfo->instances['digestform'] = array();
 }
 
-foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
-    if (!$cm->uservisible or !isset($forums[$forumid])) {
+foreach ($modinfo->instances['digestform'] as $digestformid=>$cm) {
+    if (!$cm->uservisible or !isset($digestforms[$digestformid])) {
         continue;
     }
 
-    $forum = $forums[$forumid];
+    $digestform = $digestforms[$digestformid];
 
     if (!$context = context_module::instance($cm->id, IGNORE_MISSING)) {
         continue;   // Shouldn't happen
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/digestform:viewdiscussion', $context)) {
         continue;
     }
 
     // fill two type array - order in modinfo is the same as in course
-    if ($forum->type == 'news' or $forum->type == 'social') {
-        $generalforums[$forum->id] = $forum;
+    if ($digestform->type == 'news' or $digestform->type == 'social') {
+        $generaldigestforms[$digestform->id] = $digestform;
 
     } else if ($course->id == SITEID or empty($cm->sectionnum)) {
-        $generalforums[$forum->id] = $forum;
+        $generaldigestforms[$digestform->id] = $digestform;
 
     } else {
-        $learningforums[$forum->id] = $forum;
+        $learningdigestforms[$digestform->id] = $digestform;
     }
 }
 
@@ -152,116 +152,116 @@ foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
 if (!is_null($subscribe)) {
     if (isguestuser() or !$can_subscribe) {
         // there should not be any links leading to this place, just redirect
-        redirect(new moodle_url('/mod/forum/index.php', array('id' => $id)), get_string('subscribeenrolledonly', 'forum'));
+        redirect(new moodle_url('/mod/digestform/index.php', array('id' => $id)), get_string('subscribeenrolledonly', 'digestform'));
     }
     // Can proceed now, the user is not guest and is enrolled
-    foreach ($modinfo->instances['forum'] as $forumid=>$cm) {
-        $forum = $forums[$forumid];
+    foreach ($modinfo->instances['digestform'] as $digestformid=>$cm) {
+        $digestform = $digestforms[$digestformid];
         $modcontext = context_module::instance($cm->id);
         $cansub = false;
 
-        if (has_capability('mod/forum:viewdiscussion', $modcontext)) {
+        if (has_capability('mod/digestform:viewdiscussion', $modcontext)) {
             $cansub = true;
         }
         if ($cansub && $cm->visible == 0 &&
-            !has_capability('mod/forum:managesubscriptions', $modcontext))
+            !has_capability('mod/digestform:managesubscriptions', $modcontext))
         {
             $cansub = false;
         }
-        if (!forum_is_forcesubscribed($forum)) {
-            $subscribed = forum_is_subscribed($USER->id, $forum);
-            if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
-                forum_subscribe($USER->id, $forumid);
+        if (!digestform_is_forcesubscribed($digestform)) {
+            $subscribed = digestform_is_subscribed($USER->id, $digestform);
+            if ((has_capability('moodle/course:manageactivities', $coursecontext, $USER->id) || $digestform->forcesubscribe != DIGESTFORUM_DISALLOWSUBSCRIBE) && $subscribe && !$subscribed && $cansub) {
+                digestform_subscribe($USER->id, $digestformid);
             } else if (!$subscribe && $subscribed) {
-                forum_unsubscribe($USER->id, $forumid);
+                digestform_unsubscribe($USER->id, $digestformid);
             }
         }
     }
-    $returnto = forum_go_back_to("index.php?id=$course->id");
+    $returnto = digestform_go_back_to("index.php?id=$course->id");
     $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
     if ($subscribe) {
-        add_to_log($course->id, 'forum', 'subscribeall', "index.php?id=$course->id", $course->id);
-        redirect($returnto, get_string('nowallsubscribed', 'forum', $shortname), 1);
+        add_to_log($course->id, 'digestform', 'subscribeall', "index.php?id=$course->id", $course->id);
+        redirect($returnto, get_string('nowallsubscribed', 'digestform', $shortname), 1);
     } else {
-        add_to_log($course->id, 'forum', 'unsubscribeall', "index.php?id=$course->id", $course->id);
-        redirect($returnto, get_string('nowallunsubscribed', 'forum', $shortname), 1);
+        add_to_log($course->id, 'digestform', 'unsubscribeall', "index.php?id=$course->id", $course->id);
+        redirect($returnto, get_string('nowallunsubscribed', 'digestform', $shortname), 1);
     }
 }
 
-/// First, let's process the general forums and build up a display
+/// First, let's process the general digestforms and build up a display
 
-if ($generalforums) {
-    foreach ($generalforums as $forum) {
-        $cm      = $modinfo->instances['forum'][$forum->id];
+if ($generaldigestforms) {
+    foreach ($generaldigestforms as $digestform) {
+        $cm      = $modinfo->instances['digestform'][$digestform->id];
         $context = context_module::instance($cm->id);
 
-        $count = forum_count_discussions($forum, $cm, $course);
+        $count = digestform_count_discussions($digestform, $cm, $course);
 
         if ($usetracking) {
-            if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+            if ($digestform->trackingtype == DIGESTFORUM_TRACKING_OFF) {
                 $unreadlink  = '-';
                 $trackedlink = '-';
 
             } else {
-                if (isset($untracked[$forum->id])) {
+                if (isset($untracked[$digestform->id])) {
                         $unreadlink  = '-';
-                } else if ($unread = forum_tp_count_forum_unread_posts($cm, $course)) {
-                        $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+                } else if ($unread = digestform_tp_count_digestform_unread_posts($cm, $course)) {
+                        $unreadlink = '<span class="unread"><a href="view.php?f='.$digestform->id.'">'.$unread.'</a>';
                     $unreadlink .= '<a title="'.$strmarkallread.'" href="markposts.php?f='.
-                                   $forum->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/markasread') . '" alt="'.$strmarkallread.'" class="iconsmall" /></a></span>';
+                                   $digestform->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/markasread') . '" alt="'.$strmarkallread.'" class="iconsmall" /></a></span>';
                 } else {
                     $unreadlink = '<span class="read">0</span>';
                 }
 
-                if ($forum->trackingtype == FORUM_TRACKING_ON) {
+                if ($digestform->trackingtype == DIGESTFORUM_TRACKING_ON) {
                     $trackedlink = $stryes;
 
                 } else {
-                    $aurl = new moodle_url('/mod/forum/settracking.php', array('id'=>$forum->id));
-                    if (!isset($untracked[$forum->id])) {
-                        $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackforum));
+                    $aurl = new moodle_url('/mod/digestform/settracking.php', array('id'=>$digestform->id));
+                    if (!isset($untracked[$digestform->id])) {
+                        $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackdigestform));
                     } else {
-                        $trackedlink = $OUTPUT->single_button($aurl, $strno, 'post', array('title'=>$strtrackforum));
+                        $trackedlink = $OUTPUT->single_button($aurl, $strno, 'post', array('title'=>$strtrackdigestform));
                     }
                 }
             }
         }
 
-        $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->forum_shortpost);
-        $forumname = format_string($forum->name, true);
+        $digestform->intro = shorten_text(format_module_intro('digestform', $digestform, $cm->id), $CFG->digestform_shortpost);
+        $digestformname = format_string($digestform->name, true);
 
         if ($cm->visible) {
             $style = '';
         } else {
             $style = 'class="dimmed"';
         }
-        $forumlink = "<a href=\"view.php?f=$forum->id\" $style>".format_string($forum->name,true)."</a>";
-        $discussionlink = "<a href=\"view.php?f=$forum->id\" $style>".$count."</a>";
+        $digestformlink = "<a href=\"view.php?f=$digestform->id\" $style>".format_string($digestform->name,true)."</a>";
+        $discussionlink = "<a href=\"view.php?f=$digestform->id\" $style>".$count."</a>";
 
-        $row = array ($forumlink, $forum->intro, $discussionlink);
+        $row = array ($digestformlink, $digestform->intro, $discussionlink);
         if ($usetracking) {
             $row[] = $unreadlink;
             $row[] = $trackedlink;    // Tracking.
         }
 
         if ($can_subscribe) {
-            if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
-                $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+            if ($digestform->forcesubscribe != DIGESTFORUM_DISALLOWSUBSCRIBE) {
+                $row[] = digestform_get_subscribe_link($digestform, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                        'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
+                        'cantsubscribe' => '-'), false, false, true, $subscribed_digestforms);
             } else {
                 $row[] = '-';
             }
         }
 
-        //If this forum has RSS activated, calculate it
+        //If this digestform has RSS activated, calculate it
         if ($show_rss) {
-            if ($forum->rsstype and $forum->rssarticles) {
+            if ($digestform->rsstype and $digestform->rssarticles) {
                 //Calculate the tooltip text
-                if ($forum->rsstype == 1) {
-                    $tooltiptext = get_string('rsssubscriberssdiscussions', 'forum');
+                if ($digestform->rsstype == 1) {
+                    $tooltiptext = get_string('rsssubscriberssdiscussions', 'digestform');
                 } else {
-                    $tooltiptext = get_string('rsssubscriberssposts', 'forum');
+                    $tooltiptext = get_string('rsssubscriberssposts', 'digestform');
                 }
 
                 if (!isloggedin() && $course->id == SITEID) {
@@ -270,7 +270,7 @@ if ($generalforums) {
                     $userid = $USER->id;
                 }
                 //Get html code for RSS link
-                $row[] = rss_get_link($context->id, $userid, 'mod_forum', $forum->id, $tooltiptext);
+                $row[] = rss_get_link($context->id, $userid, 'mod_digestform', $digestform->id, $tooltiptext);
             } else {
                 $row[] = '&nbsp;';
             }
@@ -283,7 +283,7 @@ if ($generalforums) {
 
 // Start of the table for Learning Forums
 $learningtable = new html_table();
-$learningtable->head  = array ($strforum, $strdescription, $strdiscussions);
+$learningtable->head  = array ($strdigestform, $strdescription, $strdiscussions);
 $learningtable->align = array ('left', 'left', 'center');
 
 if ($usetracking) {
@@ -300,15 +300,15 @@ if ($can_subscribe) {
 }
 
 if ($show_rss = (($can_subscribe || $course->id == SITEID) &&
-                 isset($CFG->enablerssfeeds) && isset($CFG->forum_enablerssfeeds) &&
-                 $CFG->enablerssfeeds && $CFG->forum_enablerssfeeds)) {
+                 isset($CFG->enablerssfeeds) && isset($CFG->digestform_enablerssfeeds) &&
+                 $CFG->enablerssfeeds && $CFG->digestform_enablerssfeeds)) {
     $learningtable->head[] = $strrss;
     $learningtable->align[] = 'center';
 }
 
-/// Now let's process the learning forums
+/// Now let's process the learning digestforms
 
-if ($course->id != SITEID) {    // Only real courses have learning forums
+if ($course->id != SITEID) {    // Only real courses have learning digestforms
     // 'format_.'$course->format only applicable when not SITEID (format_site is not a format)
     $strsectionname  = get_string('sectionname', 'format_'.$course->format);
     // Add extra field for section number, at the front
@@ -316,45 +316,45 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
     array_unshift($learningtable->align, 'center');
 
 
-    if ($learningforums) {
+    if ($learningdigestforms) {
         $currentsection = '';
-            foreach ($learningforums as $forum) {
-            $cm      = $modinfo->instances['forum'][$forum->id];
+            foreach ($learningdigestforms as $digestform) {
+            $cm      = $modinfo->instances['digestform'][$digestform->id];
             $context = context_module::instance($cm->id);
 
-            $count = forum_count_discussions($forum, $cm, $course);
+            $count = digestform_count_discussions($digestform, $cm, $course);
 
             if ($usetracking) {
-                if ($forum->trackingtype == FORUM_TRACKING_OFF) {
+                if ($digestform->trackingtype == DIGESTFORUM_TRACKING_OFF) {
                     $unreadlink  = '-';
                     $trackedlink = '-';
 
                 } else {
-                    if (isset($untracked[$forum->id])) {
+                    if (isset($untracked[$digestform->id])) {
                         $unreadlink  = '-';
-                    } else if ($unread = forum_tp_count_forum_unread_posts($cm, $course)) {
-                        $unreadlink = '<span class="unread"><a href="view.php?f='.$forum->id.'">'.$unread.'</a>';
+                    } else if ($unread = digestform_tp_count_digestform_unread_posts($cm, $course)) {
+                        $unreadlink = '<span class="unread"><a href="view.php?f='.$digestform->id.'">'.$unread.'</a>';
                         $unreadlink .= '<a title="'.$strmarkallread.'" href="markposts.php?f='.
-                                       $forum->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/markasread') . '" alt="'.$strmarkallread.'" class="iconsmall" /></a></span>';
+                                       $digestform->id.'&amp;mark=read"><img src="'.$OUTPUT->pix_url('t/markasread') . '" alt="'.$strmarkallread.'" class="iconsmall" /></a></span>';
                     } else {
                         $unreadlink = '<span class="read">0</span>';
                     }
 
-                    if ($forum->trackingtype == FORUM_TRACKING_ON) {
+                    if ($digestform->trackingtype == DIGESTFORUM_TRACKING_ON) {
                         $trackedlink = $stryes;
 
                     } else {
-                        $aurl = new moodle_url('/mod/forum/settracking.php', array('id'=>$forum->id));
-                        if (!isset($untracked[$forum->id])) {
-                            $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackforum));
+                        $aurl = new moodle_url('/mod/digestform/settracking.php', array('id'=>$digestform->id));
+                        if (!isset($untracked[$digestform->id])) {
+                            $trackedlink = $OUTPUT->single_button($aurl, $stryes, 'post', array('title'=>$strnotrackdigestform));
                         } else {
-                            $trackedlink = $OUTPUT->single_button($aurl, $strno, 'post', array('title'=>$strtrackforum));
+                            $trackedlink = $OUTPUT->single_button($aurl, $strno, 'post', array('title'=>$strtrackdigestform));
                         }
                     }
                 }
             }
 
-            $forum->intro = shorten_text(format_module_intro('forum', $forum, $cm->id), $CFG->forum_shortpost);
+            $digestform->intro = shorten_text(format_module_intro('digestform', $digestform, $cm->id), $CFG->digestform_shortpost);
 
             if ($cm->sectionnum != $currentsection) {
                 $printsection = get_section_name($course, $cm->sectionnum);
@@ -366,43 +366,43 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
                 $printsection = '';
             }
 
-            $forumname = format_string($forum->name,true);
+            $digestformname = format_string($digestform->name,true);
 
             if ($cm->visible) {
                 $style = '';
             } else {
                 $style = 'class="dimmed"';
             }
-            $forumlink = "<a href=\"view.php?f=$forum->id\" $style>".format_string($forum->name,true)."</a>";
-            $discussionlink = "<a href=\"view.php?f=$forum->id\" $style>".$count."</a>";
+            $digestformlink = "<a href=\"view.php?f=$digestform->id\" $style>".format_string($digestform->name,true)."</a>";
+            $discussionlink = "<a href=\"view.php?f=$digestform->id\" $style>".$count."</a>";
 
-            $row = array ($printsection, $forumlink, $forum->intro, $discussionlink);
+            $row = array ($printsection, $digestformlink, $digestform->intro, $discussionlink);
             if ($usetracking) {
                 $row[] = $unreadlink;
                 $row[] = $trackedlink;    // Tracking.
             }
 
             if ($can_subscribe) {
-                if ($forum->forcesubscribe != FORUM_DISALLOWSUBSCRIBE) {
-                    $row[] = forum_get_subscribe_link($forum, $context, array('subscribed' => $stryes,
+                if ($digestform->forcesubscribe != DIGESTFORUM_DISALLOWSUBSCRIBE) {
+                    $row[] = digestform_get_subscribe_link($digestform, $context, array('subscribed' => $stryes,
                         'unsubscribed' => $strno, 'forcesubscribed' => $stryes,
-                        'cantsubscribe' => '-'), false, false, true, $subscribed_forums);
+                        'cantsubscribe' => '-'), false, false, true, $subscribed_digestforms);
                 } else {
                     $row[] = '-';
                 }
             }
 
-            //If this forum has RSS activated, calculate it
+            //If this digestform has RSS activated, calculate it
             if ($show_rss) {
-                if ($forum->rsstype and $forum->rssarticles) {
+                if ($digestform->rsstype and $digestform->rssarticles) {
                     //Calculate the tolltip text
-                    if ($forum->rsstype == 1) {
-                        $tooltiptext = get_string('rsssubscriberssdiscussions', 'forum');
+                    if ($digestform->rsstype == 1) {
+                        $tooltiptext = get_string('rsssubscriberssdiscussions', 'digestform');
                     } else {
-                        $tooltiptext = get_string('rsssubscriberssposts', 'forum');
+                        $tooltiptext = get_string('rsssubscriberssposts', 'digestform');
                     }
                     //Get html code for RSS link
-                    $row[] = rss_get_link($context->id, $USER->id, 'mod_forum', $forum->id, $tooltiptext);
+                    $row[] = rss_get_link($context->id, $USER->id, 'mod_digestform', $digestform->id, $tooltiptext);
                 } else {
                     $row[] = '&nbsp;';
                 }
@@ -415,8 +415,8 @@ if ($course->id != SITEID) {    // Only real courses have learning forums
 
 
 /// Output the page
-$PAGE->navbar->add($strforums);
-$PAGE->set_title("$course->shortname: $strforums");
+$PAGE->navbar->add($strdigestforms);
+$PAGE->set_title("$course->shortname: $strdigestforms");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_button($searchform);
 echo $OUTPUT->header();
@@ -425,24 +425,24 @@ echo $OUTPUT->header();
 if (!isguestuser() && isloggedin() && $can_subscribe) {
     echo $OUTPUT->box_start('subscription');
     echo html_writer::tag('div',
-        html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
-            get_string('allsubscribe', 'forum')),
+        html_writer::link(new moodle_url('/mod/digestform/index.php', array('id'=>$course->id, 'subscribe'=>1, 'sesskey'=>sesskey())),
+            get_string('allsubscribe', 'digestform')),
         array('class'=>'helplink'));
     echo html_writer::tag('div',
-        html_writer::link(new moodle_url('/mod/forum/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
-            get_string('allunsubscribe', 'forum')),
+        html_writer::link(new moodle_url('/mod/digestform/index.php', array('id'=>$course->id, 'subscribe'=>0, 'sesskey'=>sesskey())),
+            get_string('allunsubscribe', 'digestform')),
         array('class'=>'helplink'));
     echo $OUTPUT->box_end();
     echo $OUTPUT->box('&nbsp;', 'clearer');
 }
 
-if ($generalforums) {
-    echo $OUTPUT->heading(get_string('generalforums', 'forum'));
+if ($generaldigestforms) {
+    echo $OUTPUT->heading(get_string('generaldigestforms', 'digestform'));
     echo html_writer::table($generaltable);
 }
 
-if ($learningforums) {
-    echo $OUTPUT->heading(get_string('learningforums', 'forum'));
+if ($learningdigestforms) {
+    echo $OUTPUT->heading(get_string('learningdigestforms', 'digestform'));
     echo html_writer::table($learningtable);
 }
 

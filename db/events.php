@@ -17,7 +17,7 @@
 /**
  * Meta course enrolment plugin event handler definition.
  *
- * @package mod_forum
+ * @package mod_digestforum
  * @category event
  * @copyright 2010 Petr Skoda  {@link http://skodak.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,15 +26,15 @@
 /* List of handlers */
 $handlers = array (
     'role_assigned' => array (
-        'handlerfile'      => '/mod/forum/lib.php',
-        'handlerfunction'  => 'forum_user_role_assigned',
+        'handlerfile'      => '/mod/digestforum/lib.php',
+        'handlerfunction'  => 'digestforum_user_role_assigned',
         'schedule'         => 'instant',
         'internal'         => 1,
     ),
 
     'user_unenrolled' => array (
-        'handlerfile'      => '/mod/forum/lib.php',
-        'handlerfunction'  => 'forum_user_unenrolled',
+        'handlerfile'      => '/mod/digestforum/lib.php',
+        'handlerfunction'  => 'digestforum_user_unenrolled',
         'schedule'         => 'instant',
         'internal'         => 1,
     ),

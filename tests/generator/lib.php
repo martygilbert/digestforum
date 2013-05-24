@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * mod_forum data generator
+ * mod_digestforum data generator
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @category   test
  * @copyright  2012 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,22 +29,22 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Forum module data generator class
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @category   test
  * @copyright  2012 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_forum_generator extends testing_module_generator {
+class mod_digestforum_generator extends testing_module_generator {
 
     /**
-     * @var int keep track of how many forum discussions have been created.
+     * @var int keep track of how many digestforum discussions have been created.
      */
-    protected $forumdiscussioncount = 0;
+    protected $digestforumdiscussioncount = 0;
 
     /**
-     * @var int keep track of how many forum posts have been created.
+     * @var int keep track of how many digestforum posts have been created.
      */
-    protected $forumpostcount = 0;
+    protected $digestforumpostcount = 0;
 
     /**
      * To be called from data reset code only,
@@ -52,21 +52,21 @@ class mod_forum_generator extends testing_module_generator {
      * @return void
      */
     public function reset() {
-        $this->forumdiscussioncount = 0;
-        $this->forumpostcount = 0;
+        $this->digestforumdiscussioncount = 0;
+        $this->digestforumpostcount = 0;
 
         parent::reset();
     }
 
     /**
-     * Create new forum module instance
+     * Create new digestforum module instance
      * @param array|stdClass $record
      * @param array $options
      * @return stdClass activity record with extra cmid field
      */
     public function create_instance($record = null, array $options = null) {
         global $CFG;
-        require_once("$CFG->dirroot/mod/forum/locallib.php");
+        require_once("$CFG->dirroot/mod/digestforum/locallib.php");
 
         $this->instancecount++;
         $i = $this->instancecount;
@@ -78,10 +78,10 @@ class mod_forum_generator extends testing_module_generator {
             throw new coding_exception('module generator requires $record->course');
         }
         if (!isset($record->name)) {
-            $record->name = get_string('pluginname', 'forum').' '.$i;
+            $record->name = get_string('pluginname', 'digestforum').' '.$i;
         }
         if (!isset($record->intro)) {
-            $record->intro = 'Test forum '.$i;
+            $record->intro = 'Test digestforum '.$i;
         }
         if (!isset($record->introformat)) {
             $record->introformat = FORMAT_MOODLE;
@@ -105,7 +105,7 @@ class mod_forum_generator extends testing_module_generator {
         }
 
         $record->coursemodule = $this->precreate_course_module($record->course, $options);
-        $id = forum_add_instance($record, null);
+        $id = digestforum_add_instance($record, null);
         return $this->post_add_instance($id, $record->coursemodule);
     }
 
@@ -118,8 +118,8 @@ class mod_forum_generator extends testing_module_generator {
     public function create_discussion($record = null) {
         global $DB;
 
-        // Increment the forum discussion count.
-        $this->forumdiscussioncount++;
+        // Increment the digestforum discussion count.
+        $this->digestforumdiscussioncount++;
 
         $record = (array) $record;
 
@@ -127,8 +127,8 @@ class mod_forum_generator extends testing_module_generator {
             throw new coding_exception('course must be present in phpunit_util::create_discussion() $record');
         }
 
-        if (!isset($record['forum'])) {
-            throw new coding_exception('forum must be present in phpunit_util::create_discussion() $record');
+        if (!isset($record['digestforum'])) {
+            throw new coding_exception('digestforum must be present in phpunit_util::create_discussion() $record');
         }
 
         if (!isset($record['userid'])) {
@@ -136,15 +136,15 @@ class mod_forum_generator extends testing_module_generator {
         }
 
         if (!isset($record['name'])) {
-            $record['name'] = "Discussion " . $this->forumdiscussioncount;
+            $record['name'] = "Discussion " . $this->digestforumdiscussioncount;
         }
 
         if (!isset($record['subject'])) {
-            $record['subject'] = "Subject for discussion " . $this->forumdiscussioncount;
+            $record['subject'] = "Subject for discussion " . $this->digestforumdiscussioncount;
         }
 
         if (!isset($record['message'])) {
-            $record['message'] = html_writer::tag('p', 'Message for discussion ' . $this->forumdiscussioncount);
+            $record['message'] = html_writer::tag('p', 'Message for discussion ' . $this->digestforumdiscussioncount);
         }
 
         if (!isset($record['messageformat'])) {
@@ -178,7 +178,7 @@ class mod_forum_generator extends testing_module_generator {
         $record = (object) $record;
 
         // Add the discussion.
-        $record->id = forum_add_discussion($record, null, null, $record->userid);
+        $record->id = digestforum_add_discussion($record, null, null, $record->userid);
 
         return $record;
     }
@@ -192,11 +192,11 @@ class mod_forum_generator extends testing_module_generator {
     public function create_post($record = null) {
         global $DB;
 
-        // Increment the forum post count.
-        $this->forumpostcount++;
+        // Increment the digestforum post count.
+        $this->digestforumpostcount++;
 
         // Variable to store time.
-        $time = time() + $this->forumpostcount;
+        $time = time() + $this->digestforumpostcount;
 
         $record = (array) $record;
 
@@ -213,11 +213,11 @@ class mod_forum_generator extends testing_module_generator {
         }
 
         if (!isset($record['subject'])) {
-            $record['subject'] = 'Forum post subject ' . $this->forumpostcount;
+            $record['subject'] = 'Forum post subject ' . $this->digestforumpostcount;
         }
 
         if (!isset($record['message'])) {
-            $record['message'] = html_writer::tag('p', 'Forum message post ' . $this->forumpostcount);
+            $record['message'] = html_writer::tag('p', 'Forum message post ' . $this->digestforumpostcount);
         }
 
         if (!isset($record['created'])) {
@@ -231,10 +231,10 @@ class mod_forum_generator extends testing_module_generator {
         $record = (object) $record;
 
         // Add the post.
-        $record->id = $DB->insert_record('forum_posts', $record);
+        $record->id = $DB->insert_record('digestforum_posts', $record);
 
         // Update the last post.
-        forum_discussion_update_last_post($record->discussion);
+        digestforum_discussion_update_last_post($record->discussion);
 
         return $record;
     }
