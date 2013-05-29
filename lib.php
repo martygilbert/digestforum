@@ -444,7 +444,7 @@ function digestforum_cron() {
 
     // caches
     $discussions     = array();
-    $digestforums          = array();
+    $digestforums    = array();
     $courses         = array();
     $coursemodules   = array();
     $subscribedusers = array();
@@ -456,7 +456,7 @@ function digestforum_cron() {
     $timenow   = time();
     $endtime   = $timenow - $CFG->maxeditingtime;
     $starttime = $endtime - 48 * 3600;   // Two days earlier
-    mtrace("Before checking posts");
+    //mtrace("Before checking posts");
     if ($posts = digestforum_get_unmailed_posts($starttime, $endtime, $timenow)) {
         // Mark them all now as being mailed.  It's unlikely but possible there
         // might be an error later so that a post is NOT actually mailed out,
@@ -812,19 +812,19 @@ function digestforum_cron() {
 
     @set_time_limit(300); // terminate if not able to fetch all digests in 5 minutes
 
-    if (!isset($CFG->digestmailtimelast)) {    // To catch the first time
-        set_config('digestmailtimelast', 0);
+    if (!isset($CFG->digestforum_mailtimelast)) {    // To catch the first time
+        set_config('digestforum_mailtimelast', 0);
     }
 
     $timenow = time();
-    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestmailtime * 3600);
+    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestforum_mailtime * 3600);
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
+    if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
     //if (true) {
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
@@ -1067,7 +1067,19 @@ function digestforum_cron() {
                                 $post->id.'">'.
                                 get_string("readmore", "digestforum").'</div></p>';
 
-                        } 
+                        } else {
+                           $posttext .= $msgtexttrunc;
+                            $posttext .= "\n\n".
+                                $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.
+                                $discussion->id.'#p'.$post->id;
+
+                            $posthtml .= '<p><div>'.$msgtexttrunc.
+                                '<br /><a target="_blank" href="'.
+                                $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.
+                                $discussion->id.'#p'.
+                                $post->id.'">'.
+                                get_string("postincontext", "digestforum").'</div></p>';
+                        }
 
                         $posttext .= "\n---------------------------------------------------------------------";
 
@@ -1118,8 +1130,8 @@ function digestforum_cron() {
                 }
             }
         }
-    /// We have finishied all digest emails, update $CFG->digestmailtimelast
-        set_config('digestmailtimelast', $timenow);
+    /// We have finishied all digest emails, update $CFG->digestforum_mailtimelast
+        set_config('digestforum_mailtimelast', $timenow);
     }
 
     cron_setup_user();
