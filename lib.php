@@ -1053,8 +1053,10 @@ function digestforum_cron() {
                             get_string("bynameondate", "forum", $by).'</div>';
 
                         $msgtexttrunc = format_string($post->message, true);
-                        if(strlen($msgtexttrunc) > 250){
-                            $msgtexttrunc = substr($msgtexttrunc, 0, 250).'...';
+
+                        $maxsummary = $CFG->digestforum_maxsummary;
+                        if(strlen($msgtexttrunc) > $maxsummary){
+                            $msgtexttrunc = substr($msgtexttrunc, 0, $maxummary).'...';
 
                             $posttext .= $msgtexttrunc."\n".get_string("readmore", "digestforum");
                             $posttext .=

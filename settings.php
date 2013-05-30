@@ -32,6 +32,11 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('digestforum_replytouser', get_string('replytouser', 'digestforum'),
                        get_string('configreplytouser', 'digestforum'), 1));
 
+    $settings->add(new admin_setting_configtext('digestforum_maxsummary', 
+        get_string('maxsummary', 'digestforum'),
+        get_string('configmaxsummary', 'digestforum'), 250, PARAM_INT));
+
+
     // Less non-HTML characters than this is short
     $settings->add(new admin_setting_configtext('digestforum_shortpost', get_string('shortpost', 'digestforum'),
                        get_string('configshortpost', 'digestforum'), 300, PARAM_INT));
@@ -79,7 +84,7 @@ if ($ADMIN->fulltree) {
 
     // Default time (hour) to send digest email
     $settings->add(new admin_setting_configselect('digestforum_mailtime', get_string('digestforum_mailtime', 'digestforum'),
-                       get_string('configdigestforum_mailtime', 'digestforum'), 17, $options));
+                       get_string('configdigestforum_mailtime', 'digestforum'), 7, $options));
 
     if (empty($CFG->enablerssfeeds)) {
         $options = array(0 => get_string('rssglobaldisabled', 'admin'));
