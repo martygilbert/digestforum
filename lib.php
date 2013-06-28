@@ -457,6 +457,7 @@ function digestforum_cron() {
     $endtime   = $timenow - $CFG->maxeditingtime;
     $starttime = $endtime - 48 * 3600;   // Two days earlier
     //mtrace("Before checking posts");
+
     if ($posts = digestforum_get_unmailed_posts($starttime, $endtime, $timenow)) {
         // Mark them all now as being mailed.  It's unlikely but possible there
         // might be an error later so that a post is NOT actually mailed out,
@@ -546,6 +547,7 @@ function digestforum_cron() {
 
             $mailcount[$pid] = 0;
             $errorcount[$pid] = 0;
+
         }
     }
 
@@ -668,7 +670,7 @@ function digestforum_cron() {
                     $groupmode = groups_get_activity_groupmode($cm, $course)) {   
                     // Groups are being used
                     if (!groups_group_exists($discussion->groupid)) { // Can't find group
-                        continue;                           // Be safe and don't send it to anyone
+                        continue; // Be safe and don't send it to anyone
                     }
 
                     if (!groups_is_member($discussion->groupid) and 
@@ -680,15 +682,13 @@ function digestforum_cron() {
                 }
 
                 // Make sure we're allowed to see it...
-                if (!digestforum_user_can_see_post($digestforum, $discussion, $post, NULL, $cm)) {
+                if (!digestforum_user_can_see_post(
+                    $digestforum, $discussion, $post, NULL, $cm)) {
                     mtrace('user '.$userto->id. ' can not see '.$post->id);
                     continue;
                 }
 
                 // OK so we need to send the email.
-
-                // Does the user want this post in a digest?  If so postpone it for now.
-                //if ($userto->maildigest > 0) {
 
                 // This user wants the mails to be in digest form
                 $queue = new stdClass();
@@ -697,85 +697,6 @@ function digestforum_cron() {
                 $queue->postid       = $post->id;
                 $queue->timemodified = $post->created;
                 $DB->insert_record('digestforum_queue', $queue);
-                    /*
-                    continue;
-                }
-                */
-
-                /*
-                // Prepare to actually send the post now, and build up the content
-
-                $cleandigestforumname = str_replace('"', "'", strip_tags(format_string($digestforum->name)));
-
-                $userfrom->customheaders = array (  // Headers to make emails easier to track
-                           'Precedence: Bulk',
-                           'List-Id: "'.$cleandigestforumname.'" <moodledigestforum'.$digestforum->id.'@'.$hostname.'>',
-                           'List-Help: '.$CFG->wwwroot.'/mod/digestforum/view.php?f='.$digestforum->id,
-                           'Message-ID: '.digestforum_get_email_message_id($post->id, $userto->id, $hostname),
-                           'X-Course-Id: '.$course->id,
-                           'X-Course-Name: '.format_string($course->fullname, true)
-                );
-
-                if ($post->parent) {  // This post is a reply, so add headers for threading (see MDL-22551)
-                    $userfrom->customheaders[] = 'In-Reply-To: '.digestforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                    $userfrom->customheaders[] = 'References: '.digestforum_get_email_message_id($post->parent, $userto->id, $hostname);
-                }
-
-                $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
-
-                $postsubject = html_to_text("$shortname: ".format_string($post->subject, true));
-                $posttext = digestforum_make_mail_text($course, $cm, $digestforum, $discussion, $post, $userfrom, $userto);
-                $posthtml = digestforum_make_mail_html($course, $cm, $digestforum, $discussion, $post, $userfrom, $userto);
-
-                // Send the post now!
-
-                mtrace('Sending ', '');
-
-                $eventdata = new stdClass();
-                $eventdata->component        = 'mod_digestforum';
-                $eventdata->name             = 'posts';
-                $eventdata->userfrom         = $userfrom;
-                $eventdata->userto           = $userto;
-                $eventdata->subject          = $postsubject;
-                $eventdata->fullmessage      = $posttext;
-                $eventdata->fullmessageformat = FORMAT_PLAIN;
-                $eventdata->fullmessagehtml  = $posthtml;
-                $eventdata->notification = 1;
-
-                // If digestforum_replytouser is not set then send mail using the noreplyaddress.
-                if (empty($CFG->digestforum_replytouser)) {
-                    // Clone userfrom as it is referenced by $users.
-                    $cloneduserfrom = clone($userfrom);
-                    $cloneduserfrom->email = $CFG->noreplyaddress;
-                    $eventdata->userfrom = $cloneduserfrom;
-                }
-
-                $smallmessagestrings = new stdClass();
-                $smallmessagestrings->user = fullname($userfrom);
-                $smallmessagestrings->digestforumname = "$shortname: ".format_string($digestforum->name,true).": ".$discussion->name;
-                $smallmessagestrings->message = $post->message;
-                //make sure strings are in message recipients language
-                $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'digestforum', $smallmessagestrings, $userto->lang);
-
-                $eventdata->contexturl = "{$CFG->wwwroot}/mod/digestforum/discuss.php?d={$discussion->id}#p{$post->id}";
-                $eventdata->contexturlname = $discussion->name;
-
-                $mailresult = message_send($eventdata);
-                if (!$mailresult){
-                    mtrace("Error: mod/digestforum/lib.php digestforum_cron(): Could not send out mail for id $post->id to user $userto->id".
-                         " ($userto->email) .. not trying again.");
-                    add_to_log($course->id, 'digestforum', 'mail error', "discuss.php?d=$discussion->id#p$post->id",
-                               substr(format_string($post->subject,true),0,30), $cm->id, $userto->id);
-                    $errorcount[$post->id]++;
-                } else {
-                    $mailcount[$post->id]++;
-
-                // Mark post as read if digestforum_usermarksread is set off
-                    if (!$CFG->digestforum_usermarksread) {
-                        $userto->markposts[$post->id] = $post->id;
-                    }
-                }
-                */
 
                 mtrace('post '.$post->id. ': '.$post->subject);
             }
@@ -786,16 +707,6 @@ function digestforum_cron() {
         }
     }
 
-    /*
-    if ($posts) {
-        foreach ($posts as $post) {
-            mtrace($mailcount[$post->id]." users were sent post $post->id, '$post->subject'");
-            if ($errorcount[$post->id]) {
-                $DB->set_field('digestforum_posts', 'mailed', DIGESTFORUM_MAILED_ERROR, array('id' => $post->id));
-            }
-        }
-    }
-    */
 
     // release some memory
     unset($subscribedusers);
@@ -817,15 +728,17 @@ function digestforum_cron() {
     }
 
     $timenow = time();
-    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestforum_mailtime * 3600);
+    $digesttime = usergetmidnight($timenow, $sitetimezone) + 
+        ($CFG->digestforum_mailtime * 3600);
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-    //if (true) {
+    //if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
+    //MJG - FIX THIS
+    if (true) {
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
@@ -840,6 +753,7 @@ function digestforum_cron() {
             //caches - reuse the those filled before too
             $discussionposts = array();
             $userdiscussions = array();
+            $userforums = array();
 
             foreach ($digestposts_rs as $digestpost) {
                 if (!isset($posts[$digestpost->postid])) {
@@ -886,15 +800,21 @@ function digestforum_cron() {
                         continue;
                     }
                 }
+
                 $userdiscussions[$digestpost->userid][$digestpost->discussionid] = 
                     $digestpost->discussionid;
+
+                $userforums[$digestpost->userid][$discussions[$discussionid]->digestforum][$digestpost->discussionid] = $digestpost->discussionid;
+
                 $discussionposts[$digestpost->discussionid][$digestpost->postid] = 
                     $digestpost->postid;
             }
             $digestposts_rs->close(); /// Finished iteration, let's close the resultset
 
             // Data collected, start sending out emails to each user
-            foreach ($userdiscussions as $userid => $thesediscussions) {
+            
+            foreach ($userforums as $userid => $digestforuminstanceids) {
+                foreach($digestforuminstanceids as $thesediscussions){
 
                 // terminate if processing of any account takes longer than 4 minutes
                 @set_time_limit(240); 
@@ -926,9 +846,17 @@ function digestforum_cron() {
                 // MJG _ BEGINNING OF EMAIL COMPOSITION
 
                 $subjparams = new stdClass();
-                $subjparams->sitename = format_string($site->shortname, true);
+                //$subjparams->sitename = format_string($site->shortname, true);
                 $subjparams->date = userdate(time(), "%a %b %e, %Y");
 
+                $firstdisc = reset($thesediscussions);
+
+                $digestforumname = 
+                    $digestforums[$discussions[$firstdisc]->digestforum]->name;
+
+                $subjparams->digestforumname = $digestforumname;
+
+                //error_log("firstdiscussion is for forum: ".$ 
                 $postsubject = get_string('digestmailsubject', 
                     'digestforum', $subjparams);
 
@@ -937,6 +865,7 @@ function digestforum_cron() {
                 $headerdata->userprefs = $CFG->wwwroot.'/user/edit.php?id='.
                     $userid.'&amp;course='.$site->id;
                 $headerdata->date = userdate(time(), "%a %b %e, %Y");
+                $headerdata->digestforumname = $digestforumname;
 
                 $posttext = get_string('digestmailheader', 'digestforum', $headerdata)."\n\n";
 
@@ -944,10 +873,9 @@ function digestforum_cron() {
                 $posthtml .= "</head>\n<body id=\"email\">\n";
                 $posthtml .= '<p>'.
                     get_string('digestmailheader', 'digestforum', 
-                    $headerdata).'</p><br /><hr size="1" noshade="noshade" />';
+                    $headerdata).'</p><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
-
                     @set_time_limit(120);   // to be reset for each post
 
                     $discussion = $discussions[$discussionid];
@@ -980,12 +908,11 @@ function digestforum_cron() {
                     $posttext .= "\n \n";
                     $posttext .= '=====================================================================';
                     $posttext .= "\n \n";
-                    $posttext .= "$shortname -> ". format_string($discussion->name,true);
+                    $posttext .=  format_string($discussion->name,true);
                     $posttext .= "\n";
 
-                    $posthtml .= "<p><font face=\"sans-serif\">".
-                    "<a target=\"_blank\" href=\"$CFG->wwwroot/course/view.php?id=$course->id\">$shortname</a> -> ";
-                    $posthtml .= "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
+                    //$posthtml .= "<p><font face=\"sans-serif\">".
+                    //"<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/view.php?f=$digestforum->id\">".format_string($digestforum->name,true)."</a></font></p>";
                     
                     $posthtml .= '<p>';
 
@@ -999,10 +926,10 @@ function digestforum_cron() {
                         if (array_key_exists($post->userid, $users)) { 
                             $userfrom = $users[$post->userid];
                             if (!isset($userfrom->idnumber)) {
-                                $userfrom = $DB->get_record('user', array('id' => $userfrom->id));
+                                $userfrom = $DB->get_record('user', 
+                                    array('id' => $userfrom->id));
                                 digestforum_cron_minimise_user_record($userfrom);
                             }
-
                         } else if ($userfrom = $DB->get_record('user', 
                             array('id' => $post->userid))) {
                             digestforum_cron_minimise_user_record($userfrom);
@@ -1058,7 +985,8 @@ function digestforum_cron() {
                         if(strlen($msgtexttrunc) > $maxsummary){
                             $msgtexttrunc = substr($msgtexttrunc, 0, $maxummary).'...';
 
-                            $posttext .= $msgtexttrunc."\n".get_string("readmore", "digestforum");
+                            $posttext .= $msgtexttrunc."\n".
+                                get_string("readmore", "digestforum");
                             $posttext .=
                                 $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.
                                 $discussion->id.'#p'.$post->id;
@@ -1076,35 +1004,17 @@ function digestforum_cron() {
                                 $discussion->id.'#p'.$post->id;
 
                             $posthtml .= '<p><div>'.$msgtexttrunc.
-                                '<br /><a target="_blank" href="'.
+                                '</p><p><a target="_blank" href="'.
                                 $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.
                                 $discussion->id.'#p'.
                                 $post->id.'">'.
                                 get_string("postincontext", "digestforum").'</div></p>';
                         }
 
-                        $posttext .= "\n---------------------------------------------------------------------";
+                        $posttext .= "\n-------------------------------------------".
+                            "--------------------------";
 
-                            /*
-                        } else {
-                            // The full treatment
-                        $posttext .= digestforum_make_mail_text($course, $cm, 
-                            $digestforum, $discussion, $post, $userfrom, $userto, true);
-
-                        $posthtml .= digestforum_make_mail_post($course, $cm, 
-                            $digestforum, $discussion, $post, $userfrom, $userto, false, 
-                            $canreply, true, false);
-
-                        // Create an array of postid's for this user to mark as read.
-                        if (!$CFG->digestforum_usermarksread) {
-                            $userto->markposts[$post->id] = $post->id;
-                        }
-                        }
-                        */
                     }
-                    /*
-                    $posthtml .= "\n<div class='mdl-right'><font size=\"1\">".get_string("everyoneissubscribed", "digestforum")."</font></div>";
-                    */
                     $posthtml .= '<hr size="1" noshade="noshade" /></p>';
                 }
                 $posthtml .= '</body>';
@@ -1115,14 +1025,17 @@ function digestforum_cron() {
                 }
 
                 $attachment = $attachname='';
-                // Directly email digestforum digests rather than sending them via messaging, use the
-                // site shortname as 'from name', the noreply address will be used by email_to_user.
-                $mailresult = email_to_user($userto, $site->shortname, $postsubject, $posttext, $posthtml, $attachment, $attachname);
+
+                $mailresult = email_to_user($userto, $site->shortname, 
+                    $postsubject, $posttext, $posthtml, $attachment, $attachname);
 
                 if (!$mailresult) {
                     mtrace("ERROR!");
-                    echo "Error: mod/digestforum/cron.php: Could not send out digest mail to user $userto->id ($userto->email)... not trying again.\n";
-                    add_to_log($course->id, 'digestforum', 'mail digest error', '', '', $cm->id, $userto->id);
+                    echo "Error: mod/digestforum/cron.php: ".
+                        "Could not send out digest mail to user $userto->id ".
+                        "($userto->email)... not trying again.\n";
+                    add_to_log($course->id, 'digestforum', 
+                        'mail digest error', '', '', $cm->id, $userto->id);
                 } else {
                     mtrace("success.");
                     $usermailcount++;
@@ -1131,6 +1044,7 @@ function digestforum_cron() {
                     digestforum_tp_mark_posts_read($userto, $userto->markposts);
                 }
             }
+        }
         }
     /// We have finishied all digest emails, update $CFG->digestforum_mailtimelast
         set_config('digestforum_mailtimelast', $timenow);
@@ -1204,7 +1118,7 @@ function digestforum_make_mail_text($course, $cm, $digestforum, $discussion, $po
 
     if (!$bare) {
         $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
-        $posttext  = "$shortname -> $strdigestforums -> ".format_string($digestforum->name,true);
+        $posttext  = format_string($digestforum->name,true);
 
         if ($discussion->name != $digestforum->name) {
             $posttext  .= " -> ".format_string($discussion->name,true);
@@ -1278,8 +1192,6 @@ function digestforum_make_mail_html($course, $cm, $digestforum, $discussion, $po
     $posthtml .= "\n<body id=\"email\">\n\n";
 
     $posthtml .= '<div class="navbar">'.
-    '<a target="_blank" href="'.$CFG->wwwroot.'/course/view.php?id='.$course->id.'">'.$shortname.'</a> &raquo; '.
-    '<a target="_blank" href="'.$CFG->wwwroot.'/mod/digestforum/index.php?id='.$course->id.'">'.$strdigestforums.'</a> &raquo; '.
     '<a target="_blank" href="'.$CFG->wwwroot.'/mod/digestforum/view.php?f='.$digestforum->id.'">'.format_string($digestforum->name,true).'</a>';
     if ($discussion->name == $digestforum->name) {
         $posthtml .= '</div>';
@@ -2225,6 +2137,7 @@ function digestforum_get_ratings($context, $postid, $sort = "u.firstname ASC") {
     return $rm->get_all_ratings_for_item($options);
 }
 
+
 /**
  * Returns a list of all new posts that have not been mailed yet
  *
@@ -2246,7 +2159,8 @@ function digestforum_get_unmailed_posts($starttime, $endtime, $now=null) {
         if (empty($now)) {
             $now = time();
         }
-        $timedsql = "AND (d.timestart < :dtimestart AND (d.timeend = 0 OR d.timeend > :dtimeend))";
+        $timedsql = "AND (d.timestart < :dtimestart AND ".
+            "(d.timeend = 0 OR d.timeend > :dtimeend))";
         $params['dtimestart'] = $now;
         $params['dtimeend'] = $now;
     } else {
@@ -2261,6 +2175,7 @@ function digestforum_get_unmailed_posts($starttime, $endtime, $now=null) {
                                  AND (p.created < :ptimeend OR p.mailnow = :mailnow)
                                  $timedsql
                                  ORDER BY p.modified ASC", $params);
+
 }
 
 /**

@@ -115,9 +115,9 @@ $string['deletedpost'] = 'The post has been deleted';
 $string['deletedposts'] = 'Those posts have been deleted';
 $string['deletesure'] = 'Are you sure you want to delete this post?';
 $string['deletesureplural'] = 'Are you sure you want to delete this post and all replies? ({$a} posts)';
-$string['digestmailheader'] = 'This is your daily digest of new posts from {$a->sitename} on {$a->date}';
+$string['digestmailheader'] = 'This is your daily digest of new posts to \'{$a->digestforumname}\' from {$a->sitename} on {$a->date}';
 $string['digestmailprefs'] = 'your user profile';
-$string['digestmailsubject'] = '{$a->sitename}: Daily News for {$a->date}';
+$string['digestmailsubject'] = '{$a->digestforumname} - {$a->date}';
 $string['digestforum_mailtime'] = 'Hour to send digest emails';
 $string['digestsentusers'] = 'Email digests successfully sent to {$a} users.';
 $string['disallowsubscribe'] = 'Subscriptions not allowed';
@@ -318,7 +318,7 @@ $string['pluginname'] = 'Digest forum';
 $string['postadded'] = '<p>Your post was successfully added.</p> <p>You have {$a} to edit it if you want to make any changes.</p>';
 $string['postaddedsuccess'] = 'Your post was successfully added.';
 $string['postaddedtimeleft'] = 'You have {$a} to edit it if you want to make any changes.';
-$string['postincontext'] = 'See this post in context';
+$string['postincontext'] = 'See this full post in context';
 $string['postmailinfo'] = 'This is a copy of a message posted on the {$a} website.
 
 To reply click on this link:';
