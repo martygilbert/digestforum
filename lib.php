@@ -979,13 +979,12 @@ function digestforum_cron() {
                                 format_string($post->subject, true).'</a> '.
                                 get_string("bynameondate", "forum", $by).'</div>';
     
-                            //$msgtexttrunc = format_string($post->message, true);
                             $msgtexttrunc = $post->message;
-                            $msgplain = format_text($msgtexttrunc, true);
+                            $msgplain = format_string($msgtexttrunc, true);
                             
-                            $maxsummary = $CFG->digestforum_maxsummary;
-                            if(strlen($msgplain) > $maxsummary){
-                                $msgplain = substr($msgtexttrunc, 0, $maxsummary).'...';
+                            $longpost = $CFG->digestforum_longpost;
+                            if(strlen($msgplain) > $longpost){
+                                $msgplain = substr($msgtexttrunc, 0, $longpost).'...';
     
                                 $posttext .= $msgplain."\n\n".
                                     get_string("readmore", "digestforum").': ';
@@ -1022,9 +1021,21 @@ function digestforum_cron() {
                                     $post->id.'">'.
                                     get_string("postincontext", "digestforum").'</div></p>';
                             }
+
+
+                            //add any attachments? 
+                            $attachments = digestforum_print_attachments($post, $cm, 'html');
+                            if ($attachments !== '') {
+                                $posthtml .= '<div class="attachments">';
+                                $posthtml .= $attachments;
+                                $posthtml .= '</div>';
+
+                                $posttext .= "\n\n".
+                                    digestforum_print_attachments($post, $cm, 'text')."\n";
+                            }
     
                             $posttext .= "\n-------------------------------------------".
-                                "--------------------------";
+                                "--------------------------\n";
     
                             $posthtml .= 
                                 '<hr style="height: 1px; width: 100%;'.
