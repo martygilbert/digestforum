@@ -32,18 +32,13 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configcheckbox('digestforum_replytouser', get_string('replytouser', 'digestforum'),
                        get_string('configreplytouser', 'digestforum'), 1));
 
-    $settings->add(new admin_setting_configtext('digestforum_maxsummary', 
-        get_string('maxsummary', 'digestforum'),
-        get_string('configmaxsummary', 'digestforum'), 250, PARAM_INT));
-
-
     // Less non-HTML characters than this is short
     $settings->add(new admin_setting_configtext('digestforum_shortpost', get_string('shortpost', 'digestforum'),
                        get_string('configshortpost', 'digestforum'), 300, PARAM_INT));
 
     // More non-HTML characters than this is long
     $settings->add(new admin_setting_configtext('digestforum_longpost', get_string('longpost', 'digestforum'),
-                       get_string('configlongpost', 'digestforum'), 600, PARAM_INT));
+                       get_string('configlongpost', 'digestforum'), 450, PARAM_INT));
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('digestforum_manydiscussions', get_string('manydiscussions', 'digestforum'),
