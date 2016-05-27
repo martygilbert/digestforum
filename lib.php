@@ -974,7 +974,7 @@ function digestforum_cron() {
                                 '&amp;course='.$course->id.'">'.$by->name.'</a>';
     
                             $posthtml .= '<div><a target="_blank" href="'.
-                                $CFG->wwwroot.'/mod/forum/discuss.php?d='.
+                                $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.
                                 $discussion->id.'#p'.$post->id.'">'.
                                 format_string($post->subject, true).'</a> '.
                                 get_string("bynameondate", "forum", $by).'</div>';
