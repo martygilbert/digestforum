@@ -18,8 +18,7 @@
 /**
  * Provides support for the conversion of moodle1 backup to the moodle2 format
  *
- * @package    mod
- * @subpackage digestforum
+ * @package    mod_forum
  * @copyright  2011 Mark Nielsen <mark@moodlerooms.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Forum conversion handler
  */
-class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
+class moodle1_mod_forum_handler extends moodle1_mod_handler {
 
     /** @var moodle1_file_manager */
     protected $fileman = null;
@@ -52,7 +51,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      */
     public function get_paths() {
         return array(
-            new convert_path('digestforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM',
+            new convert_path('forum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM',
                 array(
                     'renamefields' => array(
                         'format' => 'messageformat',
@@ -72,7 +71,9 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     /**
      * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM data
      */
-    public function process_digestforum($data) {
+    public function process_forum($data) {
+        global $CFG;
+
         // get the course module id and context id
         $instanceid     = $data['id'];
         $cminfo         = $this->get_cminfo($instanceid);
@@ -80,18 +81,24 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
         $contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
         // get a fresh new file manager for this instance
-        $this->fileman = $this->converter->get_file_manager($contextid, 'mod_digestforum');
+        $this->fileman = $this->converter->get_file_manager($contextid, 'mod_forum');
 
         // convert course files embedded into the intro
         $this->fileman->filearea = 'intro';
         $this->fileman->itemid   = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
 
-        // start writing digestforum.xml
-        $this->open_xml_writer("activities/digestforum_{$this->moduleid}/digestforum.xml");
+        // Convert the introformat if necessary.
+        if ($CFG->texteditors !== 'textarea') {
+            $data['intro'] = text_to_html($data['intro'], false, false, true);
+            $data['introformat'] = FORMAT_HTML;
+        }
+
+        // start writing forum.xml
+        $this->open_xml_writer("activities/forum_{$this->moduleid}/forum.xml");
         $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
-            'modulename' => 'digestforum', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('digestforum', array('id' => $instanceid));
+            'modulename' => 'forum', 'contextid' => $contextid));
+        $this->xmlwriter->begin_tag('forum', array('id' => $instanceid));
 
         foreach ($data as $field => $value) {
             if ($field <> 'id') {
@@ -105,17 +112,17 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     }
 
     /**
-     * This is executed when we reach the closing </MOD> tag of our 'digestforum' path
+     * This is executed when we reach the closing </MOD> tag of our 'forum' path
      */
-    public function on_digestforum_end() {
-        // finish writing digestforum.xml
+    public function on_forum_end() {
+        // finish writing forum.xml
         $this->xmlwriter->end_tag('discussions');
-        $this->xmlwriter->end_tag('digestforum');
+        $this->xmlwriter->end_tag('forum');
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
 
         // write inforef.xml
-        $this->open_xml_writer("activities/digestforum_{$this->moduleid}/inforef.xml");
+        $this->open_xml_writer("activities/forum_{$this->moduleid}/inforef.xml");
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {

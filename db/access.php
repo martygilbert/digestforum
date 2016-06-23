@@ -17,7 +17,7 @@
 /**
  * Plugin capabilities
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2006 Martin Dougiamas
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,16 +26,19 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    'mod/digestforum:addinstance' => array(
+    'mod/forum:addinstance' => array(
         'riskbitmask' => RISK_XSS,
+
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
-    'mod/digestforum:viewdiscussion' => array(
+    'mod/forum:viewdiscussion' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -49,7 +52,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewhiddentimedposts' => array(
+    'mod/forum:viewhiddentimedposts' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -60,7 +63,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:startdiscussion' => array(
+    'mod/forum:startdiscussion' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -74,7 +77,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:replypost' => array(
+    'mod/forum:replypost' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -88,7 +91,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:addnews' => array(
+    'mod/forum:addnews' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -101,7 +104,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:replynews' => array(
+    'mod/forum:replynews' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -114,7 +117,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewrating' => array(
+    'mod/forum:viewrating' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -126,7 +129,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewanyrating' => array(
+    'mod/forum:viewanyrating' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -138,7 +141,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewallratings' => array(
+    'mod/forum:viewallratings' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -148,10 +151,10 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
         ),
-        'clonepermissionsfrom' =>  'mod/digestforum:viewanyrating'
+        'clonepermissionsfrom' =>  'mod/forum:viewanyrating'
     ),
 
-    'mod/digestforum:rate' => array(
+    'mod/forum:rate' => array(
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
@@ -162,7 +165,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:createattachment' => array(
+    'mod/forum:createattachment' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -176,7 +179,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:deleteownpost' => array(
+    'mod/forum:deleteownpost' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -188,7 +191,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:deleteanypost' => array(
+    'mod/forum:deleteanypost' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -199,7 +202,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:splitdiscussions' => array(
+    'mod/forum:splitdiscussions' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -210,7 +213,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:movediscussions' => array(
+    'mod/forum:movediscussions' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -221,7 +224,18 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:editanypost' => array(
+    'mod/forum:pindiscussions' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/forum:editanypost' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -234,7 +248,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewqandawithoutposting' => array(
+    'mod/forum:viewqandawithoutposting' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -245,7 +259,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:viewsubscribers' => array(
+    'mod/forum:viewsubscribers' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -256,7 +270,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:managesubscriptions' => array(
+    'mod/forum:managesubscriptions' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -269,7 +283,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:postwithoutthrottling' => array(
+    'mod/forum:postwithoutthrottling' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -282,7 +296,7 @@ $capabilities = array(
         )
     ),
 
-    'mod/digestforum:exportdiscussion' => array(
+    'mod/forum:exportdiscussion' => array(
 
         'riskbitmask' => RISK_PERSONAL,
 
@@ -294,7 +308,7 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
-    'mod/digestforum:exportpost' => array(
+    'mod/forum:exportpost' => array(
 
         'riskbitmask' => RISK_PERSONAL,
 
@@ -306,7 +320,7 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
-    'mod/digestforum:exportownpost' => array(
+    'mod/forum:exportownpost' => array(
 
         'riskbitmask' => RISK_PERSONAL,
 
@@ -319,7 +333,7 @@ $capabilities = array(
             'student' => CAP_ALLOW,
         )
     ),
-    'mod/digestforum:addquestion' => array(
+    'mod/forum:addquestion' => array(
 
         'riskbitmask' => RISK_SPAM,
 
@@ -331,7 +345,7 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
-    'mod/digestforum:allowforcesubscribe' => array(
+    'mod/forum:allowforcesubscribe' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
@@ -340,6 +354,16 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'frontpage' => CAP_ALLOW
+        )
+    ),
+    'mod/forum:canposttomygroups' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
         )
     ),
 );

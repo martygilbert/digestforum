@@ -15,27 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Meta course enrolment plugin event handler definition.
+ * Forum event handler definition.
  *
- * @package mod_digestforum
+ * @package mod_forum
  * @category event
  * @copyright 2010 Petr Skoda  {@link http://skodak.org}
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-/* List of handlers */
-$handlers = array (
-    'role_assigned' => array (
-        'handlerfile'      => '/mod/digestforum/lib.php',
-        'handlerfunction'  => 'digestforum_user_role_assigned',
-        'schedule'         => 'instant',
-        'internal'         => 1,
+// List of observers.
+$observers = array(
+
+    array(
+        'eventname'   => '\core\event\user_enrolment_deleted',
+        'callback'    => 'mod_forum_observer::user_enrolment_deleted',
     ),
 
-    'user_unenrolled' => array (
-        'handlerfile'      => '/mod/digestforum/lib.php',
-        'handlerfunction'  => 'digestforum_user_unenrolled',
-        'schedule'         => 'instant',
-        'internal'         => 1,
+    array(
+        'eventname' => '\core\event\role_assigned',
+        'callback' => 'mod_forum_observer::role_assigned'
+    ),
+
+    array(
+        'eventname' => '\core\event\course_module_created',
+        'callback'  => 'mod_forum_observer::course_module_created',
     ),
 );
