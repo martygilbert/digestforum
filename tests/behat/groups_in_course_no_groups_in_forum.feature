@@ -1,6 +1,6 @@
-@mod @mod_forum
+@mod @mod_digestforum
 Feature: Forums in 'No groups' mode allow posting to All participants for all users
-  In order to post to a forum in 'No groups' mode, which is in course which has groups
+  In order to post to a digestforum in 'No groups' mode, which is in course which has groups
   As any user
   I need to post
 
@@ -27,12 +27,12 @@ Feature: Forums in 'No groups' mode allow posting to All participants for all us
       | student1 | G1 |
     And the following "activities" exist:
       | activity   | name                   | intro                         | course | idnumber     | groupmode |
-      | forum      | Standard forum name    | Standard forum description    | C1     | nogroups     | 0         |
+      | digestforum      | Standard digestforum name    | Standard digestforum description    | C1     | nogroups     | 0         |
 
   Scenario: Teacher can post
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I follow "Standard forum name"
+    And I follow "Standard digestforum name"
     And I should not see "Group A"
     And I should not see "Group B"
     When I click on "Add a new discussion topic" "button"
@@ -41,14 +41,14 @@ Feature: Forums in 'No groups' mode allow posting to All participants for all us
     And I set the following fields to these values:
       | Subject | Teacher 1 -> Forum  |
       | Message | Teacher 1 -> Forum  |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Teacher 1 -> Forum"
 
   Scenario: Student can post
     Given I log in as "student1"
     And I follow "Course 1"
-    And I follow "Standard forum name"
+    And I follow "Standard digestforum name"
     And I should not see "Group A"
     And I should not see "Group B"
     When I click on "Add a new discussion topic" "button"
@@ -57,6 +57,6 @@ Feature: Forums in 'No groups' mode allow posting to All participants for all us
     And I set the following fields to these values:
       | Subject | Student 1 -> Forum  |
       | Message | Student 1 -> Forum  |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Student 1 -> Forum"

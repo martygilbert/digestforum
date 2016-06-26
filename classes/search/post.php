@@ -17,21 +17,21 @@
 /**
  * Forum posts search area
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\search;
+namespace mod_digestforum\search;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
 /**
  * Forum posts search area.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,7 @@ class post extends \core_search\area\base_mod {
     /**
      * @var array Internal quick static cache.
      */
-    protected $forumsdata = array();
+    protected $digestforumsdata = array();
 
     /**
      * @var array Internal quick static cache.
@@ -53,7 +53,7 @@ class post extends \core_search\area\base_mod {
     protected $postsdata = array();
 
     /**
-     * Returns recordset containing required data for indexing forum posts.
+     * Returns recordset containing required data for indexing digestforum posts.
      *
      * @param int $modifiedfrom timestamp
      * @return moodle_recordset
@@ -61,10 +61,10 @@ class post extends \core_search\area\base_mod {
     public function get_recordset_by_timestamp($modifiedfrom = 0) {
         global $DB;
 
-        $sql = 'SELECT fp.*, f.id AS forumid, f.course AS courseid
-                  FROM {forum_posts} fp
-                  JOIN {forum_discussions} fd ON fd.id = fp.discussion
-                  JOIN {forum} f ON f.id = fd.forum
+        $sql = 'SELECT fp.*, f.id AS digestforumid, f.course AS courseid
+                  FROM {digestforum_posts} fp
+                  JOIN {digestforum_discussions} fd ON fd.id = fp.discussion
+                  JOIN {digestforum} f ON f.id = fd.digestforum
                  WHERE fp.modified >= ? ORDER BY fp.modified ASC';
         return $DB->get_recordset_sql($sql, array($modifiedfrom));
     }
@@ -79,7 +79,7 @@ class post extends \core_search\area\base_mod {
     public function get_document($record, $options = array()) {
 
         try {
-            $cm = $this->get_cm('forum', $record->forumid, $record->courseid);
+            $cm = $this->get_cm('digestforum', $record->digestforumid, $record->courseid);
             $context = \context_module::instance($cm->id);
         } catch (\dml_missing_record_exception $ex) {
             // Notify it as we run here as admin, we should see everything.
@@ -121,7 +121,7 @@ class post extends \core_search\area\base_mod {
     }
 
     /**
-     * Add the forum post attachments.
+     * Add the digestforum post attachments.
      *
      * @param document $document The current document
      * @return null
@@ -142,12 +142,12 @@ class post extends \core_search\area\base_mod {
         // Because this is used during indexing, we don't want to cache posts. Would result in memory leak.
         unset($this->postsdata[$postid]);
 
-        $cm = $this->get_cm('forum', $post->forum, $document->get('courseid'));
+        $cm = $this->get_cm('digestforum', $post->digestforum, $document->get('courseid'));
         $context = \context_module::instance($cm->id);
 
         // Get the files and attach them.
         $fs = get_file_storage();
-        $files = $fs->get_area_files($context->id, 'mod_forum', 'attachment', $postid, "filename", false);
+        $files = $fs->get_area_files($context->id, 'mod_digestforum', 'attachment', $postid, "filename", false);
         foreach ($files as $file) {
             $document->add_stored_file($file);
         }
@@ -166,9 +166,9 @@ class post extends \core_search\area\base_mod {
 
         try {
             $post = $this->get_post($id);
-            $forum = $this->get_forum($post->forum);
+            $digestforum = $this->get_digestforum($post->digestforum);
             $discussion = $this->get_discussion($post->discussion);
-            $cminfo = $this->get_cm('forum', $forum->id, $forum->course);
+            $cminfo = $this->get_cm('digestforum', $digestforum->id, $digestforum->course);
             $cm = $cminfo->get_course_module_record();
         } catch (\dml_missing_record_exception $ex) {
             return \core_search\manager::ACCESS_DELETED;
@@ -181,7 +181,7 @@ class post extends \core_search\area\base_mod {
             return \core_search\manager::ACCESS_DENIED;
         }
 
-        if (!forum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
+        if (!digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
             return \core_search\manager::ACCESS_DENIED;
         }
 
@@ -189,7 +189,7 @@ class post extends \core_search\area\base_mod {
     }
 
     /**
-     * Link to the forum post discussion
+     * Link to the digestforum post discussion
      *
      * @param \core_search\document $doc
      * @return \moodle_url
@@ -197,22 +197,22 @@ class post extends \core_search\area\base_mod {
     public function get_doc_url(\core_search\document $doc) {
         // The post is already in static cache, we fetch it in self::search_access.
         $post = $this->get_post($doc->get('itemid'));
-        return new \moodle_url('/mod/forum/discuss.php', array('d' => $post->discussion));
+        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $post->discussion));
     }
 
     /**
-     * Link to the forum.
+     * Link to the digestforum.
      *
      * @param \core_search\document $doc
      * @return \moodle_url
      */
     public function get_context_url(\core_search\document $doc) {
         $contextmodule = \context::instance_by_id($doc->get('contextid'));
-        return new \moodle_url('/mod/forum/view.php', array('id' => $contextmodule->instanceid));
+        return new \moodle_url('/mod/digestforum/view.php', array('id' => $contextmodule->instanceid));
     }
 
     /**
-     * Returns the specified forum post from its internal cache.
+     * Returns the specified digestforum post from its internal cache.
      *
      * @throws \dml_missing_record_exception
      * @param int $postid
@@ -220,30 +220,30 @@ class post extends \core_search\area\base_mod {
      */
     protected function get_post($postid) {
         if (empty($this->postsdata[$postid])) {
-            $this->postsdata[$postid] = forum_get_post_full($postid);
+            $this->postsdata[$postid] = digestforum_get_post_full($postid);
             if (!$this->postsdata[$postid]) {
-                throw new \dml_missing_record_exception('forum_posts');
+                throw new \dml_missing_record_exception('digestforum_posts');
             }
         }
         return $this->postsdata[$postid];
     }
 
     /**
-     * Returns the specified forum checking the internal cache.
+     * Returns the specified digestforum checking the internal cache.
      *
      * Store minimal information as this might grow.
      *
      * @throws \dml_exception
-     * @param int $forumid
+     * @param int $digestforumid
      * @return stdClass
      */
-    protected function get_forum($forumid) {
+    protected function get_digestforum($digestforumid) {
         global $DB;
 
-        if (empty($this->forumsdata[$forumid])) {
-            $this->forumsdata[$forumid] = $DB->get_record('forum', array('id' => $forumid), '*', MUST_EXIST);
+        if (empty($this->digestforumsdata[$digestforumid])) {
+            $this->digestforumsdata[$digestforumid] = $DB->get_record('digestforum', array('id' => $digestforumid), '*', MUST_EXIST);
         }
-        return $this->forumsdata[$forumid];
+        return $this->digestforumsdata[$digestforumid];
     }
 
     /**
@@ -257,7 +257,7 @@ class post extends \core_search\area\base_mod {
         global $DB;
 
         if (empty($this->discussionsdata[$discussionid])) {
-            $this->discussionsdata[$discussionid] = $DB->get_record('forum_discussions',
+            $this->discussionsdata[$discussionid] = $DB->get_record('digestforum_discussions',
                 array('id' => $discussionid), '*', MUST_EXIST);
         }
         return $this->discussionsdata[$discussionid];

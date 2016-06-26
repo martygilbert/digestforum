@@ -1,6 +1,6 @@
-@mod @mod_forum
+@mod @mod_digestforum
 Feature: As a teacher I need to see an accurate list of subscribed users
-  In order to see who is subscribed to a forum
+  In order to see who is subscribed to a digestforum
   As a teacher
   I need to view the list of subscribed users
 
@@ -39,11 +39,11 @@ Feature: As a teacher I need to see an accurate list of subscribed users
     And I turn editing mode on
 
   @javascript
-  Scenario: A forced forum lists all subscribers
+  Scenario: A forced digestforum lists all subscribers
     When I add a "Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Forced subscription |
     And I follow "Forced Forum 1"
     And I follow "Show/edit current subscribers"
@@ -63,11 +63,11 @@ Feature: As a teacher I need to see an accurate list of subscribed users
     And I should not see "Student 2"
     And I should not see "Student 3"
 
-  Scenario: A forced forum does not allow to edit the subscribers
+  Scenario: A forced digestforum does not allow to edit the subscribers
     When I add a "Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Forced subscription |
       | Visible           | Show |
     And I follow "Forced Forum 2"
@@ -78,11 +78,11 @@ Feature: As a teacher I need to see an accurate list of subscribed users
     And I should see "Student 3"
     And I should not see "Turn editing on"
 
-  Scenario: A forced and hidden forum lists only teachers
+  Scenario: A forced and hidden digestforum lists only teachers
     When I add a "Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 2 |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Forced subscription |
       | Visible           | Hide |
     And I follow "Forced Forum 2"
@@ -93,11 +93,11 @@ Feature: As a teacher I need to see an accurate list of subscribed users
     And I should not see "Student 3"
 
   @javascript
-  Scenario: An automatic forum lists all subscribers
+  Scenario: An automatic digestforum lists all subscribers
     When I add a "Forum" to section "1" and I fill the form with:
       | Forum name        | Forced Forum 1 |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Auto subscription |
     And I follow "Forced Forum 1"
     And I follow "Show/edit current subscribers"

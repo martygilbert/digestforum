@@ -1,5 +1,5 @@
-@mod @mod_forum
-Feature: Posting to forums in a course with no groups behaves correctly
+@mod @mod_digestforum
+Feature: Posting to digestforums in a course with no groups behaves correctly
 
   Background:
     Given the following "users" exist:
@@ -15,72 +15,72 @@ Feature: Posting to forums in a course with no groups behaves correctly
       | student1 | C1 | student |
     And the following "activities" exist:
       | activity   | name                   | intro                         | course | idnumber     | groupmode |
-      | forum      | Standard forum         | Standard forum description    | C1     | nogroups     | 0         |
-      | forum      | Visible forum          | Visible forum description     | C1     | visgroups    | 2         |
-      | forum      | Separate forum         | Separate forum description    | C1     | sepgroups    | 1         |
+      | digestforum      | Standard digestforum         | Standard digestforum description    | C1     | nogroups     | 0         |
+      | digestforum      | Visible digestforum          | Visible digestforum description     | C1     | visgroups    | 2         |
+      | digestforum      | Separate digestforum         | Separate digestforum description    | C1     | sepgroups    | 1         |
 
-  Scenario: Teachers can post in standard forum
+  Scenario: Teachers can post in standard digestforum
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I follow "Standard forum"
+    And I follow "Standard digestforum"
     When I click on "Add a new discussion topic" "button"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
-  Scenario: Teachers can post in forum with separate groups
+  Scenario: Teachers can post in digestforum with separate groups
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I follow "Separate forum"
+    And I follow "Separate digestforum"
     When I click on "Add a new discussion topic" "button"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
-  Scenario: Teachers can post in forum with visible groups
+  Scenario: Teachers can post in digestforum with visible groups
     Given I log in as "teacher1"
     And I follow "Course 1"
-    And I follow "Visible forum"
+    And I follow "Visible digestforum"
     When I click on "Add a new discussion topic" "button"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
-  Scenario: Students can post in standard forum
+  Scenario: Students can post in standard digestforum
     Given I log in as "student1"
     And I follow "Course 1"
-    And I follow "Standard forum"
+    And I follow "Standard digestforum"
     When I click on "Add a new discussion topic" "button"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Student -> All participants |
       | Message | Student -> All participants |
-    And I press "Post to forum"
+    And I press "Post to digestforum"
     And I wait to be redirected
     And I should see "Student -> All participants"
 
-  Scenario: Students cannot post in forum with separate groups
+  Scenario: Students cannot post in digestforum with separate groups
     Given I log in as "student1"
     And I follow "Course 1"
-    When I follow "Separate forum"
+    When I follow "Separate digestforum"
     Then I should see "You do not have permission to add a new discussion topic for all participants."
     And I should not see "Add a new discussion topic"
 
-  Scenario: Teachers can post in forum with visible groups
+  Scenario: Teachers can post in digestforum with visible groups
     Given I log in as "student1"
     And I follow "Course 1"
-    When I follow "Visible forum"
+    When I follow "Visible digestforum"
     Then I should see "You do not have permission to add a new discussion topic for all participants."
     And I should not see "Add a new discussion topic"

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Event observers used in forum.
+ * Event observers used in digestforum.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2013 Rajesh Taneja <rajesh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,9 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Event observer for mod_forum.
+ * Event observer for mod_digestforum.
  */
-class mod_forum_observer {
+class mod_digestforum_observer {
 
     /**
      * Triggered via user_enrolment_deleted event.
@@ -41,16 +41,16 @@ class mod_forum_observer {
         // Get user enrolment info from event.
         $cp = (object)$event->other['userenrolment'];
         if ($cp->lastenrol) {
-            if (!$forums = $DB->get_records('forum', array('course' => $cp->courseid), '', 'id')) {
+            if (!$digestforums = $DB->get_records('digestforum', array('course' => $cp->courseid), '', 'id')) {
                 return;
             }
-            list($forumselect, $params) = $DB->get_in_or_equal(array_keys($forums), SQL_PARAMS_NAMED);
+            list($digestforumselect, $params) = $DB->get_in_or_equal(array_keys($digestforums), SQL_PARAMS_NAMED);
             $params['userid'] = $cp->userid;
 
-            $DB->delete_records_select('forum_digests', 'userid = :userid AND forum '.$forumselect, $params);
-            $DB->delete_records_select('forum_subscriptions', 'userid = :userid AND forum '.$forumselect, $params);
-            $DB->delete_records_select('forum_track_prefs', 'userid = :userid AND forumid '.$forumselect, $params);
-            $DB->delete_records_select('forum_read', 'userid = :userid AND forumid '.$forumselect, $params);
+            $DB->delete_records_select('digestforum_digests', 'userid = :userid AND digestforum '.$digestforumselect, $params);
+            $DB->delete_records_select('digestforum_subscriptions', 'userid = :userid AND digestforum '.$digestforumselect, $params);
+            $DB->delete_records_select('digestforum_track_prefs', 'userid = :userid AND digestforumid '.$digestforumselect, $params);
+            $DB->delete_records_select('digestforum_read', 'userid = :userid AND digestforumid '.$digestforumselect, $params);
         }
     }
 
@@ -66,32 +66,32 @@ class mod_forum_observer {
         $context = context::instance_by_id($event->contextid, MUST_EXIST);
 
         // If contextlevel is course then only subscribe user. Role assignment
-        // at course level means user is enroled in course and can subscribe to forum.
+        // at course level means user is enroled in course and can subscribe to digestforum.
         if ($context->contextlevel != CONTEXT_COURSE) {
             return;
         }
 
         // Forum lib required for the constant used below.
-        require_once($CFG->dirroot . '/mod/forum/lib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
         $userid = $event->relateduserid;
         $sql = "SELECT f.id, f.course as course, cm.id AS cmid, f.forcesubscribe
-                  FROM {forum} f
+                  FROM {digestforum} f
                   JOIN {course_modules} cm ON (cm.instance = f.id)
                   JOIN {modules} m ON (m.id = cm.module)
-             LEFT JOIN {forum_subscriptions} fs ON (fs.forum = f.id AND fs.userid = :userid)
+             LEFT JOIN {digestforum_subscriptions} fs ON (fs.digestforum = f.id AND fs.userid = :userid)
                  WHERE f.course = :courseid
                    AND f.forcesubscribe = :initial
-                   AND m.name = 'forum'
+                   AND m.name = 'digestforum'
                    AND fs.id IS NULL";
-        $params = array('courseid' => $context->instanceid, 'userid' => $userid, 'initial' => FORUM_INITIALSUBSCRIBE);
+        $params = array('courseid' => $context->instanceid, 'userid' => $userid, 'initial' => DFORUM_INITIALSUBSCRIBE);
 
-        $forums = $DB->get_records_sql($sql, $params);
-        foreach ($forums as $forum) {
+        $digestforums = $DB->get_records_sql($sql, $params);
+        foreach ($digestforums as $digestforum) {
             // If user doesn't have allowforcesubscribe capability then don't subscribe.
-            $modcontext = context_module::instance($forum->cmid);
-            if (has_capability('mod/forum:allowforcesubscribe', $modcontext, $userid)) {
-                \mod_forum\subscriptions::subscribe_user($userid, $forum, $modcontext);
+            $modcontext = context_module::instance($digestforum->cmid);
+            if (has_capability('mod/digestforum:allowforcesubscribe', $modcontext, $userid)) {
+                \mod_digestforum\subscriptions::subscribe_user($userid, $digestforum, $modcontext);
             }
         }
     }
@@ -105,12 +105,12 @@ class mod_forum_observer {
     public static function course_module_created(\core\event\course_module_created $event) {
         global $CFG;
 
-        if ($event->other['modulename'] === 'forum') {
-            // Include the forum library to make use of the forum_instance_created function.
-            require_once($CFG->dirroot . '/mod/forum/lib.php');
+        if ($event->other['modulename'] === 'digestforum') {
+            // Include the digestforum library to make use of the digestforum_instance_created function.
+            require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
-            $forum = $event->get_record_snapshot('forum', $event->other['instanceid']);
-            forum_instance_created($event->get_context(), $forum);
+            $digestforum = $event->get_record_snapshot('digestforum', $event->other['instanceid']);
+            digestforum_instance_created($event->get_context(), $digestforum);
         }
     }
 }

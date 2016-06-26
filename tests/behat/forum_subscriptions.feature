@@ -1,8 +1,8 @@
-@mod @mod_forum
-Feature: A user can control their own subscription preferences for a forum
+@mod @mod_digestforum
+Feature: A user can control their own subscription preferences for a digestforum
   In order to receive notifications for things I am interested in
   As a user
-  I need to choose my forum subscriptions
+  I need to choose my digestforum subscriptions
 
   Background:
     Given the following "users" exist:
@@ -19,78 +19,78 @@ Feature: A user can control their own subscription preferences for a forum
     And I follow "Course 1"
     And I turn editing mode on
 
-  Scenario: A disallowed subscription forum cannot be subscribed to
+  Scenario: A disallowed subscription digestforum cannot be subscribed to
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Subscription disabled |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
-    Then I should not see "Subscribe to this forum"
-    And I should not see "Unsubscribe from this forum"
+    And I follow "Test digestforum name"
+    Then I should not see "Subscribe to this digestforum"
+    And I should not see "Unsubscribe from this digestforum"
     And "You are subscribed to this discussion. Click to unsubscribe." "link" should not exist in the "Test post subject" "table_row"
     And "You are not subscribed to this discussion. Click to subscribe." "link" should not exist in the "Test post subject" "table_row"
 
-  Scenario: A forced subscription forum cannot be subscribed to
+  Scenario: A forced subscription digestforum cannot be subscribed to
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Forced subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
-    Then I should not see "Subscribe to this forum"
-    And I should not see "Unsubscribe from this forum"
+    And I follow "Test digestforum name"
+    Then I should not see "Subscribe to this digestforum"
+    And I should not see "Unsubscribe from this digestforum"
     And "You are subscribed to this discussion. Click to unsubscribe." "link" should not exist in the "Test post subject" "table_row"
     And "You are not subscribed to this discussion. Click to subscribe." "link" should not exist in the "Test post subject" "table_row"
 
-  Scenario: An optional forum can be subscribed to
+  Scenario: An optional digestforum can be subscribed to
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
-    Then I should see "Subscribe to this forum"
-    And I should not see "Unsubscribe from this forum"
-    And I follow "Subscribe to this forum"
-    And I should see "Student One will be notified of new posts in 'Test forum name'"
-    And I should see "Unsubscribe from this forum"
-    And I should not see "Subscribe to this forum"
+    And I follow "Test digestforum name"
+    Then I should see "Subscribe to this digestforum"
+    And I should not see "Unsubscribe from this digestforum"
+    And I follow "Subscribe to this digestforum"
+    And I should see "Student One will be notified of new posts in 'Test digestforum name'"
+    And I should see "Unsubscribe from this digestforum"
+    And I should not see "Subscribe to this digestforum"
 
-  Scenario: An Automatic forum can be unsubscribed from
+  Scenario: An Automatic digestforum can be unsubscribed from
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Auto subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     When I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
-    Then I should see "Unsubscribe from this forum"
-    And I should not see "Subscribe to this forum"
-    And I follow "Unsubscribe from this forum"
-    And I should see "Student One will NOT be notified of new posts in 'Test forum name'"
-    And I should see "Subscribe to this forum"
-    And I should not see "Unsubscribe from this forum"
+    And I follow "Test digestforum name"
+    Then I should see "Unsubscribe from this digestforum"
+    And I should not see "Subscribe to this digestforum"
+    And I follow "Unsubscribe from this digestforum"
+    And I should see "Student One will NOT be notified of new posts in 'Test digestforum name'"
+    And I should see "Subscribe to this digestforum"
+    And I should not see "Unsubscribe from this digestforum"

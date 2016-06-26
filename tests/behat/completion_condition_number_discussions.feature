@@ -1,8 +1,8 @@
-@mod @mod_forum
-Feature: Set a certain number of discussions as a completion condition for a forum
-  In order to ensure students are participating on forums
+@mod @mod_digestforum
+Feature: Set a certain number of discussions as a completion condition for a digestforum
+  In order to ensure students are participating on digestforums
   As a teacher
-  I need to set a minimum number of discussions to mark the forum activity as completed
+  I need to set a minimum number of discussions to mark the digestforum activity as completed
 
   Scenario: Set X number of discussions as a condition
     Given the following "users" exist:
@@ -24,24 +24,24 @@ Feature: Set a certain number of discussions as a completion condition for a for
       | Enable completion tracking | Yes |
     And I press "Save and display"
     When I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Description | Test forum description |
+      | Forum name | Test digestforum name |
+      | Description | Test digestforum description |
       | Completion tracking | Show activity as complete when conditions are met |
       | completiondiscussionsenabled | 1 |
       | completiondiscussions | 2 |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    Then the "Test forum name" "forum" activity with "auto" completion should be marked as not complete
-    And I add a new discussion to "Test forum name" forum with:
+    Then the "Test digestforum name" "digestforum" activity with "auto" completion should be marked as not complete
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Post 1 subject |
       | Message | Body 1 content |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Post 2 subject |
       | Message | Body 2 content |
     And I follow "Course 1"
-    Then the "Test forum name" "forum" activity with "auto" completion should be marked as complete
+    Then the "Test digestforum name" "digestforum" activity with "auto" completion should be marked as complete
     And I log out
     And I log in as "teacher1"
     And I follow "Course 1"
-    And "Student 1" user has completed "Test forum name" activity
+    And "Student 1" user has completed "Test digestforum name" activity

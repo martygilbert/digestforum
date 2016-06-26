@@ -17,12 +17,12 @@
 /**
  * Forum post renderable.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\output\email;
+namespace mod_digestforum\output\email;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,19 +30,19 @@ defined('MOODLE_INTERNAL') || die();
  * Forum post renderable.
  *
  * @since      Moodle 3.0
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class renderer extends \mod_forum_renderer {
+class renderer extends \mod_digestforum_renderer {
 
     /**
      * The template name for this renderer.
      *
      * @return string
      */
-    public function forum_post_template() {
-        return 'forum_post_email_htmlemail';
+    public function digestforum_post_template() {
+        return 'digestforum_post_email_htmlemail';
     }
 
     /**
@@ -55,7 +55,7 @@ class renderer extends \mod_forum_renderer {
     public function format_message_text($cm, $post) {
         $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
             \context_module::instance($cm->id)->id,
-            'mod_forum', 'post', $post->id);
+            'mod_digestforum', 'post', $post->id);
         $options = new \stdClass();
         $options->para = true;
         return format_text($message, $post->messageformat, $options);
@@ -69,6 +69,6 @@ class renderer extends \mod_forum_renderer {
      * @return string
      */
     public function format_message_attachments($cm, $post) {
-        return forum_print_attachments($post, $cm, "html");
+        return digestforum_print_attachments($post, $cm, "html");
     }
 }

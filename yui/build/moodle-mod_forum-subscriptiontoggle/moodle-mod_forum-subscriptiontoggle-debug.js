@@ -1,4 +1,4 @@
-YUI.add('moodle-mod_forum-subscriptiontoggle', function (Y, NAME) {
+YUI.add('moodle-mod_digestforum-subscriptiontoggle', function (Y, NAME) {
 
 // This file is part of Moodle - http://moodle.org/
 //
@@ -20,14 +20,14 @@ YUI.add('moodle-mod_forum-subscriptiontoggle', function (Y, NAME) {
  * active.
  *
  * @module     moodle-core-subscriptiontoggle
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @main       moodle-mod_forum-subscriptiontoggle
+ * @main       moodle-mod_digestforum-subscriptiontoggle
  */
 
 /**
- * @namespace M.mod_forum
+ * @namespace M.mod_digestforum
  * @class subscriptiontoggle
  */
 
@@ -35,7 +35,7 @@ function SubscriptionToggle() {
     SubscriptionToggle.superclass.constructor.apply(this, arguments);
 }
 
-var LOGNAME = 'moodle-mod_forum-subscriptiontoggle';
+var LOGNAME = 'moodle-mod_digestforum-subscriptiontoggle';
 
 Y.extend(SubscriptionToggle, Y.Base, {
     initializer: function() {
@@ -47,7 +47,7 @@ Y.extend(SubscriptionToggle, Y.Base, {
         Y.io(this.get('uri'), {
             data: {
                 sesskey: M.cfg.sesskey,
-                forumid: clickedLink.getData('forumid'),
+                digestforumid: clickedLink.getData('digestforumid'),
                 discussionid: clickedLink.getData('discussionid'),
                 includetext: clickedLink.getData('includetext')
             },
@@ -102,15 +102,15 @@ Y.extend(SubscriptionToggle, Y.Base, {
          *
          * @attribute uri
          * @type String
-         * @default M.cfg.wwwroot + '/mod/forum/subscribe_ajax.php'
+         * @default M.cfg.wwwroot + '/mod/digestforum/subscribe_ajax.php'
          */
         uri: {
-            value: M.cfg.wwwroot + '/mod/forum/subscribe_ajax.php'
+            value: M.cfg.wwwroot + '/mod/digestforum/subscribe_ajax.php'
         }
     }
 });
 
-var NS = Y.namespace('M.mod_forum.subscriptiontoggle');
+var NS = Y.namespace('M.mod_digestforum.subscriptiontoggle');
 NS.init = function(config) {
     return new SubscriptionToggle(config);
 };

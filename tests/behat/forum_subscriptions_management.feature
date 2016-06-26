@@ -1,5 +1,5 @@
-@mod @mod_forum
-Feature: A teacher can control the subscription to a forum
+@mod @mod_digestforum
+Feature: A teacher can control the subscription to a digestforum
   In order to change individual user's subscriptions
   As a course administrator
   I can change subscription setting for my users
@@ -22,13 +22,13 @@ Feature: A teacher can control the subscription to a forum
     And I follow "Course 1"
     And I turn editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name                |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description         |
+      | Forum name        | Test digestforum name                |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description         |
       | Subscription mode | Auto subscription              |
 
   Scenario: A teacher can change toggle subscription editing on and off
-    Given I follow "Test forum name"
+    Given I follow "Test digestforum name"
     And I follow "Show/edit current subscribers"
     Then ".userselector" "css_element" should not exist
     And "Turn editing on" "button" should exist

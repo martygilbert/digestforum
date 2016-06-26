@@ -14,20 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * The mod_forum discussion pinned event.
+ * The mod_digestforum discussion pinned event.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Charles Fulton <fultonc@lafayette.edu>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\event;
+namespace mod_digestforum\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_forum discussion pinned event.
+ * The mod_digestforum discussion pinned event.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Charles Fulton <fultonc@lafayette.edu>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -40,7 +40,7 @@ class discussion_pinned extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'forum_discussions';
+        $this->data['objecttable'] = 'digestforum_discussions';
     }
 
     /**
@@ -49,7 +49,7 @@ class discussion_pinned extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user {$this->userid} has pinned the discussion {$this->objectid} in the forum {$this->other['forumid']}";
+        return "The user {$this->userid} has pinned the discussion {$this->objectid} in the digestforum {$this->other['digestforumid']}";
     }
 
     /**
@@ -58,7 +58,7 @@ class discussion_pinned extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventdiscussionpinned', 'mod_forum');
+        return get_string('eventdiscussionpinned', 'mod_digestforum');
     }
 
     /**
@@ -67,7 +67,7 @@ class discussion_pinned extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/forum/discuss.php', array('d' => $this->objectid));
+        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
     }
 
     /**
@@ -76,9 +76,9 @@ class discussion_pinned extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/forum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/forum/'));
-        return array($this->courseid, 'forum', 'pin discussion', $logurl, $this->objectid, $this->contextinstanceid);
+        // The legacy log table expects a relative path to /mod/digestforum/.
+        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
+        return array($this->courseid, 'digestforum', 'pin discussion', $logurl, $this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -89,8 +89,8 @@ class discussion_pinned extends \core\event\base {
      */
     protected function validate_data() {
         parent::validate_data();
-        if (!isset($this->other['forumid'])) {
-            throw new \coding_exception('forumid must be set in $other.');
+        if (!isset($this->other['digestforumid'])) {
+            throw new \coding_exception('digestforumid must be set in $other.');
         }
         if ($this->contextlevel != CONTEXT_MODULE) {
             throw new \coding_exception('Context passed must be module context.');
@@ -106,7 +106,7 @@ class discussion_pinned extends \core\event\base {
      * @return array
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'forum_discussions', 'restore' => 'forum_discussion');
+        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
     }
 
     /**
@@ -116,7 +116,7 @@ class discussion_pinned extends \core\event\base {
      */
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
+        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
 
         return $othermapped;
     }
