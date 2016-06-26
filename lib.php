@@ -454,17 +454,10 @@ function digestforum_cron() {
 
     $site = get_site();
 
-	mtrace("");
-	mtrace("");
-	mtrace("");
-	mtrace("***************************");
-	mtrace("***************************");
-	mtrace("***************************");
-	mtrace("***************************");
-	mtrace("");
-	mtrace("");
-	mtrace("");
-
+	mtrace("***********************");
+	mtrace("***********************");
+	mtrace("***********************");
+	mtrace("***********************");
 
     // The main renderers.
     $htmlout = $PAGE->get_renderer('mod_digestforum', 'email', 'htmlemail');
@@ -941,14 +934,15 @@ function digestforum_cron() {
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    //if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-    if (true) { // MJG - testing only!
-		$digesttime -= 86400; //testing
+    if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
+    //if (true) { // MJG - testing only!
+		//$digesttime += 86400; //testing
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
+		mtrace($digesttime);
         $digestposts_rs = $DB->get_recordset_select('digestforum_queue', "timemodified < ?", array($digesttime));
-
+	
         if ($digestposts_rs->valid()) {
             // We have work to do
             $usermailcount = 0;
@@ -1179,6 +1173,7 @@ function digestforum_cron() {
                         $sentcount++;
                     }
                     $footerlinks = array();
+					/*
                     if ($canunsubscribe) {
                         $footerlinks[] = "<a href=\"$CFG->wwwroot/mod/digestforum/subscribe.php?id=$digestforum->id\">" . get_string("unsubscribe", "digestforum") . "</a>";
                     } else {
@@ -1186,6 +1181,7 @@ function digestforum_cron() {
                     }
                     $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/digestforum/index.php?id={$digestforum->course}'>" . get_string("digestmailpost", "digestforum") . '</a>';
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
+					*/
                     $posthtml .= '<hr size="1" noshade="noshade" /></p>';
                 }
 
@@ -7719,6 +7715,8 @@ function digestforum_set_user_maildigest($digestforum, $maildigest, $user = null
  * @return int The calculated maildigest setting for this user and digestforum.
  */
 function digestforum_get_user_maildigest_bulk($digests, $user, $digestforumid) {
+	return 1; //hack, but isn't this the easy way to force it to be digest?
+	/*
     if (isset($digests[$digestforumid]) && isset($digests[$digestforumid][$user->id])) {
         $maildigest = $digests[$digestforumid][$user->id];
         if ($maildigest === -1) {
@@ -7728,6 +7726,7 @@ function digestforum_get_user_maildigest_bulk($digests, $user, $digestforumid) {
         $maildigest = $user->maildigest;
     }
     return $maildigest;
+	*/
 }
 
 /**
@@ -7745,14 +7744,15 @@ function digestforum_get_user_digest_options($user = null) {
     }
 
     $digestoptions = array();
-    $digestoptions['0']  = get_string('emaildigestoffshort', 'mod_digestforum');
+    //$digestoptions['0']  = get_string('emaildigestoffshort', 'mod_digestforum');
     $digestoptions['1']  = get_string('emaildigestcompleteshort', 'mod_digestforum');
-    $digestoptions['2']  = get_string('emaildigestsubjectsshort', 'mod_digestforum');
+    //$digestoptions['2']  = get_string('emaildigestsubjectsshort', 'mod_digestforum');
 
     // We need to add the default digest option at the end - it relies on
     // the contents of the existing values.
     $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_digestforum',
-            $digestoptions[$user->maildigest]);
+            $digestoptions['1']);
+            //$digestoptions[$user->maildigest]);
 
     // Resort the options to be in a sensible order.
     ksort($digestoptions);
