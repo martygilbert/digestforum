@@ -23,23 +23,23 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['activityoverview'] = 'There are new digestforum posts';
+$string['activityoverview'] = 'There are new digest forum posts';
 $string['addanewdiscussion'] = 'Add a new discussion topic';
 $string['addanewquestion'] = 'Add a new question';
 $string['addanewtopic'] = 'Add a new topic';
 $string['advancedsearch'] = 'Advanced search';
-$string['alldigestforums'] = 'All digestforums';
-$string['allowdiscussions'] = 'Can a {$a} post to this digestforum?';
-$string['allowsallsubscribe'] = 'This digestforum allows everyone to choose whether to subscribe or not';
-$string['allowsdiscussions'] = 'This digestforum allows each person to start one discussion topic.';
-$string['allsubscribe'] = 'Subscribe to all digestforums';
-$string['allunsubscribe'] = 'Unsubscribe from all digestforums';
+$string['alldigestforums'] = 'All digest forums';
+$string['allowdiscussions'] = 'Can a {$a} post to this digest forum?';
+$string['allowsallsubscribe'] = 'This digest forum allows everyone to choose whether to subscribe or not';
+$string['allowsdiscussions'] = 'This digest forum allows each person to start one discussion topic.';
+$string['allsubscribe'] = 'Subscribe to all digest forums';
+$string['allunsubscribe'] = 'Unsubscribe from all digest forums';
 $string['alreadyfirstpost'] = 'This is already the first post in the discussion';
 $string['anyfile'] = 'Any file';
 $string['areaattachment'] = 'Attachments';
 $string['areapost'] = 'Messages';
 $string['attachment'] = 'Attachment';
-$string['attachment_help'] = 'You can optionally attach one or more files to a digestforum post. If you attach an image, it will be displayed after the message.';
+$string['attachment_help'] = 'You can optionally attach one or more files to a digest forum post. If you attach an image, it will be displayed after the message.';
 $string['attachmentnopost'] = 'You cannot export attachments without a post id';
 $string['attachments'] = 'Attachments';
 $string['attachmentswordcount'] = 'Attachments and word count';
@@ -48,33 +48,33 @@ $string['blockafter_help'] = 'This setting specifies the maximum number of posts
 $string['blockperiod'] = 'Time period for blocking';
 $string['blockperiod_help'] = 'Students can be blocked from posting more than a given number of posts in a given time period. Users with the capability mod/digestforum:postwithoutthrottling are exempt from post limits.';
 $string['blockperioddisabled'] = 'Don\'t block';
-$string['blogdigestforum'] = 'Standard digestforum displayed in a blog-like format';
+$string['blogdigestforum'] = 'Standard digest forum displayed in a blog-like format';
 $string['bynameondate'] = 'by {$a->name} - {$a->date}';
-$string['cannotadd'] = 'Could not add the discussion for this digestforum';
-$string['cannotadddiscussion'] = 'Adding discussions to this digestforum requires group membership.';
+$string['cannotadd'] = 'Could not add the discussion for this digest forum';
+$string['cannotadddiscussion'] = 'Adding discussions to this digest forum requires group membership.';
 $string['cannotadddiscussionall'] = 'You do not have permission to add a new discussion topic for all participants.';
-$string['cannotaddsubscriber'] = 'Could not add subscriber with id {$a} to this digestforum!';
-$string['cannotaddteacherdigestforumto'] = 'Could not add converted teacher digestforum instance to section 0 in the course';
+$string['cannotaddsubscriber'] = 'Could not add subscriber with id {$a} to this digest forum!';
+$string['cannotaddteacherdigestforumto'] = 'Could not add converted teacher digest forum instance to section 0 in the course';
 $string['cannotcreatediscussion'] = 'Could not create new discussion';
-$string['cannotcreateinstanceforteacher'] = 'Could not create new course module instance for the teacher digestforum';
+$string['cannotcreateinstanceforteacher'] = 'Could not create new course module instance for the teacher digest forum';
 $string['cannotdeletepost'] = 'You can\'t delete this post!';
 $string['cannoteditposts'] = 'You can\'t edit other people\'s posts!';
-$string['cannotfinddiscussion'] = 'Could not find the discussion in this digestforum';
-$string['cannotfindfirstpost'] = 'Could not find the first post in this digestforum';
-$string['cannotfindorcreatedigestforum'] = 'Could not find or create a main news digestforum for the site';
+$string['cannotfinddiscussion'] = 'Could not find the discussion in this digest forum';
+$string['cannotfindfirstpost'] = 'Could not find the first post in this digest forum';
+$string['cannotfindorcreatedigestforum'] = 'Could not find or create a main news digest forum for the site';
 $string['cannotfindparentpost'] = 'Could not find top parent of post {$a}';
-$string['cannotmovefromsingledigestforum'] = 'Cannot move discussion from a simple single discussion digestforum';
+$string['cannotmovefromsingledigestforum'] = 'Cannot move discussion from a simple single discussion digest forum';
 $string['cannotmovenotvisible'] = 'Digest forum not visible';
-$string['cannotmovetonotexist'] = 'You can\'t move to that digestforum - it doesn\'t exist!';
-$string['cannotmovetonotfound'] = 'Target digestforum not found in this course.';
-$string['cannotmovetosingledigestforum'] = 'Cannot move discussion to a simple single discussion digestforum';
-$string['cannotpurgecachedrss'] = 'Could not purge the cached RSS feeds for the source and/or destination digestforum(s) - check your file permissionsdigestforums';
-$string['cannotremovesubscriber'] = 'Could not remove subscriber with id {$a} from this digestforum!';
+$string['cannotmovetonotexist'] = 'You can\'t move to that digest forum - it doesn\'t exist!';
+$string['cannotmovetonotfound'] = 'Target digest forum not found in this course.';
+$string['cannotmovetosingledigestforum'] = 'Cannot move discussion to a simple single discussion digest forum';
+$string['cannotpurgecachedrss'] = 'Could not purge the cached RSS feeds for the source and/or destination digest forum(s) - check your file permissionsdigest forums';
+$string['cannotremovesubscriber'] = 'Could not remove subscriber with id {$a} from this digest forum!';
 $string['cannotreply'] = 'You cannot reply to this post';
-$string['cannotsplit'] = 'Discussions from this digestforum cannot be split';
+$string['cannotsplit'] = 'Discussions from this digest forum cannot be split';
 $string['cannotsubscribe'] = 'Sorry, but you must be a group member to subscribe.';
-$string['cannottrack'] = 'Could not stop tracking that digestforum';
-$string['cannotunsubscribe'] = 'Could not unsubscribe you from that digestforum';
+$string['cannottrack'] = 'Could not stop tracking that digest forum';
+$string['cannotunsubscribe'] = 'Could not unsubscribe you from that digest forum';
 $string['cannotupdatepost'] = 'You can not update this post';
 $string['cannotviewpostyet'] = 'You cannot read other students questions in this discussion yet because you haven\'t posted';
 $string['cannotviewusersposts'] = 'There are no posts made by this user that you are able to view.';
@@ -93,24 +93,24 @@ $string['completionreplieshelp'] = 'requiring replies to complete';
 $string['configcleanreadtime'] = 'The hour of the day to clean old posts from the \'read\' table.';
 $string['configdigestforum_mailtime'] = 'People who choose to have emails sent to them in digest form will be emailed the digest daily. This setting controls which time of day the daily mail will be sent (the next cron that runs after this hour will send it).';
 $string['configdisplaymode'] = 'The default display mode for discussions if one isn\'t set.';
-$string['configenablerssfeeds'] = 'This switch will enable the possibility of RSS feeds for all digestforums.  You will still need to turn feeds on manually in the settings for each digestforum.';
-$string['configenabletimedposts'] = 'Set to \'yes\' if you want to allow setting of display periods when posting a new digestforum discussion.';
-$string['configlongpost'] = 'Any post over this length (in characters not including HTML) is considered long. Posts displayed on the site front page, social format course pages, or user profiles are shortened to a natural break somewhere between the digestforum_shortpost and digestforum_longpost values.';
-$string['configmanydiscussions'] = 'Maximum number of discussions shown in a digestforum per page';
+$string['configenablerssfeeds'] = 'This switch will enable the possibility of RSS feeds for all digest forums.  You will still need to turn feeds on manually in the settings for each digest forum.';
+$string['configenabletimedposts'] = 'Set to \'yes\' if you want to allow setting of display periods when posting a new digest forum discussion.';
+$string['configlongpost'] = 'Any post over this length (in characters not including HTML) is considered long. Posts displayed on the site front page, social format course pages, or user profiles are shortened to a natural break somewhere between the digest forum_shortpost and digest forum_longpost values.';
+$string['configmanydiscussions'] = 'Maximum number of discussions shown in a digest forum per page';
 $string['configmaxattachments'] = 'Default maximum number of attachments allowed per post.';
-$string['configmaxbytes'] = 'Default maximum size for all digestforum attachments on the site (subject to course limits and other local settings)';
+$string['configmaxbytes'] = 'Default maximum size for all digest forum attachments on the site (subject to course limits and other local settings)';
 $string['configoldpostdays'] = 'Number of days old any post is considered read.';
-$string['configreplytouser'] = 'When a digestforum post is mailed out, should it contain the user\'s email address so that recipients can reply personally rather than via the digestforum? Even if set to \'Yes\' users can choose in their profile to keep their email address secret.';
+$string['configreplytouser'] = 'When a digest forum post is mailed out, should it contain the user\'s email address so that recipients can reply personally rather than via the digest forum? Even if set to \'Yes\' users can choose in their profile to keep their email address secret.';
 $string['configrsstypedefault'] = 'If RSS feeds are enabled, sets the default activity type.';
 $string['configrssarticlesdefault'] = 'If RSS feeds are enabled, sets the default number of articles (either discussions or posts).';
 $string['configshortpost'] = 'Any post under this length (in characters not including HTML) is considered short (see below).';
 $string['configtrackingtype'] = 'Default setting for read tracking.';
 $string['configtrackreadposts'] = 'Set to \'yes\' if you want to track read/unread for each user.';
 $string['configusermarksread'] = 'If \'yes\', the user must manually mark a post as read. If \'no\', when the post is viewed it is marked as read.';
-$string['confirmsubscribediscussion'] = 'Do you really want to subscribe to discussion \'{$a->discussion}\' in digestforum \'{$a->digestforum}\'?';
-$string['confirmunsubscribediscussion'] = 'Do you really want to unsubscribe from discussion \'{$a->discussion}\' in digestforum \'{$a->digestforum}\'?';
-$string['confirmsubscribe'] = 'Do you really want to subscribe to digestforum \'{$a}\'?';
-$string['confirmunsubscribe'] = 'Do you really want to unsubscribe from digestforum \'{$a}\'?';
+$string['confirmsubscribediscussion'] = 'Do you really want to subscribe to discussion \'{$a->discussion}\' in digestforum \'{$a->digest forum}\'?';
+$string['confirmunsubscribediscussion'] = 'Do you really want to unsubscribe from discussion \'{$a->discussion}\' in digest forum \'{$a->digestforum}\'?';
+$string['confirmsubscribe'] = 'Do you really want to subscribe to digest forum \'{$a}\'?';
+$string['confirmunsubscribe'] = 'Do you really want to unsubscribe from digest forum \'{$a}\'?';
 $string['couldnotadd'] = 'Could not add your post due to an unknown error';
 $string['couldnotdeletereplies'] = 'Sorry, that cannot be deleted as people have already responded to it';
 $string['couldnotupdate'] = 'Could not update your post due to an unknown error';
@@ -121,26 +121,26 @@ $string['deletedpost'] = 'The post has been deleted';
 $string['deletedposts'] = 'Those posts have been deleted';
 $string['deletesure'] = 'Are you sure you want to delete this post?';
 $string['deletesureplural'] = 'Are you sure you want to delete this post and all replies? ({$a} posts)';
-$string['digestmailheader'] = 'This is your daily digest of new posts from the {$a->sitename} digestforums. To change your default digestforum email preferences, go to {$a->userprefs}.';
-$string['digestmailpost'] = 'Change your digestforum digest preferences';
-$string['digestmailpostlink'] = 'Change your digestforum digest preferences: {$a}';
+$string['digestmailheader'] = 'This is your daily digest of new posts from the {$a->sitename} digest forums. To change your default digest forum email preferences, go to {$a->userprefs}.';
+$string['digestmailpost'] = 'Change your digest forum digest preferences';
+$string['digestmailpostlink'] = 'Change your digest forum digest preferences: {$a}';
 $string['digestmailprefs'] = 'your user profile';
-$string['digestmailsubject'] = '{$a}: digestforum digest';
+$string['digestmailsubject'] = '{$a}: digest forum digest';
 $string['digestforum_mailtime'] = 'Hour to send digest emails';
 $string['digestsentusers'] = 'Email digests successfully sent to {$a} users.';
 $string['disallowsubscribe'] = 'Subscriptions not allowed';
 $string['disallowsubscription'] = 'Subscription';
-$string['disallowsubscription_help'] = 'This digestforum has been configured so that you cannot subscribe to discussions.';
+$string['disallowsubscription_help'] = 'This digest forum has been configured so that you cannot subscribe to discussions.';
 $string['disallowsubscribeteacher'] = 'Subscriptions not allowed (except for teachers)';
 $string['discussion'] = 'Discussion';
 $string['discussionmoved'] = 'This discussion has been moved to \'{$a}\'.';
-$string['discussionmovedpost'] = 'This discussion has been moved to <a href="{$a->discusshref}">here</a> in the digestforum <a href="{$a->digestforumhref}">{$a->digestforumname}</a>';
+$string['discussionmovedpost'] = 'This discussion has been moved to <a href="{$a->discusshref}">here</a> in the digest forum <a href="{$a->digestforumhref}">{$a->digestforumname}</a>';
 $string['discussionname'] = 'Discussion name';
 $string['discussionnownotsubscribed'] = '{$a->name} will NOT be notified of new posts in \'{$a->discussion}\' of \'{$a->digestforum}\'';
 $string['discussionnowsubscribed'] = '{$a->name} will be notified of new posts in \'{$a->discussion}\' of \'{$a->digestforum}\'';
 $string['discussionpin'] = 'Pin';
 $string['discussionpinned'] = 'Pinned';
-$string['discussionpinned_help'] = 'Pinned discussions will appear at the top of a digestforum.';
+$string['discussionpinned_help'] = 'Pinned discussions will appear at the top of a digest forum.';
 $string['discussionsubscribestop'] = 'I don\'t want to be notified of new posts in this discussion';
 $string['discussionsubscribestart'] = 'Send me notifications of new posts in this discussion';
 $string['discussionsubscription'] = 'Discussion subscription';
@@ -152,11 +152,11 @@ $string['discussionsstartedbyuserincourse'] = 'Discussions started by {$a->fulln
 $string['discussionunpin'] = 'Unpin';
 $string['discussthistopic'] = 'Discuss this topic';
 $string['displayend'] = 'Display end';
-$string['displayend_help'] = 'This setting specifies whether a digestforum post should be hidden after a certain date. Note that administrators can always view digestforum posts.';
+$string['displayend_help'] = 'This setting specifies whether a digest forum post should be hidden after a certain date. Note that administrators can always view digest forum posts.';
 $string['displaymode'] = 'Display mode';
 $string['displayperiod'] = 'Display period';
 $string['displaystart'] = 'Display start';
-$string['displaystart_help'] = 'This setting specifies whether a digestforum post should be displayed from a certain date. Note that administrators can always view digestforum posts.';
+$string['displaystart_help'] = 'This setting specifies whether a digest forum post should be displayed from a certain date. Note that administrators can always view digest forum posts.';
 $string['displaywordcount'] = 'Display word count';
 $string['displaywordcount_help'] = 'This setting specifies whether the word count of each post should be displayed or not.';
 $string['eachuserdigestforum'] = 'Each person posts one discussion';
@@ -188,18 +188,18 @@ $string['emaildigestdefault'] = 'Default ({$a})';
 $string['emaildigestoffshort'] = 'No digest';
 $string['emaildigestsubjectsshort'] = 'Subjects only';
 $string['emaildigesttype'] = 'Email digest options';
-$string['emaildigesttype_help'] = 'The type of notification that you will receive for each digestforum.
+$string['emaildigesttype_help'] = 'The type of notification that you will receive for each digest forum.
 
 * Default - follow the digest setting found in your user profile. If you update your profile, then that change will be reflected here too;
-* No digest - you will receive one e-mail per digestforum post;
-* Digest - complete posts - you will receive one digest e-mail per day containing the complete contents of each digestforum post;
-* Digest - subjects only - you will receive one digest e-mail per day containing just the subject of each digestforum post.
+* No digest - you will receive one e-mail per digest forum post;
+* Digest - complete posts - you will receive one digest e-mail per day containing the complete contents of each digest forum post;
+* Digest - subjects only - you will receive one digest e-mail per day containing just the subject of each digest forum post.
 ';
-$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the digestforum \'{$a->digestforum}\'. {$a->maildigestdescription}';
-$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the digestforum \'{$a->digestforum}\'. {$a->maildigestdescription}.';
-$string['emaildigest_0'] = 'You will receive one e-mail per digestforum post.';
-$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each digestforum post.';
-$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each digestforum post.';
+$string['emaildigestupdated'] = 'The e-mail digest option was changed to \'{$a->maildigesttitle}\' for the digest forum \'{$a->digestforum}\'. {$a->maildigestdescription}';
+$string['emaildigestupdated_default'] = 'Your default profile setting of \'{$a->maildigesttitle}\' was used for the digest forum \'{$a->digestforum}\'. {$a->maildigestdescription}.';
+$string['emaildigest_0'] = 'You will receive one e-mail per digest forum post.';
+$string['emaildigest_1'] = 'You will receive one digest e-mail per day containing the complete contents of each digest forum post.';
+$string['emaildigest_2'] = 'You will receive one digest e-mail per day containing the subject of each digest forum post.';
 $string['emptymessage'] = 'Something was wrong with your post. Perhaps you left it blank, or the attachment was too big. Your changes have NOT been saved.';
 $string['erroremptymessage'] = 'Post message cannot be empty';
 $string['erroremptysubject'] = 'Post subject cannot be empty.';
@@ -208,16 +208,16 @@ $string['errorwhiledelete'] = 'An error occurred while deleting record.';
 $string['eventassessableuploaded'] = 'Some content has been posted.';
 $string['everyonecanchoose'] = 'Everyone can choose to be subscribed';
 $string['everyonecannowchoose'] = 'Everyone can now choose to be subscribed';
-$string['everyoneisnowsubscribed'] = 'Everyone is now subscribed to this digestforum';
-$string['everyoneissubscribed'] = 'Everyone is subscribed to this digestforum';
+$string['everyoneisnowsubscribed'] = 'Everyone is now subscribed to this digest forum';
+$string['everyoneissubscribed'] = 'Everyone is subscribed to this digest forum';
 $string['existingsubscribers'] = 'Existing subscribers';
 $string['exportdiscussion'] = 'Export whole discussion to portfolio';
 $string['forcedreadtracking'] = 'Allow forced read tracking';
-$string['forcedreadtracking_desc'] = 'Allows digestforums to be set to forced read tracking. Will result in decreased performance for some users, particularly on courses with many digestforums and posts. When off, any digestforums previously set to Forced are treated as optional.';
-$string['forcesubscribed_help'] = 'This digestforum has been configured so that you cannot unsubscribe from discussions.';
-$string['forcesubscribed'] = 'This digestforum forces everyone to be subscribed';
+$string['forcedreadtracking_desc'] = 'Allows digest forums to be set to forced read tracking. Will result in decreased performance for some users, particularly on courses with many digest forums and posts. When off, any digest forums previously set to Forced are treated as optional.';
+$string['forcesubscribed_help'] = 'This digest forum has been configured so that you cannot unsubscribe from discussions.';
+$string['forcesubscribed'] = 'This digest forum forces everyone to be subscribed';
 $string['digestforum'] = 'Digest forum';
-$string['digestforum:addinstance'] = 'Add a new digestforum';
+$string['digestforum:addinstance'] = 'Add a new digest forum';
 $string['digestforum:addnews'] = 'Add news';
 $string['digestforum:addquestion'] = 'Add question';
 $string['digestforum:allowforcesubscribe'] = 'Allow force subscribe';
@@ -249,13 +249,13 @@ $string['digestforumsubjecthidden'] = 'Subject (hidden)';
 $string['digestforumtracked'] = 'Unread posts are being tracked';
 $string['digestforumtrackednot'] = 'Unread posts are not being tracked';
 $string['digestforumtype'] = 'Digest forum type';
-$string['digestforumtype_help'] = 'There are 5 digestforum types:
+$string['digestforumtype_help'] = 'There are 5 digest forum types:
 
 * A single simple discussion - A single discussion topic which everyone can reply to (cannot be used with separate groups)
 * Each person posts one discussion - Each student can post exactly one new discussion topic, which everyone can then reply to
-* Q and A digestforum - Students must first post their perspectives before viewing other students\' posts
-* Standard digestforum displayed in a blog-like format - An open digestforum where anyone can start a new discussion at any time, and in which discussion topics are displayed on one page with "Discuss this topic" links
-* Standard digestforum for general use - An open digestforum where anyone can start a new discussion at any time';
+* Q and A digest forum - Students must first post their perspectives before viewing other students\' posts
+* Standard digest forum displayed in a blog-like format - An open digest forum where anyone can start a new discussion at any time, and in which discussion topics are displayed on one page with "Discuss this topic" links
+* Standard digest forum for general use - An open digest forum where anyone can start a new discussion at any time';
 $string['digestforum:viewallratings'] = 'View all raw ratings given by individuals';
 $string['digestforum:viewanyrating'] = 'View total ratings that anyone received';
 $string['digestforum:viewdiscussion'] = 'View discussions';
@@ -263,14 +263,14 @@ $string['digestforum:viewhiddentimedposts'] = 'View hidden timed posts';
 $string['digestforum:viewqandawithoutposting'] = 'Always see Q and A posts';
 $string['digestforum:viewrating'] = 'View the total rating you received';
 $string['digestforum:viewsubscribers'] = 'View subscribers';
-$string['generaldigestforum'] = 'Standard digestforum for general use';
-$string['generaldigestforums'] = 'General digestforums';
-$string['hiddendigestforumpost'] = 'Hidden digestforum post';
+$string['generaldigestforum'] = 'Standard digest forum for general use';
+$string['generaldigestforums'] = 'General digest forums';
+$string['hiddendigestforumpost'] = 'Hidden digest forum post';
 $string['indigestforum'] = 'in {$a}';
-$string['introblog'] = 'The posts in this digestforum were copied here automatically from blogs of users in this course because those blog entries are no longer available';
+$string['introblog'] = 'The posts in this digest forum were copied here automatically from blogs of users in this course because those blog entries are no longer available';
 $string['intronews'] = 'General news and announcements';
-$string['introsocial'] = 'An open digestforum for chatting about anything you want to';
-$string['introteacher'] = 'A digestforum for teacher-only notes and discussion';
+$string['introsocial'] = 'An open digest forum for chatting about anything you want to';
+$string['introteacher'] = 'A digest forum for teacher-only notes and discussion';
 $string['invalidaccess'] = 'This page was not accessed correctly';
 $string['invaliddiscussionid'] = 'Discussion ID was incorrect or no longer exists';
 $string['invaliddigestsetting'] = 'An invalid mail digest setting was provided';
@@ -279,53 +279,53 @@ $string['invaliddigestforumid'] = 'Digest forum ID was incorrect';
 $string['invalidparentpostid'] = 'Parent post ID was incorrect';
 $string['invalidpostid'] = 'Invalid post ID - {$a}';
 $string['lastpost'] = 'Last post';
-$string['learningdigestforums'] = 'Learning digestforums';
+$string['learningdigestforums'] = 'Learning digest forums';
 $string['longpost'] = 'Long post';
-$string['mailnow'] = 'Send digestforum post notifications with no editing-time delay';
+$string['mailnow'] = 'Send digest forum post notifications with no editing-time delay';
 $string['manydiscussions'] = 'Discussions per page';
 $string['markalldread'] = 'Mark all posts in this discussion read.';
-$string['markallread'] = 'Mark all posts in this digestforum read.';
+$string['markallread'] = 'Mark all posts in this digest forum read.';
 $string['markread'] = 'Mark read';
 $string['markreadbutton'] = 'Mark<br />read';
 $string['markunread'] = 'Mark unread';
 $string['markunreadbutton'] = 'Mark<br />unread';
 $string['maxattachments'] = 'Maximum number of attachments';
-$string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a digestforum post.';
+$string['maxattachments_help'] = 'This setting specifies the maximum number of files that can be attached to a digest forum post.';
 $string['maxattachmentsize'] = 'Maximum attachment size';
-$string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a digestforum post.';
+$string['maxattachmentsize_help'] = 'This setting specifies the largest size of file that can be attached to a digest forum post.';
 $string['maxtimehaspassed'] = 'Sorry, but the maximum time for editing this post ({$a}) has passed!';
 $string['message'] = 'Message';
-$string['messageinboundattachmentdisallowed'] = 'Unable to post your reply, since it includes an attachment and the digestforum doesn\'t allow attachments.';
-$string['messageinboundfilecountexceeded'] = 'Unable to post your reply, since it includes more than the maximum number of attachments allowed for the digestforum ({$a->digestforum->maxattachments}).';
-$string['messageinboundfilesizeexceeded'] = 'Unable to post your reply, since the total attachment size ({$a->filesize}) is greater than the maximum size allowed for the digestforum ({$a->maxbytes}).';
-$string['messageinbounddigestforumhidden'] = 'Unable to post your reply, since the digestforum is currently unavailable.';
-$string['messageinboundnopostdigestforum'] = 'Unable to post your reply, since you do not have permission to post in the {$a->digestforum->name} digestforum.';
-$string['messageinboundthresholdhit'] = 'Unable to post your reply.  You have exceeded the posting threshold set for this digestforum';
-$string['messageprovider:digests'] = 'Subscribed digestforum digests';
-$string['messageprovider:posts'] = 'Subscribed digestforum posts';
+$string['messageinboundattachmentdisallowed'] = 'Unable to post your reply, since it includes an attachment and the digest forum doesn\'t allow attachments.';
+$string['messageinboundfilecountexceeded'] = 'Unable to post your reply, since it includes more than the maximum number of attachments allowed for the digest forum ({$a->digestforum->maxattachments}).';
+$string['messageinboundfilesizeexceeded'] = 'Unable to post your reply, since the total attachment size ({$a->filesize}) is greater than the maximum size allowed for the digest forum ({$a->maxbytes}).';
+$string['messageinbounddigestforumhidden'] = 'Unable to post your reply, since the digest forum is currently unavailable.';
+$string['messageinboundnopostdigestforum'] = 'Unable to post your reply, since you do not have permission to post in the {$a->digestforum->name} digest forum.';
+$string['messageinboundthresholdhit'] = 'Unable to post your reply.  You have exceeded the posting threshold set for this digest forum';
+$string['messageprovider:digests'] = 'Subscribed digest forum digests';
+$string['messageprovider:posts'] = 'Subscribed digest forum posts';
 $string['missingsearchterms'] = 'The following search terms occur only in the HTML markup of this message:';
 $string['modeflatnewestfirst'] = 'Display replies flat, with newest first';
 $string['modeflatoldestfirst'] = 'Display replies flat, with oldest first';
 $string['modenested'] = 'Display replies in nested form';
 $string['modethreaded'] = 'Display replies in threaded form';
 $string['modulename'] = 'Digest forum';
-$string['modulename_help'] = 'The digestforum activity module enables participants to have asynchronous discussions i.e. discussions that take place over an extended period of time.
+$string['modulename_help'] = 'The digest forum activity module enables participants to have asynchronous discussions i.e. discussions that take place over an extended period of time.
 
-There are several digestforum types to choose from, such as a standard digestforum where anyone can start a new discussion at any time; a digestforum where each student can post exactly one discussion; or a question and answer digestforum where students must first post before being able to view other students\' posts. A teacher can allow files to be attached to digestforum posts. Attached images are displayed in the digestforum post.
+There are several digest forum types to choose from, such as a standard digest forum where anyone can start a new discussion at any time; a digest forum where each student can post exactly one discussion; or a question and answer digest forum where students must first post before being able to view other students\' posts. A teacher can allow files to be attached to digest forum posts. Attached images are displayed in the digest forum post.
 
-Participants can subscribe to a digestforum to receive notifications of new digestforum posts. A teacher can set the subscription mode to optional, forced or auto, or prevent subscription completely. If required, students can be blocked from posting more than a given number of posts in a given time period; this can prevent individuals from dominating discussions.
+Participants can subscribe to a digest forum to receive notifications of new digest forum posts. A teacher can set the subscription mode to optional, forced or auto, or prevent subscription completely. If required, students can be blocked from posting more than a given number of posts in a given time period; this can prevent individuals from dominating discussions.
 
 Digest forum posts can be rated by teachers or students (peer evaluation). Ratings can be aggregated to form a final grade which is recorded in the gradebook.
 
 Digest forums have many uses, such as
 
 * A social space for students to get to know each other
-* For course announcements (using a news digestforum with forced subscription)
+* For course announcements (using a news digest forum with forced subscription)
 * For discussing course content or reading materials
 * For continuing online an issue raised previously in a face-to-face session
-* For teacher-only discussions (using a hidden digestforum)
+* For teacher-only discussions (using a hidden digest forum)
 * A help centre where tutors and students can give advice
-* A one-on-one support area for private student-teacher communications (using a digestforum with separate groups and with one student per group)
+* A one-on-one support area for private student-teacher communications (using a digest forum with separate groups and with one student per group)
 * For extension activities, for example ‘brain teasers’ for students to ponder and suggest solutions to';
 $string['modulename_link'] = 'mod/digestforum/view';
 $string['modulenameplural'] = 'Digest forums';
@@ -333,17 +333,17 @@ $string['more'] = 'more';
 $string['movedmarker'] = '(Moved)';
 $string['movethisdiscussionto'] = 'Move this discussion to ...';
 $string['mustprovidediscussionorpost'] = 'You must provide either a discussion id or post id to export';
-$string['myprofileownpost'] = 'My digestforum posts';
-$string['myprofileowndis'] = 'My digestforum discussions';
+$string['myprofileownpost'] = 'My digest forum posts';
+$string['myprofileowndis'] = 'My digest forum discussions';
 $string['myprofileotherdis'] = 'Digest forum discussions';
 $string['namenews'] = 'Announcements';
-$string['namenews_help'] = 'The course announcements digestforum is a special digestforum for announcements and is automatically created when a course is created. A course can have only one announcements digestforum. Only teachers and administrators can post announcements. The "Latest announcements" block will display recent announcements.';
-$string['namesocial'] = 'Social digestforum';
-$string['nameteacher'] = 'Teacher digestforum';
+$string['namenews_help'] = 'The course announcements digest forum is a special digest forum for announcements and is automatically created when a course is created. A course can have only one announcements digest forum. Only teachers and administrators can post announcements. The "Latest announcements" block will display recent announcements.';
+$string['namesocial'] = 'Social digest forum';
+$string['nameteacher'] = 'Teacher digest forum';
 $string['nextdiscussiona'] = 'Next discussion: {$a}';
-$string['newdigestforumposts'] = 'New digestforum posts';
+$string['newdigestforumposts'] = 'New digest forum posts';
 $string['noattachments'] = 'There are no attachments to this post';
-$string['nodiscussions'] = 'There are no discussion topics yet in this digestforum';
+$string['nodiscussions'] = 'There are no discussion topics yet in this digest forum';
 $string['nodiscussionsstartedby'] = '{$a} has not started any discussions';
 $string['nodiscussionsstartedbyyou'] = 'You haven\'t started any discussions yet';
 $string['noguestpost'] = 'Sorry, guests are not allowed to post.';
@@ -352,24 +352,24 @@ $string['noguesttracking'] = 'Sorry, guests are not allowed to set tracking opti
 $string['nomorepostscontaining'] = 'No more posts containing \'{$a}\' were found';
 $string['nonews'] = 'No news has been posted yet';
 $string['noonecansubscribenow'] = 'Subscriptions are now disallowed';
-$string['nopermissiontosubscribe'] = 'You do not have the permission to view digestforum subscribers';
+$string['nopermissiontosubscribe'] = 'You do not have the permission to view digest forum subscribers';
 $string['nopermissiontoview'] = 'You do not have permissions to view this post';
-$string['nopostdigestforum'] = 'Sorry, you are not allowed to post to this digestforum';
+$string['nopostdigestforum'] = 'Sorry, you are not allowed to post to this digest forum';
 $string['noposts'] = 'No posts';
 $string['nopostsmadebyuser'] = '{$a} has made no posts';
 $string['nopostsmadebyyou'] = 'You haven\'t made any posts';
-$string['noquestions'] = 'There are no questions yet in this digestforum';
-$string['nosubscribers'] = 'There are no subscribers yet for this digestforum';
+$string['noquestions'] = 'There are no questions yet in this digest forum';
+$string['nosubscribers'] = 'There are no subscribers yet for this digest forum';
 $string['notsubscribed'] = 'Subscribe';
 $string['notexists'] = 'Discussion no longer exists';
 $string['nothingnew'] = 'Nothing new for {$a}';
-$string['notingroup'] = 'Sorry, but you need to be part of a group to see this digestforum.';
-$string['notinstalled'] = 'The digestforum module is not installed';
+$string['notingroup'] = 'Sorry, but you need to be part of a group to see this digest forum.';
+$string['notinstalled'] = 'The digest forum module is not installed';
 $string['notpartofdiscussion'] = 'This post is not part of a discussion!';
 $string['notrackdigestforum'] = 'Don\'t track unread posts';
-$string['noviewdiscussionspermission'] = 'You do not have the permission to view discussions in this digestforum';
-$string['nowallsubscribed'] = 'All digestforums in {$a} are subscribed.';
-$string['nowallunsubscribed'] = 'All digestforums in {$a} are not subscribed.';
+$string['noviewdiscussionspermission'] = 'You do not have the permission to view discussions in this digest forum';
+$string['nowallsubscribed'] = 'All digest forums in {$a} are subscribed.';
+$string['nowallunsubscribed'] = 'All digest forums in {$a} are not subscribed.';
 $string['nownotsubscribed'] = '{$a->name} will NOT be notified of new posts in \'{$a->digestforum}\'';
 $string['nownottracking'] = '{$a->name} is no longer tracking \'{$a->digestforum}\'.';
 $string['nowsubscribed'] = '{$a->name} will be notified of new posts in \'{$a->digestforum}\'';
@@ -380,7 +380,7 @@ $string['oldertopics'] = 'Older topics';
 $string['oldpostdays'] = 'Read after days';
 $string['overviewnumpostssince'] = '{$a} posts since last login';
 $string['overviewnumunread'] = '{$a} total unread';
-$string['page-mod-digestforum-x'] = 'Any digestforum module page';
+$string['page-mod-digestforum-x'] = 'Any digest forum module page';
 $string['page-mod-digestforum-view'] = 'Digest forum module main page';
 $string['page-mod-digestforum-discuss'] = 'Digest forum module discussion thread page';
 $string['parent'] = 'Show parent';
@@ -394,14 +394,14 @@ $string['pluginname'] = 'Digest forum';
 $string['postadded'] = '<p>Your post was successfully added.</p> <p>You have {$a} to edit it if you want to make any changes.</p>';
 $string['postaddedsuccess'] = 'Your post was successfully added.';
 $string['postaddedtimeleft'] = 'You have {$a} to edit it if you want to make any changes.';
-$string['postbymailsuccess'] = 'Congratulations, your digestforum post with subject "{$a->subject}" was successfully added. You can view it at {$a->discussionurl}.';
-$string['postbymailsuccess_html'] = 'Congratulations, your <a href="{$a->discussionurl}">digestforum post</a> with subject "{$a->subject}" was successfully posted.';
+$string['postbymailsuccess'] = 'Congratulations, your digest forum post with subject "{$a->subject}" was successfully added. You can view it at {$a->discussionurl}.';
+$string['postbymailsuccess_html'] = 'Congratulations, your <a href="{$a->discussionurl}">digest forum post</a> with subject "{$a->subject}" was successfully posted.';
 $string['postbyuser'] = '{$a->post} by {$a->user}';
 $string['postincontext'] = 'See this post in context';
 $string['postmailinfolink'] = 'This is a copy of a message posted in {$a->coursename}.
 
 To reply click on this link: {$a->replylink}';
-$string['postmailnow'] = '<p>This post will be mailed out immediately to all digestforum subscribers.</p>';
+$string['postmailnow'] = '<p>This post will be mailed out immediately to all digest forum subscribers.</p>';
 $string['postmailsubject'] = '{$a->courseshortname}: {$a->subject}';
 $string['postrating1'] = 'Mostly separate knowing';
 $string['postrating2'] = 'Separate and connected';
@@ -409,7 +409,7 @@ $string['postrating3'] = 'Mostly connected knowing';
 $string['posts'] = 'Posts';
 $string['postsmadebyuser'] = 'Posts made by {$a}';
 $string['postsmadebyuserincourse'] = 'Posts made by {$a->fullname} in {$a->coursename}';
-$string['posttodigestforum'] = 'Post to digestforum';
+$string['posttodigestforum'] = 'Post to digest forum';
 $string['postupdated'] = 'Your post was updated';
 $string['potentialsubscribers'] = 'Potential subscribers';
 $string['processingdigest'] = 'Processing email digest for user {$a}';
@@ -417,24 +417,24 @@ $string['processingpost'] = 'Processing post {$a}';
 $string['prune'] = 'Split';
 $string['prunedpost'] = 'A new discussion has been created from that post';
 $string['pruneheading'] = 'Split the discussion and move this post to a new discussion';
-$string['qandadigestforum'] = 'Q and A digestforum';
-$string['qandanotify'] = 'This is a question and answer digestforum. In order to see other responses to these questions, you must first post your answer';
+$string['qandadigestforum'] = 'Q and A digest forum';
+$string['qandanotify'] = 'This is a question and answer digest forum. In order to see other responses to these questions, you must first post your answer';
 $string['re'] = 'Re:';
 $string['readtherest'] = 'Read the rest of this topic';
 $string['replies'] = 'Replies';
 $string['repliesmany'] = '{$a} replies so far';
 $string['repliesone'] = '{$a} reply so far';
 $string['reply'] = 'Reply';
-$string['replydigestforum'] = 'Reply to digestforum';
+$string['replydigestforum'] = 'Reply to digest forum';
 $string['replytopostbyemail'] = 'You can reply to this via email.';
 $string['replytouser'] = 'Use email address in reply';
-$string['reply_handler'] = 'Reply to digestforum posts via email';
-$string['reply_handler_name'] = 'Reply to digestforum posts';
+$string['reply_handler'] = 'Reply to digest forum posts via email';
+$string['reply_handler_name'] = 'Reply to digest forum posts';
 $string['resetdigestforums'] = 'Delete posts from';
 $string['resetdigestforumsall'] = 'Delete all posts';
-$string['resetdigests'] = 'Delete all per-user digestforum digest preferences';
-$string['resetsubscriptions'] = 'Delete all digestforum subscriptions';
-$string['resettrackprefs'] = 'Delete all digestforum tracking preferences';
+$string['resetdigests'] = 'Delete all per-user digest forum digest preferences';
+$string['resetsubscriptions'] = 'Delete all digest forum subscriptions';
+$string['resettrackprefs'] = 'Delete all digest forum tracking preferences';
 $string['rsssubscriberssdiscussions'] = 'RSS feed of discussions';
 $string['rsssubscriberssposts'] = 'RSS feed of posts';
 $string['rssarticles'] = 'Number of RSS recent articles';
@@ -448,7 +448,7 @@ $string['search:activity'] = 'Digest forum - activity information';
 $string['searchdatefrom'] = 'Posts must be newer than this';
 $string['searchdateto'] = 'Posts must be older than this';
 $string['searchdigestforumintro'] = 'Please enter search terms into one or more of the following fields:';
-$string['searchdigestforums'] = 'Search digestforums';
+$string['searchdigestforums'] = 'Search digest forums';
 $string['searchfullwords'] = 'These words should appear as whole words';
 $string['searchnotwords'] = 'These words should NOT be included';
 $string['searcholderposts'] = 'Search older posts...';
@@ -457,7 +457,7 @@ $string['searchresults'] = 'Search results';
 $string['searchsubject'] = 'These words should be in the subject';
 $string['searchuser'] = 'This name should match the author';
 $string['searchuserid'] = 'The Moodle ID of the author';
-$string['searchwhichdigestforums'] = 'Choose which digestforums to search';
+$string['searchwhichdigestforums'] = 'Choose which digest forums to search';
 $string['searchwords'] = 'These words can appear anywhere in the post';
 $string['seeallposts'] = 'See all posts made by this user';
 $string['shortpost'] = 'Short post';
@@ -467,21 +467,21 @@ $string['smallmessage'] = '{$a->user} posted in {$a->digestforumname}';
 $string['smallmessagedigest'] = 'Digest forum digest containing {$a} messages';
 $string['startedby'] = 'Started by';
 $string['subject'] = 'Subject';
-$string['subscribe'] = 'Subscribe to this digestforum';
+$string['subscribe'] = 'Subscribe to this digest forum';
 $string['subscribediscussion'] = 'Subscribe to this discussion';
-$string['subscribeall'] = 'Subscribe everyone to this digestforum';
-$string['subscribeenrolledonly'] = 'Sorry, only enrolled users are allowed to subscribe to digestforum post notifications.';
+$string['subscribeall'] = 'Subscribe everyone to this digest forum';
+$string['subscribeenrolledonly'] = 'Sorry, only enrolled users are allowed to subscribe to digest forum post notifications.';
 $string['subscribed'] = 'Subscribed';
-$string['subscribenone'] = 'Unsubscribe everyone from this digestforum';
+$string['subscribenone'] = 'Unsubscribe everyone from this digest forum';
 $string['subscribers'] = 'Subscribers';
 $string['subscriberstowithcount'] = 'Subscribers to "{$a->name}" ({$a->count})';
-$string['subscribestart'] = 'Send me notifications of new posts in this digestforum';
-$string['subscribestop'] = 'I don\'t want to be notified of new posts in this digestforum';
+$string['subscribestart'] = 'Send me notifications of new posts in this digest forum';
+$string['subscribestop'] = 'I don\'t want to be notified of new posts in this digest forum';
 $string['subscription'] = 'Subscription';
-$string['subscription_help'] = 'If you are subscribed to a digestforum it means you will receive notification of new digestforum posts. Usually you can choose whether you wish to be subscribed, though sometimes subscription is forced so that everyone receives notifications.';
+$string['subscription_help'] = 'If you are subscribed to a digest forum it means you will receive notification of new digest forum posts. Usually you can choose whether you wish to be subscribed, though sometimes subscription is forced so that everyone receives notifications.';
 $string['subscriptionandtracking'] = 'Subscription and tracking';
 $string['subscriptionmode'] = 'Subscription mode';
-$string['subscriptionmode_help'] = 'When a participant is subscribed to a digestforum it means they will receive digestforum post notifications. There are 4 subscription mode options:
+$string['subscriptionmode_help'] = 'When a participant is subscribed to a digest forum it means they will receive digest forum post notifications. There are 4 subscription mode options:
 
 * Optional subscription - Participants can choose whether to be subscribed
 * Forced subscription - Everyone is subscribed and cannot unsubscribe
@@ -494,7 +494,7 @@ $string['subscriptionforced'] = 'Forced subscription';
 $string['subscriptionauto'] = 'Auto subscription';
 $string['subscriptiondisabled'] = 'Subscription disabled';
 $string['subscriptions'] = 'Subscriptions';
-$string['thisdigestforumisthrottled'] = 'This digestforum has a limit to the number of digestforum postings you can make in a given time period - this is currently set at {$a->blockafter} posting(s) in {$a->blockperiod}';
+$string['thisdigestforumisthrottled'] = 'This digest forum has a limit to the number of digest forum postings you can make in a given time period - this is currently set at {$a->blockafter} posting(s) in {$a->blockperiod}';
 $string['timedhidden'] = 'Timed status: Hidden from students';
 $string['timedposts'] = 'Timed posts';
 $string['timedvisible'] = 'Timed status: Visible to all users';
@@ -505,7 +505,7 @@ $string['trackingoff'] = 'Off';
 $string['trackingon'] = 'Forced';
 $string['trackingoptional'] = 'Optional';
 $string['trackingtype'] = 'Read tracking';
-$string['trackingtype_help'] = 'If enabled, participants can track read and unread posts in the digestforum and in discussions. There are three options:
+$string['trackingtype_help'] = 'If enabled, participants can track read and unread posts in the digest forum and in discussions. There are three options:
 
 * Optional - Participants can choose whether to turn tracking on or off via a link in the administration block. Digest forum tracking must also be enabled in the user\'s profile settings.
 * Forced - Tracking is always on, regardless of user setting. Available depending on administrative setting.
@@ -514,23 +514,23 @@ $string['unread'] = 'Unread';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';
 $string['unreadpostsone'] = '1 unread post';
-$string['unsubscribe'] = 'Unsubscribe from this digestforum';
-$string['unsubscribelink'] = 'Unsubscribe from this digestforum: {$a}';
+$string['unsubscribe'] = 'Unsubscribe from this digest forum';
+$string['unsubscribelink'] = 'Unsubscribe from this digest forum: {$a}';
 $string['unsubscribediscussion'] = 'Unsubscribe from this discussion';
 $string['unsubscribediscussionlink'] = 'Unsubscribe from this discussion: {$a}';
-$string['unsubscribeall'] = 'Unsubscribe from all digestforums';
-$string['unsubscribeallconfirm'] = 'You are currently subscribed to {$a->digestforums} digestforums, and {$a->discussions} discussions. Do you really want to unsubscribe from all digestforums and discussions, and disable discussion auto-subscription?';
-$string['unsubscribeallconfirmdigestforums'] = 'You are currently subscribed to {$a->digestforums} digestforums. Do you really want to unsubscribe from all digestforums and disable discussion auto-subscription?';
+$string['unsubscribeall'] = 'Unsubscribe from all digest forums';
+$string['unsubscribeallconfirm'] = 'You are currently subscribed to {$a->digestforums} digest forums, and {$a->discussions} discussions. Do you really want to unsubscribe from all digest forums and discussions, and disable discussion auto-subscription?';
+$string['unsubscribeallconfirmdigestforums'] = 'You are currently subscribed to {$a->digestforums} digest forums. Do you really want to unsubscribe from all digest forums and disable discussion auto-subscription?';
 $string['unsubscribeallconfirmdiscussions'] = 'You are currently subscribed to {$a->discussions} discussions. Do you really want to unsubscribe from all discussions and disable discussion auto-subscription?';
-$string['unsubscribealldone'] = 'All optional digestforum subscriptions were removed. You will still receive notifications from digestforums with forced subscription. To manage digestforum notifications go to Messaging in My Profile Settings.';
-$string['unsubscribeallempty'] = 'You are not subscribed to any digestforums. To disable all notifications from this server go to Messaging in My Profile Settings.';
+$string['unsubscribealldone'] = 'All optional digest forum subscriptions were removed. You will still receive notifications from digest forums with forced subscription. To manage digest forum notifications go to Messaging in My Profile Settings.';
+$string['unsubscribeallempty'] = 'You are not subscribed to any digest forums. To disable all notifications from this server go to Messaging in My Profile Settings.';
 $string['unsubscribed'] = 'Unsubscribed';
 $string['unsubscribeshort'] = 'Unsubscribe';
 $string['usermarksread'] = 'Manual message read marking';
 $string['viewalldiscussions'] = 'View all discussions';
 $string['warnafter'] = 'Post threshold for warning';
 $string['warnafter_help'] = 'Students can be warned as they approach the maximum number of posts allowed in a given period. This setting specifies after how many posts they are warned. Users with the capability mod/digestforum:postwithoutthrottling are exempt from post limits.';
-$string['warnformorepost'] = 'Warning! There is more than one discussion in this digestforum - using the most recent';
+$string['warnformorepost'] = 'Warning! There is more than one discussion in this digest forum - using the most recent';
 $string['yournewquestion'] = 'Your new question';
 $string['yournewtopic'] = 'Your new discussion topic';
 $string['yourreply'] = 'Your reply';
