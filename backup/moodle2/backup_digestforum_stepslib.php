@@ -16,20 +16,20 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    mod_digestforum
+ * @package    mod_digestdigestforum
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * Define all the backup steps that will be used by the backup_digestforum_activity_task
+ * Define all the backup steps that will be used by the backup_digestdigestforum_activity_task
  */
 
 /**
- * Define the complete digestforum structure for backup, with file and id annotations
+ * Define the complete digestdigestforum structure for backup, with file and id annotations
  */
-class backup_digestforum_activity_structure_step extends backup_activity_structure_step {
+class backup_digestdigestforum_activity_structure_step extends backup_activity_structure_step {
 
     protected function define_structure() {
 
@@ -38,7 +38,7 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
 
         // Define each element separated
 
-        $digestforum = new backup_nested_element('digestforum', array('id'), array(
+        $digestdigestforum = new backup_nested_element('digestdigestforum', array('id'), array(
             'type', 'name', 'intro', 'introformat',
             'assessed', 'assesstimestart', 'assesstimefinish', 'scale',
             'maxbytes', 'maxattachments', 'forcesubscribe', 'trackingtype',
@@ -95,19 +95,19 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
 
         // Build the tree
 
-        $digestforum->add_child($discussions);
+        $digestdigestforum->add_child($discussions);
         $discussions->add_child($discussion);
 
-        $digestforum->add_child($subscriptions);
+        $digestdigestforum->add_child($subscriptions);
         $subscriptions->add_child($subscription);
 
-        $digestforum->add_child($digests);
+        $digestdigestforum->add_child($digests);
         $digests->add_child($digest);
 
-        $digestforum->add_child($readposts);
+        $digestdigestforum->add_child($readposts);
         $readposts->add_child($read);
 
-        $digestforum->add_child($trackedprefs);
+        $digestdigestforum->add_child($trackedprefs);
         $trackedprefs->add_child($track);
 
         $discussion->add_child($posts);
@@ -121,29 +121,29 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
 
         // Define sources
 
-        $digestforum->set_source_table('digestforum', array('id' => backup::VAR_ACTIVITYID));
+        $digestdigestforum->set_source_table('digestdigestforum', array('id' => backup::VAR_ACTIVITYID));
 
         // All these source definitions only happen if we are including user info
         if ($userinfo) {
             $discussion->set_source_sql('
                 SELECT *
-                  FROM {digestforum_discussions}
-                 WHERE digestforum = ?',
+                  FROM {digestdigestforum_discussions}
+                 WHERE digestdigestforum = ?',
                 array(backup::VAR_PARENTID));
 
             // Need posts ordered by id so parents are always before childs on restore
-            $post->set_source_table('digestforum_posts', array('discussion' => backup::VAR_PARENTID), 'id ASC');
-            $discussionsub->set_source_table('digestforum_discussion_subs', array('discussion' => backup::VAR_PARENTID));
+            $post->set_source_table('digestdigestforum_posts', array('discussion' => backup::VAR_PARENTID), 'id ASC');
+            $discussionsub->set_source_table('digestdigestforum_discussion_subs', array('discussion' => backup::VAR_PARENTID));
 
-            $subscription->set_source_table('digestforum_subscriptions', array('digestforum' => backup::VAR_PARENTID));
-            $digest->set_source_table('digestforum_digests', array('digestforum' => backup::VAR_PARENTID));
+            $subscription->set_source_table('digestdigestforum_subscriptions', array('digestdigestforum' => backup::VAR_PARENTID));
+            $digest->set_source_table('digestdigestforum_digests', array('digestdigestforum' => backup::VAR_PARENTID));
 
-            $read->set_source_table('digestforum_read', array('digestforumid' => backup::VAR_PARENTID));
+            $read->set_source_table('digestdigestforum_read', array('digestdigestforumid' => backup::VAR_PARENTID));
 
-            $track->set_source_table('digestforum_track_prefs', array('digestforumid' => backup::VAR_PARENTID));
+            $track->set_source_table('digestdigestforum_track_prefs', array('digestdigestforumid' => backup::VAR_PARENTID));
 
             $rating->set_source_table('rating', array('contextid'  => backup::VAR_CONTEXTID,
-                                                      'component'  => backup_helper::is_sqlparam('mod_digestforum'),
+                                                      'component'  => backup_helper::is_sqlparam('mod_digestdigestforum'),
                                                       'ratingarea' => backup_helper::is_sqlparam('post'),
                                                       'itemid'     => backup::VAR_PARENTID));
             $rating->set_source_alias('rating', 'value');
@@ -151,7 +151,7 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
 
         // Define id annotations
 
-        $digestforum->annotate_ids('scale', 'scale');
+        $digestdigestforum->annotate_ids('scale', 'scale');
 
         $discussion->annotate_ids('group', 'groupid');
 
@@ -173,13 +173,13 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
 
         // Define file annotations
 
-        $digestforum->annotate_files('mod_digestforum', 'intro', null); // This file area hasn't itemid
+        $digestdigestforum->annotate_files('mod_digestdigestforum', 'intro', null); // This file area hasn't itemid
 
-        $post->annotate_files('mod_digestforum', 'post', 'id');
-        $post->annotate_files('mod_digestforum', 'attachment', 'id');
+        $post->annotate_files('mod_digestdigestforum', 'post', 'id');
+        $post->annotate_files('mod_digestdigestforum', 'attachment', 'id');
 
-        // Return the root element (digestforum), wrapped into standard activity structure
-        return $this->prepare_activity_structure($digestforum);
+        // Return the root element (digestdigestforum), wrapped into standard activity structure
+        return $this->prepare_activity_structure($digestdigestforum);
     }
 
 }
