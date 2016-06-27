@@ -1,6 +1,6 @@
-@mod @mod_forum
+@mod @mod_digestforum
 Feature: Forum discussions can be split
-  In order to manage forum discussions in my course
+  In order to manage digestforum discussions in my course
   As a Teacher
   I need to be able to split threads to keep them on topic.
 
@@ -21,19 +21,19 @@ Feature: Forum discussions can be split
     And I turn editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
       | Forum name | Study discussions |
-      | Forum type | Standard forum for general use |
+      | Forum type | Standard digestforum for general use |
       | Description | Forum to discuss your coursework. |
-    And I add a new discussion to "Study discussions" forum with:
+    And I add a new discussion to "Study discussions" digestforum with:
       | Subject | Photosynethis discussion |
       | Message | Lets discuss our learning about Photosynethis this week in this thread. |
     And I log out
     And I log in as "student1"
     And I follow "Science 101"
-    And I reply "Photosynethis discussion" post from "Study discussions" forum with:
+    And I reply "Photosynethis discussion" post from "Study discussions" digestforum with:
       | Message | Can anyone tell me which number is the mass number in the periodic table? |
     And I log out
 
-  Scenario: Split a forum discussion
+  Scenario: Split a digestforum discussion
     Given I log in as "teacher1"
     And I follow "Science 101"
     And I follow "Study discussions"

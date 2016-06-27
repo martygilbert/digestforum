@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A type of forum.
+ * A type of digestforum.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Andrew Robert Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,20 +27,20 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot.'/user/selector/lib.php');
 
 /**
- * Abstract class used by forum subscriber selection controls
- * @package   mod_forum
+ * Abstract class used by digestforum subscriber selection controls
+ * @package   mod_digestforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-abstract class mod_forum_subscriber_selector_base extends user_selector_base {
+abstract class mod_digestforum_subscriber_selector_base extends user_selector_base {
 
     /**
-     * The id of the forum this selector is being used for
+     * The id of the digestforum this selector is being used for
      * @var int
      */
-    protected $forumid = null;
+    protected $digestforumid = null;
     /**
-     * The context of the forum this selector is being used for
+     * The context of the digestforum this selector is being used for
      * @var object
      */
     protected $context = null;
@@ -64,8 +64,8 @@ abstract class mod_forum_subscriber_selector_base extends user_selector_base {
         if (isset($options['currentgroup'])) {
             $this->currentgroup = $options['currentgroup'];
         }
-        if (isset($options['forumid'])) {
-            $this->forumid = $options['forumid'];
+        if (isset($options['digestforumid'])) {
+            $this->digestforumid = $options['digestforumid'];
         }
     }
 
@@ -80,7 +80,7 @@ abstract class mod_forum_subscriber_selector_base extends user_selector_base {
         $options['file'] =  substr(__FILE__, strlen($CFG->dirroot.'/'));
         $options['context'] = $this->context;
         $options['currentgroup'] = $this->currentgroup;
-        $options['forumid'] = $this->forumid;
+        $options['digestforumid'] = $this->digestforumid;
         return $options;
     }
 

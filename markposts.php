@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Set tracking option for the forum.
+ * Set tracking option for the digestforum.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,12 +26,12 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$f          = required_param('f',PARAM_INT); // The forum to mark
+$f          = required_param('f',PARAM_INT); // The digestforum to mark
 $mark       = required_param('mark',PARAM_ALPHA); // Read or unread?
 $d          = optional_param('d',0,PARAM_INT); // Discussion to mark.
 $returnpage = optional_param('returnpage', 'index.php', PARAM_FILE);    // Page to return to.
 
-$url = new moodle_url('/mod/forum/markposts.php', array('f'=>$f, 'mark'=>$mark));
+$url = new moodle_url('/mod/digestforum/markposts.php', array('f'=>$f, 'mark'=>$mark));
 if ($d !== 0) {
     $url->param('d', $d);
 }
@@ -40,15 +40,15 @@ if ($returnpage !== 'index.php') {
 }
 $PAGE->set_url($url);
 
-if (! $forum = $DB->get_record("forum", array("id" => $f))) {
-    print_error('invalidforumid', 'forum');
+if (! $digestforum = $DB->get_record("digestforum", array("id" => $f))) {
+    print_error('invaliddigestforumid', 'digestforum');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $forum->course))) {
+if (! $course = $DB->get_record("course", array("id" => $digestforum->course))) {
     print_error('invalidcourseid');
 }
 
-if (!$cm = get_coursemodule_from_instance("forum", $forum->id, $course->id)) {
+if (!$cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id)) {
     print_error('invalidcoursemodule');
 }
 
@@ -58,48 +58,48 @@ require_login($course, false, $cm);
 require_sesskey();
 
 if ($returnpage == 'index.php') {
-    $returnto = new moodle_url("/mod/forum/$returnpage", array('id' => $course->id));
+    $returnto = new moodle_url("/mod/digestforum/$returnpage", array('id' => $course->id));
 } else {
-    $returnto = new moodle_url("/mod/forum/$returnpage", array('f' => $forum->id));
+    $returnto = new moodle_url("/mod/digestforum/$returnpage", array('f' => $digestforum->id));
 }
 
-if (isguestuser()) {   // Guests can't change forum
+if (isguestuser()) {   // Guests can't change digestforum
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguesttracking', 'forum').'<br /><br />'.get_string('liketologin'), get_login_url(), $returnto);
+    echo $OUTPUT->confirm(get_string('noguesttracking', 'digestforum').'<br /><br />'.get_string('liketologin'), get_login_url(), $returnto);
     echo $OUTPUT->footer();
     exit;
 }
 
 $info = new stdClass();
 $info->name  = fullname($user);
-$info->forum = format_string($forum->name);
+$info->digestforum = format_string($digestforum->name);
 
 if ($mark == 'read') {
     if (!empty($d)) {
-        if (! $discussion = $DB->get_record('forum_discussions', array('id'=> $d, 'forum'=> $forum->id))) {
-            print_error('invaliddiscussionid', 'forum');
+        if (! $discussion = $DB->get_record('digestforum_discussions', array('id'=> $d, 'digestforum'=> $digestforum->id))) {
+            print_error('invaliddiscussionid', 'digestforum');
         }
 
-        forum_tp_mark_discussion_read($user, $d);
+        digestforum_tp_mark_discussion_read($user, $d);
     } else {
         // Mark all messages read in current group
         $currentgroup = groups_get_activity_group($cm);
         if(!$currentgroup) {
-            // mark_forum_read requires ===false, while get_activity_group
+            // mark_digestforum_read requires ===false, while get_activity_group
             // may return 0
             $currentgroup=false;
         }
-        forum_tp_mark_forum_read($user, $forum->id, $currentgroup);
+        digestforum_tp_mark_digestforum_read($user, $digestforum->id, $currentgroup);
     }
 
 /// FUTURE - Add ability to mark them as unread.
 //    } else { // subscribe
-//        if (forum_tp_start_tracking($forum->id, $user->id)) {
-//            redirect($returnto, get_string("nowtracking", "forum", $info), 1);
+//        if (digestforum_tp_start_tracking($digestforum->id, $user->id)) {
+//            redirect($returnto, get_string("nowtracking", "digestforum", $info), 1);
 //        } else {
-//            print_error("Could not start tracking that forum", get_local_referer());
+//            print_error("Could not start tracking that digestforum", get_local_referer());
 //        }
 }
 

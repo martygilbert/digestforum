@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_forum subscription created event.
+ * The mod_digestforum subscription created event.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\event;
+namespace mod_digestforum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_forum subscription created event class.
+ * The mod_digestforum subscription created event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
- *      - int forumid: The id of the forum which read tracking has been disabled on.
+ *      - int digestforumid: The id of the digestforum which read tracking has been disabled on.
  * }
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -58,7 +58,7 @@ class readtracking_disabled extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' has disabled read tracking for the user with id '$this->relateduserid' " .
-            "in the forum with course module id '$this->contextinstanceid'.";
+            "in the digestforum with course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -67,7 +67,7 @@ class readtracking_disabled extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventreadtrackingdisabled', 'mod_forum');
+        return get_string('eventreadtrackingdisabled', 'mod_digestforum');
     }
 
     /**
@@ -76,7 +76,7 @@ class readtracking_disabled extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/forum/view.php', array('f' => $this->other['forumid']));
+        return new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
     }
 
     /**
@@ -85,8 +85,8 @@ class readtracking_disabled extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'forum', 'stop tracking', 'view.php?f=' . $this->other['forumid'],
-            $this->other['forumid'], $this->contextinstanceid);
+        return array($this->courseid, 'digestforum', 'stop tracking', 'view.php?f=' . $this->other['digestforumid'],
+            $this->other['digestforumid'], $this->contextinstanceid);
     }
 
     /**
@@ -102,8 +102,8 @@ class readtracking_disabled extends \core\event\base {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
 
-        if (!isset($this->other['forumid'])) {
-            throw new \coding_exception('The \'forumid\' value must be set in other.');
+        if (!isset($this->other['digestforumid'])) {
+            throw new \coding_exception('The \'digestforumid\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -113,7 +113,7 @@ class readtracking_disabled extends \core\event\base {
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
+        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
 
         return $othermapped;
     }

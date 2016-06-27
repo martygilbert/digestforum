@@ -16,7 +16,7 @@
 
 /**
  * This file keeps track of upgrades to
- * the forum module
+ * the digestforum module
  *
  * Sometimes, changes between versions involve
  * alterations to database structures and other
@@ -35,14 +35,14 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_forum_upgrade($oldversion) {
+function xmldb_digestforum_upgrade($oldversion) {
     global $CFG, $DB;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
@@ -58,17 +58,17 @@ function xmldb_forum_upgrade($oldversion) {
 
         // Run the replacements.
         foreach ($replacements as $old => $new) {
-            $DB->set_field('forum', 'maxattachments', $new, array('maxattachments' => $old));
+            $DB->set_field('digestforum', 'maxattachments', $new, array('maxattachments' => $old));
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2014051201, 'forum');
+        upgrade_mod_savepoint(true, 2014051201, 'digestforum');
     }
 
     if ($oldversion < 2014081500) {
 
-        // Define index course (not unique) to be added to forum_discussions.
-        $table = new xmldb_table('forum_discussions');
+        // Define index course (not unique) to be added to digestforum_discussions.
+        $table = new xmldb_table('digestforum_discussions');
         $index = new xmldb_index('course', XMLDB_INDEX_NOTUNIQUE, array('course'));
 
         // Conditionally launch add index course.
@@ -77,35 +77,35 @@ function xmldb_forum_upgrade($oldversion) {
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2014081500, 'forum');
+        upgrade_mod_savepoint(true, 2014081500, 'digestforum');
     }
 
     if ($oldversion < 2014081900) {
 
-        // Define table forum_discussion_subs to be created.
-        $table = new xmldb_table('forum_discussion_subs');
+        // Define table digestforum_discussion_subs to be created.
+        $table = new xmldb_table('digestforum_discussion_subs');
 
-        // Adding fields to table forum_discussion_subs.
+        // Adding fields to table digestforum_discussion_subs.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('forum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('digestforum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('discussion', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
         $table->add_field('preference', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
 
-        // Adding keys to table forum_discussion_subs.
+        // Adding keys to table digestforum_discussion_subs.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-        $table->add_key('forum', XMLDB_KEY_FOREIGN, array('forum'), 'forum', array('id'));
+        $table->add_key('digestforum', XMLDB_KEY_FOREIGN, array('digestforum'), 'digestforum', array('id'));
         $table->add_key('userid', XMLDB_KEY_FOREIGN, array('userid'), 'user', array('id'));
-        $table->add_key('discussion', XMLDB_KEY_FOREIGN, array('discussion'), 'forum_discussions', array('id'));
+        $table->add_key('discussion', XMLDB_KEY_FOREIGN, array('discussion'), 'digestforum_discussions', array('id'));
         $table->add_key('user_discussions', XMLDB_KEY_UNIQUE, array('userid', 'discussion'));
 
-        // Conditionally launch create table for forum_discussion_subs.
+        // Conditionally launch create table for digestforum_discussion_subs.
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2014081900, 'forum');
+        upgrade_mod_savepoint(true, 2014081900, 'digestforum');
     }
 
     if ($oldversion < 2014103000) {
@@ -113,13 +113,13 @@ function xmldb_forum_upgrade($oldversion) {
         // Later we will remove all those which don't match this ID.
         $sql = "
             SELECT MIN(id) as lowid, userid, postid
-            FROM {forum_read}
+            FROM {digestforum_read}
             GROUP BY userid, postid
             HAVING COUNT(id) > 1";
 
         if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
             foreach ($duplicatedrows as $row) {
-                $DB->delete_records_select('forum_read', 'userid = ? AND postid = ? AND id <> ?', array(
+                $DB->delete_records_select('digestforum_read', 'userid = ? AND postid = ? AND id <> ?', array(
                     $row->userid,
                     $row->postid,
                     $row->lowid,
@@ -129,20 +129,20 @@ function xmldb_forum_upgrade($oldversion) {
         $duplicatedrows->close();
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2014103000, 'forum');
+        upgrade_mod_savepoint(true, 2014103000, 'digestforum');
     }
 
     if ($oldversion < 2014110300) {
 
-        // Changing precision of field preference on table forum_discussion_subs to (10).
-        $table = new xmldb_table('forum_discussion_subs');
+        // Changing precision of field preference on table digestforum_discussion_subs to (10).
+        $table = new xmldb_table('digestforum_discussion_subs');
         $field = new xmldb_field('preference', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1', 'discussion');
 
         // Launch change of precision for field preference.
         $dbman->change_field_precision($table, $field);
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2014110300, 'forum');
+        upgrade_mod_savepoint(true, 2014110300, 'digestforum');
     }
 
     // Moodle v2.8.0 release upgrade line.
@@ -152,10 +152,10 @@ function xmldb_forum_upgrade($oldversion) {
     // Put any upgrade step following this.
     if ($oldversion < 2015102900) {
         // Groupid = 0 is never valid.
-        $DB->set_field('forum_discussions', 'groupid', -1, array('groupid' => 0));
+        $DB->set_field('digestforum_discussions', 'groupid', -1, array('groupid' => 0));
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2015102900, 'forum');
+        upgrade_mod_savepoint(true, 2015102900, 'digestforum');
     }
 
     // Moodle v3.0.0 release upgrade line.
@@ -164,7 +164,7 @@ function xmldb_forum_upgrade($oldversion) {
     if ($oldversion < 2015120800) {
 
         // Add support for pinned discussions.
-        $table = new xmldb_table('forum_discussions');
+        $table = new xmldb_table('digestforum_discussions');
         $field = new xmldb_field('pinned', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'timeend');
 
         if (!$dbman->field_exists($table, $field)) {
@@ -172,7 +172,7 @@ function xmldb_forum_upgrade($oldversion) {
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2015120800, 'forum');
+        upgrade_mod_savepoint(true, 2015120800, 'digestforum');
     }
     // Moodle v3.1.0 release upgrade line.
     // Put any upgrade step following this.

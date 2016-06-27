@@ -1,4 +1,4 @@
-@mod @mod_forum
+@mod @mod_digestforum
 Feature: A user can control their default discussion subscription settings
   In order to automatically subscribe to discussions
   As a user
@@ -21,116 +21,116 @@ Feature: A user can control their default discussion subscription settings
     And I follow "Course 1"
     And I turn editing mode on
 
-  Scenario: Creating a new discussion in an optional forum follows user preferences
+  Scenario: Creating a new discussion in an optional digestforum follows user preferences
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Optional subscription |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     When I press "Add a new discussion topic"
     Then "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
     And I log out
     And I log in as "student2"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I press "Add a new discussion topic"
     And "input[name=discussionsubscribe]:not([checked=checked])" "css_element" should exist
 
-  Scenario: Replying to an existing discussion in an optional forum follows user preferences
+  Scenario: Replying to an existing discussion in an optional digestforum follows user preferences
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Test post subject"
     When I follow "Reply"
     Then "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
     And I log out
     And I log in as "student2"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Test post subject"
     And I follow "Reply"
     And "input[name=discussionsubscribe]:not([checked=checked])" "css_element" should exist
 
-  Scenario: Creating a new discussion in an automatic forum follows forum subscription
+  Scenario: Creating a new discussion in an automatic digestforum follows digestforum subscription
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Auto subscription |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     When I press "Add a new discussion topic"
     Then "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
     And I log out
     And I log in as "student2"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I press "Add a new discussion topic"
     And "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
 
-  Scenario: Replying to an existing discussion in an automatic forum follows forum subscription
+  Scenario: Replying to an existing discussion in an automatic digestforum follows digestforum subscription
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Optional subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Test post subject"
     When I follow "Reply"
     Then "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
     And I log out
     And I log in as "student2"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I follow "Test post subject"
     And I follow "Reply"
     And "input[name=discussionsubscribe]:not([checked=checked])" "css_element" should exist
 
-  Scenario: Replying to an existing discussion in an automatic forum which has been unsubscribed from follows user preferences
+  Scenario: Replying to an existing discussion in an automatic digestforum which has been unsubscribed from follows user preferences
     Given I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test forum name |
-      | Forum type        | Standard forum for general use |
-      | Description       | Test forum description |
+      | Forum name        | Test digestforum name |
+      | Forum type        | Standard digestforum for general use |
+      | Description       | Test digestforum description |
       | Subscription mode | Auto subscription |
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject |
       | Message | Test post message |
     And I log out
     And I log in as "student1"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I click on "You are subscribed to this discussion. Click to unsubscribe." "link" in the "Test post subject" "table_row"
-    And I should see "Student One will NOT be notified of new posts in 'Test post subject' of 'Test forum name'"
+    And I should see "Student One will NOT be notified of new posts in 'Test post subject' of 'Test digestforum name'"
     And I follow "Test post subject"
     When I follow "Reply"
     And "input[name=discussionsubscribe][checked=checked]" "css_element" should exist
     And I log out
     And I log in as "student2"
     And I follow "Course 1"
-    And I follow "Test forum name"
+    And I follow "Test digestforum name"
     And I click on "You are subscribed to this discussion. Click to unsubscribe." "link" in the "Test post subject" "table_row"
-    And I should see "Student Two will NOT be notified of new posts in 'Test post subject' of 'Test forum name'"
+    And I should see "Student Two will NOT be notified of new posts in 'Test post subject' of 'Test digestforum name'"
     And I follow "Test post subject"
     And I follow "Reply"
     And "input[name=discussionsubscribe]:not([checked=checked])" "css_element" should exist
