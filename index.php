@@ -252,7 +252,7 @@ if ($generaldigestforums) {
 
                 if (($digestforum->trackingtype == DFORUM_TRACKING_FORCED) && ($CFG->digestforum_allowforcedreadtracking)) {
                     $trackedlink = $stryes;
-                } else if ($digestforum->trackingtype === DFORUM_TRACKING_OFF || ($USER->trackdigestforums == 0)) {
+                } else if ($digestforum->trackingtype === DFORUM_TRACKING_OFF || ($USER->trackforums == 0)) {
                     $trackedlink = '-';
                 } else {
                     $aurl = new moodle_url('/mod/digestforum/settracking.php', array(
@@ -390,7 +390,7 @@ if ($course->id != SITEID) {    // Only real courses have learning digestforums
 
                     if (($digestforum->trackingtype == DFORUM_TRACKING_FORCED) && ($CFG->digestforum_allowforcedreadtracking)) {
                         $trackedlink = $stryes;
-                    } else if ($digestforum->trackingtype === DFORUM_TRACKING_OFF || ($USER->trackdigestforums == 0)) {
+                    } else if ($digestforum->trackingtype === DFORUM_TRACKING_OFF || ($USER->trackforums == 0)) {
                         $trackedlink = '-';
                     } else {
                         $aurl = new moodle_url('/mod/digestforum/settracking.php', array('id'=>$digestforum->id));
