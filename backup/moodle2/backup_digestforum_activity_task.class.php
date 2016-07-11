@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Defines backup_digestdigestforum_activity_task class
+ * Defines backup_digestforum_activity_task class
  *
- * @package   mod_digestdigestforum
+ * @package   mod_digestforum
  * @category  backup
  * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,13 +26,13 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/digestdigestforum/backup/moodle2/backup_digestdigestforum_stepslib.php');
-require_once($CFG->dirroot . '/mod/digestdigestforum/backup/moodle2/backup_digestdigestforum_settingslib.php');
+require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/backup_digestforum_stepslib.php');
+require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/backup_digestforum_settingslib.php');
 
 /**
  * Provides the steps to perform one complete backup of the Forum instance
  */
-class backup_digestdigestforum_activity_task extends backup_activity_task {
+class backup_digestforum_activity_task extends backup_activity_task {
 
     /**
      * No specific settings for this activity
@@ -41,10 +41,10 @@ class backup_digestdigestforum_activity_task extends backup_activity_task {
     }
 
     /**
-     * Defines a backup step to store the instance data in the digestdigestforum.xml file
+     * Defines a backup step to store the instance data in the digestforum.xml file
      */
     protected function define_my_steps() {
-        $this->add_step(new backup_digestdigestforum_activity_structure_step('digestdigestforum structure', 'digestdigestforum.xml'));
+        $this->add_step(new backup_digestforum_activity_structure_step('digestforum structure', 'digestforum.xml'));
     }
 
     /**
@@ -58,28 +58,28 @@ class backup_digestdigestforum_activity_task extends backup_activity_task {
 
         $base = preg_quote($CFG->wwwroot,"/");
 
-        // Link to the list of digestdigestforums
-        $search="/(".$base."\/mod\/digestdigestforum\/index.php\?id\=)([0-9]+)/";
+        // Link to the list of digestforums
+        $search="/(".$base."\/mod\/digestforum\/index.php\?id\=)([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMINDEX*$2@$', $content);
 
-        // Link to digestdigestforum view by moduleid
-        $search="/(".$base."\/mod\/digestdigestforum\/view.php\?id\=)([0-9]+)/";
+        // Link to digestforum view by moduleid
+        $search="/(".$base."\/mod\/digestforum\/view.php\?id\=)([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMVIEWBYID*$2@$', $content);
 
-        // Link to digestdigestforum view by digestdigestforumid
-        $search="/(".$base."\/mod\/digestdigestforum\/view.php\?f\=)([0-9]+)/";
+        // Link to digestforum view by digestforumid
+        $search="/(".$base."\/mod\/digestforum\/view.php\?f\=)([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMVIEWBYF*$2@$', $content);
 
-        // Link to digestdigestforum discussion with parent syntax
-        $search = "/(".$base."\/mod\/digestdigestforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
+        // Link to digestforum discussion with parent syntax
+        $search = "/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
-        // Link to digestdigestforum discussion with relative syntax
-        $search="/(".$base."\/mod\/digestdigestforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
+        // Link to digestforum discussion with relative syntax
+        $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
 
-        // Link to digestdigestforum discussion by discussionid
-        $search="/(".$base."\/mod\/digestdigestforum\/discuss.php\?d\=)([0-9]+)/";
+        // Link to digestforum discussion by discussionid
+        $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)/";
         $content= preg_replace($search, '$@DDFORUMDISCUSSIONVIEW*$2@$', $content);
 
         return $content;
