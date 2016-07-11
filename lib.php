@@ -1129,7 +1129,7 @@ function digestforum_cron() {
                         //$posthtml .= "</font></p>";
                     //} else {
                         //$posthtml .= "-> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
-                        $posthtml .= "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
+                        //$posthtml .= "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
                     //}
                     $posthtml .= '<p>';
 
