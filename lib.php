@@ -1078,7 +1078,9 @@ function digestforum_cron() {
                 //$headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'digestforum').'</a>';
 
                 $posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>'
-                    . '<br /><hr size="1" noshade="noshade" />';
+                    //. '<br /><hr size="1" noshade="noshade"/>';
+                    //. '<br /><hr style="height: 3px; width: 100%" />';
+                    . '<br /><hr style="height: 3px; width: 100%; color:#000; background-color:#000" />';
                 //$posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>'
                     //. '<br /><hr size="1" noshade="noshade" />';
 
@@ -1229,7 +1231,9 @@ function digestforum_cron() {
                     $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/digestforum/index.php?id={$digestforum->course}'>" . get_string("digestmailpost", "digestforum") . '</a>';
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
 					*/
-                    $posthtml .= '<hr size="1" noshade="noshade" /></p>';
+                    //$posthtml .= '<hr size="1" noshade="noshade"/></p>';
+                    //$posthtml .= '<hr style="height: 3px; width: 100%" /></p>';
+                    $posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000" /></p>';
                 }
 
                 if (empty($userto->mailformat) || $userto->mailformat != 1) {
