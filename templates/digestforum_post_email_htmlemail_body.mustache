@@ -79,9 +79,6 @@
 }}
 <table border="0" cellpadding="3" cellspacing="0" class="digestforumpost">
     <tr class="header">
-        <td width="35" valign="top" class="picture left">
-            {{{ authorpicture }}}
-        </td>
         <td class="topic {{# firstpost }}starter{{/ firstpost }}">
             <div class="subject">
                 {{{ subject }}}
@@ -95,14 +92,6 @@
         </td>
     </tr>
     <tr>
-        <td class="left side" valign="top">
-            {{# grouppicture }}
-                {{{ grouppicture }}}
-            {{/ grouppicture }}
-            {{^ grouppicture }}
-                &nbsp;
-            {{/ grouppicture }}
-        </td>
         <td class="content">
             {{# attachments }}
                 <div class="attachments">
