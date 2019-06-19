@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum discussion created event.
+ * The mod_forum discussion created event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum discussion created event class.
+ * The mod_forum discussion created event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
- *      - int digestforumid: The id of the digestforum the discussion is in.
+ *      - int forumid: The id of the forum the discussion is in.
  * }
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -49,7 +49,7 @@ class discussion_created extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'c';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'digestforum_discussions';
+        $this->data['objecttable'] = 'forum_discussions';
     }
 
     /**
@@ -58,7 +58,7 @@ class discussion_created extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has created the discussion with id '$this->objectid' in the digestforum " .
+        return "The user with id '$this->userid' has created the discussion with id '$this->objectid' in the forum " .
             "with course module id '$this->contextinstanceid'.";
     }
 
@@ -68,7 +68,7 @@ class discussion_created extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventdiscussioncreated', 'mod_digestforum');
+        return get_string('eventdiscussioncreated', 'mod_forum');
     }
 
     /**
@@ -77,7 +77,7 @@ class discussion_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
+        return new \moodle_url('/mod/forum/discuss.php', array('d' => $this->objectid));
     }
 
     /**
@@ -87,10 +87,10 @@ class discussion_created extends \core\event\base {
      */
     protected function get_legacy_logdata() {
 
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
+        // The legacy log table expects a relative path to /mod/forum/.
+        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/forum/'));
 
-        return array($this->courseid, 'digestforum', 'add discussion', $logurl, $this->objectid, $this->contextinstanceid);
+        return array($this->courseid, 'forum', 'add discussion', $logurl, $this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -101,8 +101,8 @@ class discussion_created extends \core\event\base {
      */
     protected function validate_data() {
         parent::validate_data();
-        if (!isset($this->other['digestforumid'])) {
-            throw new \coding_exception('The \'digestforumid\' value must be set in other.');
+        if (!isset($this->other['forumid'])) {
+            throw new \coding_exception('The \'forumid\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -111,12 +111,12 @@ class discussion_created extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return array('db' => 'forum_discussions', 'restore' => 'forum_discussion');
     }
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
 
         return $othermapped;
     }

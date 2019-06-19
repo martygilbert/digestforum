@@ -16,15 +16,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Set the mail digest option in a specific digestforum for a user.
+ * Set the mail digest option in a specific forum for a user.
  *
  * @copyright 2013 Andrew Nicols
- * @package   mod_digestforum
+ * @package   mod_forum
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(__DIR__)) . '/config.php');
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+require(__DIR__.'/../../config.php');
+require_once($CFG->dirroot.'/mod/forum/lib.php');
 
 $id = required_param('id', PARAM_INT);
 $maildigest = required_param('maildigest', PARAM_INT);
@@ -33,26 +33,26 @@ $backtoindex = optional_param('backtoindex', 0, PARAM_INT);
 // We must have a valid session key.
 require_sesskey();
 
-$digestforum = $DB->get_record('digestforum', array('id' => $id));
-$course  = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
-$cm      = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
+$forum = $DB->get_record('forum', array('id' => $id));
+$course  = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+$cm      = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
 
-$url = new moodle_url('/mod/digestforum/maildigest.php', array(
+$url = new moodle_url('/mod/forum/maildigest.php', array(
     'id' => $id,
     'maildigest' => $maildigest,
 ));
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
-$digestoptions = digestforum_get_user_digest_options();
+$digestoptions = forum_get_user_digest_options();
 
 $info = new stdClass();
 $info->name  = fullname($USER);
-$info->digestforum = format_string($digestforum->name);
-digestforum_set_user_maildigest($digestforum, $maildigest);
+$info->forum = format_string($forum->name);
+forum_set_user_maildigest($forum, $maildigest);
 $info->maildigest = $maildigest;
 
 if ($maildigest === -1) {
@@ -60,13 +60,13 @@ if ($maildigest === -1) {
     $info->maildigest = $USER->maildigest;
     $info->maildigesttitle = $digestoptions[$info->maildigest];
     $info->maildigestdescription = get_string('emaildigest_' . $info->maildigest,
-        'mod_digestforum', $info);
-    $updatemessage = get_string('emaildigestupdated_default', 'digestforum', $info);
+        'mod_forum', $info);
+    $updatemessage = get_string('emaildigestupdated_default', 'forum', $info);
 } else {
     $info->maildigesttitle = $digestoptions[$info->maildigest];
     $info->maildigestdescription = get_string('emaildigest_' . $info->maildigest,
-        'mod_digestforum', $info);
-    $updatemessage = get_string('emaildigestupdated', 'digestforum', $info);
+        'mod_forum', $info);
+    $updatemessage = get_string('emaildigestupdated', 'forum', $info);
 }
 
 if ($backtoindex) {

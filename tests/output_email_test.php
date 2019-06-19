@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The module digestforums tests
+ * The module forums tests
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -25,12 +25,12 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Tests for the digestforum output/email class.
+ * Tests for the forum output/email class.
  *
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_digestforum_output_email_testcase extends advanced_testcase {
+class mod_forum_output_email_testcase extends advanced_testcase {
     /**
      * Data provider for the postdate function tests.
      */
@@ -38,9 +38,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
         return array(
             'Timed discussions disabled, timestart unset' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 0,
+                    'forum_enabletimedposts' => 0,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -51,9 +51,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
             ),
             'Timed discussions disabled, timestart set and newer' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 0,
+                    'forum_enabletimedposts' => 0,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -65,9 +65,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
             ),
             'Timed discussions disabled, timestart set but older' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 0,
+                    'forum_enabletimedposts' => 0,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -79,9 +79,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
             ),
             'Timed discussions enabled, timestart unset' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 1,
+                    'forum_enabletimedposts' => 1,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -92,9 +92,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
             ),
             'Timed discussions enabled, timestart set and newer' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 1,
+                    'forum_enabletimedposts' => 1,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -106,9 +106,9 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
             ),
             'Timed discussions enabled, timestart set but older' => array(
                 'globalconfig'      => array(
-                    'digestforum_enabletimedposts' => 1,
+                    'forum_enabletimedposts' => 1,
                 ),
-                'digestforumconfig'       => array(
+                'forumconfig'       => array(
                 ),
                 'postconfig'        => array(
                     'modified'  => 1000,
@@ -122,17 +122,17 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
     }
 
     /**
-     * Test for the digestforum email renderable postdate.
+     * Test for the forum email renderable postdate.
      *
      * @dataProvider postdate_provider
      *
      * @param array  $globalconfig      The configuration to set on $CFG
-     * @param array  $digestforumconfig       The configuration for this digestforum
+     * @param array  $forumconfig       The configuration for this forum
      * @param array  $postconfig        The configuration for this post
      * @param array  $discussionconfig  The configuration for this discussion
      * @param string $expectation       The expected date
      */
-    public function test_postdate($globalconfig, $digestforumconfig, $postconfig, $discussionconfig, $expectation) {
+    public function test_postdate($globalconfig, $forumconfig, $postconfig, $discussionconfig, $expectation) {
         global $CFG, $DB;
         $this->resetAfterTest(true);
 
@@ -144,40 +144,40 @@ class mod_digestforum_output_email_testcase extends advanced_testcase {
         // Create the fixture.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) array('course' => $course->id));
-        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
+        $forum = $this->getDataGenerator()->create_module('forum', (object) array('course' => $course->id));
+        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a new discussion.
-        $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion(
+        $discussion = $this->getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion(
             (object) array_merge($discussionconfig, array(
                 'course'    => $course->id,
-                'digestforum'     => $digestforum->id,
+                'forum'     => $forum->id,
                 'userid'    => $user->id,
             )));
 
         // Apply the discussion configuration.
         // Some settings are ignored by the generator and must be set manually.
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $discussion->id));
+        $discussion = $DB->get_record('forum_discussions', array('id' => $discussion->id));
         foreach ($discussionconfig as $key => $value) {
             $discussion->$key = $value;
         }
-        $DB->update_record('digestforum_discussions', $discussion);
+        $DB->update_record('forum_discussions', $discussion);
 
         // Apply the post configuration.
         // Some settings are ignored by the generator and must be set manually.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('forum_posts', array('discussion' => $discussion->id));
         foreach ($postconfig as $key => $value) {
             $post->$key = $value;
         }
-        $DB->update_record('digestforum_posts', $post);
+        $DB->update_record('forum_posts', $post);
 
         // Create the renderable.
-        $renderable = new mod_digestforum\output\digestforum_post_email(
+        $renderable = new mod_forum\output\forum_post_email(
                 $course,
                 $cm,
-                $digestforum,
+                $forum,
                 $discussion,
                 $post,
                 $user,

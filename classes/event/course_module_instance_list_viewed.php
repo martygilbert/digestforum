@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum instance list viewed event.
+ * The mod_forum instance list viewed event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum instance list viewed event class.
+ * The mod_forum instance list viewed event class.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

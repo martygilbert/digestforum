@@ -17,12 +17,12 @@
 /**
  * Forum post renderable.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\output;
+namespace mod_forum\output;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -34,38 +34,38 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @property boolean $viewfullnames Whether to override fullname()
  */
-class digestforum_post implements \renderable, \templatable {
+class forum_post implements \renderable, \templatable {
 
     /**
-     * The course that the digestforum post is in.
+     * The course that the forum post is in.
      *
      * @var object $course
      */
     protected $course = null;
 
     /**
-     * The course module for the digestforum.
+     * The course module for the forum.
      *
      * @var object $cm
      */
     protected $cm = null;
 
     /**
-     * The digestforum that the post is in.
+     * The forum that the post is in.
      *
-     * @var object $digestforum
+     * @var object $forum
      */
-    protected $digestforum = null;
+    protected $forum = null;
 
     /**
-     * The discussion that the digestforum post is in.
+     * The discussion that the forum post is in.
      *
      * @var object $discussion
      */
     protected $discussion = null;
 
     /**
-     * The digestforum post being displayed.
+     * The forum post being displayed.
      *
      * @var object $post
      */
@@ -79,7 +79,7 @@ class digestforum_post implements \renderable, \templatable {
     protected $canreply = false;
 
     /**
-     * Whether to override digestforum display when displaying usernames.
+     * Whether to override forum display when displaying usernames.
      * @var boolean $viewfullnames
      */
     protected $viewfullnames = false;
@@ -108,21 +108,21 @@ class digestforum_post implements \renderable, \templatable {
     );
 
     /**
-     * Builds a renderable digestforum post
+     * Builds a renderable forum post
      *
-     * @param object $course Course of the digestforum
-     * @param object $cm Course Module of the digestforum
-     * @param object $digestforum The digestforum of the post
+     * @param object $course Course of the forum
+     * @param object $cm Course Module of the forum
+     * @param object $forum The forum of the post
      * @param object $discussion Discussion thread in which the post appears
      * @param object $post The post
      * @param object $author Author of the post
      * @param object $recipient Recipient of the email
      * @param bool $canreply True if the user can reply to the post
      */
-    public function __construct($course, $cm, $digestforum, $discussion, $post, $author, $recipient, $canreply) {
+    public function __construct($course, $cm, $forum, $discussion, $post, $author, $recipient, $canreply) {
         $this->course = $course;
         $this->cm = $cm;
-        $this->digestforum = $digestforum;
+        $this->forum = $forum;
         $this->discussion = $discussion;
         $this->post = $post;
         $this->author = $author;
@@ -133,9 +133,9 @@ class digestforum_post implements \renderable, \templatable {
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
-     * @param \mod_digestforum_renderer $renderer The render to be used for formatting the message and attachments
+     * @param \mod_forum_renderer $renderer The render to be used for formatting the message and attachments
      * @param bool $plaintext Whethe the target is a plaintext target
-     * @return stdClass Data ready for use in a mustache template
+     * @return array Data ready for use in a mustache template
      */
     public function export_for_template(\renderer_base $renderer, $plaintext = false) {
         if ($plaintext) {
@@ -148,15 +148,15 @@ class digestforum_post implements \renderable, \templatable {
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
-     * @param \mod_digestforum_renderer $renderer The render to be used for formatting the message and attachments
-     * @return stdClass Data ready for use in a mustache template
+     * @param \mod_forum_renderer $renderer The render to be used for formatting the message and attachments
+     * @return array Data ready for use in a mustache template
      */
-    protected function export_for_template_text(\mod_digestforum_renderer $renderer) {
+    protected function export_for_template_text(\mod_forum_renderer $renderer) {
         return array(
             'id'                            => html_entity_decode($this->post->id),
             'coursename'                    => html_entity_decode($this->get_coursename()),
             'courselink'                    => html_entity_decode($this->get_courselink()),
-            'digestforumname'               => html_entity_decode($this->get_digestforumname()),
+            'forumname'                     => html_entity_decode($this->get_forumname()),
             'showdiscussionname'            => html_entity_decode($this->get_showdiscussionname()),
             'discussionname'                => html_entity_decode($this->get_discussionname()),
             'subject'                       => html_entity_decode($this->get_subject()),
@@ -172,32 +172,32 @@ class digestforum_post implements \renderable, \templatable {
             'firstpost'                     => $this->get_is_firstpost(),
             'replylink'                     => $this->get_replylink(),
             'unsubscribediscussionlink'     => $this->get_unsubscribediscussionlink(),
-            'unsubscribedigestforumlink'    => $this->get_unsubscribedigestforumlink(),
+            'unsubscribeforumlink'          => $this->get_unsubscribeforumlink(),
             'parentpostlink'                => $this->get_parentpostlink(),
 
-            'digestforumindexlink'          => $this->get_digestforumindexlink(),
-            'digestforumviewlink'           => $this->get_digestforumviewlink(),
+            'forumindexlink'                => $this->get_forumindexlink(),
+            'forumviewlink'                 => $this->get_forumviewlink(),
             'discussionlink'                => $this->get_discussionlink(),
 
             'authorlink'                    => $this->get_authorlink(),
-            'authorpicture'                 => $this->get_author_picture(),
+            'authorpicture'                 => $this->get_author_picture($renderer),
 
-            'grouppicture'                  => $this->get_group_picture(),
+            'grouppicture'                  => $this->get_group_picture($renderer),
         );
     }
 
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
-     * @param \mod_digestforum_renderer $renderer The render to be used for formatting the message and attachments
-     * @return stdClass Data ready for use in a mustache template
+     * @param \mod_forum_renderer $renderer The render to be used for formatting the message and attachments
+     * @return array Data ready for use in a mustache template
      */
-    protected function export_for_template_html(\mod_digestforum_renderer $renderer) {
+    protected function export_for_template_html(\mod_forum_renderer $renderer) {
         return array(
             'id'                            => $this->post->id,
             'coursename'                    => $this->get_coursename(),
             'courselink'                    => $this->get_courselink(),
-            'digestforumname'               => $this->get_digestforumname(),
+            'forumname'                     => $this->get_forumname(),
             'showdiscussionname'            => $this->get_showdiscussionname(),
             'discussionname'                => $this->get_discussionname(),
             'subject'                       => $this->get_subject(),
@@ -213,17 +213,17 @@ class digestforum_post implements \renderable, \templatable {
             'firstpost'                     => $this->get_is_firstpost(),
             'replylink'                     => $this->get_replylink(),
             'unsubscribediscussionlink'     => $this->get_unsubscribediscussionlink(),
-            'unsubscribedigestforumlink'    => $this->get_unsubscribedigestforumlink(),
+            'unsubscribeforumlink'          => $this->get_unsubscribeforumlink(),
             'parentpostlink'                => $this->get_parentpostlink(),
 
-            'digestforumindexlink'          => $this->get_digestforumindexlink(),
-            'digestforumviewlink'           => $this->get_digestforumviewlink(),
+            'forumindexlink'                => $this->get_forumindexlink(),
+            'forumviewlink'                 => $this->get_forumviewlink(),
             'discussionlink'                => $this->get_discussionlink(),
 
             'authorlink'                    => $this->get_authorlink(),
-            'authorpicture'                 => $this->get_author_picture(),
+            'authorpicture'                 => $this->get_author_picture($renderer),
 
-            'grouppicture'                  => $this->get_group_picture(),
+            'grouppicture'                  => $this->get_group_picture($renderer),
         );
     }
 
@@ -275,14 +275,14 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * Get the link to the digestforum index for this course.
+     * Get the link to the forum index for this course.
      *
      * @return string
      */
-    public function get_digestforumindexlink() {
+    public function get_forumindexlink() {
         $link = new \moodle_url(
             // Posts are viewed on the topic.
-            '/mod/digestforum/index.php', array(
+            '/mod/forum/index.php', array(
                 'id'    => $this->course->id,
             )
         );
@@ -291,15 +291,15 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * Get the link to the view page for this digestforum.
+     * Get the link to the view page for this forum.
      *
      * @return string
      */
-    public function get_digestforumviewlink() {
+    public function get_forumviewlink() {
         $link = new \moodle_url(
             // Posts are viewed on the topic.
-            '/mod/digestforum/view.php', array(
-                'f' => $this->digestforum->id,
+            '/mod/forum/view.php', array(
+                'f' => $this->forum->id,
             )
         );
 
@@ -314,7 +314,7 @@ class digestforum_post implements \renderable, \templatable {
     protected function _get_discussionlink() {
         return new \moodle_url(
             // Posts are viewed on the topic.
-            '/mod/digestforum/discuss.php', array(
+            '/mod/forum/discuss.php', array(
                 // Within a discussion.
                 'd' => $this->discussion->id,
             )
@@ -373,14 +373,17 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * Get the link to unsubscribe from the digestforum.
+     * Get the link to unsubscribe from the forum.
      *
      * @return string
      */
-    public function get_unsubscribedigestforumlink() {
+    public function get_unsubscribeforumlink() {
+        if (!\mod_forum\subscriptions::is_subscribable($this->forum)) {
+            return null;
+        }
         $link = new \moodle_url(
-            '/mod/digestforum/subscribe.php', array(
-                'id' => $this->digestforum->id,
+            '/mod/forum/subscribe.php', array(
+                'id' => $this->forum->id,
             )
         );
 
@@ -393,9 +396,12 @@ class digestforum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_unsubscribediscussionlink() {
+        if (!\mod_forum\subscriptions::is_subscribable($this->forum)) {
+            return null;
+        }
         $link = new \moodle_url(
-            '/mod/digestforum/subscribe.php', array(
-                'id'  => $this->digestforum->id,
+            '/mod/forum/subscribe.php', array(
+                'id'  => $this->forum->id,
                 'd'   => $this->discussion->id,
             )
         );
@@ -410,7 +416,7 @@ class digestforum_post implements \renderable, \templatable {
      */
     public function get_replylink() {
         return new \moodle_url(
-            '/mod/digestforum/post.php', array(
+            '/mod/forum/post.php', array(
                 'reply' => $this->post->id,
             )
         );
@@ -435,7 +441,7 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * ID number of the course that the digestforum is in.
+     * ID number of the course that the forum is in.
      *
      * @return string
      */
@@ -444,7 +450,7 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * The full name of the course that the digestforum is in.
+     * The full name of the course that the forum is in.
      *
      * @return string
      */
@@ -455,7 +461,7 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * The name of the course that the digestforum is in.
+     * The name of the course that the forum is in.
      *
      * @return string
      */
@@ -466,12 +472,12 @@ class digestforum_post implements \renderable, \templatable {
     }
 
     /**
-     * The name of the digestforum.
+     * The name of the forum.
      *
      * @return string
      */
-    public function get_digestforumname() {
-        return format_string($this->digestforum->name, true);
+    public function get_forumname() {
+        return format_string($this->forum->name, true);
     }
 
     /**
@@ -485,13 +491,13 @@ class digestforum_post implements \renderable, \templatable {
 
     /**
      * Whether to show the discussion name.
-     * If the digestforum name matches the discussion name, the discussion name
+     * If the forum name matches the discussion name, the discussion name
      * is not typically displayed.
      *
      * @return boolean
      */
     public function get_showdiscussionname() {
-        return ($this->digestforum->name !== $this->discussion->name);
+        return ($this->forum->name !== $this->discussion->name);
     }
 
     /**
@@ -527,7 +533,7 @@ class digestforum_post implements \renderable, \templatable {
         global $CFG;
 
         $postmodified = $this->post->modified;
-        if (!empty($CFG->digestforum_enabletimedposts) && ($this->discussion->timestart > $postmodified)) {
+        if (!empty($CFG->forum_enabletimedposts) && ($this->discussion->timestart > $postmodified)) {
             $postmodified = $this->discussion->timestart;
         }
 
@@ -537,28 +543,28 @@ class digestforum_post implements \renderable, \templatable {
     /**
      * The HTML for the author's user picture.
      *
+     * @param   \renderer_base $renderer
      * @return string
      */
-    public function get_author_picture() {
-        global $OUTPUT;
-
-        return $OUTPUT->user_picture($this->author, array('courseid' => $this->course->id));
+    public function get_author_picture(\renderer_base $renderer) {
+        return $renderer->user_picture($this->author, array('courseid' => $this->course->id));
     }
 
     /**
      * The HTML for a group picture.
      *
+     * @param   \renderer_base $renderer
      * @return string
      */
-    public function get_group_picture() {
+    public function get_group_picture(\renderer_base $renderer) {
         if (isset($this->userfrom->groups)) {
-            $groups = $this->userfrom->groups[$this->digestforum->id];
+            $groups = $this->userfrom->groups[$this->forum->id];
         } else {
             $groups = groups_get_all_groups($this->course->id, $this->author->id, $this->cm->groupingid);
         }
 
         if ($this->get_is_firstpost()) {
-            return print_group_picture($groups, $this->course->id, false, true, true);
+            return print_group_picture($groups, $this->course->id, false, true, true, true);
         }
     }
 }

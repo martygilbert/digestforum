@@ -1,11 +1,11 @@
-@mod @mod_digestforum @_file_upload
-Feature: Add digestforum activities and discussions
+@mod @mod_forum @_file_upload
+Feature: Add forum activities and discussions
   In order to discuss topics with other users
   As a teacher
-  I need to add digestforum activities to moodle courses
+  I need to add forum activities to moodle courses
 
   @javascript
-  Scenario: Add a digestforum and a discussion attaching files
+  Scenario: Add a forum and a discussion attaching files
     Given the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher | 1 | teacher1@example.com |
@@ -18,29 +18,28 @@ Feature: Add digestforum activities and discussions
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And I log in as "teacher1"
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Forum type | Standard digestforum for general use |
-      | Description | Test digestforum description |
-    And I add a new discussion to "Test digestforum name" digestforum with:
+      | Forum name | Test forum name |
+      | Forum type | Standard forum for general use |
+      | Description | Test forum description |
+    And I add a new discussion to "Test forum name" forum with:
       | Subject | Forum post 1 |
       | Message | This is the body |
     And I log out
     And I log in as "student1"
-    And I follow "Course 1"
-    When I add a new discussion to "Test digestforum name" digestforum with:
+    And I am on "Course 1" course homepage
+    When I add a new discussion to "Test forum name" forum with:
       | Subject | Post with attachment |
       | Message | This is the body |
       | Attachment | lib/tests/fixtures/empty.txt |
-    And I reply "Forum post 1" post from "Test digestforum name" digestforum with:
+    And I reply "Forum post 1" post from "Test forum name" forum with:
       | Subject | Reply with attachment |
       | Message | This is the body |
       | Attachment | lib/tests/fixtures/upload_users.csv |
     Then I should see "Reply with attachment"
     And I should see "upload_users.csv"
-    And I follow "Test digestforum name"
+    And I follow "Test forum name"
     And I follow "Post with attachment"
     And I should see "empty.txt"
     And I follow "Edit"

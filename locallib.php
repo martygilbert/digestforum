@@ -16,25 +16,25 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library of functions for digestforum outside of the core api
+ * Library of functions for forum outside of the core api
  */
 
-require_once($CFG->dirroot . '/mod/digestforum/lib.php');
+require_once($CFG->dirroot . '/mod/forum/lib.php');
 require_once($CFG->libdir . '/portfolio/caller.php');
 
 /**
- * @package   mod_digestforum
+ * @package   mod_forum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class digestforum_portfolio_caller extends portfolio_module_caller_base {
+class forum_portfolio_caller extends portfolio_module_caller_base {
 
     protected $postid;
     protected $discussionid;
     protected $attachment;
 
     private $post;
-    private $digestforum;
+    private $forum;
     private $discussion;
     private $posts;
     private $keyedfiles; // just using multifiles isn't enough if we're exporting a full thread
@@ -55,7 +55,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
     function __construct($callbackargs) {
         parent::__construct($callbackargs);
         if (!$this->postid && !$this->discussionid) {
-            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'digestforum');
+            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'forum');
         }
     }
     /**
@@ -65,8 +65,8 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         global $DB;
 
         if ($this->postid) {
-            if (!$this->post = $DB->get_record('digestforum_posts', array('id' => $this->postid))) {
-                throw new portfolio_caller_exception('invalidpostid', 'digestforum');
+            if (!$this->post = $DB->get_record('forum_posts', array('id' => $this->postid))) {
+                throw new portfolio_caller_exception('invalidpostid', 'forum');
             }
         }
 
@@ -76,18 +76,18 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         } else if ($this->post) {
             $dbparams = array('id' => $this->post->discussion);
         } else {
-            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'digestforum');
+            throw new portfolio_caller_exception('mustprovidediscussionorpost', 'forum');
         }
 
-        if (!$this->discussion = $DB->get_record('digestforum_discussions', $dbparams)) {
-            throw new portfolio_caller_exception('invaliddiscussionid', 'digestforum');
+        if (!$this->discussion = $DB->get_record('forum_discussions', $dbparams)) {
+            throw new portfolio_caller_exception('invaliddiscussionid', 'forum');
         }
 
-        if (!$this->digestforum = $DB->get_record('digestforum', array('id' => $this->discussion->digestforum))) {
-            throw new portfolio_caller_exception('invaliddigestforumid', 'digestforum');
+        if (!$this->forum = $DB->get_record('forum', array('id' => $this->discussion->forum))) {
+            throw new portfolio_caller_exception('invalidforumid', 'forum');
         }
 
-        if (!$this->cm = get_coursemodule_from_instance('digestforum', $this->digestforum->id)) {
+        if (!$this->cm = get_coursemodule_from_instance('forum', $this->forum->id)) {
             throw new portfolio_caller_exception('invalidcoursemodule');
         }
 
@@ -95,10 +95,16 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         $fs = get_file_storage();
         if ($this->post) {
             if ($this->attachment) {
+                // Make sure the requested file belongs to this post.
+                $file = $fs->get_file_by_id($this->attachment);
+                if ($file->get_contextid() != $this->modcontext->id
+                    || $file->get_itemid() != $this->post->id) {
+                    throw new portfolio_caller_exception('filenotfound');
+                }
                 $this->set_file_and_format_data($this->attachment);
             } else {
-                $attach = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'attachment', $this->post->id, 'timemodified', false);
-                $embed  = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'post', $this->post->id, 'timemodified', false);
+                $attach = $fs->get_area_files($this->modcontext->id, 'mod_forum', 'attachment', $this->post->id, 'timemodified', false);
+                $embed  = $fs->get_area_files($this->modcontext->id, 'mod_forum', 'post', $this->post->id, 'timemodified', false);
                 $files = array_merge($attach, $embed);
                 $this->set_file_and_format_data($files);
             }
@@ -109,11 +115,11 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             }
         } else { // whole thread
             $fs = get_file_storage();
-            $this->posts = digestforum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
+            $this->posts = forum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
             $this->multifiles = array();
             foreach ($this->posts as $post) {
-                $attach = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'attachment', $post->id, 'timemodified', false);
-                $embed  = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'post', $post->id, 'timemodified', false);
+                $attach = $fs->get_area_files($this->modcontext->id, 'mod_forum', 'attachment', $post->id, 'timemodified', false);
+                $embed  = $fs->get_area_files($this->modcontext->id, 'mod_forum', 'post', $post->id, 'timemodified', false);
                 $files = array_merge($attach, $embed);
                 if ($files) {
                     $this->keyedfiles[$post->id] = $files;
@@ -142,7 +148,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      */
     function get_return_url() {
         global $CFG;
-        return $CFG->wwwroot . '/mod/digestforum/discuss.php?d=' . $this->discussion->id;
+        return $CFG->wwwroot . '/mod/forum/discuss.php?d=' . $this->discussion->id;
     }
     /**
      * @global object
@@ -154,7 +160,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         $navlinks = array();
         $navlinks[] = array(
             'name' => format_string($this->discussion->name),
-            'link' => $CFG->wwwroot . '/mod/digestforum/discuss.php?d=' . $this->discussion->id,
+            'link' => $CFG->wwwroot . '/mod/forum/discuss.php?d=' . $this->discussion->id,
             'type' => 'title'
         );
         return array($navlinks, $this->cm);
@@ -202,8 +208,8 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
             if ($writingleap) {
                 // add on an extra 'selection' entry
-                $selection = new portfolio_format_leap2a_entry('digestforumdiscussion' . $this->discussionid,
-                    get_string('discussion', 'digestforum') . ': ' . $this->discussion->name, 'selection');
+                $selection = new portfolio_format_leap2a_entry('forumdiscussion' . $this->discussionid,
+                    get_string('discussion', 'forum') . ': ' . $this->discussion->name, 'selection');
                 $leapwriter->add_entry($selection);
                 $leapwriter->make_selection($selection, $ids, 'Grouping');
                 $content = $leapwriter->to_xml();
@@ -230,7 +236,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
 
     /**
      * helper function to add a leap2a entry element
-     * that corresponds to a single digestforum post,
+     * that corresponds to a single forum post,
      * including any attachments
      *
      * the entry/ies are added directly to the leapwriter, which is passed by ref
@@ -242,12 +248,12 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      * @return int id of new entry
      */
     private function prepare_post_leap2a(portfolio_format_leap2a_writer $leapwriter, $post, $posthtml) {
-        $entry = new portfolio_format_leap2a_entry('digestforumpost' . $post->id,  $post->subject, 'resource', $posthtml);
+        $entry = new portfolio_format_leap2a_entry('forumpost' . $post->id,  $post->subject, 'resource', $posthtml);
         $entry->published = $post->created;
         $entry->updated = $post->modified;
         $entry->author = $post->author;
         if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id])) {
-            $leapwriter->link_files($entry, $this->keyedfiles[$post->id], 'digestforumpost' . $post->id . 'attachment');
+            $leapwriter->link_files($entry, $this->keyedfiles[$post->id], 'forumpost' . $post->id . 'attachment');
         }
         $entry->add_category('web', 'resource_type');
         $leapwriter->add_entry($entry);
@@ -274,7 +280,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         }
     }
     /**
-     * this is a very cut down version of what is in digestforum_make_mail_post
+     * this is a very cut down version of what is in forum_make_mail_post
      *
      * @global object
      * @param int $post
@@ -296,9 +302,9 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         $options = portfolio_format_text_options();
         $format = $this->get('exporter')->get('format');
         $formattedtext = format_text($post->message, $post->messageformat, $options, $this->get('course')->id);
-        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_digestforum', 'post', $post->id, $format);
+        $formattedtext = portfolio_rewrite_pluginfile_urls($formattedtext, $this->modcontext->id, 'mod_forum', 'post', $post->id, $format);
 
-        $output = '<table border="0" cellpadding="3" cellspacing="0" class="digestforumpost">';
+        $output = '<table border="0" cellpadding="3" cellspacing="0" class="forumpost">';
 
         $output .= '<tr class="header"><td>';// can't print picture.
         $output .= '</td>';
@@ -314,7 +320,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         $by = new stdClass();
         $by->name = $fullname;
         $by->date = userdate($post->modified, '', core_date::get_user_timezone($this->user));
-        $output .= '<div class="author">'.get_string('bynameondate', 'digestforum', $by).'</div>';
+        $output .= '<div class="author">'.get_string('bynameondate', 'forum', $by).'</div>';
 
         $output .= '</td></tr>';
 
@@ -326,7 +332,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
 
         if (is_array($this->keyedfiles) && array_key_exists($post->id, $this->keyedfiles) && is_array($this->keyedfiles[$post->id]) && count($this->keyedfiles[$post->id]) > 0) {
             $output .= '<div class="attachments">';
-            $output .= '<br /><b>' .  get_string('attachments', 'digestforum') . '</b>:<br /><br />';
+            $output .= '<br /><b>' .  get_string('attachments', 'forum') . '</b>:<br /><br />';
             foreach ($this->keyedfiles[$post->id] as $file) {
                 $output .= $format->file_output($file)  . '<br/ >';
             }
@@ -374,17 +380,17 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
     function check_permissions() {
         $context = context_module::instance($this->cm->id);
         if ($this->post) {
-            return (has_capability('mod/digestforum:exportpost', $context)
+            return (has_capability('mod/forum:exportpost', $context)
                 || ($this->post->userid == $this->user->id
-                    && has_capability('mod/digestforum:exportownpost', $context)));
+                    && has_capability('mod/forum:exportownpost', $context)));
         }
-        return has_capability('mod/digestforum:exportdiscussion', $context);
+        return has_capability('mod/forum:exportdiscussion', $context);
     }
     /**
      * @return string
      */
     public static function display_name() {
-        return get_string('modulename', 'digestforum');
+        return get_string('modulename', 'forum');
     }
 
     public static function base_supported_formats() {
@@ -400,7 +406,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
  * @copyright 2012 David Mudrak <david@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class digestforum_file_info_container extends file_info {
+class forum_file_info_container extends file_info {
     /** @var file_browser */
     protected $browser;
     /** @var stdClass */
@@ -431,7 +437,7 @@ class digestforum_file_info_container extends file_info {
         $this->browser = $browser;
         $this->course = $course;
         $this->cm = $cm;
-        $this->component = 'mod_digestforum';
+        $this->component = 'mod_forum';
         $this->context = $context;
         $this->areas = $areas;
         $this->filearea = $filearea;
@@ -519,7 +525,7 @@ class digestforum_file_info_container extends file_info {
         $rs = $DB->get_recordset_sql($sql, $params);
         $children = array();
         foreach ($rs as $record) {
-            if (($child = $this->browser->get_file_info($this->context, 'mod_digestforum', $this->filearea, $record->itemid))
+            if (($child = $this->browser->get_file_info($this->context, 'mod_forum', $this->filearea, $record->itemid))
                     && ($returnemptyfolders || $child->count_non_empty_children($extensions))) {
                 $children[] = $child;
             }
@@ -564,5 +570,133 @@ class digestforum_file_info_container extends file_info {
      */
     public function get_parent() {
         return $this->browser->get_file_info($this->context);
+    }
+}
+
+/**
+ * Returns forum posts tagged with a specified tag.
+ *
+ * This is a callback used by the tag area mod_forum/forum_posts to search for forum posts
+ * tagged with a specific tag.
+ *
+ * @param core_tag_tag $tag
+ * @param bool $exclusivemode if set to true it means that no other entities tagged with this tag
+ *             are displayed on the page and the per-page limit may be bigger
+ * @param int $fromctx context id where the link was displayed, may be used by callbacks
+ *            to display items in the same context first
+ * @param int $ctx context id where to search for records
+ * @param bool $rec search in subcontexts as well
+ * @param int $page 0-based number of page being displayed
+ * @return \core_tag\output\tagindex
+ */
+function mod_forum_get_tagged_posts($tag, $exclusivemode = false, $fromctx = 0, $ctx = 0, $rec = 1, $page = 0) {
+    global $OUTPUT;
+    $perpage = $exclusivemode ? 20 : 5;
+
+    // Build the SQL query.
+    $ctxselect = context_helper::get_preload_record_columns_sql('ctx');
+    $query = "SELECT fp.id, fp.subject, fd.forum, fp.discussion, f.type, fd.timestart, fd.timeend, fd.groupid, fd.firstpost,
+                    fp.parent, fp.userid,
+                    cm.id AS cmid, c.id AS courseid, c.shortname, c.fullname, $ctxselect
+                FROM {forum_posts} fp
+                JOIN {forum_discussions} fd ON fp.discussion = fd.id
+                JOIN {forum} f ON f.id = fd.forum
+                JOIN {modules} m ON m.name='forum'
+                JOIN {course_modules} cm ON cm.module = m.id AND cm.instance = f.id
+                JOIN {tag_instance} tt ON fp.id = tt.itemid
+                JOIN {course} c ON cm.course = c.id
+                JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :coursemodulecontextlevel
+               WHERE tt.itemtype = :itemtype AND tt.tagid = :tagid AND tt.component = :component
+                 AND cm.deletioninprogress = 0
+                 AND fp.id %ITEMFILTER% AND c.id %COURSEFILTER%";
+
+    $params = array('itemtype' => 'forum_posts', 'tagid' => $tag->id, 'component' => 'mod_forum',
+                    'coursemodulecontextlevel' => CONTEXT_MODULE);
+
+    if ($ctx) {
+        $context = $ctx ? context::instance_by_id($ctx) : context_system::instance();
+        $query .= $rec ? ' AND (ctx.id = :contextid OR ctx.path LIKE :path)' : ' AND ctx.id = :contextid';
+        $params['contextid'] = $context->id;
+        $params['path'] = $context->path.'/%';
+    }
+
+    $query .= " ORDER BY ";
+    if ($fromctx) {
+        // In order-clause specify that modules from inside "fromctx" context should be returned first.
+        $fromcontext = context::instance_by_id($fromctx);
+        $query .= ' (CASE WHEN ctx.id = :fromcontextid OR ctx.path LIKE :frompath THEN 0 ELSE 1 END),';
+        $params['fromcontextid'] = $fromcontext->id;
+        $params['frompath'] = $fromcontext->path.'/%';
+    }
+    $query .= ' c.sortorder, cm.id, fp.id';
+
+    $totalpages = $page + 1;
+
+    // Use core_tag_index_builder to build and filter the list of items.
+    $builder = new core_tag_index_builder('mod_forum', 'forum_posts', $query, $params, $page * $perpage, $perpage + 1);
+    while ($item = $builder->has_item_that_needs_access_check()) {
+        context_helper::preload_from_record($item);
+        $courseid = $item->courseid;
+        if (!$builder->can_access_course($courseid)) {
+            $builder->set_accessible($item, false);
+            continue;
+        }
+        $modinfo = get_fast_modinfo($builder->get_course($courseid));
+        // Set accessibility of this item and all other items in the same course.
+        $builder->walk(function ($taggeditem) use ($courseid, $modinfo, $builder, $item) {
+            // Checking permission for Q&A forums performs additional DB queries, do not do them in bulk.
+            if ($taggeditem->courseid == $courseid && ($taggeditem->type != 'qanda' || $taggeditem->id == $item->id)) {
+                $cm = $modinfo->get_cm($taggeditem->cmid);
+                $forum = (object)['id'     => $taggeditem->forum,
+                                  'course' => $taggeditem->courseid,
+                                  'type'   => $taggeditem->type
+                ];
+                $discussion = (object)['id'        => $taggeditem->discussion,
+                                       'timestart' => $taggeditem->timestart,
+                                       'timeend'   => $taggeditem->timeend,
+                                       'groupid'   => $taggeditem->groupid,
+                                       'firstpost' => $taggeditem->firstpost
+                ];
+                $post = (object)['id' => $taggeditem->id,
+                                       'parent' => $taggeditem->parent,
+                                       'userid'   => $taggeditem->userid,
+                                       'groupid'   => $taggeditem->groupid
+                ];
+
+                $accessible = forum_user_can_see_post($forum, $discussion, $post, null, $cm);
+                $builder->set_accessible($taggeditem, $accessible);
+            }
+        });
+    }
+
+    $items = $builder->get_items();
+    if (count($items) > $perpage) {
+        $totalpages = $page + 2; // We don't need exact page count, just indicate that the next page exists.
+        array_pop($items);
+    }
+
+    // Build the display contents.
+    if ($items) {
+        $tagfeed = new core_tag\output\tagfeed();
+        foreach ($items as $item) {
+            context_helper::preload_from_record($item);
+            $modinfo = get_fast_modinfo($item->courseid);
+            $cm = $modinfo->get_cm($item->cmid);
+            $pageurl = new moodle_url('/mod/forum/discuss.php', array('d' => $item->discussion), 'p' . $item->id);
+            $pagename = format_string($item->subject, true, array('context' => context_module::instance($item->cmid)));
+            $pagename = html_writer::link($pageurl, $pagename);
+            $courseurl = course_get_url($item->courseid, $cm->sectionnum);
+            $cmname = html_writer::link($cm->url, $cm->get_formatted_name());
+            $coursename = format_string($item->fullname, true, array('context' => context_course::instance($item->courseid)));
+            $coursename = html_writer::link($courseurl, $coursename);
+            $icon = html_writer::link($pageurl, html_writer::empty_tag('img', array('src' => $cm->get_icon_url())));
+            $tagfeed->add($icon, $pagename, $cmname.'<br>'.$coursename);
+        }
+
+        $content = $OUTPUT->render_from_template('core_tag/tagfeed',
+            $tagfeed->export_for_template($OUTPUT));
+
+        return new core_tag\output\tagindex($tag, 'mod_forum', 'forum_posts', $content,
+            $exclusivemode, $fromctx, $ctx, $rec, $page, $totalpages);
     }
 }

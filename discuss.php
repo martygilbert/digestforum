@@ -19,7 +19,7 @@
  * Displays a post, and all the posts below it.
  * If no post is given, displays all posts in a discussion
  *
- * @package   mod_digestforum
+ * @package   mod_forum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,80 +29,80 @@ require_once('../../config.php');
 $d      = required_param('d', PARAM_INT);                // Discussion ID
 $parent = optional_param('parent', 0, PARAM_INT);        // If set, then display this post and all children.
 $mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread
-$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another digestforum
+$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another forum
 $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
 
-$url = new moodle_url('/mod/digestforum/discuss.php', array('d'=>$d));
+$url = new moodle_url('/mod/forum/discuss.php', array('d'=>$d));
 if ($parent !== 0) {
     $url->param('parent', $parent);
 }
 $PAGE->set_url($url);
 
-$discussion = $DB->get_record('digestforum_discussions', array('id' => $d), '*', MUST_EXIST);
+$discussion = $DB->get_record('forum_discussions', array('id' => $d), '*', MUST_EXIST);
 $course = $DB->get_record('course', array('id' => $discussion->course), '*', MUST_EXIST);
-$digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
-$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
+$forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 
 require_course_login($course, true, $cm);
 
 // move this down fix for MDL-6926
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+require_once($CFG->dirroot.'/mod/forum/lib.php');
 
 $modcontext = context_module::instance($cm->id);
-require_capability('mod/digestforum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'digestforum');
+require_capability('mod/forum:viewdiscussion', $modcontext, NULL, true, 'noviewdiscussionspermission', 'forum');
 
-if (!empty($CFG->enablerssfeeds) && !empty($CFG->digestforum_enablerssfeeds) && $digestforum->rsstype && $digestforum->rssarticles) {
+if (!empty($CFG->enablerssfeeds) && !empty($CFG->forum_enablerssfeeds) && $forum->rsstype && $forum->rssarticles) {
     require_once("$CFG->libdir/rsslib.php");
 
-    $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($digestforum->name);
-    rss_add_http_header($modcontext, 'mod_digestforum', $digestforum, $rsstitle);
+    $rsstitle = format_string($course->shortname, true, array('context' => context_course::instance($course->id))) . ': ' . format_string($forum->name);
+    rss_add_http_header($modcontext, 'mod_forum', $forum, $rsstitle);
 }
 
 // Move discussion if requested.
 if ($move > 0 and confirm_sesskey()) {
-    $return = $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$discussion->id;
+    $return = $CFG->wwwroot.'/mod/forum/discuss.php?d='.$discussion->id;
 
-    if (!$digestforumto = $DB->get_record('digestforum', array('id' => $move))) {
-        print_error('cannotmovetonotexist', 'digestforum', $return);
+    if (!$forumto = $DB->get_record('forum', array('id' => $move))) {
+        print_error('cannotmovetonotexist', 'forum', $return);
     }
 
-    require_capability('mod/digestforum:movediscussions', $modcontext);
+    require_capability('mod/forum:movediscussions', $modcontext);
 
-    if ($digestforum->type == 'single') {
-        print_error('cannotmovefromsingledigestforum', 'digestforum', $return);
+    if ($forum->type == 'single') {
+        print_error('cannotmovefromsingleforum', 'forum', $return);
     }
 
-    if (!$digestforumto = $DB->get_record('digestforum', array('id' => $move))) {
-        print_error('cannotmovetonotexist', 'digestforum', $return);
+    if (!$forumto = $DB->get_record('forum', array('id' => $move))) {
+        print_error('cannotmovetonotexist', 'forum', $return);
     }
 
-    if ($digestforumto->type == 'single') {
-        print_error('cannotmovetosingledigestforum', 'digestforum', $return);
+    if ($forumto->type == 'single') {
+        print_error('cannotmovetosingleforum', 'forum', $return);
     }
 
-    // Get target digestforum cm and check it is visible to current user.
+    // Get target forum cm and check it is visible to current user.
     $modinfo = get_fast_modinfo($course);
-    $digestforums = $modinfo->get_instances_of('digestforum');
-    if (!array_key_exists($digestforumto->id, $digestforums)) {
-        print_error('cannotmovetonotfound', 'digestforum', $return);
+    $forums = $modinfo->get_instances_of('forum');
+    if (!array_key_exists($forumto->id, $forums)) {
+        print_error('cannotmovetonotfound', 'forum', $return);
     }
-    $cmto = $digestforums[$digestforumto->id];
+    $cmto = $forums[$forumto->id];
     if (!$cmto->uservisible) {
-        print_error('cannotmovenotvisible', 'digestforum', $return);
+        print_error('cannotmovenotvisible', 'forum', $return);
     }
 
     $destinationctx = context_module::instance($cmto->id);
-    require_capability('mod/digestforum:startdiscussion', $destinationctx);
+    require_capability('mod/forum:startdiscussion', $destinationctx);
 
-    if (!digestforum_move_attachments($discussion, $digestforum->id, $digestforumto->id)) {
+    if (!forum_move_attachments($discussion, $forum->id, $forumto->id)) {
         echo $OUTPUT->notification("Errors occurred while moving attachment directories - check your file permissions");
     }
-    // For each subscribed user in this digestforum and discussion, copy over per-discussion subscriptions if required.
+    // For each subscribed user in this forum and discussion, copy over per-discussion subscriptions if required.
     $discussiongroup = $discussion->groupid == -1 ? 0 : $discussion->groupid;
-    $potentialsubscribers = \mod_digestforum\subscriptions::fetch_subscribed_users(
-        $digestforum,
+    $potentialsubscribers = \mod_forum\subscriptions::fetch_subscribed_users(
+        $forum,
         $discussiongroup,
         $modcontext,
         'u.id',
@@ -110,44 +110,44 @@ if ($move > 0 and confirm_sesskey()) {
     );
 
     // Pre-seed the subscribed_discussion caches.
-    // Firstly for the digestforum being moved to.
-    \mod_digestforum\subscriptions::fill_subscription_cache($digestforumto->id);
+    // Firstly for the forum being moved to.
+    \mod_forum\subscriptions::fill_subscription_cache($forumto->id);
     // And also for the discussion being moved.
-    \mod_digestforum\subscriptions::fill_subscription_cache($digestforum->id);
+    \mod_forum\subscriptions::fill_subscription_cache($forum->id);
     $subscriptionchanges = array();
     $subscriptiontime = time();
     foreach ($potentialsubscribers as $subuser) {
         $userid = $subuser->id;
-        $targetsubscription = \mod_digestforum\subscriptions::is_subscribed($userid, $digestforumto, null, $cmto);
-        $discussionsubscribed = \mod_digestforum\subscriptions::is_subscribed($userid, $digestforum, $discussion->id);
-        $digestforumsubscribed = \mod_digestforum\subscriptions::is_subscribed($userid, $digestforum);
+        $targetsubscription = \mod_forum\subscriptions::is_subscribed($userid, $forumto, null, $cmto);
+        $discussionsubscribed = \mod_forum\subscriptions::is_subscribed($userid, $forum, $discussion->id);
+        $forumsubscribed = \mod_forum\subscriptions::is_subscribed($userid, $forum);
 
-        if ($digestforumsubscribed && !$discussionsubscribed && $targetsubscription) {
+        if ($forumsubscribed && !$discussionsubscribed && $targetsubscription) {
             // The user has opted out of this discussion and the move would cause them to receive notifications again.
             // Ensure they are unsubscribed from the discussion still.
-            $subscriptionchanges[$userid] = \mod_digestforum\subscriptions::DFORUM_DISCUSSION_UNSUBSCRIBED;
-        } else if (!$digestforumsubscribed && $discussionsubscribed && !$targetsubscription) {
+            $subscriptionchanges[$userid] = \mod_forum\subscriptions::FORUM_DISCUSSION_UNSUBSCRIBED;
+        } else if (!$forumsubscribed && $discussionsubscribed && !$targetsubscription) {
             // The user has opted into this discussion and would otherwise not receive the subscription after the move.
             // Ensure they are subscribed to the discussion still.
             $subscriptionchanges[$userid] = $subscriptiontime;
         }
     }
 
-    $DB->set_field('digestforum_discussions', 'digestforum', $digestforumto->id, array('id' => $discussion->id));
-    $DB->set_field('digestforum_read', 'digestforumid', $digestforumto->id, array('discussionid' => $discussion->id));
+    $DB->set_field('forum_discussions', 'forum', $forumto->id, array('id' => $discussion->id));
+    $DB->set_field('forum_read', 'forumid', $forumto->id, array('discussionid' => $discussion->id));
 
     // Delete the existing per-discussion subscriptions and replace them with the newly calculated ones.
-    $DB->delete_records('digestforum_discussion_subs', array('discussion' => $discussion->id));
+    $DB->delete_records('forum_discussion_subs', array('discussion' => $discussion->id));
     $newdiscussion = clone $discussion;
-    $newdiscussion->digestforum = $digestforumto->id;
+    $newdiscussion->forum = $forumto->id;
     foreach ($subscriptionchanges as $userid => $preference) {
-        if ($preference != \mod_digestforum\subscriptions::DFORUM_DISCUSSION_UNSUBSCRIBED) {
+        if ($preference != \mod_forum\subscriptions::FORUM_DISCUSSION_UNSUBSCRIBED) {
             // Users must have viewdiscussion to a discussion.
-            if (has_capability('mod/digestforum:viewdiscussion', $destinationctx, $userid)) {
-                \mod_digestforum\subscriptions::subscribe_user_to_discussion($userid, $newdiscussion, $destinationctx);
+            if (has_capability('mod/forum:viewdiscussion', $destinationctx, $userid)) {
+                \mod_forum\subscriptions::subscribe_user_to_discussion($userid, $newdiscussion, $destinationctx);
             }
         } else {
-            \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($userid, $newdiscussion, $destinationctx);
+            \mod_forum\subscriptions::unsubscribe_user_from_discussion($userid, $newdiscussion, $destinationctx);
         }
     }
 
@@ -155,94 +155,94 @@ if ($move > 0 and confirm_sesskey()) {
         'context' => $destinationctx,
         'objectid' => $discussion->id,
         'other' => array(
-            'fromdigestforumid' => $digestforum->id,
-            'todigestforumid' => $digestforumto->id,
+            'fromforumid' => $forum->id,
+            'toforumid' => $forumto->id,
         )
     );
-    $event = \mod_digestforum\event\discussion_moved::create($params);
-    $event->add_record_snapshot('digestforum_discussions', $discussion);
-    $event->add_record_snapshot('digestforum', $digestforum);
-    $event->add_record_snapshot('digestforum', $digestforumto);
+    $event = \mod_forum\event\discussion_moved::create($params);
+    $event->add_record_snapshot('forum_discussions', $discussion);
+    $event->add_record_snapshot('forum', $forum);
+    $event->add_record_snapshot('forum', $forumto);
     $event->trigger();
 
-    // Delete the RSS files for the 2 digestforums to force regeneration of the feeds
-    require_once($CFG->dirroot.'/mod/digestforum/rsslib.php');
-    digestforum_rss_delete_file($digestforum);
-    digestforum_rss_delete_file($digestforumto);
+    // Delete the RSS files for the 2 forums to force regeneration of the feeds
+    require_once($CFG->dirroot.'/mod/forum/rsslib.php');
+    forum_rss_delete_file($forum);
+    forum_rss_delete_file($forumto);
 
     redirect($return.'&move=-1&sesskey='.sesskey());
 }
 // Pin or unpin discussion if requested.
 if ($pin !== -1 && confirm_sesskey()) {
-    require_capability('mod/digestforum:pindiscussions', $modcontext);
+    require_capability('mod/forum:pindiscussions', $modcontext);
 
-    $params = array('context' => $modcontext, 'objectid' => $discussion->id, 'other' => array('digestforumid' => $digestforum->id));
+    $params = array('context' => $modcontext, 'objectid' => $discussion->id, 'other' => array('forumid' => $forum->id));
 
     switch ($pin) {
-        case DFORUM_DISCUSSION_PINNED:
+        case FORUM_DISCUSSION_PINNED:
             // Pin the discussion and trigger discussion pinned event.
-            digestforum_discussion_pin($modcontext, $digestforum, $discussion);
+            forum_discussion_pin($modcontext, $forum, $discussion);
             break;
-        case DFORUM_DISCUSSION_UNPINNED:
+        case FORUM_DISCUSSION_UNPINNED:
             // Unpin the discussion and trigger discussion unpinned event.
-            digestforum_discussion_unpin($modcontext, $digestforum, $discussion);
+            forum_discussion_unpin($modcontext, $forum, $discussion);
             break;
         default:
             echo $OUTPUT->notification("Invalid value when attempting to pin/unpin discussion");
             break;
     }
 
-    redirect(new moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id)));
+    redirect(new moodle_url('/mod/forum/discuss.php', array('d' => $discussion->id)));
 }
 
 // Trigger discussion viewed event.
-digestforum_discussion_view($modcontext, $digestforum, $discussion);
+forum_discussion_view($modcontext, $forum, $discussion);
 
 unset($SESSION->fromdiscussion);
 
 if ($mode) {
-    set_user_preference('digestforum_displaymode', $mode);
+    set_user_preference('forum_displaymode', $mode);
 }
 
-$displaymode = get_user_preferences('digestforum_displaymode', $CFG->digestforum_displaymode);
+$displaymode = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
 
 if ($parent) {
     // If flat AND parent, then force nested display this time
-    if ($displaymode == DFORUM_MODE_FLATOLDEST or $displaymode == DFORUM_MODE_FLATNEWEST) {
-        $displaymode = DFORUM_MODE_NESTED;
+    if ($displaymode == FORUM_MODE_FLATOLDEST or $displaymode == FORUM_MODE_FLATNEWEST) {
+        $displaymode = FORUM_MODE_NESTED;
     }
 } else {
     $parent = $discussion->firstpost;
 }
 
-if (! $post = digestforum_get_post_full($parent)) {
-    print_error("notexists", 'digestforum', "$CFG->wwwroot/mod/digestforum/view.php?f=$digestforum->id");
+if (! $post = forum_get_post_full($parent)) {
+    print_error("notexists", 'forum', "$CFG->wwwroot/mod/forum/view.php?f=$forum->id");
 }
 
-if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm)) {
-    print_error('noviewdiscussionspermission', 'digestforum', "$CFG->wwwroot/mod/digestforum/view.php?id=$digestforum->id");
+if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
+    print_error('noviewdiscussionspermission', 'forum', "$CFG->wwwroot/mod/forum/view.php?id=$forum->id");
 }
 
 if ($mark == 'read' or $mark == 'unread') {
-    if ($CFG->digestforum_usermarksread && digestforum_tp_can_track_digestforums($digestforum) && digestforum_tp_is_tracked($digestforum)) {
+    if ($CFG->forum_usermarksread && forum_tp_can_track_forums($forum) && forum_tp_is_tracked($forum)) {
         if ($mark == 'read') {
-            digestforum_tp_add_read_record($USER->id, $postid);
+            forum_tp_add_read_record($USER->id, $postid);
         } else {
             // unread
-            digestforum_tp_delete_read_records($USER->id, $postid);
+            forum_tp_delete_read_records($USER->id, $postid);
         }
     }
 }
 
-$searchform = digestforum_search_form($course);
+$searchform = forum_search_form($course);
 
-$digestforumnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
-if (empty($digestforumnode)) {
-    $digestforumnode = $PAGE->navbar;
+$forumnode = $PAGE->navigation->find($cm->id, navigation_node::TYPE_ACTIVITY);
+if (empty($forumnode)) {
+    $forumnode = $PAGE->navbar;
 } else {
-    $digestforumnode->make_active();
+    $forumnode->make_active();
 }
-$node = $digestforumnode->add(format_string($discussion->name), new moodle_url('/mod/digestforum/discuss.php', array('d'=>$discussion->id)));
+$node = $forumnode->add(format_string($discussion->name), new moodle_url('/mod/forum/discuss.php', array('d'=>$discussion->id)));
 $node->display = false;
 if ($node && $post->id != $discussion->firstpost) {
     $node->add(format_string($post->subject), $PAGE->url);
@@ -251,33 +251,33 @@ if ($node && $post->id != $discussion->firstpost) {
 $PAGE->set_title("$course->shortname: ".format_string($discussion->name));
 $PAGE->set_heading($course->fullname);
 $PAGE->set_button($searchform);
-$renderer = $PAGE->get_renderer('mod_digestforum');
+$renderer = $PAGE->get_renderer('mod_forum');
 
 echo $OUTPUT->header();
 
-echo $OUTPUT->heading(format_string($digestforum->name), 2);
+echo $OUTPUT->heading(format_string($forum->name), 2);
 echo $OUTPUT->heading(format_string($discussion->name), 3, 'discussionname');
 
 // is_guest should be used here as this also checks whether the user is a guest in the current course.
 // Guests and visitors cannot subscribe - only enrolled users.
-if ((!is_guest($modcontext, $USER) && isloggedin()) && has_capability('mod/digestforum:viewdiscussion', $modcontext)) {
+if ((!is_guest($modcontext, $USER) && isloggedin()) && has_capability('mod/forum:viewdiscussion', $modcontext)) {
     // Discussion subscription.
-    if (\mod_digestforum\subscriptions::is_subscribable($digestforum)) {
+    if (\mod_forum\subscriptions::is_subscribable($forum)) {
         echo html_writer::div(
-            digestforum_get_discussion_subscription_icon($digestforum, $post->discussion, null, true),
+            forum_get_discussion_subscription_icon($forum, $post->discussion, null, true),
             'discussionsubscription'
         );
-        echo digestforum_get_discussion_subscription_icon_preloaders();
+        echo forum_get_discussion_subscription_icon_preloaders();
     }
 }
 
 
-/// Check to see if groups are being used in this digestforum
+/// Check to see if groups are being used in this forum
 /// If so, make sure the current person is allowed to see this discussion
 /// Also, if we know they should be able to reply, then explicitly set $canreply for performance reasons
 
-$canreply = digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $modcontext);
-if (!$canreply and $digestforum->type !== 'news') {
+$canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+if (!$canreply and $forum->type !== 'news') {
     if (isguestuser() or !isloggedin()) {
         $canreply = true;
     }
@@ -289,18 +289,18 @@ if (!$canreply and $digestforum->type !== 'news') {
 }
 
 // Output the links to neighbour discussions.
-$neighbours = digestforum_get_discussion_neighbours($cm, $discussion, $digestforum);
+$neighbours = forum_get_discussion_neighbours($cm, $discussion, $forum);
 $neighbourlinks = $renderer->neighbouring_discussion_navigation($neighbours['prev'], $neighbours['next']);
 echo $neighbourlinks;
 
 /// Print the controls across the top
-echo '<div class="discussioncontrols clearfix"><div class="controlscontainer">';
+echo '<div class="discussioncontrols clearfix"><div class="controlscontainer m-b-1">';
 
-if (!empty($CFG->enableportfolios) && has_capability('mod/digestforum:exportdiscussion', $modcontext)) {
+if (!empty($CFG->enableportfolios) && has_capability('mod/forum:exportdiscussion', $modcontext)) {
     require_once($CFG->libdir.'/portfoliolib.php');
     $button = new portfolio_add_button();
-    $button->set_callback_options('digestforum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_digestforum');
-    $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_digestforum'));
+    $button->set_callback_options('forum_portfolio_caller', array('discussionid' => $discussion->id), 'mod_forum');
+    $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_forum'));
     $buttonextraclass = '';
     if (empty($button)) {
         // no portfolio plugin available.
@@ -314,42 +314,42 @@ if (!empty($CFG->enableportfolios) && has_capability('mod/digestforum:exportdisc
 
 // groups selector not needed here
 echo '<div class="discussioncontrol displaymode">';
-digestforum_print_mode_form($discussion->id, $displaymode);
+forum_print_mode_form($discussion->id, $displaymode);
 echo "</div>";
 
-if ($digestforum->type != 'single'
-            && has_capability('mod/digestforum:movediscussions', $modcontext)) {
+if ($forum->type != 'single'
+            && has_capability('mod/forum:movediscussions', $modcontext)) {
 
     echo '<div class="discussioncontrol movediscussion">';
-    // Popup menu to move discussions to other digestforums. The discussion in a
-    // single discussion digestforum can't be moved.
+    // Popup menu to move discussions to other forums. The discussion in a
+    // single discussion forum can't be moved.
     $modinfo = get_fast_modinfo($course);
-    if (isset($modinfo->instances['digestforum'])) {
-        $digestforummenu = array();
-        // Check digestforum types and eliminate simple discussions.
-        $digestforumcheck = $DB->get_records('digestforum', array('course' => $course->id),'', 'id, type');
-        foreach ($modinfo->instances['digestforum'] as $digestforumcm) {
-            if (!$digestforumcm->uservisible || !has_capability('mod/digestforum:startdiscussion',
-                context_module::instance($digestforumcm->id))) {
+    if (isset($modinfo->instances['forum'])) {
+        $forummenu = array();
+        // Check forum types and eliminate simple discussions.
+        $forumcheck = $DB->get_records('forum', array('course' => $course->id),'', 'id, type');
+        foreach ($modinfo->instances['forum'] as $forumcm) {
+            if (!$forumcm->uservisible || !has_capability('mod/forum:startdiscussion',
+                context_module::instance($forumcm->id))) {
                 continue;
             }
-            $section = $digestforumcm->sectionnum;
+            $section = $forumcm->sectionnum;
             $sectionname = get_section_name($course, $section);
-            if (empty($digestforummenu[$section])) {
-                $digestforummenu[$section] = array($sectionname => array());
+            if (empty($forummenu[$section])) {
+                $forummenu[$section] = array($sectionname => array());
             }
-            $digestforumidcompare = $digestforumcm->instance != $digestforum->id;
-            $digestforumtypecheck = $digestforumcheck[$digestforumcm->instance]->type !== 'single';
-            if ($digestforumidcompare and $digestforumtypecheck) {
-                $url = "/mod/digestforum/discuss.php?d=$discussion->id&move=$digestforumcm->instance&sesskey=".sesskey();
-                $digestforummenu[$section][$sectionname][$url] = format_string($digestforumcm->name);
+            $forumidcompare = $forumcm->instance != $forum->id;
+            $forumtypecheck = $forumcheck[$forumcm->instance]->type !== 'single';
+            if ($forumidcompare and $forumtypecheck) {
+                $url = "/mod/forum/discuss.php?d=$discussion->id&move=$forumcm->instance&sesskey=".sesskey();
+                $forummenu[$section][$sectionname][$url] = format_string($forumcm->name);
             }
         }
-        if (!empty($digestforummenu)) {
+        if (!empty($forummenu)) {
             echo '<div class="movediscussionoption">';
-            $select = new url_select($digestforummenu, '',
-                    array('/mod/digestforum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "digestforum")),
-                    'digestforummenu', get_string('move'));
+            $select = new url_select($forummenu, '',
+                    array('/mod/forum/discuss.php?d=' . $discussion->id => get_string("movethisdiscussionto", "forum")),
+                    'forummenu', get_string('move'));
             echo $OUTPUT->render($select);
             echo "</div>";
         }
@@ -357,13 +357,13 @@ if ($digestforum->type != 'single'
     echo "</div>";
 }
 
-if (has_capability('mod/digestforum:pindiscussions', $modcontext)) {
-    if ($discussion->pinned == DFORUM_DISCUSSION_PINNED) {
-        $pinlink = DFORUM_DISCUSSION_UNPINNED;
-        $pintext = get_string('discussionunpin', 'digestforum');
+if (has_capability('mod/forum:pindiscussions', $modcontext)) {
+    if ($discussion->pinned == FORUM_DISCUSSION_PINNED) {
+        $pinlink = FORUM_DISCUSSION_UNPINNED;
+        $pintext = get_string('discussionunpin', 'forum');
     } else {
-        $pinlink = DFORUM_DISCUSSION_PINNED;
-        $pintext = get_string('discussionpin', 'digestforum');
+        $pinlink = FORUM_DISCUSSION_PINNED;
+        $pintext = get_string('discussionpin', 'forum');
     }
     $button = new single_button(new moodle_url('discuss.php', array('pin' => $pinlink, 'd' => $discussion->id)), $pintext, 'post');
     echo html_writer::tag('div', $OUTPUT->render($button), array('class' => 'discussioncontrol pindiscussion'));
@@ -372,28 +372,33 @@ if (has_capability('mod/digestforum:pindiscussions', $modcontext)) {
 
 echo "</div></div>";
 
-if (!empty($digestforum->blockafter) && !empty($digestforum->blockperiod)) {
-    $a = new stdClass();
-    $a->blockafter  = $digestforum->blockafter;
-    $a->blockperiod = get_string('secondstotime'.$digestforum->blockperiod);
-    echo $OUTPUT->notification(get_string('thisdigestforumisthrottled','digestforum',$a));
+if (forum_discussion_is_locked($forum, $discussion)) {
+    echo $OUTPUT->notification(get_string('discussionlocked', 'forum'),
+        \core\output\notification::NOTIFY_INFO . ' discussionlocked');
 }
 
-if ($digestforum->type == 'qanda' && !has_capability('mod/digestforum:viewqandawithoutposting', $modcontext) &&
-            !digestforum_user_has_posted($digestforum->id,$discussion->id,$USER->id)) {
-    echo $OUTPUT->notification(get_string('qandanotify', 'digestforum'));
+if (!empty($forum->blockafter) && !empty($forum->blockperiod)) {
+    $a = new stdClass();
+    $a->blockafter  = $forum->blockafter;
+    $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
+    echo $OUTPUT->notification(get_string('thisforumisthrottled','forum',$a));
+}
+
+if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $modcontext) &&
+            !forum_user_has_posted($forum->id,$discussion->id,$USER->id)) {
+    echo $OUTPUT->notification(get_string('qandanotify', 'forum'));
 }
 
 if ($move == -1 and confirm_sesskey()) {
-    echo $OUTPUT->notification(get_string('discussionmoved', 'digestforum', format_string($digestforum->name,true)), 'notifysuccess');
+    echo $OUTPUT->notification(get_string('discussionmoved', 'forum', format_string($forum->name,true)), 'notifysuccess');
 }
 
-$canrate = has_capability('mod/digestforum:rate', $modcontext);
-digestforum_print_discussion($course, $cm, $digestforum, $discussion, $post, $displaymode, $canreply, $canrate);
+$canrate = has_capability('mod/forum:rate', $modcontext);
+forum_print_discussion($course, $cm, $forum, $discussion, $post, $displaymode, $canreply, $canrate);
 
 echo $neighbourlinks;
 
 // Add the subscription toggle JS.
-$PAGE->requires->yui_module('moodle-mod_digestforum-subscriptiontoggle', 'Y.M.mod_digestforum.subscriptiontoggle.init');
+$PAGE->requires->yui_module('moodle-mod_forum-subscriptiontoggle', 'Y.M.mod_forum.subscriptiontoggle.init');
 
 echo $OUTPUT->footer();

@@ -1,8 +1,8 @@
-@mod @mod_digestforum
-Feature: Single simple digestforum discussion type
+@mod @mod_forum
+Feature: Single simple forum discussion type
   In order to restrict the discussion topic to one
   As a teacher
-  I need to create a digestforum with a single simple discussion
+  I need to create a forum with a single simple discussion
 
   Background:
     Given the following "users" exist:
@@ -18,19 +18,19 @@ Feature: Single simple digestforum discussion type
       | student1 | C1 | student |
     And the following "activities" exist:
       | activity   | name                         | intro                               | type    | course | idnumber     |
-      | digestforum      | Single discussion digestforum name | Single discussion digestforum description | single  | C1     | digestforum        |
+      | forum      | Single discussion forum name | Single discussion forum description | single  | C1     | forum        |
 
   Scenario: Teacher can start the single simple discussion
     Given I log in as "teacher1"
-    And I follow "Course 1"
-    When I follow "Single discussion digestforum name"
-    Then I should see "Single discussion digestforum description" in the "div.firstpost.starter" "css_element"
+    And I am on "Course 1" course homepage
+    When I follow "Single discussion forum name"
+    Then I should see "Single discussion forum description" in the "div.firstpost.starter" "css_element"
     And I should not see "Add a new discussion topic"
 
   Scenario: Student can not add more discussions
     And I log in as "student1"
-    And I follow "Course 1"
-    When I reply "Single discussion digestforum name" post from "Single discussion digestforum name" digestforum with:
+    And I am on "Course 1" course homepage
+    When I reply "Single discussion forum name" post from "Single discussion forum name" forum with:
       | Subject | Reply to single discussion subject |
       | Message | Reply to single discussion message |
     Then I should not see "Add a new discussion topic"

@@ -1,5 +1,5 @@
-@mod @mod_digestforum
-Feature: A teacher can control the subscription to a digestforum
+@mod @mod_forum
+Feature: A teacher can control the subscription to a forum
   In order to change individual user's subscriptions
   As a course administrator
   I can change subscription setting for my users
@@ -19,28 +19,27 @@ Feature: A teacher can control the subscription to a digestforum
       | student1 | C1     | student        |
       | student2 | C1     | student        |
     And I log in as "teacher"
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name        | Test digestforum name                |
-      | Forum type        | Standard digestforum for general use |
-      | Description       | Test digestforum description         |
+      | Forum name        | Test forum name                |
+      | Forum type        | Standard forum for general use |
+      | Description       | Test forum description         |
       | Subscription mode | Auto subscription              |
 
   Scenario: A teacher can change toggle subscription editing on and off
-    Given I follow "Test digestforum name"
+    Given I follow "Test forum name"
     And I follow "Show/edit current subscribers"
     Then ".userselector" "css_element" should not exist
-    And "Turn editing on" "button" should exist
-    And I press "Turn editing on"
+    And "Manage subscribers" "button" should exist
+    And I press "Manage subscribers"
     And ".userselector" "css_element" should exist
-    And "Turn editing off" "button" should exist
-    And I press "Turn editing off"
+    And "Finish managing subscriptions" "button" should exist
+    And I press "Finish managing subscriptions"
     And ".userselector" "css_element" should not exist
-    And "Turn editing on" "button" should exist
-    And I press "Turn editing on"
+    And "Manage subscribers" "button" should exist
+    And I press "Manage subscribers"
     And ".userselector" "css_element" should exist
-    And "Turn editing off" "button" should exist
-    And I press "Turn editing off"
+    And "Finish managing subscriptions" "button" should exist
+    And I press "Finish managing subscriptions"
     And ".userselector" "css_element" should not exist
-    And "Turn editing on" "button" should exist
+    And "Manage subscribers" "button" should exist

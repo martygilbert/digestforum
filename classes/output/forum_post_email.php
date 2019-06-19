@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,12 +15,22 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package    mod_digestforum
- * @subpackage backup-moodle2
- * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * Forum post renderable for e-mail.
+ *
+ * @package    mod_forum
+ * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- // This activity has not particular settings but the inherited from the generic
- // backup_activity_task so here there isn't any class definition, like the ones
- // existing in /backup/moodle2/backup_settingslib.php (activities section)
+namespace mod_forum\output;
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Forum post renderable for use in e-mail.
+ *
+ * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class forum_post_email extends forum_post {
+}

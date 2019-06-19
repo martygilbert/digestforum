@@ -1,2 +1,0 @@
-subscribersto,mod_digestforum
-postmailinfo,mod_digestforum

@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum assessable uploaded event.
+ * The mod_forum assessable uploaded event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2013 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum assessable uploaded event class.
+ * The mod_forum assessable uploaded event class.
  *
  * @property-read array $other {
  *      Extra information about event.
@@ -36,7 +36,7 @@ defined('MOODLE_INTERNAL') || die();
  *      - string triggeredfrom: name of the function from where event was triggered.
  * }
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.6
  * @copyright  2013 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -49,8 +49,8 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has posted content in the digestforum post with id '$this->objectid' " .
-            "in the discussion '{$this->other['discussionid']}' located in the digestforum with course module id " .
+        return "The user with id '$this->userid' has posted content in the forum post with id '$this->objectid' " .
+            "in the discussion '{$this->other['discussionid']}' located in the forum with course module id " .
             "'$this->contextinstanceid'.";
     }
 
@@ -61,7 +61,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      */
     protected function get_legacy_eventdata() {
         $eventdata = new \stdClass();
-        $eventdata->modulename   = 'digestforum';
+        $eventdata->modulename   = 'forum';
         $eventdata->name         = $this->other['triggeredfrom'];
         $eventdata->cmid         = $this->contextinstanceid;
         $eventdata->itemid       = $this->objectid;
@@ -89,7 +89,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventassessableuploaded', 'mod_digestforum');
+        return get_string('eventassessableuploaded', 'mod_forum');
     }
 
     /**
@@ -98,7 +98,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->other['discussionid'], 'parent' => $this->objectid));
+        return new \moodle_url('/mod/forum/discuss.php', array('d' => $this->other['discussionid'], 'parent' => $this->objectid));
     }
 
     /**
@@ -108,7 +108,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      */
     protected function init() {
         parent::init();
-        $this->data['objecttable'] = 'digestforum_posts';
+        $this->data['objecttable'] = 'forum_posts';
     }
 
     /**
@@ -128,12 +128,12 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_posts', 'restore' => 'digestforum_post');
+        return array('db' => 'forum_posts', 'restore' => 'forum_post');
     }
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['discussionid'] = array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        $othermapped['discussionid'] = array('db' => 'forum_discussions', 'restore' => 'forum_discussion');
 
         return $othermapped;
     }

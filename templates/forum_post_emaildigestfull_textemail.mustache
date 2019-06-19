@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_digestforum/digestforum_post_emaildigestbasic_htmlemail
+    @template mod_forum/forum_post_emaildigestfull_textemail
 
-    Template which defines a digestforum post for sending in a single-post HTML email.
+    Template which defines a forum post for sending in a single-post text email.
 
     Classes required for JS:
     * none
@@ -26,25 +26,25 @@
     * none
 
     Context variables required for this template:
-    * permalink
+    * discussionlink
     * subject
-    * authorlink
+    * permalink
     * authorfullname
     * postdate
-
-    Example context (json):
-    {
-        "permalink": "https://example.com/mod/digestforum/discuss.php?d=2#2",
-        "subject": "Is Lorem ipsum Latin?",
-        "authorlink": "https://example.com/user/view.php?id=2&course=2",
-        "authorfullname": "Lucius Caecilius lucundus",
-        "postdate": "Sunday, 13 September 2015, 2:22 pm"
-    }
+    * message
+    * attachments
+    * forumindexlink
 }}
-<div>
-  <a target="_blank" href="{{{ permalink }}}">{{{ subject }}}</a>
-  {{# str }} bynameondate, digestforum, {
-          "name": {{# quote }}<a target="_blank" href="{{{ authorlink }}}">{{ authorfullname }}</a>{{/ quote }},
-          "date": {{# quote }}{{ postdate }}{{/ quote }}
-      } {{/ str }}
-</div>
+
+{{ discussionlink }}
+{{{ subject }}} ({{{ permalink }}})
+{{# str }} bynameondate, forum, {
+        "name": {{# quote }}{{{ authorfullname }}}{{/ quote }},
+        "date": {{# quote }}{{ postdate }}{{/ quote }}
+    } {{/ str }}
+---------------------------------------------------------------------
+{{{ message }}}
+
+{{{ attachments }}}
+---------------------------------------------------------------------
+{{# str }} digestmailpostlink, forum, {{{ forumindexlink }}} {{/ str }}

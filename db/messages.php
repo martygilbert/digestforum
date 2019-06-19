@@ -18,13 +18,13 @@
 /**
  * Defines message providers (types of messages being sent)
  *
- * @package   mod_digestforum
+ * @package   mod_forum
  * @copyright 1999 onwards  Martin Dougiamas  http://moodle.com
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $messageproviders = array (
-    // Ordinary single digestforum posts.
+    // Ordinary single forum posts.
     'posts' => array(
     ),
 

@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * A scheduled task for digestforum cron.
+ * A scheduled task for forum cron.
  *
  * @todo MDL-44734 This job will be split up properly.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace mod_digestforum\task;
+namespace mod_forum\task;
 
 class cron_task extends \core\task\scheduled_task {
 
@@ -33,16 +33,16 @@ class cron_task extends \core\task\scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('crontask', 'mod_digestforum');
+        return get_string('crontask', 'mod_forum');
     }
 
     /**
-     * Run digestforum cron.
+     * Run forum cron.
      */
     public function execute() {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/digestforum/lib.php');
-        digestforum_cron();
+        require_once($CFG->dirroot . '/mod/forum/lib.php');
+        forum_cron();
     }
 
 }

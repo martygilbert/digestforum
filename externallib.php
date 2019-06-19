@@ -16,9 +16,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External digestforum API
+ * External forum API
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2012 Mark Nelson <markn@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,15 +27,15 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once("$CFG->libdir/externallib.php");
 
-class mod_digestforum_external extends external_api {
+class mod_forum_external extends external_api {
 
     /**
-     * Describes the parameters for get_digestforum.
+     * Describes the parameters for get_forum.
      *
-     * @return external_external_function_parameters
+     * @return external_function_parameters
      * @since Moodle 2.5
      */
-    public static function get_digestforums_by_courses_parameters() {
+    public static function get_forums_by_courses_parameters() {
         return new external_function_parameters (
             array(
                 'courseids' => new external_multiple_structure(new external_value(PARAM_INT, 'course ID',
@@ -45,20 +45,20 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Returns a list of digestforums in a provided list of courses,
-     * if no list is provided all digestforums that the user can view
+     * Returns a list of forums in a provided list of courses,
+     * if no list is provided all forums that the user can view
      * will be returned.
      *
      * @param array $courseids the course ids
-     * @return array the digestforum details
+     * @return array the forum details
      * @since Moodle 2.5
      */
-    public static function get_digestforums_by_courses($courseids = array()) {
+    public static function get_forums_by_courses($courseids = array()) {
         global $CFG;
 
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
-        $params = self::validate_parameters(self::get_digestforums_by_courses_parameters(), array('courseids' => $courseids));
+        $params = self::validate_parameters(self::get_forums_by_courses_parameters(), array('courseids' => $courseids));
 
         $courses = array();
         if (empty($params['courseids'])) {
@@ -66,8 +66,8 @@ class mod_digestforum_external extends external_api {
             $params['courseids'] = array_keys($courses);
         }
 
-        // Array to store the digestforums to return.
-        $arrdigestforums = array();
+        // Array to store the forums to return.
+        $arrforums = array();
         $warnings = array();
 
         // Ensure there are courseids to loop through.
@@ -75,52 +75,58 @@ class mod_digestforum_external extends external_api {
 
             list($courses, $warnings) = external_util::validate_courses($params['courseids'], $courses);
 
-            // Get the digestforums in this course. This function checks users visibility permissions.
-            $digestforums = get_all_instances_in_courses("digestforum", $courses);
-            foreach ($digestforums as $digestforum) {
+            // Get the forums in this course. This function checks users visibility permissions.
+            $forums = get_all_instances_in_courses("forum", $courses);
+            foreach ($forums as $forum) {
 
-                $course = $courses[$digestforum->course];
-                $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id);
+                $course = $courses[$forum->course];
+                $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id);
                 $context = context_module::instance($cm->id);
 
-                // Skip digestforums we are not allowed to see discussions.
-                if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
+                // Skip forums we are not allowed to see discussions.
+                if (!has_capability('mod/forum:viewdiscussion', $context)) {
                     continue;
                 }
 
-                $digestforum->name = external_format_string($digestforum->name, $context->id);
+                $forum->name = external_format_string($forum->name, $context->id);
                 // Format the intro before being returning using the format setting.
-                list($digestforum->intro, $digestforum->introformat) = external_format_text($digestforum->intro, $digestforum->introformat,
-                                                                                $context->id, 'mod_digestforum', 'intro', 0);
+                list($forum->intro, $forum->introformat) = external_format_text($forum->intro, $forum->introformat,
+                                                                                $context->id, 'mod_forum', 'intro', null);
+                $forum->introfiles = external_util::get_area_files($context->id, 'mod_forum', 'intro', false, false);
                 // Discussions count. This function does static request cache.
-                $digestforum->numdiscussions = digestforum_count_discussions($digestforum, $cm, $course);
-                $digestforum->cmid = $digestforum->coursemodule;
-                $digestforum->cancreatediscussions = digestforum_user_can_post_discussion($digestforum, null, -1, $cm, $context);
+                $forum->numdiscussions = forum_count_discussions($forum, $cm, $course);
+                $forum->cmid = $forum->coursemodule;
+                $forum->cancreatediscussions = forum_user_can_post_discussion($forum, null, -1, $cm, $context);
+                $forum->istracked = forum_tp_is_tracked($forum);
+                if ($forum->istracked) {
+                    $forum->unreadpostscount = forum_tp_count_forum_unread_posts($cm, $course);
+                }
 
-                // Add the digestforum to the array to return.
-                $arrdigestforums[$digestforum->id] = $digestforum;
+                // Add the forum to the array to return.
+                $arrforums[$forum->id] = $forum;
             }
         }
 
-        return $arrdigestforums;
+        return $arrforums;
     }
 
     /**
-     * Describes the get_digestforum return value.
+     * Describes the get_forum return value.
      *
      * @return external_single_structure
      * @since Moodle 2.5
      */
-     public static function get_digestforums_by_courses_returns() {
+    public static function get_forums_by_courses_returns() {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, 'Forum id'),
                     'course' => new external_value(PARAM_INT, 'Course id'),
-                    'type' => new external_value(PARAM_TEXT, 'The digestforum type'),
+                    'type' => new external_value(PARAM_TEXT, 'The forum type'),
                     'name' => new external_value(PARAM_RAW, 'Forum name'),
-                    'intro' => new external_value(PARAM_RAW, 'The digestforum intro'),
+                    'intro' => new external_value(PARAM_RAW, 'The forum intro'),
                     'introformat' => new external_format_value('intro'),
+                    'introfiles' => new external_files('Files in the introduction text', VALUE_OPTIONAL),
                     'assessed' => new external_value(PARAM_INT, 'Aggregate type'),
                     'assesstimestart' => new external_value(PARAM_INT, 'Assess start time'),
                     'assesstimefinish' => new external_value(PARAM_INT, 'Assess finish time'),
@@ -139,20 +145,24 @@ class mod_digestforum_external extends external_api {
                     'completionreplies' => new external_value(PARAM_INT, 'Student must post replies'),
                     'completionposts' => new external_value(PARAM_INT, 'Student must post discussions or replies'),
                     'cmid' => new external_value(PARAM_INT, 'Course module id'),
-                    'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions in the digestforum', VALUE_OPTIONAL),
+                    'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions in the forum', VALUE_OPTIONAL),
                     'cancreatediscussions' => new external_value(PARAM_BOOL, 'If the user can create discussions', VALUE_OPTIONAL),
-                ), 'digestforum'
+                    'lockdiscussionafter' => new external_value(PARAM_INT, 'After what period a discussion is locked', VALUE_OPTIONAL),
+                    'istracked' => new external_value(PARAM_BOOL, 'If the user is tracking the forum', VALUE_OPTIONAL),
+                    'unreadpostscount' => new external_value(PARAM_INT, 'The number of unread posts for tracked forums',
+                        VALUE_OPTIONAL),
+                ), 'forum'
             )
         );
     }
 
     /**
-     * Describes the parameters for get_digestforum_discussion_posts.
+     * Describes the parameters for get_forum_discussion_posts.
      *
-     * @return external_external_function_parameters
+     * @return external_function_parameters
      * @since Moodle 2.7
      */
-    public static function get_digestforum_discussion_posts_parameters() {
+    public static function get_forum_discussion_posts_parameters() {
         return new external_function_parameters (
             array(
                 'discussionid' => new external_value(PARAM_INT, 'discussion ID', VALUE_REQUIRED),
@@ -164,23 +174,23 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Returns a list of digestforum posts for a discussion
+     * Returns a list of forum posts for a discussion
      *
      * @param int $discussionid the post ids
      * @param string $sortby sort by this element (id, created or modified)
      * @param string $sortdirection sort direction: ASC or DESC
      *
-     * @return array the digestforum post details
+     * @return array the forum post details
      * @since Moodle 2.7
      */
-    public static function get_digestforum_discussion_posts($discussionid, $sortby = "created", $sortdirection = "DESC") {
+    public static function get_forum_discussion_posts($discussionid, $sortby = "created", $sortdirection = "DESC") {
         global $CFG, $DB, $USER, $PAGE;
 
         $posts = array();
         $warnings = array();
 
         // Validate the parameter.
-        $params = self::validate_parameters(self::get_digestforum_discussion_posts_parameters(),
+        $params = self::validate_parameters(self::get_forum_discussion_posts_parameters(),
             array(
                 'discussionid' => $discussionid,
                 'sortby' => $sortby,
@@ -204,43 +214,42 @@ class mod_digestforum_external extends external_api {
                 'allowed values are: ' . implode(',', $directionallowedvalues));
         }
 
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
-        $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
-        $course = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
-        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
+        $discussion = $DB->get_record('forum_discussions', array('id' => $discussionid), '*', MUST_EXIST);
+        $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 
         // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
         $modcontext = context_module::instance($cm->id);
         self::validate_context($modcontext);
 
-        // This require must be here, see mod/digestforum/discuss.php.
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        // This require must be here, see mod/forum/discuss.php.
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
-        // Check they have the view digestforum capability.
-        require_capability('mod/digestforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'digestforum');
+        // Check they have the view forum capability.
+        require_capability('mod/forum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
 
-        if (! $post = digestforum_get_post_full($discussion->firstpost)) {
-            throw new moodle_exception('notexists', 'digestforum');
+        if (! $post = forum_get_post_full($discussion->firstpost)) {
+            throw new moodle_exception('notexists', 'forum');
         }
 
         // This function check groups, qanda, timed discussions, etc.
-        if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm)) {
-            throw new moodle_exception('noviewdiscussionspermission', 'digestforum');
+        if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+            throw new moodle_exception('noviewdiscussionspermission', 'forum');
         }
 
         $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
 
         // We will add this field in the response.
-        $canreply = digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $modcontext);
+        $canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-        $digestforumtracked = digestforum_tp_is_tracked($digestforum);
+        $forumtracked = forum_tp_is_tracked($forum);
 
         $sort = 'p.' . $sortby . ' ' . $sortdirection;
-        $allposts = digestforum_get_all_discussion_posts($discussion->id, $sort, $digestforumtracked);
+        $allposts = forum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
 
         foreach ($allposts as $post) {
-
-            if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm)) {
+            if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
                 $warning = array();
                 $warning['item'] = 'post';
                 $warning['itemid'] = $post->id;
@@ -250,7 +259,7 @@ class mod_digestforum_external extends external_api {
                 continue;
             }
 
-            // Function digestforum_get_all_discussion_posts adds postread field.
+            // Function forum_get_all_discussion_posts adds postread field.
             // Note that the value returned can be a boolean or an integer. The WS expects a boolean.
             if (empty($post->postread)) {
                 $post->postread = false;
@@ -265,37 +274,50 @@ class mod_digestforum_external extends external_api {
                 $post->children = array();
             }
 
-            $user = new stdclass();
-            $user->id = $post->userid;
-            $user = username_load_fields_from_object($user, $post, null, array('picture', 'imagealt', 'email'));
-            $post->userfullname = fullname($user, $canviewfullname);
+            if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+                // The post is available, but has been marked as deleted.
+                // It will still be available but filled with a placeholder.
+                $post->userid = null;
+                $post->userfullname = null;
+                $post->userpictureurl = null;
 
-            $userpicture = new user_picture($user);
-            $userpicture->size = 1; // Size f1.
-            $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+                $post->subject = get_string('privacy:request:delete:post:subject', 'mod_forum');
+                $post->message = get_string('privacy:request:delete:post:message', 'mod_forum');
 
+                $post->deleted = true;
+                $posts[] = $post;
+
+                continue;
+            }
+            $post->deleted = false;
+
+            if (forum_is_author_hidden($post, $forum)) {
+                $post->userid = null;
+                $post->userfullname = null;
+                $post->userpictureurl = null;
+            } else {
+                $user = new stdclass();
+                $user->id = $post->userid;
+                $user = username_load_fields_from_object($user, $post, null, array('picture', 'imagealt', 'email'));
+                $post->userfullname = fullname($user, $canviewfullname);
+
+                $userpicture = new user_picture($user);
+                $userpicture->size = 1; // Size f1.
+                $post->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+            }
+
+            $post->subject = external_format_string($post->subject, $modcontext->id);
             // Rewrite embedded images URLs.
             list($post->message, $post->messageformat) =
-                external_format_text($post->message, $post->messageformat, $modcontext->id, 'mod_digestforum', 'post', $post->id);
+                external_format_text($post->message, $post->messageformat, $modcontext->id, 'mod_forum', 'post', $post->id);
 
             // List attachments.
             if (!empty($post->attachment)) {
-                $post->attachments = array();
-
-                $fs = get_file_storage();
-                if ($files = $fs->get_area_files($modcontext->id, 'mod_digestforum', 'attachment', $post->id, "filename", false)) {
-                    foreach ($files as $file) {
-                        $filename = $file->get_filename();
-                        $fileurl = moodle_url::make_webservice_pluginfile_url(
-                                        $modcontext->id, 'mod_digestforum', 'attachment', $post->id, '/', $filename);
-
-                        $post->attachments[] = array(
-                            'filename' => $filename,
-                            'mimetype' => $file->get_mimetype(),
-                            'fileurl'  => $fileurl->out(false)
-                        );
-                    }
-                }
+                $post->attachments = external_util::get_area_files($modcontext->id, 'mod_forum', 'attachment', $post->id);
+            }
+            $messageinlinefiles = external_util::get_area_files($modcontext->id, 'mod_forum', 'post', $post->id);
+            if (!empty($messageinlinefiles)) {
+                $post->messageinlinefiles = $messageinlinefiles;
             }
 
             $posts[] = $post;
@@ -303,17 +325,18 @@ class mod_digestforum_external extends external_api {
 
         $result = array();
         $result['posts'] = $posts;
+        $result['ratinginfo'] = \core_rating\external\util::get_rating_info($forum, $modcontext, 'mod_forum', 'post', $posts);
         $result['warnings'] = $warnings;
         return $result;
     }
 
     /**
-     * Describes the get_digestforum_discussion_posts return value.
+     * Describes the get_forum_discussion_posts return value.
      *
      * @return external_single_structure
      * @since Moodle 2.7
      */
-    public static function get_digestforum_discussion_posts_returns() {
+    public static function get_forum_discussion_posts_returns() {
         return new external_single_structure(
             array(
                 'posts' => new external_multiple_structure(
@@ -330,41 +353,36 @@ class mod_digestforum_external extends external_api {
                                 'message' => new external_value(PARAM_RAW, 'The post message'),
                                 'messageformat' => new external_format_value('message'),
                                 'messagetrust' => new external_value(PARAM_INT, 'Can we trust?'),
+                                'messageinlinefiles' => new external_files('post message inline files', VALUE_OPTIONAL),
                                 'attachment' => new external_value(PARAM_RAW, 'Has attachments?'),
-                                'attachments' => new external_multiple_structure(
-                                    new external_single_structure(
-                                        array (
-                                            'filename' => new external_value(PARAM_FILE, 'file name'),
-                                            'mimetype' => new external_value(PARAM_RAW, 'mime type'),
-                                            'fileurl'  => new external_value(PARAM_URL, 'file download url')
-                                        )
-                                    ), 'attachments', VALUE_OPTIONAL
-                                ),
+                                'attachments' => new external_files('attachments', VALUE_OPTIONAL),
                                 'totalscore' => new external_value(PARAM_INT, 'The post message total score'),
                                 'mailnow' => new external_value(PARAM_INT, 'Mail now?'),
                                 'children' => new external_multiple_structure(new external_value(PARAM_INT, 'children post id')),
                                 'canreply' => new external_value(PARAM_BOOL, 'The user can reply to posts?'),
                                 'postread' => new external_value(PARAM_BOOL, 'The post was read'),
                                 'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
-                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL)
+                                'userpictureurl' => new external_value(PARAM_URL, 'Post author picture.', VALUE_OPTIONAL),
+                                'deleted' => new external_value(PARAM_BOOL, 'This post has been removed.'),
                             ), 'post'
                         )
                     ),
+                'ratinginfo' => \core_rating\external\util::external_ratings_structure(),
                 'warnings' => new external_warnings()
             )
         );
     }
 
     /**
-     * Describes the parameters for get_digestforum_discussions_paginated.
+     * Describes the parameters for get_forum_discussions_paginated.
      *
-     * @return external_external_function_parameters
+     * @return external_function_parameters
      * @since Moodle 2.8
      */
-    public static function get_digestforum_discussions_paginated_parameters() {
+    public static function get_forum_discussions_paginated_parameters() {
         return new external_function_parameters (
             array(
-                'digestforumid' => new external_value(PARAM_INT, 'digestforum instance id', VALUE_REQUIRED),
+                'forumid' => new external_value(PARAM_INT, 'forum instance id', VALUE_REQUIRED),
                 'sortby' => new external_value(PARAM_ALPHA,
                     'sort by this element: id, timemodified, timestart or timeend', VALUE_DEFAULT, 'timemodified'),
                 'sortdirection' => new external_value(PARAM_ALPHA, 'sort direction: ASC or DESC', VALUE_DEFAULT, 'DESC'),
@@ -375,29 +393,29 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Returns a list of digestforum discussions optionally sorted and paginated.
+     * Returns a list of forum discussions optionally sorted and paginated.
      *
-     * @param int $digestforumid the digestforum instance id
+     * @param int $forumid the forum instance id
      * @param string $sortby sort by this element (id, timemodified, timestart or timeend)
      * @param string $sortdirection sort direction: ASC or DESC
      * @param int $page page number
      * @param int $perpage items per page
      *
-     * @return array the digestforum discussion details including warnings
+     * @return array the forum discussion details including warnings
      * @since Moodle 2.8
      */
-    public static function get_digestforum_discussions_paginated($digestforumid, $sortby = 'timemodified', $sortdirection = 'DESC',
+    public static function get_forum_discussions_paginated($forumid, $sortby = 'timemodified', $sortdirection = 'DESC',
                                                     $page = -1, $perpage = 0) {
         global $CFG, $DB, $USER, $PAGE;
 
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
         $warnings = array();
         $discussions = array();
 
-        $params = self::validate_parameters(self::get_digestforum_discussions_paginated_parameters(),
+        $params = self::validate_parameters(self::get_forum_discussions_paginated_parameters(),
             array(
-                'digestforumid' => $digestforumid,
+                'forumid' => $forumid,
                 'sortby' => $sortby,
                 'sortdirection' => $sortdirection,
                 'page' => $page,
@@ -406,7 +424,7 @@ class mod_digestforum_external extends external_api {
         );
 
         // Compact/extract functions are not recommended.
-        $digestforumid        = $params['digestforumid'];
+        $forumid        = $params['forumid'];
         $sortby         = $params['sortby'];
         $sortdirection  = $params['sortdirection'];
         $page           = $params['page'];
@@ -425,42 +443,42 @@ class mod_digestforum_external extends external_api {
                 'allowed values are: ' . implode(',', $directionallowedvalues));
         }
 
-        $digestforum = $DB->get_record('digestforum', array('id' => $digestforumid), '*', MUST_EXIST);
-        $course = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
-        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
+        $forum = $DB->get_record('forum', array('id' => $forumid), '*', MUST_EXIST);
+        $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
+        $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
 
         // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
         $modcontext = context_module::instance($cm->id);
         self::validate_context($modcontext);
 
-        // Check they have the view digestforum capability.
-        require_capability('mod/digestforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'digestforum');
+        // Check they have the view forum capability.
+        require_capability('mod/forum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
 
         $sort = 'd.pinned DESC, d.' . $sortby . ' ' . $sortdirection;
-        $alldiscussions = digestforum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, DFORUM_POSTS_ALL_USER_GROUPS);
+        $alldiscussions = forum_get_discussions($cm, $sort, true, -1, -1, true, $page, $perpage, FORUM_POSTS_ALL_USER_GROUPS);
 
         if ($alldiscussions) {
             $canviewfullname = has_capability('moodle/site:viewfullnames', $modcontext);
 
-            // Get the unreads array, this takes a digestforum id and returns data for all discussions.
+            // Get the unreads array, this takes a forum id and returns data for all discussions.
             $unreads = array();
-            if ($cantrack = digestforum_tp_can_track_digestforums($digestforum)) {
-                if ($digestforumtracked = digestforum_tp_is_tracked($digestforum)) {
-                    $unreads = digestforum_get_discussions_unread($cm);
+            if ($cantrack = forum_tp_can_track_forums($forum)) {
+                if ($forumtracked = forum_tp_is_tracked($forum)) {
+                    $unreads = forum_get_discussions_unread($cm);
                 }
             }
-            // The digestforum function returns the replies for all the discussions in a given digestforum.
-            $replies = digestforum_count_discussion_replies($digestforumid, $sort, -1, $page, $perpage);
+            // The forum function returns the replies for all the discussions in a given forum.
+            $replies = forum_count_discussion_replies($forumid, $sort, -1, $page, $perpage);
 
             foreach ($alldiscussions as $discussion) {
 
-                // This function checks for qanda digestforums.
-                // Note that the digestforum_get_discussions returns as id the post id, not the discussion id so we need to do this.
+                // This function checks for qanda forums.
+                // Note that the forum_get_discussions returns as id the post id, not the discussion id so we need to do this.
                 $discussionrec = clone $discussion;
                 $discussionrec->id = $discussion->discussion;
-                if (!digestforum_user_can_see_discussion($digestforum, $discussionrec, $modcontext)) {
+                if (!forum_user_can_see_discussion($forum, $discussionrec, $modcontext)) {
                     $warning = array();
-                    // Function digestforum_get_discussions returns digestforum_posts ids not digestforum_discussions ones.
+                    // Function forum_get_discussions returns forum_posts ids not forum_discussions ones.
                     $warning['item'] = 'post';
                     $warning['itemid'] = $discussion->id;
                     $warning['warningcode'] = '1';
@@ -470,7 +488,7 @@ class mod_digestforum_external extends external_api {
                 }
 
                 $discussion->numunread = 0;
-                if ($cantrack && $digestforumtracked) {
+                if ($cantrack && $forumtracked) {
                     if (isset($unreads[$discussion->discussion])) {
                         $discussion->numunread = (int) $unreads[$discussion->discussion];
                     }
@@ -481,54 +499,59 @@ class mod_digestforum_external extends external_api {
                     $discussion->numreplies = (int) $replies[$discussion->discussion]->replies;
                 }
 
-                $picturefields = explode(',', user_picture::fields());
-
-                // Load user objects from the results of the query.
-                $user = new stdclass();
-                $user->id = $discussion->userid;
-                $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
-                // Preserve the id, it can be modified by username_load_fields_from_object.
-                $user->id = $discussion->userid;
-                $discussion->userfullname = fullname($user, $canviewfullname);
-
-                $userpicture = new user_picture($user);
-                $userpicture->size = 1; // Size f1.
-                $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
-
-                $usermodified = new stdclass();
-                $usermodified->id = $discussion->usermodified;
-                $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
-                // Preserve the id (it can be overwritten due to the prefixed $picturefields).
-                $usermodified->id = $discussion->usermodified;
-                $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
-
-                $userpicture = new user_picture($usermodified);
-                $userpicture->size = 1; // Size f1.
-                $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
-
+                $discussion->name = external_format_string($discussion->name, $modcontext->id);
+                $discussion->subject = external_format_string($discussion->subject, $modcontext->id);
                 // Rewrite embedded images URLs.
                 list($discussion->message, $discussion->messageformat) =
                     external_format_text($discussion->message, $discussion->messageformat,
-                                            $modcontext->id, 'mod_digestforum', 'post', $discussion->id);
+                                            $modcontext->id, 'mod_forum', 'post', $discussion->id);
 
                 // List attachments.
                 if (!empty($discussion->attachment)) {
-                    $discussion->attachments = array();
+                    $discussion->attachments = external_util::get_area_files($modcontext->id, 'mod_forum', 'attachment',
+                                                                                $discussion->id);
+                }
+                $messageinlinefiles = external_util::get_area_files($modcontext->id, 'mod_forum', 'post', $discussion->id);
+                if (!empty($messageinlinefiles)) {
+                    $discussion->messageinlinefiles = $messageinlinefiles;
+                }
 
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modcontext->id, 'mod_digestforum', 'attachment',
-                                                        $discussion->id, "filename", false)) {
-                        foreach ($files as $file) {
-                            $filename = $file->get_filename();
+                $discussion->locked = forum_discussion_is_locked($forum, $discussion);
+                $discussion->canreply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
 
-                            $discussion->attachments[] = array(
-                                'filename' => $filename,
-                                'mimetype' => $file->get_mimetype(),
-                                'fileurl'  => file_encode_url($CFG->wwwroot.'/webservice/pluginfile.php',
-                                                '/'.$modcontext->id.'/mod_digestforum/attachment/'.$discussion->id.'/'.$filename)
-                            );
-                        }
-                    }
+                if (forum_is_author_hidden($discussion, $forum)) {
+                    $discussion->userid = null;
+                    $discussion->userfullname = null;
+                    $discussion->userpictureurl = null;
+
+                    $discussion->usermodified = null;
+                    $discussion->usermodifiedfullname = null;
+                    $discussion->usermodifiedpictureurl = null;
+                } else {
+                    $picturefields = explode(',', user_picture::fields());
+
+                    // Load user objects from the results of the query.
+                    $user = new stdclass();
+                    $user->id = $discussion->userid;
+                    $user = username_load_fields_from_object($user, $discussion, null, $picturefields);
+                    // Preserve the id, it can be modified by username_load_fields_from_object.
+                    $user->id = $discussion->userid;
+                    $discussion->userfullname = fullname($user, $canviewfullname);
+
+                    $userpicture = new user_picture($user);
+                    $userpicture->size = 1; // Size f1.
+                    $discussion->userpictureurl = $userpicture->get_url($PAGE)->out(false);
+
+                    $usermodified = new stdclass();
+                    $usermodified->id = $discussion->usermodified;
+                    $usermodified = username_load_fields_from_object($usermodified, $discussion, 'um', $picturefields);
+                    // Preserve the id (it can be overwritten due to the prefixed $picturefields).
+                    $usermodified->id = $discussion->usermodified;
+                    $discussion->usermodifiedfullname = fullname($usermodified, $canviewfullname);
+
+                    $userpicture = new user_picture($usermodified);
+                    $userpicture->size = 1; // Size f1.
+                    $discussion->usermodifiedpictureurl = $userpicture->get_url($PAGE)->out(false);
                 }
 
                 $discussions[] = $discussion;
@@ -543,12 +566,12 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Describes the get_digestforum_discussions_paginated return value.
+     * Describes the get_forum_discussions_paginated return value.
      *
      * @return external_single_structure
      * @since Moodle 2.8
      */
-    public static function get_digestforum_discussions_paginated_returns() {
+    public static function get_forum_discussions_paginated_returns() {
         return new external_single_structure(
             array(
                 'discussions' => new external_multiple_structure(
@@ -571,16 +594,9 @@ class mod_digestforum_external extends external_api {
                                 'message' => new external_value(PARAM_RAW, 'The post message'),
                                 'messageformat' => new external_format_value('message'),
                                 'messagetrust' => new external_value(PARAM_INT, 'Can we trust?'),
+                                'messageinlinefiles' => new external_files('post message inline files', VALUE_OPTIONAL),
                                 'attachment' => new external_value(PARAM_RAW, 'Has attachments?'),
-                                'attachments' => new external_multiple_structure(
-                                    new external_single_structure(
-                                        array (
-                                            'filename' => new external_value(PARAM_FILE, 'file name'),
-                                            'mimetype' => new external_value(PARAM_RAW, 'mime type'),
-                                            'fileurl'  => new external_value(PARAM_URL, 'file download url')
-                                        )
-                                    ), 'attachments', VALUE_OPTIONAL
-                                ),
+                                'attachments' => new external_files('attachments', VALUE_OPTIONAL),
                                 'totalscore' => new external_value(PARAM_INT, 'The post message total score'),
                                 'mailnow' => new external_value(PARAM_INT, 'Mail now?'),
                                 'userfullname' => new external_value(PARAM_TEXT, 'Post author full name'),
@@ -589,7 +605,9 @@ class mod_digestforum_external extends external_api {
                                 'usermodifiedpictureurl' => new external_value(PARAM_URL, 'Post modifier picture.'),
                                 'numreplies' => new external_value(PARAM_TEXT, 'The number of replies in the discussion'),
                                 'numunread' => new external_value(PARAM_INT, 'The number of unread discussions.'),
-                                'pinned' => new external_value(PARAM_BOOL, 'Is the discussion pinned')
+                                'pinned' => new external_value(PARAM_BOOL, 'Is the discussion pinned'),
+                                'locked' => new external_value(PARAM_BOOL, 'Is the discussion locked'),
+                                'canreply' => new external_value(PARAM_BOOL, 'Can the user reply to the discussion'),
                             ), 'post'
                         )
                     ),
@@ -604,10 +622,10 @@ class mod_digestforum_external extends external_api {
      * @return external_function_parameters
      * @since Moodle 2.9
      */
-    public static function view_digestforum_parameters() {
+    public static function view_forum_parameters() {
         return new external_function_parameters(
             array(
-                'digestforumid' => new external_value(PARAM_INT, 'digestforum instance id')
+                'forumid' => new external_value(PARAM_INT, 'forum instance id')
             )
         );
     }
@@ -615,32 +633,32 @@ class mod_digestforum_external extends external_api {
     /**
      * Trigger the course module viewed event and update the module completion status.
      *
-     * @param int $digestforumid the digestforum instance id
+     * @param int $forumid the forum instance id
      * @return array of warnings and status result
      * @since Moodle 2.9
      * @throws moodle_exception
      */
-    public static function view_digestforum($digestforumid) {
+    public static function view_forum($forumid) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
-        $params = self::validate_parameters(self::view_digestforum_parameters(),
+        $params = self::validate_parameters(self::view_forum_parameters(),
                                             array(
-                                                'digestforumid' => $digestforumid
+                                                'forumid' => $forumid
                                             ));
         $warnings = array();
 
         // Request and permission validation.
-        $digestforum = $DB->get_record('digestforum', array('id' => $params['digestforumid']), 'id', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($digestforum, 'digestforum');
+        $forum = $DB->get_record('forum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);
 
-        require_capability('mod/digestforum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'digestforum');
+        require_capability('mod/forum:viewdiscussion', $context, null, true, 'noviewdiscussionspermission', 'forum');
 
-        // Call the digestforum/lib API.
-        digestforum_view($digestforum, $course, $cm, $context);
+        // Call the forum/lib API.
+        forum_view($forum, $course, $cm, $context);
 
         $result = array();
         $result['status'] = true;
@@ -654,7 +672,7 @@ class mod_digestforum_external extends external_api {
      * @return external_description
      * @since Moodle 2.9
      */
-    public static function view_digestforum_returns() {
+    public static function view_forum_returns() {
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_BOOL, 'status: true if success'),
@@ -669,7 +687,7 @@ class mod_digestforum_external extends external_api {
      * @return external_function_parameters
      * @since Moodle 2.9
      */
-    public static function view_digestforum_discussion_parameters() {
+    public static function view_forum_discussion_parameters() {
         return new external_function_parameters(
             array(
                 'discussionid' => new external_value(PARAM_INT, 'discussion id')
@@ -685,28 +703,33 @@ class mod_digestforum_external extends external_api {
      * @since Moodle 2.9
      * @throws moodle_exception
      */
-    public static function view_digestforum_discussion($discussionid) {
-        global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+    public static function view_forum_discussion($discussionid) {
+        global $DB, $CFG, $USER;
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
-        $params = self::validate_parameters(self::view_digestforum_discussion_parameters(),
+        $params = self::validate_parameters(self::view_forum_discussion_parameters(),
                                             array(
                                                 'discussionid' => $discussionid
                                             ));
         $warnings = array();
 
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $params['discussionid']), '*', MUST_EXIST);
-        $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($digestforum, 'digestforum');
+        $discussion = $DB->get_record('forum_discussions', array('id' => $params['discussionid']), '*', MUST_EXIST);
+        $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
 
         // Validate the module context. It checks everything that affects the module visibility (including groupings, etc..).
         $modcontext = context_module::instance($cm->id);
         self::validate_context($modcontext);
 
-        require_capability('mod/digestforum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'digestforum');
+        require_capability('mod/forum:viewdiscussion', $modcontext, null, true, 'noviewdiscussionspermission', 'forum');
 
-        // Call the digestforum/lib API.
-        digestforum_discussion_view($modcontext, $digestforum, $discussion);
+        // Call the forum/lib API.
+        forum_discussion_view($modcontext, $forum, $discussion);
+
+        // Mark as read if required.
+        if (!$CFG->forum_usermarksread && forum_tp_is_tracked($forum)) {
+            forum_tp_mark_discussion_read($USER, $discussion->id);
+        }
 
         $result = array();
         $result['status'] = true;
@@ -720,7 +743,7 @@ class mod_digestforum_external extends external_api {
      * @return external_description
      * @since Moodle 2.9
      */
-    public static function view_digestforum_discussion_returns() {
+    public static function view_forum_discussion_returns() {
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_BOOL, 'status: true if success'),
@@ -773,15 +796,33 @@ class mod_digestforum_external extends external_api {
      */
     public static function add_discussion_post($postid, $subject, $message, $options = array()) {
         global $DB, $CFG, $USER;
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
         $params = self::validate_parameters(self::add_discussion_post_parameters(),
-                                            array(
-                                                'postid' => $postid,
-                                                'subject' => $subject,
-                                                'message' => $message,
-                                                'options' => $options
-                                            ));
+            array(
+                'postid' => $postid,
+                'subject' => $subject,
+                'message' => $message,
+                'options' => $options
+            )
+        );
+        $warnings = array();
+
+        if (!$parent = forum_get_post_full($params['postid'])) {
+            throw new moodle_exception('invalidparentpostid', 'forum');
+        }
+
+        if (!$discussion = $DB->get_record("forum_discussions", array("id" => $parent->discussion))) {
+            throw new moodle_exception('notpartofdiscussion', 'forum');
+        }
+
+        // Request and permission validation.
+        $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
         // Validate options.
         $options = array(
             'discussionsubscribe' => true,
@@ -799,6 +840,10 @@ class mod_digestforum_external extends external_api {
                     break;
                 case 'attachmentsid':
                     $value = clean_param($option['value'], PARAM_INT);
+                    // Ensure that the user has permissions to create attachments.
+                    if (!has_capability('mod/forum:createattachment', $context)) {
+                        $value = 0;
+                    }
                     break;
                 default:
                     throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
@@ -806,29 +851,12 @@ class mod_digestforum_external extends external_api {
             $options[$name] = $value;
         }
 
-        $warnings = array();
-
-        if (!$parent = digestforum_get_post_full($params['postid'])) {
-            throw new moodle_exception('invalidparentpostid', 'digestforum');
+        if (!forum_user_can_post($forum, $discussion, $USER, $cm, $course, $context)) {
+            throw new moodle_exception('nopostforum', 'forum');
         }
 
-        if (!$discussion = $DB->get_record("digestforum_discussions", array("id" => $parent->discussion))) {
-            throw new moodle_exception('notpartofdiscussion', 'digestforum');
-        }
-
-        // Request and permission validation.
-        $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($digestforum, 'digestforum');
-
-        $context = context_module::instance($cm->id);
-        self::validate_context($context);
-
-        if (!digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $context)) {
-            throw new moodle_exception('nopostdigestforum', 'digestforum');
-        }
-
-        $thresholdwarning = digestforum_check_throttling($digestforum, $cm);
-        digestforum_check_blocking_threshold($thresholdwarning);
+        $thresholdwarning = forum_check_throttling($forum, $cm);
+        forum_check_blocking_threshold($thresholdwarning);
 
         // Create the post.
         $post = new stdClass();
@@ -839,9 +867,10 @@ class mod_digestforum_external extends external_api {
         $post->messageformat = FORMAT_HTML;   // Force formatting for now.
         $post->messagetrust = trusttext_trusted($context);
         $post->itemid = $options['inlineattachmentsid'];
-        $post->attachments   = $options['attachmentsid'];
+        $post->attachments = $options['attachmentsid'];
+        $post->deleted = 0;
         $fakemform = $post->attachments;
-        if ($postid = digestforum_add_new_post($post, $fakemform)) {
+        if ($postid = forum_add_new_post($post, $fakemform)) {
 
             $post->id = $postid;
 
@@ -851,27 +880,27 @@ class mod_digestforum_external extends external_api {
                 'objectid' => $post->id,
                 'other' => array(
                     'discussionid' => $discussion->id,
-                    'digestforumid' => $digestforum->id,
-                    'digestforumtype' => $digestforum->type,
+                    'forumid' => $forum->id,
+                    'forumtype' => $forum->type,
                 )
             );
-            $event = \mod_digestforum\event\post_created::create($params);
-            $event->add_record_snapshot('digestforum_posts', $post);
-            $event->add_record_snapshot('digestforum_discussions', $discussion);
+            $event = \mod_forum\event\post_created::create($params);
+            $event->add_record_snapshot('forum_posts', $post);
+            $event->add_record_snapshot('forum_discussions', $discussion);
             $event->trigger();
 
             // Update completion state.
             $completion = new completion_info($course);
             if ($completion->is_enabled($cm) &&
-                    ($digestforum->completionreplies || $digestforum->completionposts)) {
+                    ($forum->completionreplies || $forum->completionposts)) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
 
             $settings = new stdClass();
             $settings->discussionsubscribe = $options['discussionsubscribe'];
-            digestforum_post_subscription($settings, $digestforum, $discussion);
+            forum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'digestforum');
+            throw new moodle_exception('couldnotadd', 'forum');
         }
 
         $result = array();
@@ -904,10 +933,10 @@ class mod_digestforum_external extends external_api {
     public static function add_discussion_parameters() {
         return new external_function_parameters(
             array(
-                'digestforumid' => new external_value(PARAM_INT, 'Forum instance ID'),
+                'forumid' => new external_value(PARAM_INT, 'Forum instance ID'),
                 'subject' => new external_value(PARAM_TEXT, 'New Discussion subject'),
                 'message' => new external_value(PARAM_RAW, 'New Discussion message (only html format allowed)'),
-                'groupid' => new external_value(PARAM_INT, 'The group, default to -1', VALUE_DEFAULT, -1),
+                'groupid' => new external_value(PARAM_INT, 'The group, default to 0', VALUE_DEFAULT, 0),
                 'options' => new external_multiple_structure (
                     new external_single_structure(
                         array(
@@ -928,9 +957,9 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Add a new discussion into an existing digestforum.
+     * Add a new discussion into an existing forum.
      *
-     * @param int $digestforumid the digestforum instance id
+     * @param int $forumid the forum instance id
      * @param string $subject new discussion subject
      * @param string $message new discussion message (only html format allowed)
      * @param int $groupid the user course group
@@ -939,18 +968,28 @@ class mod_digestforum_external extends external_api {
      * @since Moodle 3.0
      * @throws moodle_exception
      */
-    public static function add_discussion($digestforumid, $subject, $message, $groupid = -1, $options = array()) {
+    public static function add_discussion($forumid, $subject, $message, $groupid = 0, $options = array()) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
         $params = self::validate_parameters(self::add_discussion_parameters(),
                                             array(
-                                                'digestforumid' => $digestforumid,
+                                                'forumid' => $forumid,
                                                 'subject' => $subject,
                                                 'message' => $message,
                                                 'groupid' => $groupid,
                                                 'options' => $options
                                             ));
+
+        $warnings = array();
+
+        // Request and permission validation.
+        $forum = $DB->get_record('forum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
+
+        $context = context_module::instance($cm->id);
+        self::validate_context($context);
+
         // Validate options.
         $options = array(
             'discussionsubscribe' => true,
@@ -972,21 +1011,16 @@ class mod_digestforum_external extends external_api {
                     break;
                 case 'attachmentsid':
                     $value = clean_param($option['value'], PARAM_INT);
+                    // Ensure that the user has permissions to create attachments.
+                    if (!has_capability('mod/forum:createattachment', $context)) {
+                        $value = 0;
+                    }
                     break;
                 default:
                     throw new moodle_exception('errorinvalidparam', 'webservice', '', $name);
             }
             $options[$name] = $value;
         }
-
-        $warnings = array();
-
-        // Request and permission validation.
-        $digestforum = $DB->get_record('digestforum', array('id' => $params['digestforumid']), '*', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($digestforum, 'digestforum');
-
-        $context = context_module::instance($cm->id);
-        self::validate_context($context);
 
         // Normalize group.
         if (!groups_get_activity_groupmode($cm)) {
@@ -995,25 +1029,25 @@ class mod_digestforum_external extends external_api {
         } else {
             // Check if we receive the default or and empty value for groupid,
             // in this case, get the group for the user in the activity.
-            if ($groupid === -1 or empty($params['groupid'])) {
+            if (empty($params['groupid'])) {
                 $groupid = groups_get_activity_group($cm);
             } else {
-                // Here we rely in the group passed, digestforum_user_can_post_discussion will validate the group.
+                // Here we rely in the group passed, forum_user_can_post_discussion will validate the group.
                 $groupid = $params['groupid'];
             }
         }
 
-        if (!digestforum_user_can_post_discussion($digestforum, $groupid, -1, $cm, $context)) {
-            throw new moodle_exception('cannotcreatediscussion', 'digestforum');
+        if (!forum_user_can_post_discussion($forum, $groupid, -1, $cm, $context)) {
+            throw new moodle_exception('cannotcreatediscussion', 'forum');
         }
 
-        $thresholdwarning = digestforum_check_throttling($digestforum, $cm);
-        digestforum_check_blocking_threshold($thresholdwarning);
+        $thresholdwarning = forum_check_throttling($forum, $cm);
+        forum_check_blocking_threshold($thresholdwarning);
 
         // Create the discussion.
         $discussion = new stdClass();
         $discussion->course = $course->id;
-        $discussion->digestforum = $digestforum->id;
+        $discussion->forum = $forum->id;
         $discussion->message = $params['message'];
         $discussion->messageformat = FORMAT_HTML;   // Force formatting for now.
         $discussion->messagetrust = trusttext_trusted($context);
@@ -1026,13 +1060,13 @@ class mod_digestforum_external extends external_api {
         $discussion->timeend = 0;
         $discussion->attachments = $options['attachmentsid'];
 
-        if (has_capability('mod/digestforum:pindiscussions', $context) && $options['discussionpinned']) {
-            $discussion->pinned = DFORUM_DISCUSSION_PINNED;
+        if (has_capability('mod/forum:pindiscussions', $context) && $options['discussionpinned']) {
+            $discussion->pinned = FORUM_DISCUSSION_PINNED;
         } else {
-            $discussion->pinned = DFORUM_DISCUSSION_UNPINNED;
+            $discussion->pinned = FORUM_DISCUSSION_UNPINNED;
         }
         $fakemform = $options['attachmentsid'];
-        if ($discussionid = digestforum_add_discussion($discussion, $fakemform)) {
+        if ($discussionid = forum_add_discussion($discussion, $fakemform)) {
 
             $discussion->id = $discussionid;
 
@@ -1042,24 +1076,24 @@ class mod_digestforum_external extends external_api {
                 'context' => $context,
                 'objectid' => $discussion->id,
                 'other' => array(
-                    'digestforumid' => $digestforum->id,
+                    'forumid' => $forum->id,
                 )
             );
-            $event = \mod_digestforum\event\discussion_created::create($params);
-            $event->add_record_snapshot('digestforum_discussions', $discussion);
+            $event = \mod_forum\event\discussion_created::create($params);
+            $event->add_record_snapshot('forum_discussions', $discussion);
             $event->trigger();
 
             $completion = new completion_info($course);
             if ($completion->is_enabled($cm) &&
-                    ($digestforum->completiondiscussions || $digestforum->completionposts)) {
+                    ($forum->completiondiscussions || $forum->completionposts)) {
                 $completion->update_state($cm, COMPLETION_COMPLETE);
             }
 
             $settings = new stdClass();
             $settings->discussionsubscribe = $options['discussionsubscribe'];
-            digestforum_post_subscription($settings, $digestforum, $discussion);
+            forum_post_subscription($settings, $forum, $discussion);
         } else {
-            throw new moodle_exception('couldnotadd', 'digestforum');
+            throw new moodle_exception('couldnotadd', 'forum');
         }
 
         $result = array();
@@ -1092,7 +1126,7 @@ class mod_digestforum_external extends external_api {
     public static function can_add_discussion_parameters() {
         return new external_function_parameters(
             array(
-                'digestforumid' => new external_value(PARAM_INT, 'Forum instance ID'),
+                'forumid' => new external_value(PARAM_INT, 'Forum instance ID'),
                 'groupid' => new external_value(PARAM_INT, 'The group to check, default to active group.
                                                 Use -1 to check if the user can post in all the groups.', VALUE_DEFAULT, null)
             )
@@ -1100,36 +1134,38 @@ class mod_digestforum_external extends external_api {
     }
 
     /**
-     * Check if the current user can add discussions in the given digestforum (and optionally for the given group).
+     * Check if the current user can add discussions in the given forum (and optionally for the given group).
      *
-     * @param int $digestforumid the digestforum instance id
+     * @param int $forumid the forum instance id
      * @param int $groupid the group to check, default to active group. Use -1 to check if the user can post in all the groups.
      * @return array of warnings and the status (true if the user can add discussions)
      * @since Moodle 3.1
      * @throws moodle_exception
      */
-    public static function can_add_discussion($digestforumid, $groupid = null) {
+    public static function can_add_discussion($forumid, $groupid = null) {
         global $DB, $CFG;
-        require_once($CFG->dirroot . "/mod/digestforum/lib.php");
+        require_once($CFG->dirroot . "/mod/forum/lib.php");
 
         $params = self::validate_parameters(self::can_add_discussion_parameters(),
                                             array(
-                                                'digestforumid' => $digestforumid,
+                                                'forumid' => $forumid,
                                                 'groupid' => $groupid,
                                             ));
         $warnings = array();
 
         // Request and permission validation.
-        $digestforum = $DB->get_record('digestforum', array('id' => $params['digestforumid']), '*', MUST_EXIST);
-        list($course, $cm) = get_course_and_cm_from_instance($digestforum, 'digestforum');
+        $forum = $DB->get_record('forum', array('id' => $params['forumid']), '*', MUST_EXIST);
+        list($course, $cm) = get_course_and_cm_from_instance($forum, 'forum');
 
         $context = context_module::instance($cm->id);
         self::validate_context($context);
 
-        $status = digestforum_user_can_post_discussion($digestforum, $params['groupid'], -1, $cm, $context);
+        $status = forum_user_can_post_discussion($forum, $params['groupid'], -1, $cm, $context);
 
         $result = array();
         $result['status'] = $status;
+        $result['canpindiscussions'] = has_capability('mod/forum:pindiscussions', $context);
+        $result['cancreateattachment'] = forum_can_create_attachment($forum, $context);
         $result['warnings'] = $warnings;
         return $result;
     }
@@ -1144,6 +1180,10 @@ class mod_digestforum_external extends external_api {
         return new external_single_structure(
             array(
                 'status' => new external_value(PARAM_BOOL, 'True if the user can add discussions, false otherwise.'),
+                'canpindiscussions' => new external_value(PARAM_BOOL, 'True if the user can pin discussions, false otherwise.',
+                    VALUE_OPTIONAL),
+                'cancreateattachment' => new external_value(PARAM_BOOL, 'True if the user can add attachments, false otherwise.',
+                    VALUE_OPTIONAL),
                 'warnings' => new external_warnings()
             )
         );

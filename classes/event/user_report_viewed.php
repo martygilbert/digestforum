@@ -15,19 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum user report viewed event.
+ * The mod_forum user report viewed event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum user report viewed event class.
+ * The mod_forum user report viewed event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  *      - string reportmode: The mode the report has been viewed in (posts or discussions).
  * }
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -68,7 +68,7 @@ class user_report_viewed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventuserreportviewed', 'mod_digestforum');
+        return get_string('eventuserreportviewed', 'mod_forum');
     }
 
     /**
@@ -78,7 +78,7 @@ class user_report_viewed extends \core\event\base {
      */
     public function get_url() {
 
-        $url = new \moodle_url('/mod/digestforum/user.php', array('id' => $this->relateduserid,
+        $url = new \moodle_url('/mod/forum/user.php', array('id' => $this->relateduserid,
             'mode' => $this->other['reportmode']));
 
         if ($this->courseid != SITEID) {
@@ -94,10 +94,10 @@ class user_report_viewed extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
+        // The legacy log table expects a relative path to /mod/forum/.
+        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/forum/'));
 
-        return array($this->courseid, 'digestforum', 'user report', $logurl, $this->relateduserid);
+        return array($this->courseid, 'forum', 'user report', $logurl, $this->relateduserid);
     }
 
     /**

@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum subscribers list viewed event.
+ * The mod_forum subscribers list viewed event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum subscribers list viewed event class.
+ * The mod_forum subscribers list viewed event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
- *      - int digestforumid: The id of the digestforum which the subscriberslist has been viewed.
+ *      - int forumid: The id of the forum which the subscriberslist has been viewed.
  * }
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -58,7 +58,7 @@ class subscribers_viewed extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' has viewed the subscribers list for the digestforum with course " .
+        return "The user with id '$this->userid' has viewed the subscribers list for the forum with course " .
             "module id '$this->contextinstanceid'.";
     }
 
@@ -68,7 +68,7 @@ class subscribers_viewed extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventsubscribersviewed', 'mod_digestforum');
+        return get_string('eventsubscribersviewed', 'mod_forum');
     }
 
     /**
@@ -77,7 +77,7 @@ class subscribers_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $this->other['digestforumid']));
+        return new \moodle_url('/mod/forum/subscribers.php', array('id' => $this->other['forumid']));
     }
 
     /**
@@ -86,8 +86,8 @@ class subscribers_viewed extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'view subscribers', 'subscribers.php?id=' . $this->other['digestforumid'],
-            $this->other['digestforumid'], $this->contextinstanceid);
+        return array($this->courseid, 'forum', 'view subscribers', 'subscribers.php?id=' . $this->other['forumid'],
+            $this->other['forumid'], $this->contextinstanceid);
     }
 
     /**
@@ -99,8 +99,8 @@ class subscribers_viewed extends \core\event\base {
     protected function validate_data() {
         parent::validate_data();
 
-        if (!isset($this->other['digestforumid'])) {
-            throw new \coding_exception('The \'digestforumid\' value must be set in other.');
+        if (!isset($this->other['forumid'])) {
+            throw new \coding_exception('The \'forumid\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -110,7 +110,7 @@ class subscribers_viewed extends \core\event\base {
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
 
         return $othermapped;
     }

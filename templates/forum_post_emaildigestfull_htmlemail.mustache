@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_digestforum/digestforum_post_email_htmlemail
+    @template mod_forum/forum_post_emaildigestfull_htmlemail
 
-    Template which defines a digestforum post for sending in a single-post HTML email.
+    Template which defines a forum post for sending in a single-post HTML email.
 
     Classes required for JS:
     * none
@@ -28,9 +28,9 @@
     Context variables required for this template:
     * courselink
     * coursename
-    * digestforumindexlink
-    * digestforumviewlink
-    * digestforumname
+    * forumindexlink
+    * forumviewlink
+    * forumname
     * discussionlink
     * discussionname
     * showdiscussionname
@@ -47,17 +47,17 @@
     * canreply
     * replylink
     * permalink
-    * unsubscribedigestforumlink
+    * unsubscribeforumlink
     * unsubscribediscussionlink
 
     Example context (json):
     {
         "courselink": "https://example.com/course/view.php?id=2",
         "coursename": "Example course",
-        "digestforumindexlink": "https://example.com/mod/digestforum/index.php?id=2",
-        "digestforumviewlink": "https://example.com/mod/digestforum/view.php?f=2",
-        "digestforumname": "Lorem ipsum dolor",
-        "discussionlink": "https://example.com/mod/digestforum/discuss.php?d=70",
+        "forumindexlink": "https://example.com/mod/forum/index.php?id=2",
+        "forumviewlink": "https://example.com/mod/forum/view.php?f=2",
+        "forumname": "Lorem ipsum dolor",
+        "discussionlink": "https://example.com/mod/forum/discuss.php?d=70",
         "discussionname": "Is Lorem ipsum Latin?",
         "showdiscussionname": 1,
         "firstpost": 1,
@@ -71,33 +71,10 @@
         "message": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum et auctor libero. Quisque porta egestas neque, et bibendum libero dignissim at. Nulla facilisi. Morbi eget accumsan felis. Nunc et vulputate odio, vel venenatis nisl. Nunc maximus ipsum sed tincidunt mollis. Integer nunc erat, luctus sit amet arcu tincidunt, volutpat dignissim mi. Sed ut magna quam.  Mauris accumsan porta turpis sed aliquam. Etiam at justo tristique, imperdiet augue quis, consectetur sapien. Ut nec erat malesuada sem suscipit lobortis. Vivamus posuere nibh eu ipsum porta fringilla.  Sed vitae dapibus ipsum, ac condimentum enim. Sed dignissim ante at elit mollis, ac tempor lacus iaculis. Etiam nec lectus vitae nibh vulputate volutpat. Nulla quis tellus aliquam, commodo nisi et, dictum est.</p><p><br /></p>",
         "parentpostlink": "",
         "canreply": 1,
-        "replylink": "https://example.com/mod/digestforum/post.php?reply=2",
-        "permalink": "https://example.com/mod/digestforum/discuss.php?d=2#2",
-        "unsubscribedigestforumlink": "https://example.com/mod/digestforum/subscribe.php?id=2",
+        "replylink": "https://example.com/mod/forum/post.php?reply=2",
+        "permalink": "https://example.com/mod/forum/discuss.php?d=2#2",
+        "unsubscribeforumlink": "https://example.com/mod/forum/subscribe.php?id=2",
         "unsubscribediscussionlink": "https://example.com/mod/discussion/subscribe.php?id=2&d=2"
     }
 }}
-<div class="navbar">
-    <a target="_blank" href="{{{ courselink }}}">{{{ coursename }}}</a>
-    &raquo;
-    <a target="_blank" href="{{{ digestforumindexlink }}}">{{# str }} digestforums, digestforum {{/ str }}</a>
-    &raquo;
-    <a target="_blank" href="{{{ digestforumviewlink }}}">{{{ digestforumname }}}</a>
-{{# showdiscussionname }}
-    &raquo;
-    <a target="_blank" href="{{{ discussionlink }}}">{{{ discussionname }}}</a>
-{{/ showdiscussionname }}
-</div>
-
-{{> mod_digestforum/digestforum_post_email_htmlemail_body }}
-
-<hr />
-<div class="mdl-align unsubscribelink">
-{{# unsubscribedigestforumlink }}
-    <a href="{{{ unsubscribedigestforumlink }}}">{{# str }} unsubscribe, digestforum {{/ str }}</a>&nbsp;
-{{/ unsubscribedigestforumlink }}
-{{# unsubscribediscussionlink }}
-    <a href="{{{ unsubscribediscussionlink }}}">{{# str }} unsubscribediscussion, digestforum {{/ str }}</a>&nbsp;
-{{/ unsubscribediscussionlink }}
-    <a href="{{{ digestforumindexlink }}}">{{# str }} digestmailpost, digestforum {{/ str }}</a>
-</div>
+{{> mod_forum/forum_post_email_htmlemail_body }}

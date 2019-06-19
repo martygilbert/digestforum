@@ -15,27 +15,27 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_digestforum subscription deleted event.
+ * The mod_forum subscription deleted event.
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_digestforum\event;
+namespace mod_forum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_digestforum subscription deleted event class.
+ * The mod_forum subscription deleted event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
- *      - int digestforumid: The id of the digestforum which has been unsusbcribed from.
+ *      - int forumid: The id of the forum which has been unsusbcribed from.
  * }
  *
- * @package    mod_digestforum
+ * @package    mod_forum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -49,7 +49,7 @@ class subscription_deleted extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_PARTICIPATING;
-        $this->data['objecttable'] = 'digestforum_subscriptions';
+        $this->data['objecttable'] = 'forum_subscriptions';
     }
 
     /**
@@ -58,7 +58,7 @@ class subscription_deleted extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user with id '$this->userid' unsubscribed the user with id '$this->relateduserid' to the digestforum with " .
+        return "The user with id '$this->userid' unsubscribed the user with id '$this->relateduserid' to the forum with " .
             "course module id '$this->contextinstanceid'.";
     }
 
@@ -68,7 +68,7 @@ class subscription_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventsubscriptiondeleted', 'mod_digestforum');
+        return get_string('eventsubscriptiondeleted', 'mod_forum');
     }
 
     /**
@@ -77,7 +77,7 @@ class subscription_deleted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $this->other['digestforumid']));
+        return new \moodle_url('/mod/forum/subscribers.php', array('id' => $this->other['forumid']));
     }
 
     /**
@@ -86,8 +86,8 @@ class subscription_deleted extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'unsubscribe', 'view.php?f=' . $this->other['digestforumid'],
-            $this->other['digestforumid'], $this->contextinstanceid);
+        return array($this->courseid, 'forum', 'unsubscribe', 'view.php?f=' . $this->other['forumid'],
+            $this->other['forumid'], $this->contextinstanceid);
     }
 
     /**
@@ -103,8 +103,8 @@ class subscription_deleted extends \core\event\base {
             throw new \coding_exception('The \'relateduserid\' must be set.');
         }
 
-        if (!isset($this->other['digestforumid'])) {
-            throw new \coding_exception('The \'digestforumid\' value must be set in other.');
+        if (!isset($this->other['forumid'])) {
+            throw new \coding_exception('The \'forumid\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -113,12 +113,12 @@ class subscription_deleted extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_subscriptions', 'restore' => 'digestforum_subscription');
+        return array('db' => 'forum_subscriptions', 'restore' => 'forum_subscription');
     }
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
 
         return $othermapped;
     }
