@@ -11,7 +11,10 @@ CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digest-digestforu
 ```
 find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/forum/digestforum/g' '{}' \;
 find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/FORUM/DFORUM/g' '{}' \;
+find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/trackdigestforums/trackforums/g' '{}' \;
 ```
+
+trackforums is a field in the mdl_user table; don't want to 'digest' it.
 
 Pay special attention to the module name strings (singular AND plural) in the lang files.
 
