@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -28,48 +28,48 @@ require_once($CFG->libdir.'/filelib.php');
 
 /// CONSTANTS ///////////////////////////////////////////////////////////
 
-define('FORUM_MODE_FLATOLDEST', 1);
-define('FORUM_MODE_FLATNEWEST', -1);
-define('FORUM_MODE_THREADED', 2);
-define('FORUM_MODE_NESTED', 3);
+define('DFORUM_MODE_FLATOLDEST', 1);
+define('DFORUM_MODE_FLATNEWEST', -1);
+define('DFORUM_MODE_THREADED', 2);
+define('DFORUM_MODE_NESTED', 3);
 
-define('FORUM_CHOOSESUBSCRIBE', 0);
-define('FORUM_FORCESUBSCRIBE', 1);
-define('FORUM_INITIALSUBSCRIBE', 2);
-define('FORUM_DISALLOWSUBSCRIBE',3);
-
-/**
- * FORUM_TRACKING_OFF - Tracking is not available for this forum.
- */
-define('FORUM_TRACKING_OFF', 0);
+define('DFORUM_CHOOSESUBSCRIBE', 0);
+define('DFORUM_FORCESUBSCRIBE', 1);
+define('DFORUM_INITIALSUBSCRIBE', 2);
+define('DFORUM_DISALLOWSUBSCRIBE', 3);
 
 /**
- * FORUM_TRACKING_OPTIONAL - Tracking is based on user preference.
+ * DFORUM_TRACKING_OFF - Tracking is not available for this digestforum.
  */
-define('FORUM_TRACKING_OPTIONAL', 1);
+define('DFORUM_TRACKING_OFF', 0);
 
 /**
- * FORUM_TRACKING_FORCED - Tracking is on, regardless of user setting.
- * Treated as FORUM_TRACKING_OPTIONAL if $CFG->forum_allowforcedreadtracking is off.
+ * DFORUM_TRACKING_OPTIONAL - Tracking is based on user preference.
  */
-define('FORUM_TRACKING_FORCED', 2);
+define('DFORUM_TRACKING_OPTIONAL', 1);
 
-define('FORUM_MAILED_PENDING', 0);
-define('FORUM_MAILED_SUCCESS', 1);
-define('FORUM_MAILED_ERROR', 2);
+/**
+ * DFORUM_TRACKING_FORCED - Tracking is on, regardless of user setting.
+ * Treated as DFORUM_TRACKING_OPTIONAL if $CFG->digestforum_allowforcedreadtracking is off.
+ */
+define('DFORUM_TRACKING_FORCED', 2);
 
-if (!defined('FORUM_CRON_USER_CACHE')) {
-    /** Defines how many full user records are cached in forum cron. */
-    define('FORUM_CRON_USER_CACHE', 5000);
+define('DFORUM_MAILED_PENDING', 0);
+define('DFORUM_MAILED_SUCCESS', 1);
+define('DFORUM_MAILED_ERROR', 2);
+
+if (!defined('DFORUM_CRON_USER_CACHE')) {
+    /** Defines how many full user records are cached in digestforum cron. */
+    define('DFORUM_CRON_USER_CACHE', 5000);
 }
 
 /**
- * FORUM_POSTS_ALL_USER_GROUPS - All the posts in groups where the user is enrolled.
+ * DFORUM_POSTS_ALL_USER_GROUPS - All the posts in groups where the user is enrolled.
  */
-define('FORUM_POSTS_ALL_USER_GROUPS', -2);
+define('DFORUM_POSTS_ALL_USER_GROUPS', -2);
 
-define('FORUM_DISCUSSION_PINNED', 1);
-define('FORUM_DISCUSSION_UNPINNED', 0);
+define('DFORUM_DISCUSSION_PINNED', 1);
+define('DFORUM_DISCUSSION_UNPINNED', 0);
 
 /// STANDARD FUNCTIONS ///////////////////////////////////////////////////////////
 
@@ -79,75 +79,75 @@ define('FORUM_DISCUSSION_UNPINNED', 0);
  * will create a new instance and return the id number
  * of the new instance.
  *
- * @param stdClass $forum add forum instance
- * @param mod_forum_mod_form $mform
+ * @param stdClass $digestforum add digestforum instance
+ * @param mod_digestforum_mod_form $mform
  * @return int intance id
  */
-function forum_add_instance($forum, $mform = null) {
+function digestforum_add_instance($digestforum, $mform = null) {
     global $CFG, $DB;
 
-    $forum->timemodified = time();
+    $digestforum->timemodified = time();
 
-    if (empty($forum->assessed)) {
-        $forum->assessed = 0;
+    if (empty($digestforum->assessed)) {
+        $digestforum->assessed = 0;
     }
 
-    if (empty($forum->ratingtime) or empty($forum->assessed)) {
-        $forum->assesstimestart  = 0;
-        $forum->assesstimefinish = 0;
+    if (empty($digestforum->ratingtime) or empty($digestforum->assessed)) {
+        $digestforum->assesstimestart  = 0;
+        $digestforum->assesstimefinish = 0;
     }
 
-    $forum->id = $DB->insert_record('forum', $forum);
-    $modcontext = context_module::instance($forum->coursemodule);
+    $digestforum->id = $DB->insert_record('digestforum', $digestforum);
+    $modcontext = context_module::instance($digestforum->coursemodule);
 
-    if ($forum->type == 'single') {  // Create related discussion.
+    if ($digestforum->type == 'single') {  // Create related discussion.
         $discussion = new stdClass();
-        $discussion->course        = $forum->course;
-        $discussion->forum         = $forum->id;
-        $discussion->name          = $forum->name;
-        $discussion->assessed      = $forum->assessed;
-        $discussion->message       = $forum->intro;
-        $discussion->messageformat = $forum->introformat;
-        $discussion->messagetrust  = trusttext_trusted(context_course::instance($forum->course));
+        $discussion->course        = $digestforum->course;
+        $discussion->digestforum         = $digestforum->id;
+        $discussion->name          = $digestforum->name;
+        $discussion->assessed      = $digestforum->assessed;
+        $discussion->message       = $digestforum->intro;
+        $discussion->messageformat = $digestforum->introformat;
+        $discussion->messagetrust  = trusttext_trusted(context_course::instance($digestforum->course));
         $discussion->mailnow       = false;
         $discussion->groupid       = -1;
 
         $message = '';
 
-        $discussion->id = forum_add_discussion($discussion, null, $message);
+        $discussion->id = digestforum_add_discussion($discussion, null, $message);
 
         if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
             // Ugly hack - we need to copy the files somehow.
-            $discussion = $DB->get_record('forum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
-            $post = $DB->get_record('forum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
+            $discussion = $DB->get_record('digestforum_discussions', array('id'=>$discussion->id), '*', MUST_EXIST);
+            $post = $DB->get_record('digestforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
 
             $options = array('subdirs'=>true); // Use the same options as intro field!
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_forum', 'post', $post->id, $options, $post->message);
-            $DB->set_field('forum_posts', 'message', $post->message, array('id'=>$post->id));
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_digestforum', 'post', $post->id, $options, $post->message);
+            $DB->set_field('digestforum_posts', 'message', $post->message, array('id'=>$post->id));
         }
     }
 
-    forum_grade_item_update($forum);
+    digestforum_grade_item_update($digestforum);
 
-    $completiontimeexpected = !empty($forum->completionexpected) ? $forum->completionexpected : null;
-    \core_completion\api::update_completion_date_event($forum->coursemodule, 'forum', $forum->id, $completiontimeexpected);
+    $completiontimeexpected = !empty($digestforum->completionexpected) ? $digestforum->completionexpected : null;
+    \core_completion\api::update_completion_date_event($digestforum->coursemodule, 'digestforum', $digestforum->id, $completiontimeexpected);
 
-    return $forum->id;
+    return $digestforum->id;
 }
 
 /**
- * Handle changes following the creation of a forum instance.
+ * Handle changes following the creation of a digestforum instance.
  * This function is typically called by the course_module_created observer.
  *
- * @param object $context the forum context
- * @param stdClass $forum The forum object
+ * @param object $context the digestforum context
+ * @param stdClass $digestforum The digestforum object
  * @return void
  */
-function forum_instance_created($context, $forum) {
-    if ($forum->forcesubscribe == FORUM_INITIALSUBSCRIBE) {
-        $users = \mod_forum\subscriptions::get_potential_subscribers($context, 0, 'u.id, u.email');
+function digestforum_instance_created($context, $digestforum) {
+    if ($digestforum->forcesubscribe == DFORUM_INITIALSUBSCRIBE) {
+        $users = \mod_digestforum\subscriptions::get_potential_subscribers($context, 0, 'u.id, u.email');
         foreach ($users as $user) {
-            \mod_forum\subscriptions::subscribe_user($user->id, $forum, $context);
+            \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum, $context);
         }
     }
 }
@@ -158,101 +158,101 @@ function forum_instance_created($context, $forum) {
  * will update an existing instance with new data.
  *
  * @global object
- * @param object $forum forum instance (with magic quotes)
+ * @param object $digestforum digestforum instance (with magic quotes)
  * @return bool success
  */
-function forum_update_instance($forum, $mform) {
+function digestforum_update_instance($digestforum, $mform) {
     global $DB, $OUTPUT, $USER;
 
-    $forum->timemodified = time();
-    $forum->id           = $forum->instance;
+    $digestforum->timemodified = time();
+    $digestforum->id           = $digestforum->instance;
 
-    if (empty($forum->assessed)) {
-        $forum->assessed = 0;
+    if (empty($digestforum->assessed)) {
+        $digestforum->assessed = 0;
     }
 
-    if (empty($forum->ratingtime) or empty($forum->assessed)) {
-        $forum->assesstimestart  = 0;
-        $forum->assesstimefinish = 0;
+    if (empty($digestforum->ratingtime) or empty($digestforum->assessed)) {
+        $digestforum->assesstimestart  = 0;
+        $digestforum->assesstimefinish = 0;
     }
 
-    $oldforum = $DB->get_record('forum', array('id'=>$forum->id));
+    $olddigestforum = $DB->get_record('digestforum', array('id'=>$digestforum->id));
 
-    // MDL-3942 - if the aggregation type or scale (i.e. max grade) changes then recalculate the grades for the entire forum
+    // MDL-3942 - if the aggregation type or scale (i.e. max grade) changes then recalculate the grades for the entire digestforum
     // if  scale changes - do we need to recheck the ratings, if ratings higher than scale how do we want to respond?
     // for count and sum aggregation types the grade we check to make sure they do not exceed the scale (i.e. max score) when calculating the grade
-    if (($oldforum->assessed<>$forum->assessed) or ($oldforum->scale<>$forum->scale)) {
-        forum_update_grades($forum); // recalculate grades for the forum
+    if (($olddigestforum->assessed<>$digestforum->assessed) or ($olddigestforum->scale<>$digestforum->scale)) {
+        digestforum_update_grades($digestforum); // recalculate grades for the digestforum
     }
 
-    if ($forum->type == 'single') {  // Update related discussion and post.
-        $discussions = $DB->get_records('forum_discussions', array('forum'=>$forum->id), 'timemodified ASC');
+    if ($digestforum->type == 'single') {  // Update related discussion and post.
+        $discussions = $DB->get_records('digestforum_discussions', array('digestforum'=>$digestforum->id), 'timemodified ASC');
         if (!empty($discussions)) {
             if (count($discussions) > 1) {
-                echo $OUTPUT->notification(get_string('warnformorepost', 'forum'));
+                echo $OUTPUT->notification(get_string('warnformorepost', 'digestforum'));
             }
             $discussion = array_pop($discussions);
         } else {
             // try to recover by creating initial discussion - MDL-16262
             $discussion = new stdClass();
-            $discussion->course          = $forum->course;
-            $discussion->forum           = $forum->id;
-            $discussion->name            = $forum->name;
-            $discussion->assessed        = $forum->assessed;
-            $discussion->message         = $forum->intro;
-            $discussion->messageformat   = $forum->introformat;
+            $discussion->course          = $digestforum->course;
+            $discussion->digestforum           = $digestforum->id;
+            $discussion->name            = $digestforum->name;
+            $discussion->assessed        = $digestforum->assessed;
+            $discussion->message         = $digestforum->intro;
+            $discussion->messageformat   = $digestforum->introformat;
             $discussion->messagetrust    = true;
             $discussion->mailnow         = false;
             $discussion->groupid         = -1;
 
             $message = '';
 
-            forum_add_discussion($discussion, null, $message);
+            digestforum_add_discussion($discussion, null, $message);
 
-            if (! $discussion = $DB->get_record('forum_discussions', array('forum'=>$forum->id))) {
-                print_error('cannotadd', 'forum');
+            if (! $discussion = $DB->get_record('digestforum_discussions', array('digestforum'=>$digestforum->id))) {
+                print_error('cannotadd', 'digestforum');
             }
         }
-        if (! $post = $DB->get_record('forum_posts', array('id'=>$discussion->firstpost))) {
-            print_error('cannotfindfirstpost', 'forum');
+        if (! $post = $DB->get_record('digestforum_posts', array('id'=>$discussion->firstpost))) {
+            print_error('cannotfindfirstpost', 'digestforum');
         }
 
-        $cm         = get_coursemodule_from_instance('forum', $forum->id);
+        $cm         = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $modcontext = context_module::instance($cm->id, MUST_EXIST);
 
-        $post = $DB->get_record('forum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
-        $post->subject       = $forum->name;
-        $post->message       = $forum->intro;
-        $post->messageformat = $forum->introformat;
+        $post = $DB->get_record('digestforum_posts', array('id'=>$discussion->firstpost), '*', MUST_EXIST);
+        $post->subject       = $digestforum->name;
+        $post->message       = $digestforum->intro;
+        $post->messageformat = $digestforum->introformat;
         $post->messagetrust  = trusttext_trusted($modcontext);
-        $post->modified      = $forum->timemodified;
+        $post->modified      = $digestforum->timemodified;
         $post->userid        = $USER->id;    // MDL-18599, so that current teacher can take ownership of activities.
 
         if ($mform and $draftid = file_get_submitted_draft_itemid('introeditor')) {
             // Ugly hack - we need to copy the files somehow.
             $options = array('subdirs'=>true); // Use the same options as intro field!
-            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_forum', 'post', $post->id, $options, $post->message);
+            $post->message = file_save_draft_area_files($draftid, $modcontext->id, 'mod_digestforum', 'post', $post->id, $options, $post->message);
         }
 
-        $DB->update_record('forum_posts', $post);
-        $discussion->name = $forum->name;
-        $DB->update_record('forum_discussions', $discussion);
+        $DB->update_record('digestforum_posts', $post);
+        $discussion->name = $digestforum->name;
+        $DB->update_record('digestforum_discussions', $discussion);
     }
 
-    $DB->update_record('forum', $forum);
+    $DB->update_record('digestforum', $digestforum);
 
-    $modcontext = context_module::instance($forum->coursemodule);
-    if (($forum->forcesubscribe == FORUM_INITIALSUBSCRIBE) && ($oldforum->forcesubscribe <> $forum->forcesubscribe)) {
-        $users = \mod_forum\subscriptions::get_potential_subscribers($modcontext, 0, 'u.id, u.email', '');
+    $modcontext = context_module::instance($digestforum->coursemodule);
+    if (($digestforum->forcesubscribe == DFORUM_INITIALSUBSCRIBE) && ($olddigestforum->forcesubscribe <> $digestforum->forcesubscribe)) {
+        $users = \mod_digestforum\subscriptions::get_potential_subscribers($modcontext, 0, 'u.id, u.email', '');
         foreach ($users as $user) {
-            \mod_forum\subscriptions::subscribe_user($user->id, $forum, $modcontext);
+            \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum, $modcontext);
         }
     }
 
-    forum_grade_item_update($forum);
+    digestforum_grade_item_update($digestforum);
 
-    $completiontimeexpected = !empty($forum->completionexpected) ? $forum->completionexpected : null;
-    \core_completion\api::update_completion_date_event($forum->coursemodule, 'forum', $forum->id, $completiontimeexpected);
+    $completiontimeexpected = !empty($digestforum->completionexpected) ? $digestforum->completionexpected : null;
+    \core_completion\api::update_completion_date_event($digestforum->coursemodule, 'digestforum', $digestforum->id, $completiontimeexpected);
 
     return true;
 }
@@ -264,16 +264,16 @@ function forum_update_instance($forum, $mform) {
  * and any data that depends on it.
  *
  * @global object
- * @param int $id forum instance id
+ * @param int $id digestforum instance id
  * @return bool success
  */
-function forum_delete_instance($id) {
+function digestforum_delete_instance($id) {
     global $DB;
 
-    if (!$forum = $DB->get_record('forum', array('id'=>$id))) {
+    if (!$digestforum = $DB->get_record('digestforum', array('id'=>$id))) {
         return false;
     }
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id)) {
+    if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id)) {
         return false;
     }
     if (!$course = $DB->get_record('course', array('id'=>$cm->course))) {
@@ -288,27 +288,27 @@ function forum_delete_instance($id) {
 
     $result = true;
 
-    \core_completion\api::update_completion_date_event($cm->id, 'forum', $forum->id, null);
+    \core_completion\api::update_completion_date_event($cm->id, 'digestforum', $digestforum->id, null);
 
     // Delete digest and subscription preferences.
-    $DB->delete_records('forum_digests', array('forum' => $forum->id));
-    $DB->delete_records('forum_subscriptions', array('forum'=>$forum->id));
-    $DB->delete_records('forum_discussion_subs', array('forum' => $forum->id));
+    $DB->delete_records('digestforum_digests', array('digestforum' => $digestforum->id));
+    $DB->delete_records('digestforum_subscriptions', array('digestforum'=>$digestforum->id));
+    $DB->delete_records('digestforum_discussion_subs', array('digestforum' => $digestforum->id));
 
-    if ($discussions = $DB->get_records('forum_discussions', array('forum'=>$forum->id))) {
+    if ($discussions = $DB->get_records('digestforum_discussions', array('digestforum'=>$digestforum->id))) {
         foreach ($discussions as $discussion) {
-            if (!forum_delete_discussion($discussion, true, $course, $cm, $forum)) {
+            if (!digestforum_delete_discussion($discussion, true, $course, $cm, $digestforum)) {
                 $result = false;
             }
         }
     }
 
-    forum_tp_delete_read_records(-1, -1, -1, $forum->id);
+    digestforum_tp_delete_read_records(-1, -1, -1, $digestforum->id);
 
-    forum_grade_item_delete($forum);
+    digestforum_grade_item_delete($digestforum);
 
     // We must delete the module record after we delete the grade item.
-    if (!$DB->delete_records('forum', array('id'=>$forum->id))) {
+    if (!$DB->delete_records('digestforum', array('id'=>$digestforum->id))) {
         $result = false;
     }
 
@@ -317,7 +317,7 @@ function forum_delete_instance($id) {
 
 
 /**
- * Indicates API features that the forum supports.
+ * Indicates API features that the digestforum supports.
  *
  * @uses FEATURE_GROUPS
  * @uses FEATURE_GROUPINGS
@@ -329,7 +329,7 @@ function forum_delete_instance($id) {
  * @param string $feature
  * @return mixed True if yes (some features may use other values)
  */
-function forum_supports($feature) {
+function digestforum_supports($feature) {
     switch($feature) {
         case FEATURE_GROUPS:                  return true;
         case FEATURE_GROUPINGS:               return true;
@@ -349,8 +349,8 @@ function forum_supports($feature) {
 
 
 /**
- * Obtains the automatic completion state for this forum based on any conditions
- * in forum settings.
+ * Obtains the automatic completion state for this digestforum based on any conditions
+ * in digestforum settings.
  *
  * @global object
  * @global object
@@ -361,37 +361,37 @@ function forum_supports($feature) {
  * @return bool True if completed, false if not. (If no conditions, then return
  *   value depends on comparison type)
  */
-function forum_get_completion_state($course,$cm,$userid,$type) {
+function digestforum_get_completion_state($course,$cm,$userid,$type) {
     global $CFG,$DB;
 
-    // Get forum details
-    if (!($forum=$DB->get_record('forum',array('id'=>$cm->instance)))) {
-        throw new Exception("Can't find forum {$cm->instance}");
+    // Get digestforum details
+    if (!($digestforum=$DB->get_record('digestforum',array('id'=>$cm->instance)))) {
+        throw new Exception("Can't find digestforum {$cm->instance}");
     }
 
     $result=$type; // Default return value
 
-    $postcountparams=array('userid'=>$userid,'forumid'=>$forum->id);
+    $postcountparams=array('userid'=>$userid,'digestforumid'=>$digestforum->id);
     $postcountsql="
 SELECT
     COUNT(1)
 FROM
-    {forum_posts} fp
-    INNER JOIN {forum_discussions} fd ON fp.discussion=fd.id
+    {digestforum_posts} fp
+    INNER JOIN {digestforum_discussions} fd ON fp.discussion=fd.id
 WHERE
-    fp.userid=:userid AND fd.forum=:forumid";
+    fp.userid=:userid AND fd.digestforum=:digestforumid";
 
-    if ($forum->completiondiscussions) {
-        $value = $forum->completiondiscussions <=
-                 $DB->count_records('forum_discussions',array('forum'=>$forum->id,'userid'=>$userid));
+    if ($digestforum->completiondiscussions) {
+        $value = $digestforum->completiondiscussions <=
+                 $DB->count_records('digestforum_discussions',array('digestforum'=>$digestforum->id,'userid'=>$userid));
         if ($type == COMPLETION_AND) {
             $result = $result && $value;
         } else {
             $result = $result || $value;
         }
     }
-    if ($forum->completionreplies) {
-        $value = $forum->completionreplies <=
+    if ($digestforum->completionreplies) {
+        $value = $digestforum->completionreplies <=
                  $DB->get_field_sql( $postcountsql.' AND fp.parent<>0',$postcountparams);
         if ($type==COMPLETION_AND) {
             $result = $result && $value;
@@ -399,8 +399,8 @@ WHERE
             $result = $result || $value;
         }
     }
-    if ($forum->completionposts) {
-        $value = $forum->completionposts <= $DB->get_field_sql($postcountsql,$postcountparams);
+    if ($digestforum->completionposts) {
+        $value = $digestforum->completionposts <= $DB->get_field_sql($postcountsql,$postcountparams);
         if ($type == COMPLETION_AND) {
             $result = $result && $value;
         } else {
@@ -412,15 +412,15 @@ WHERE
 }
 
 /**
- * Create a message-id string to use in the custom headers of forum notification emails
+ * Create a message-id string to use in the custom headers of digestforum notification emails
  *
  * message-id is used by email clients to identify emails and to nest conversations
  *
- * @param int $postid The ID of the forum post we are notifying the user about
+ * @param int $postid The ID of the digestforum post we are notifying the user about
  * @param int $usertoid The ID of the user being notified
  * @return string A unique message-id
  */
-function forum_get_email_message_id($postid, $usertoid) {
+function digestforum_get_email_message_id($postid, $usertoid) {
     return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid));
 }
 
@@ -430,7 +430,7 @@ function forum_get_email_message_id($postid, $usertoid) {
  * @param stdClass $user
  * @return void, $user parameter is modified
  */
-function forum_cron_minimise_user_record(stdClass $user) {
+function digestforum_cron_minimise_user_record(stdClass $user) {
 
     // We store large amount of users in one huge array,
     // make sure we do not store info there we do not actually need
@@ -457,18 +457,18 @@ function forum_cron_minimise_user_record(stdClass $user) {
  *
  * @todo MDL-44734 The function will be split up into seperate tasks.
  */
-function forum_cron() {
+function digestforum_cron() {
     global $CFG, $USER, $DB, $PAGE;
 
     $site = get_site();
 
     // The main renderers.
-    $htmlout = $PAGE->get_renderer('mod_forum', 'email', 'htmlemail');
-    $textout = $PAGE->get_renderer('mod_forum', 'email', 'textemail');
-    $htmldigestfullout = $PAGE->get_renderer('mod_forum', 'emaildigestfull', 'htmlemail');
-    $textdigestfullout = $PAGE->get_renderer('mod_forum', 'emaildigestfull', 'textemail');
-    $htmldigestbasicout = $PAGE->get_renderer('mod_forum', 'emaildigestbasic', 'htmlemail');
-    $textdigestbasicout = $PAGE->get_renderer('mod_forum', 'emaildigestbasic', 'textemail');
+    $htmlout = $PAGE->get_renderer('mod_digestforum', 'email', 'htmlemail');
+    $textout = $PAGE->get_renderer('mod_digestforum', 'email', 'textemail');
+    $htmldigestfullout = $PAGE->get_renderer('mod_digestforum', 'emaildigestfull', 'htmlemail');
+    $textdigestfullout = $PAGE->get_renderer('mod_digestforum', 'emaildigestfull', 'textemail');
+    $htmldigestbasicout = $PAGE->get_renderer('mod_digestforum', 'emaildigestbasic', 'htmlemail');
+    $textdigestbasicout = $PAGE->get_renderer('mod_digestforum', 'emaildigestbasic', 'textemail');
 
     // All users that are subscribed to any post that needs sending,
     // please increase $CFG->extramemorylimit on large sites that
@@ -482,7 +482,7 @@ function forum_cron() {
 
     // caches
     $discussions        = array();
-    $forums             = array();
+    $digestforums             = array();
     $courses            = array();
     $coursemodules      = array();
     $subscribedusers    = array();
@@ -495,28 +495,28 @@ function forum_cron() {
     $endtime   = $timenow - $CFG->maxeditingtime;
     $starttime = $endtime - 48 * 3600;   // Two days earlier
 
-    // Get the list of forum subscriptions for per-user per-forum maildigest settings.
-    $digestsset = $DB->get_recordset('forum_digests', null, '', 'id, userid, forum, maildigest');
+    // Get the list of digestforum subscriptions for per-user per-digestforum maildigest settings.
+    $digestsset = $DB->get_recordset('digestforum_digests', null, '', 'id, userid, digestforum, maildigest');
     $digests = array();
     foreach ($digestsset as $thisrow) {
-        if (!isset($digests[$thisrow->forum])) {
-            $digests[$thisrow->forum] = array();
+        if (!isset($digests[$thisrow->digestforum])) {
+            $digests[$thisrow->digestforum] = array();
         }
-        $digests[$thisrow->forum][$thisrow->userid] = $thisrow->maildigest;
+        $digests[$thisrow->digestforum][$thisrow->userid] = $thisrow->maildigest;
     }
     $digestsset->close();
 
     // Create the generic messageinboundgenerator.
     $messageinboundgenerator = new \core\message\inbound\address_manager();
-    $messageinboundgenerator->set_handler('\mod_forum\message\inbound\reply_handler');
+    $messageinboundgenerator->set_handler('\mod_digestforum\message\inbound\reply_handler');
 
-    if ($posts = forum_get_unmailed_posts($starttime, $endtime, $timenow)) {
+    if ($posts = digestforum_get_unmailed_posts($starttime, $endtime, $timenow)) {
         // Mark them all now as being mailed.  It's unlikely but possible there
         // might be an error later so that a post is NOT actually mailed out,
         // but since mail isn't crucial, we can accept this risk.  Doing it now
         // prevents the risk of duplicated mails, which is a worse problem.
 
-        if (!forum_mark_old_posts_as_mailed($endtime)) {
+        if (!digestforum_mark_old_posts_as_mailed($endtime)) {
             mtrace('Errors occurred while trying to mark some posts as being mailed.');
             return false;  // Don't continue trying to mail them, in case we are in a cron loop
         }
@@ -526,10 +526,10 @@ function forum_cron() {
 
             $discussionid = $post->discussion;
             if (!isset($discussions[$discussionid])) {
-                if ($discussion = $DB->get_record('forum_discussions', array('id'=> $post->discussion))) {
+                if ($discussion = $DB->get_record('digestforum_discussions', array('id'=> $post->discussion))) {
                     $discussions[$discussionid] = $discussion;
-                    \mod_forum\subscriptions::fill_subscription_cache($discussion->forum);
-                    \mod_forum\subscriptions::fill_discussion_subscription_cache($discussion->forum);
+                    \mod_digestforum\subscriptions::fill_subscription_cache($discussion->digestforum);
+                    \mod_digestforum\subscriptions::fill_discussion_subscription_cache($discussion->digestforum);
 
                 } else {
                     mtrace('Could not find discussion ' . $discussionid);
@@ -537,17 +537,17 @@ function forum_cron() {
                     continue;
                 }
             }
-            $forumid = $discussions[$discussionid]->forum;
-            if (!isset($forums[$forumid])) {
-                if ($forum = $DB->get_record('forum', array('id' => $forumid))) {
-                    $forums[$forumid] = $forum;
+            $digestforumid = $discussions[$discussionid]->digestforum;
+            if (!isset($digestforums[$digestforumid])) {
+                if ($digestforum = $DB->get_record('digestforum', array('id' => $digestforumid))) {
+                    $digestforums[$digestforumid] = $digestforum;
                 } else {
-                    mtrace('Could not find forum '.$forumid);
+                    mtrace('Could not find digestforum '.$digestforumid);
                     unset($posts[$pid]);
                     continue;
                 }
             }
-            $courseid = $forums[$forumid]->course;
+            $courseid = $digestforums[$digestforumid]->course;
             if (!isset($courses[$courseid])) {
                 if ($course = $DB->get_record('course', array('id' => $courseid))) {
                     $courses[$courseid] = $course;
@@ -557,38 +557,38 @@ function forum_cron() {
                     continue;
                 }
             }
-            if (!isset($coursemodules[$forumid])) {
-                if ($cm = get_coursemodule_from_instance('forum', $forumid, $courseid)) {
-                    $coursemodules[$forumid] = $cm;
+            if (!isset($coursemodules[$digestforumid])) {
+                if ($cm = get_coursemodule_from_instance('digestforum', $digestforumid, $courseid)) {
+                    $coursemodules[$digestforumid] = $cm;
                 } else {
-                    mtrace('Could not find course module for forum '.$forumid);
+                    mtrace('Could not find course module for digestforum '.$digestforumid);
                     unset($posts[$pid]);
                     continue;
                 }
             }
 
-            $modcontext = context_module::instance($coursemodules[$forumid]->id);
+            $modcontext = context_module::instance($coursemodules[$digestforumid]->id);
 
             // Save the Inbound Message datakey here to reduce DB queries later.
             $messageinboundgenerator->set_data($pid);
             $messageinboundhandlers[$pid] = $messageinboundgenerator->fetch_data_key();
 
-            // Caching subscribed users of each forum.
-            if (!isset($subscribedusers[$forumid])) {
-                if ($subusers = \mod_forum\subscriptions::fetch_subscribed_users($forums[$forumid], 0, $modcontext, 'u.*', true)) {
+            // Caching subscribed users of each digestforum.
+            if (!isset($subscribedusers[$digestforumid])) {
+                if ($subusers = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforums[$digestforumid], 0, $modcontext, 'u.*', true)) {
 
                     foreach ($subusers as $postuser) {
-                        // this user is subscribed to this forum
-                        $subscribedusers[$forumid][$postuser->id] = $postuser->id;
+                        // this user is subscribed to this digestforum
+                        $subscribedusers[$digestforumid][$postuser->id] = $postuser->id;
                         $userscount++;
-                        if ($userscount > FORUM_CRON_USER_CACHE) {
+                        if ($userscount > DFORUM_CRON_USER_CACHE) {
                             // Store minimal user info.
                             $minuser = new stdClass();
                             $minuser->id = $postuser->id;
                             $users[$postuser->id] = $minuser;
                         } else {
                             // Cache full user record.
-                            forum_cron_minimise_user_record($postuser);
+                            digestforum_cron_minimise_user_record($postuser);
                             $users[$postuser->id] = $postuser;
                         }
                     }
@@ -615,7 +615,7 @@ function forum_cron() {
                 $userto = clone($userto);
             } else {
                 $userto = $DB->get_record('user', array('id' => $userto->id));
-                forum_cron_minimise_user_record($userto);
+                digestforum_cron_minimise_user_record($userto);
             }
             $userto->viewfullnames = array();
             $userto->canpost       = array();
@@ -625,33 +625,33 @@ function forum_cron() {
             cron_setup_user($userto);
 
             // Reset the caches.
-            foreach ($coursemodules as $forumid => $unused) {
-                $coursemodules[$forumid]->cache       = new stdClass();
-                $coursemodules[$forumid]->cache->caps = array();
-                unset($coursemodules[$forumid]->uservisible);
+            foreach ($coursemodules as $digestforumid => $unused) {
+                $coursemodules[$digestforumid]->cache       = new stdClass();
+                $coursemodules[$digestforumid]->cache->caps = array();
+                unset($coursemodules[$digestforumid]->uservisible);
             }
 
             foreach ($posts as $pid => $post) {
                 $discussion = $discussions[$post->discussion];
-                $forum      = $forums[$discussion->forum];
-                $course     = $courses[$forum->course];
-                $cm         =& $coursemodules[$forum->id];
+                $digestforum      = $digestforums[$discussion->digestforum];
+                $course     = $courses[$digestforum->course];
+                $cm         =& $coursemodules[$digestforum->id];
 
                 // Do some checks to see if we can bail out now.
 
                 // Only active enrolled users are in the list of subscribers.
-                // This does not necessarily mean that the user is subscribed to the forum or to the discussion though.
-                if (!isset($subscribedusers[$forum->id][$userto->id])) {
-                    // The user does not subscribe to this forum.
+                // This does not necessarily mean that the user is subscribed to the digestforum or to the discussion though.
+                if (!isset($subscribedusers[$digestforum->id][$userto->id])) {
+                    // The user does not subscribe to this digestforum.
                     continue;
                 }
 
-                if (!\mod_forum\subscriptions::is_subscribed($userto->id, $forum, $post->discussion, $coursemodules[$forum->id])) {
-                    // The user does not subscribe to this forum, or to this specific discussion.
+                if (!\mod_digestforum\subscriptions::is_subscribed($userto->id, $digestforum, $post->discussion, $coursemodules[$digestforum->id])) {
+                    // The user does not subscribe to this digestforum, or to this specific discussion.
                     continue;
                 }
 
-                if ($subscriptiontime = \mod_forum\subscriptions::fetch_discussion_subscription($forum->id, $userto->id)) {
+                if ($subscriptiontime = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $userto->id)) {
                     // Skip posts if the user subscribed to the discussion after it was created.
                     if (isset($subscriptiontime[$post->discussion]) && ($subscriptiontime[$post->discussion] > $post->created)) {
                         continue;
@@ -664,9 +664,9 @@ function forum_cron() {
                     continue;
                 }
 
-                // Don't send email if the forum is Q&A and the user has not posted.
+                // Don't send email if the digestforum is Q&A and the user has not posted.
                 // Initial topics are still mailed.
-                if ($forum->type == 'qanda' && !forum_get_user_posted_time($discussion->id, $userto->id) && $pid != $discussion->firstpost) {
+                if ($digestforum->type == 'qanda' && !digestforum_get_user_posted_time($discussion->id, $userto->id) && $pid != $discussion->firstpost) {
                     mtrace('Did not email ' . $userto->id.' because user has not posted in discussion');
                     continue;
                 }
@@ -678,13 +678,13 @@ function forum_cron() {
                     if (!isset($userfrom->idnumber)) {
                         // Minimalised user info, fetch full record.
                         $userfrom = $DB->get_record('user', array('id' => $userfrom->id));
-                        forum_cron_minimise_user_record($userfrom);
+                        digestforum_cron_minimise_user_record($userfrom);
                     }
 
                 } else if ($userfrom = $DB->get_record('user', array('id' => $post->userid))) {
-                    forum_cron_minimise_user_record($userfrom);
+                    digestforum_cron_minimise_user_record($userfrom);
                     // Fetch only once if possible, we can add it to user list, it will be skipped anyway.
-                    if ($userscount <= FORUM_CRON_USER_CACHE) {
+                    if ($userscount <= DFORUM_CRON_USER_CACHE) {
                         $userscount++;
                         $users[$userfrom->id] = $userfrom;
                     }
@@ -699,24 +699,24 @@ function forum_cron() {
                 cron_setup_user($userto, $course);
 
                 // Fill caches.
-                if (!isset($userto->viewfullnames[$forum->id])) {
+                if (!isset($userto->viewfullnames[$digestforum->id])) {
                     $modcontext = context_module::instance($cm->id);
-                    $userto->viewfullnames[$forum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
+                    $userto->viewfullnames[$digestforum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
                 }
                 if (!isset($userto->canpost[$discussion->id])) {
                     $modcontext = context_module::instance($cm->id);
-                    $userto->canpost[$discussion->id] = forum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                    $userto->canpost[$discussion->id] = digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course, $modcontext);
                 }
-                if (!isset($userfrom->groups[$forum->id])) {
+                if (!isset($userfrom->groups[$digestforum->id])) {
                     if (!isset($userfrom->groups)) {
                         $userfrom->groups = array();
                         if (isset($users[$userfrom->id])) {
                             $users[$userfrom->id]->groups = array();
                         }
                     }
-                    $userfrom->groups[$forum->id] = groups_get_all_groups($course->id, $userfrom->id, $cm->groupingid);
+                    $userfrom->groups[$digestforum->id] = groups_get_all_groups($course->id, $userfrom->id, $cm->groupingid);
                     if (isset($users[$userfrom->id])) {
-                        $users[$userfrom->id]->groups[$forum->id] = $userfrom->groups[$forum->id];
+                        $users[$userfrom->id]->groups[$digestforum->id] = $userfrom->groups[$digestforum->id];
                     }
                 }
 
@@ -735,7 +735,7 @@ function forum_cron() {
                 }
 
                 // Make sure we're allowed to see the post.
-                if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm)) {
+                if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm)) {
                     mtrace('User ' . $userto->id .' can not see ' . $post->id . '. Not sending message.');
                     continue;
                 }
@@ -743,7 +743,7 @@ function forum_cron() {
                 // OK so we need to send the email.
 
                 // Does the user want this post in a digest?  If so postpone it for now.
-                $maildigest = forum_get_user_maildigest_bulk($digests, $userto, $forum->id);
+                $maildigest = digestforum_get_user_maildigest_bulk($digests, $userto, $digestforum->id);
 
                 if ($maildigest > 0) {
                     // This user wants the mails to be in digest form.
@@ -752,19 +752,19 @@ function forum_cron() {
                     $queue->discussionid = $discussion->id;
                     $queue->postid       = $post->id;
                     $queue->timemodified = $post->created;
-                    $DB->insert_record('forum_queue', $queue);
+                    $DB->insert_record('digestforum_queue', $queue);
                     continue;
                 }
 
                 // Prepare to actually send the post now, and build up the content.
 
-                $cleanforumname = str_replace('"', "'", strip_tags(format_string($forum->name)));
+                $cleandigestforumname = str_replace('"', "'", strip_tags(format_string($digestforum->name)));
 
                 $userfrom->customheaders = array (
                     // Headers to make emails easier to track.
-                    'List-Id: "'        . $cleanforumname . '" ' . generate_email_messageid('moodleforum' . $forum->id),
-                    'List-Help: '       . $CFG->wwwroot . '/mod/forum/view.php?f=' . $forum->id,
-                    'Message-ID: '      . forum_get_email_message_id($post->id, $userto->id),
+                    'List-Id: "'        . $cleandigestforumname . '" ' . generate_email_messageid('moodledigestforum' . $digestforum->id),
+                    'List-Help: '       . $CFG->wwwroot . '/mod/digestforum/view.php?f=' . $digestforum->id,
+                    'Message-ID: '      . digestforum_get_email_message_id($post->id, $userto->id),
                     'X-Course-Id: '     . $course->id,
                     'X-Course-Name: '   . format_string($course->fullname, true),
 
@@ -784,15 +784,15 @@ function forum_cron() {
                 }
 
                 if (!isset($userto->canpost[$discussion->id])) {
-                    $canreply = forum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                    $canreply = digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course, $modcontext);
                 } else {
                     $canreply = $userto->canpost[$discussion->id];
                 }
 
-                $data = new \mod_forum\output\forum_post_email(
+                $data = new \mod_digestforum\output\digestforum_post_email(
                         $course,
                         $cm,
-                        $forum,
+                        $digestforum,
                         $discussion,
                         $post,
                         $userfrom,
@@ -803,29 +803,29 @@ function forum_cron() {
                 $userfrom->customheaders[] = sprintf('List-Unsubscribe: <%s>',
                     $data->get_unsubscribediscussionlink());
 
-                if (!isset($userto->viewfullnames[$forum->id])) {
+                if (!isset($userto->viewfullnames[$digestforum->id])) {
                     $data->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
                 } else {
-                    $data->viewfullnames = $userto->viewfullnames[$forum->id];
+                    $data->viewfullnames = $userto->viewfullnames[$digestforum->id];
                 }
 
                 // Not all of these variables are used in the default language
                 // string but are made available to support custom subjects.
                 $a = new stdClass();
                 $a->subject = $data->get_subject();
-                $a->forumname = $cleanforumname;
+                $a->digestforumname = $cleandigestforumname;
                 $a->sitefullname = format_string($site->fullname);
                 $a->siteshortname = format_string($site->shortname);
                 $a->courseidnumber = $data->get_courseidnumber();
                 $a->coursefullname = $data->get_coursefullname();
                 $a->courseshortname = $data->get_coursename();
-                $postsubject = html_to_text(get_string('postmailsubject', 'forum', $a), 0);
+                $postsubject = html_to_text(get_string('postmailsubject', 'digestforum', $a), 0);
 
-                $rootid = forum_get_email_message_id($discussion->firstpost, $userto->id);
+                $rootid = digestforum_get_email_message_id($discussion->firstpost, $userto->id);
 
                 if ($post->parent) {
                     // This post is a reply, so add reply header (RFC 2822).
-                    $parentid = forum_get_email_message_id($post->parent, $userto->id);
+                    $parentid = digestforum_get_email_message_id($post->parent, $userto->id);
                     $userfrom->customheaders[] = "In-Reply-To: $parentid";
 
                     // If the post is deeply nested we also reference the parent message id and
@@ -841,7 +841,7 @@ function forum_cron() {
                 // MS Outlook / Office uses poorly documented and non standard headers, including
                 // Thread-Topic which overrides the Subject and shouldn't contain Re: or Fwd: etc.
                 $a->subject = $discussion->name;
-                $threadtopic = html_to_text(get_string('postmailsubject', 'forum', $a), 0);
+                $threadtopic = html_to_text(get_string('postmailsubject', 'digestforum', $a), 0);
                 $userfrom->customheaders[] = "Thread-Topic: $threadtopic";
                 $userfrom->customheaders[] = "Thread-Index: " . substr($rootid, 1, 28);
 
@@ -850,7 +850,7 @@ function forum_cron() {
 
                 $eventdata = new \core\message\message();
                 $eventdata->courseid            = $course->id;
-                $eventdata->component           = 'mod_forum';
+                $eventdata->component           = 'mod_digestforum';
                 $eventdata->name                = 'posts';
                 $eventdata->userfrom            = $userfrom;
                 $eventdata->userto              = $userto;
@@ -862,8 +862,8 @@ function forum_cron() {
                 $eventdata->replyto             = $replyaddress;
                 if (!empty($replyaddress)) {
                     // Add extra text to email messages if they can reply back.
-                    $textfooter = "\n\n" . get_string('replytopostbyemail', 'mod_forum');
-                    $htmlfooter = html_writer::tag('p', get_string('replytopostbyemail', 'mod_forum'));
+                    $textfooter = "\n\n" . get_string('replytopostbyemail', 'mod_digestforum');
+                    $htmlfooter = html_writer::tag('p', get_string('replytopostbyemail', 'mod_digestforum'));
                     $additionalcontent = array('fullmessage' => array('footer' => $textfooter),
                                      'fullmessagehtml' => array('footer' => $htmlfooter));
                     $eventdata->set_additional_content('email', $additionalcontent);
@@ -871,26 +871,26 @@ function forum_cron() {
 
                 $smallmessagestrings = new stdClass();
                 $smallmessagestrings->user          = fullname($userfrom);
-                $smallmessagestrings->forumname     = "$shortname: " . format_string($forum->name, true) . ": " . $discussion->name;
+                $smallmessagestrings->digestforumname     = "$shortname: " . format_string($digestforum->name, true) . ": " . $discussion->name;
                 $smallmessagestrings->message       = $post->message;
 
                 // Make sure strings are in message recipients language.
-                $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'forum', $smallmessagestrings, $userto->lang);
+                $eventdata->smallmessage = get_string_manager()->get_string('smallmessage', 'digestforum', $smallmessagestrings, $userto->lang);
 
-                $contexturl = new moodle_url('/mod/forum/discuss.php', array('d' => $discussion->id), 'p' . $post->id);
+                $contexturl = new moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id), 'p' . $post->id);
                 $eventdata->contexturl = $contexturl->out();
                 $eventdata->contexturlname = $discussion->name;
 
                 $mailresult = message_send($eventdata);
                 if (!$mailresult) {
-                    mtrace("Error: mod/forum/lib.php forum_cron(): Could not send out mail for id $post->id to user $userto->id".
+                    mtrace("Error: mod/digestforum/lib.php digestforum_cron(): Could not send out mail for id $post->id to user $userto->id".
                             " ($userto->email) .. not trying again.");
                     $errorcount[$post->id]++;
                 } else {
                     $mailcount[$post->id]++;
 
-                    // Mark post as read if forum_usermarksread is set off.
-                    if (!$CFG->forum_usermarksread) {
+                    // Mark post as read if digestforum_usermarksread is set off.
+                    if (!$CFG->digestforum_usermarksread) {
                         $userto->markposts[$post->id] = $post->id;
                     }
                 }
@@ -899,8 +899,8 @@ function forum_cron() {
             }
 
             // Mark processed posts as read.
-            if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
-                forum_tp_mark_posts_read($userto, $userto->markposts);
+            if (get_user_preferences('digestforum_markasreadonnotification', 1, $userto->id) == 1) {
+                digestforum_tp_mark_posts_read($userto, $userto->markposts);
             }
 
             unset($userto);
@@ -911,7 +911,7 @@ function forum_cron() {
         foreach ($posts as $post) {
             mtrace($mailcount[$post->id]." users were sent post $post->id, '$post->subject'");
             if ($errorcount[$post->id]) {
-                $DB->set_field('forum_posts', 'mailed', FORUM_MAILED_ERROR, array('id' => $post->id));
+                $DB->set_field('digestforum_posts', 'mailed', DFORUM_MAILED_ERROR, array('id' => $post->id));
             }
         }
     }
@@ -940,14 +940,16 @@ function forum_cron() {
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
-    $DB->delete_records_select('forum_queue', "timemodified < ?", array($weekago));
+    $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
+    //if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
+	if (true) { //MJG - testing only!
+		$digesttime += 86400; //MJG - testing only!
 
-        mtrace('Sending forum digests: '.userdate($timenow, '', $sitetimezone));
+        mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
-        $digestposts_rs = $DB->get_recordset_select('forum_queue', "timemodified < ?", array($digesttime));
+        $digestposts_rs = $DB->get_recordset_select('digestforum_queue', "timemodified < ?", array($digesttime));
 
         if ($digestposts_rs->valid()) {
 
@@ -960,7 +962,7 @@ function forum_cron() {
 
             foreach ($digestposts_rs as $digestpost) {
                 if (!isset($posts[$digestpost->postid])) {
-                    if ($post = $DB->get_record('forum_posts', array('id' => $digestpost->postid))) {
+                    if ($post = $DB->get_record('digestforum_posts', array('id' => $digestpost->postid))) {
                         $posts[$digestpost->postid] = $post;
                     } else {
                         continue;
@@ -968,22 +970,22 @@ function forum_cron() {
                 }
                 $discussionid = $digestpost->discussionid;
                 if (!isset($discussions[$discussionid])) {
-                    if ($discussion = $DB->get_record('forum_discussions', array('id' => $discussionid))) {
+                    if ($discussion = $DB->get_record('digestforum_discussions', array('id' => $discussionid))) {
                         $discussions[$discussionid] = $discussion;
                     } else {
                         continue;
                     }
                 }
-                $forumid = $discussions[$discussionid]->forum;
-                if (!isset($forums[$forumid])) {
-                    if ($forum = $DB->get_record('forum', array('id' => $forumid))) {
-                        $forums[$forumid] = $forum;
+                $digestforumid = $discussions[$discussionid]->digestforum;
+                if (!isset($digestforums[$digestforumid])) {
+                    if ($digestforum = $DB->get_record('digestforum', array('id' => $digestforumid))) {
+                        $digestforums[$digestforumid] = $digestforum;
                     } else {
                         continue;
                     }
                 }
 
-                $courseid = $forums[$forumid]->course;
+                $courseid = $digestforums[$digestforumid]->course;
                 if (!isset($courses[$courseid])) {
                     if ($course = $DB->get_record('course', array('id' => $courseid))) {
                         $courses[$courseid] = $course;
@@ -992,9 +994,9 @@ function forum_cron() {
                     }
                 }
 
-                if (!isset($coursemodules[$forumid])) {
-                    if ($cm = get_coursemodule_from_instance('forum', $forumid, $courseid)) {
-                        $coursemodules[$forumid] = $cm;
+                if (!isset($coursemodules[$digestforumid])) {
+                    if ($cm = get_coursemodule_from_instance('digestforum', $digestforumid, $courseid)) {
+                        $coursemodules[$digestforumid] = $cm;
                     } else {
                         continue;
                     }
@@ -1011,10 +1013,10 @@ function forum_cron() {
 
                 cron_setup_user();
 
-                mtrace(get_string('processingdigest', 'forum', $userid), '... ');
+                mtrace(get_string('processingdigest', 'digestforum', $userid), '... ');
 
                 // First of all delete all the queue entries for this user
-                $DB->delete_records_select('forum_queue', "userid = ? AND timemodified < ?", array($userid, $digesttime));
+                $DB->delete_records_select('digestforum_queue', "userid = ? AND timemodified < ?", array($userid, $digesttime));
 
                 // Init user caches - we keep the cache for one cycle only,
                 // otherwise it would unnecessarily consume memory.
@@ -1022,7 +1024,7 @@ function forum_cron() {
                     $userto = clone($users[$userid]);
                 } else {
                     $userto = $DB->get_record('user', array('id' => $userid));
-                    forum_cron_minimise_user_record($userto);
+                    digestforum_cron_minimise_user_record($userto);
                 }
                 $userto->viewfullnames = array();
                 $userto->canpost       = array();
@@ -1032,16 +1034,16 @@ function forum_cron() {
                 // mail is customised for the receiver.
                 cron_setup_user($userto);
 
-                $postsubject = get_string('digestmailsubject', 'forum', format_string($site->shortname, true));
+                $postsubject = get_string('digestmailsubject', 'digestforum', format_string($site->shortname, true));
 
                 $headerdata = new stdClass();
                 $headerdata->sitename = format_string($site->fullname, true);
-                $headerdata->userprefs = $CFG->wwwroot.'/user/forum.php?id='.$userid.'&amp;course='.$site->id;
+                $headerdata->userprefs = $CFG->wwwroot.'/user/digestforum.php?id='.$userid.'&amp;course='.$site->id;
 
-                $posttext = get_string('digestmailheader', 'forum', $headerdata)."\n\n";
-                $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'forum').'</a>';
+                $posttext = get_string('digestmailheader', 'digestforum', $headerdata)."\n\n";
+                $headerdata->userprefs = '<a target="_blank" href="'.$headerdata->userprefs.'">'.get_string('digestmailprefs', 'digestforum').'</a>';
 
-                $posthtml = '<p>'.get_string('digestmailheader', 'forum', $headerdata).'</p>'
+                $posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>'
                     . '<br /><hr size="1" noshade="noshade" />';
 
                 foreach ($thesediscussions as $discussionid) {
@@ -1049,47 +1051,47 @@ function forum_cron() {
                     core_php_time_limit::raise(120);   // to be reset for each post
 
                     $discussion = $discussions[$discussionid];
-                    $forum      = $forums[$discussion->forum];
-                    $course     = $courses[$forum->course];
-                    $cm         = $coursemodules[$forum->id];
+                    $digestforum      = $digestforums[$discussion->digestforum];
+                    $course     = $courses[$digestforum->course];
+                    $cm         = $coursemodules[$digestforum->id];
 
                     //override language
                     cron_setup_user($userto, $course);
 
                     // Fill caches
-                    if (!isset($userto->viewfullnames[$forum->id])) {
+                    if (!isset($userto->viewfullnames[$digestforum->id])) {
                         $modcontext = context_module::instance($cm->id);
-                        $userto->viewfullnames[$forum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
+                        $userto->viewfullnames[$digestforum->id] = has_capability('moodle/site:viewfullnames', $modcontext);
                     }
                     if (!isset($userto->canpost[$discussion->id])) {
                         $modcontext = context_module::instance($cm->id);
-                        $userto->canpost[$discussion->id] = forum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                        $userto->canpost[$discussion->id] = digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course, $modcontext);
                     }
 
-                    $strforums      = get_string('forums', 'forum');
-                    $canunsubscribe = ! \mod_forum\subscriptions::is_forcesubscribed($forum);
+                    $strdigestforums      = get_string('digestforums', 'digestforum');
+                    $canunsubscribe = ! \mod_digestforum\subscriptions::is_forcesubscribed($digestforum);
                     $canreply       = $userto->canpost[$discussion->id];
                     $shortname = format_string($course->shortname, true, array('context' => context_course::instance($course->id)));
 
                     $posttext .= "\n \n";
                     $posttext .= '=====================================================================';
                     $posttext .= "\n \n";
-                    $posttext .= "$shortname -> $strforums -> ".format_string($forum->name,true);
-                    if ($discussion->name != $forum->name) {
+                    $posttext .= "$shortname -> $strdigestforums -> ".format_string($digestforum->name,true);
+                    if ($discussion->name != $digestforum->name) {
                         $posttext  .= " -> ".format_string($discussion->name,true);
                     }
                     $posttext .= "\n";
-                    $posttext .= $CFG->wwwroot.'/mod/forum/discuss.php?d='.$discussion->id;
+                    $posttext .= $CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$discussion->id;
                     $posttext .= "\n";
 
                     $posthtml .= "<p><font face=\"sans-serif\">".
                     "<a target=\"_blank\" href=\"$CFG->wwwroot/course/view.php?id=$course->id\">$shortname</a> -> ".
-                    "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/forum/index.php?id=$course->id\">$strforums</a> -> ".
-                    "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/forum/view.php?f=$forum->id\">".format_string($forum->name,true)."</a>";
-                    if ($discussion->name == $forum->name) {
+                    "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/index.php?id=$course->id\">$strdigestforums</a> -> ".
+                    "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/view.php?f=$digestforum->id\">".format_string($digestforum->name,true)."</a>";
+                    if ($discussion->name == $digestforum->name) {
                         $posthtml .= "</font></p>";
                     } else {
-                        $posthtml .= " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/forum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
+                        $posthtml .= " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
                     }
                     $posthtml .= '<p>';
 
@@ -1104,12 +1106,12 @@ function forum_cron() {
                             $userfrom = $users[$post->userid];
                             if (!isset($userfrom->idnumber)) {
                                 $userfrom = $DB->get_record('user', array('id' => $userfrom->id));
-                                forum_cron_minimise_user_record($userfrom);
+                                digestforum_cron_minimise_user_record($userfrom);
                             }
 
                         } else if ($userfrom = $DB->get_record('user', array('id' => $post->userid))) {
-                            forum_cron_minimise_user_record($userfrom);
-                            if ($userscount <= FORUM_CRON_USER_CACHE) {
+                            digestforum_cron_minimise_user_record($userfrom);
+                            if ($userscount <= DFORUM_CRON_USER_CACHE) {
                                 $userscount++;
                                 $users[$userfrom->id] = $userfrom;
                             }
@@ -1119,16 +1121,16 @@ function forum_cron() {
                             continue;
                         }
 
-                        if (!isset($userfrom->groups[$forum->id])) {
+                        if (!isset($userfrom->groups[$digestforum->id])) {
                             if (!isset($userfrom->groups)) {
                                 $userfrom->groups = array();
                                 if (isset($users[$userfrom->id])) {
                                     $users[$userfrom->id]->groups = array();
                                 }
                             }
-                            $userfrom->groups[$forum->id] = groups_get_all_groups($course->id, $userfrom->id, $cm->groupingid);
+                            $userfrom->groups[$digestforum->id] = groups_get_all_groups($course->id, $userfrom->id, $cm->groupingid);
                             if (isset($users[$userfrom->id])) {
-                                $users[$userfrom->id]->groups[$forum->id] = $userfrom->groups[$forum->id];
+                                $users[$userfrom->id]->groups[$digestforum->id] = $userfrom->groups[$digestforum->id];
                             }
                         }
 
@@ -1139,17 +1141,17 @@ function forum_cron() {
                                 'Auto-Submitted: auto-generated',
                             );
 
-                        $maildigest = forum_get_user_maildigest_bulk($digests, $userto, $forum->id);
+                        $maildigest = digestforum_get_user_maildigest_bulk($digests, $userto, $digestforum->id);
                         if (!isset($userto->canpost[$discussion->id])) {
-                            $canreply = forum_user_can_post($forum, $discussion, $userto, $cm, $course, $modcontext);
+                            $canreply = digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course, $modcontext);
                         } else {
                             $canreply = $userto->canpost[$discussion->id];
                         }
 
-                        $data = new \mod_forum\output\forum_post_email(
+                        $data = new \mod_digestforum\output\digestforum_post_email(
                                 $course,
                                 $cm,
-                                $forum,
+                                $digestforum,
                                 $discussion,
                                 $post,
                                 $userfrom,
@@ -1157,10 +1159,10 @@ function forum_cron() {
                                 $canreply
                             );
 
-                        if (!isset($userto->viewfullnames[$forum->id])) {
+                        if (!isset($userto->viewfullnames[$digestforum->id])) {
                             $data->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
                         } else {
-                            $data->viewfullnames = $userto->viewfullnames[$forum->id];
+                            $data->viewfullnames = $userto->viewfullnames[$digestforum->id];
                         }
 
                         if ($maildigest == 2) {
@@ -1173,20 +1175,22 @@ function forum_cron() {
                             $posthtml .= $htmldigestfullout->render($data);
 
                             // Create an array of postid's for this user to mark as read.
-                            if (!$CFG->forum_usermarksread) {
+                            if (!$CFG->digestforum_usermarksread) {
                                 $userto->markposts[$post->id] = $post->id;
                             }
                         }
                         $sentcount++;
                     }
                     $footerlinks = array();
+					/*
                     if ($canunsubscribe) {
-                        $footerlinks[] = "<a href=\"$CFG->wwwroot/mod/forum/subscribe.php?id=$forum->id\">" . get_string("unsubscribe", "forum") . "</a>";
+                        $footerlinks[] = "<a href=\"$CFG->wwwroot/mod/digestforum/subscribe.php?id=$digestforum->id\">" . get_string("unsubscribe", "digestforum") . "</a>";
                     } else {
-                        $footerlinks[] = get_string("everyoneissubscribed", "forum");
+                        $footerlinks[] = get_string("everyoneissubscribed", "digestforum");
                     }
-                    $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/forum/index.php?id={$forum->course}'>" . get_string("digestmailpost", "forum") . '</a>';
+                    $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/digestforum/index.php?id={$digestforum->course}'>" . get_string("digestmailpost", "digestforum") . '</a>';
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
+					*/
                     $posthtml .= '<hr size="1" noshade="noshade" /></p>';
                 }
 
@@ -1197,7 +1201,7 @@ function forum_cron() {
 
                 $eventdata = new \core\message\message();
                 $eventdata->courseid            = SITEID;
-                $eventdata->component           = 'mod_forum';
+                $eventdata->component           = 'mod_digestforum';
                 $eventdata->name                = 'digests';
                 $eventdata->userfrom            = core_user::get_noreply_user();
                 $eventdata->userto              = $userto;
@@ -1206,19 +1210,19 @@ function forum_cron() {
                 $eventdata->fullmessageformat   = FORMAT_PLAIN;
                 $eventdata->fullmessagehtml     = $posthtml;
                 $eventdata->notification        = 1;
-                $eventdata->smallmessage        = get_string('smallmessagedigest', 'forum', $sentcount);
+                $eventdata->smallmessage        = get_string('smallmessagedigest', 'digestforum', $sentcount);
                 $mailresult = message_send($eventdata);
 
                 if (!$mailresult) {
-                    mtrace("ERROR: mod/forum/cron.php: Could not send out digest mail to user $userto->id ".
+                    mtrace("ERROR: mod/digestforum/cron.php: Could not send out digest mail to user $userto->id ".
                         "($userto->email)... not trying again.");
                 } else {
                     mtrace("success.");
                     $usermailcount++;
 
-                    // Mark post as read if forum_usermarksread is set off
-                    if (get_user_preferences('forum_markasreadonnotification', 1, $userto->id) == 1) {
-                        forum_tp_mark_posts_read($userto, $userto->markposts);
+                    // Mark post as read if digestforum_usermarksread is set off
+                    if (get_user_preferences('digestforum_markasreadonnotification', 1, $userto->id) == 1) {
+                        digestforum_tp_mark_posts_read($userto, $userto->markposts);
                     }
                 }
             }
@@ -1230,18 +1234,18 @@ function forum_cron() {
     cron_setup_user();
 
     if (!empty($usermailcount)) {
-        mtrace(get_string('digestsentusers', 'forum', $usermailcount));
+        mtrace(get_string('digestsentusers', 'digestforum', $usermailcount));
     }
 
-    if (!empty($CFG->forum_lastreadclean)) {
+    if (!empty($CFG->digestforum_lastreadclean)) {
         $timenow = time();
-        if ($CFG->forum_lastreadclean + (24*3600) < $timenow) {
-            set_config('forum_lastreadclean', $timenow);
-            mtrace('Removing old forum read tracking info...');
-            forum_tp_clean_read_records();
+        if ($CFG->digestforum_lastreadclean + (24*3600) < $timenow) {
+            set_config('digestforum_lastreadclean', $timenow);
+            mtrace('Removing old digestforum read tracking info...');
+            digestforum_tp_clean_read_records();
         }
     } else {
-        set_config('forum_lastreadclean', time());
+        set_config('digestforum_lastreadclean', time());
     }
 
     return true;
@@ -1252,24 +1256,24 @@ function forum_cron() {
  * @param object $course
  * @param object $user
  * @param object $mod TODO this is not used in this function, refactor
- * @param object $forum
+ * @param object $digestforum
  * @return object A standard object with 2 variables: info (number of posts for this user) and time (last modified)
  */
-function forum_user_outline($course, $user, $mod, $forum) {
+function digestforum_user_outline($course, $user, $mod, $digestforum) {
     global $CFG;
     require_once("$CFG->libdir/gradelib.php");
-    $grades = grade_get_grades($course->id, 'mod', 'forum', $forum->id, $user->id);
+    $grades = grade_get_grades($course->id, 'mod', 'digestforum', $digestforum->id, $user->id);
     if (empty($grades->items[0]->grades)) {
         $grade = false;
     } else {
         $grade = reset($grades->items[0]->grades);
     }
 
-    $count = forum_count_user_posts($forum->id, $user->id);
+    $count = digestforum_count_user_posts($digestforum->id, $user->id);
 
     if ($count && $count->postcount > 0) {
         $result = new stdClass();
-        $result->info = get_string("numposts", "forum", $count->postcount);
+        $result->info = get_string("numposts", "digestforum", $count->postcount);
         $result->time = $count->lastpost;
         if ($grade) {
             if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
@@ -1308,13 +1312,13 @@ function forum_user_outline($course, $user, $mod, $forum) {
  * @param object $coure
  * @param object $user
  * @param object $mod
- * @param object $forum
+ * @param object $digestforum
  */
-function forum_user_complete($course, $user, $mod, $forum) {
+function digestforum_user_complete($course, $user, $mod, $digestforum) {
     global $CFG,$USER, $OUTPUT;
     require_once("$CFG->libdir/gradelib.php");
 
-    $grades = grade_get_grades($course->id, 'mod', 'forum', $forum->id, $user->id);
+    $grades = grade_get_grades($course->id, 'mod', 'digestforum', $digestforum->id, $user->id);
     if (!empty($grades->items[0]->grades)) {
         $grade = reset($grades->items[0]->grades);
         if (!$grade->hidden || has_capability('moodle/grade:viewhidden', context_course::instance($course->id))) {
@@ -1327,12 +1331,12 @@ function forum_user_complete($course, $user, $mod, $forum) {
         }
     }
 
-    if ($posts = forum_get_user_posts($forum->id, $user->id)) {
+    if ($posts = digestforum_get_user_posts($digestforum->id, $user->id)) {
 
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $course->id)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id)) {
             print_error('invalidcoursemodule');
         }
-        $discussions = forum_get_user_involved_discussions($forum->id, $user->id);
+        $discussions = digestforum_get_user_involved_discussions($digestforum->id, $user->id);
 
         foreach ($posts as $post) {
             if (!isset($discussions[$post->discussion])) {
@@ -1340,17 +1344,17 @@ function forum_user_complete($course, $user, $mod, $forum) {
             }
             $discussion = $discussions[$post->discussion];
 
-            forum_print_post_start($post);
-            forum_print_post($post, $discussion, $forum, $cm, $course, false, false, false);
-            forum_print_post_end($post);
+            digestforum_print_post_start($post);
+            digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false);
+            digestforum_print_post_end($post);
         }
     } else {
-        echo "<p>".get_string("noposts", "forum")."</p>";
+        echo "<p>".get_string("noposts", "digestforum")."</p>";
     }
 }
 
 /**
- * Filters the forum discussions according to groups membership and config.
+ * Filters the digestforum discussions according to groups membership and config.
  *
  * @deprecated since 3.3
  * @todo The final deprecation of this function will take place in Moodle 3.7 - see MDL-57487.
@@ -1358,36 +1362,36 @@ function forum_user_complete($course, $user, $mod, $forum) {
  * @param  array $discussions Discussions with new posts array
  * @return array Forums with the number of new posts
  */
-function forum_filter_user_groups_discussions($discussions) {
+function digestforum_filter_user_groups_discussions($discussions) {
 
-    debugging('The function forum_filter_user_groups_discussions() is now deprecated.', DEBUG_DEVELOPER);
+    debugging('The function digestforum_filter_user_groups_discussions() is now deprecated.', DEBUG_DEVELOPER);
 
-    // Group the remaining discussions posts by their forumid.
-    $filteredforums = array();
+    // Group the remaining discussions posts by their digestforumid.
+    $filtereddigestforums = array();
 
     // Discard not visible groups.
     foreach ($discussions as $discussion) {
 
         // Course data is already cached.
         $instances = get_fast_modinfo($discussion->course)->get_instances();
-        $forum = $instances['forum'][$discussion->forum];
+        $digestforum = $instances['digestforum'][$discussion->digestforum];
 
         // Continue if the user should not see this discussion.
-        if (!forum_is_user_group_discussion($forum, $discussion->groupid)) {
+        if (!digestforum_is_user_group_discussion($digestforum, $discussion->groupid)) {
             continue;
         }
 
-        // Grouping results by forum.
-        if (empty($filteredforums[$forum->instance])) {
-            $filteredforums[$forum->instance] = new stdClass();
-            $filteredforums[$forum->instance]->id = $forum->id;
-            $filteredforums[$forum->instance]->count = 0;
+        // Grouping results by digestforum.
+        if (empty($filtereddigestforums[$digestforum->instance])) {
+            $filtereddigestforums[$digestforum->instance] = new stdClass();
+            $filtereddigestforums[$digestforum->instance]->id = $digestforum->id;
+            $filtereddigestforums[$digestforum->instance]->count = 0;
         }
-        $filteredforums[$forum->instance]->count += $discussion->count;
+        $filtereddigestforums[$digestforum->instance]->count += $discussion->count;
 
     }
 
-    return $filteredforums;
+    return $filtereddigestforums;
 }
 
 /**
@@ -1398,7 +1402,7 @@ function forum_filter_user_groups_discussions($discussions) {
  * @param int $discussiongroupid The discussion groupid
  * @return bool
  */
-function forum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
+function digestforum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
 
     if ($discussiongroupid == -1 || $cm->effectivegroupmode != SEPARATEGROUPS) {
         return true;
@@ -1425,16 +1429,16 @@ function forum_is_user_group_discussion(cm_info $cm, $discussiongroupid) {
  * @param array $courses
  * @param array $htmlarray
  */
-function forum_print_overview($courses,&$htmlarray) {
+function digestforum_print_overview($courses,&$htmlarray) {
     global $USER, $CFG, $DB, $SESSION;
 
-    debugging('The function forum_print_overview() is now deprecated.', DEBUG_DEVELOPER);
+    debugging('The function digestforum_print_overview() is now deprecated.', DEBUG_DEVELOPER);
 
     if (empty($courses) || !is_array($courses) || count($courses) == 0) {
         return array();
     }
 
-    if (!$forums = get_all_instances_in_courses('forum',$courses)) {
+    if (!$digestforums = get_all_instances_in_courses('digestforum',$courses)) {
         return;
     }
 
@@ -1458,15 +1462,15 @@ function forum_print_overview($courses,&$htmlarray) {
     $params[] = $USER->id;
     $coursessql = implode(' OR ', $coursessqls);
 
-    $sql = "SELECT d.id, d.forum, d.course, d.groupid, COUNT(*) as count "
-                .'FROM {forum_discussions} d '
-                .'JOIN {forum_posts} p ON p.discussion = d.id '
+    $sql = "SELECT d.id, d.digestforum, d.course, d.groupid, COUNT(*) as count "
+                .'FROM {digestforum_discussions} d '
+                .'JOIN {digestforum_posts} p ON p.discussion = d.id '
                 ."WHERE ($coursessql) "
                 .'AND p.deleted <> 1 '
                 .'AND p.userid != ? '
                 .'AND (d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?)) '
-                .'GROUP BY d.id, d.forum, d.course, d.groupid '
-                .'ORDER BY d.course, d.forum';
+                .'GROUP BY d.id, d.digestforum, d.course, d.groupid '
+                .'ORDER BY d.course, d.digestforum';
     $params[] = time();
     $params[] = time();
 
@@ -1475,26 +1479,26 @@ function forum_print_overview($courses,&$htmlarray) {
         $discussions = array();
     }
 
-    $forumsnewposts = forum_filter_user_groups_discussions($discussions);
+    $digestforumsnewposts = digestforum_filter_user_groups_discussions($discussions);
 
-    // also get all forum tracking stuff ONCE.
-    $trackingforums = array();
-    foreach ($forums as $forum) {
-        if (forum_tp_can_track_forums($forum)) {
-            $trackingforums[$forum->id] = $forum;
+    // also get all digestforum tracking stuff ONCE.
+    $trackingdigestforums = array();
+    foreach ($digestforums as $digestforum) {
+        if (digestforum_tp_can_track_digestforums($digestforum)) {
+            $trackingdigestforums[$digestforum->id] = $digestforum;
         }
     }
 
-    if (count($trackingforums) > 0) {
-        $cutoffdate = isset($CFG->forum_oldpostdays) ? (time() - ($CFG->forum_oldpostdays*24*60*60)) : 0;
-        $sql = 'SELECT d.forum,d.course,COUNT(p.id) AS count '.
-            ' FROM {forum_posts} p '.
-            ' JOIN {forum_discussions} d ON p.discussion = d.id '.
-            ' LEFT JOIN {forum_read} r ON r.postid = p.id AND r.userid = ? WHERE p.deleted <> 1 AND (';
+    if (count($trackingdigestforums) > 0) {
+        $cutoffdate = isset($CFG->digestforum_oldpostdays) ? (time() - ($CFG->digestforum_oldpostdays*24*60*60)) : 0;
+        $sql = 'SELECT d.digestforum,d.course,COUNT(p.id) AS count '.
+            ' FROM {digestforum_posts} p '.
+            ' JOIN {digestforum_discussions} d ON p.discussion = d.id '.
+            ' LEFT JOIN {digestforum_read} r ON r.postid = p.id AND r.userid = ? WHERE p.deleted <> 1 AND (';
         $params = array($USER->id);
 
-        foreach ($trackingforums as $track) {
-            $sql .= '(d.forum = ? AND (d.groupid = -1 OR d.groupid = 0 OR d.groupid = ?)) OR ';
+        foreach ($trackingdigestforums as $track) {
+            $sql .= '(d.digestforum = ? AND (d.groupid = -1 OR d.groupid = 0 OR d.groupid = ?)) OR ';
             $params[] = $track->id;
             if (isset($SESSION->currentgroup[$track->course])) {
                 $groupid =  $SESSION->currentgroup[$track->course];
@@ -1515,7 +1519,7 @@ function forum_print_overview($courses,&$htmlarray) {
         $sql = substr($sql,0,-3); // take off the last OR
         $sql .= ') AND p.modified >= ? AND r.id is NULL ';
         $sql .= 'AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)) ';
-        $sql .= 'GROUP BY d.forum,d.course';
+        $sql .= 'GROUP BY d.digestforum,d.course';
         $params[] = $cutoffdate;
         $params[] = time();
         $params[] = time();
@@ -1527,43 +1531,43 @@ function forum_print_overview($courses,&$htmlarray) {
         $unread = array();
     }
 
-    if (empty($unread) and empty($forumsnewposts)) {
+    if (empty($unread) and empty($digestforumsnewposts)) {
         return;
     }
 
-    $strforum = get_string('modulename','forum');
+    $strdigestforum = get_string('modulename','digestforum');
 
-    foreach ($forums as $forum) {
+    foreach ($digestforums as $digestforum) {
         $str = '';
         $count = 0;
         $thisunread = 0;
         $showunread = false;
         // either we have something from logs, or trackposts, or nothing.
-        if (array_key_exists($forum->id, $forumsnewposts) && !empty($forumsnewposts[$forum->id])) {
-            $count = $forumsnewposts[$forum->id]->count;
+        if (array_key_exists($digestforum->id, $digestforumsnewposts) && !empty($digestforumsnewposts[$digestforum->id])) {
+            $count = $digestforumsnewposts[$digestforum->id]->count;
         }
-        if (array_key_exists($forum->id,$unread)) {
-            $thisunread = $unread[$forum->id]->count;
+        if (array_key_exists($digestforum->id,$unread)) {
+            $thisunread = $unread[$digestforum->id]->count;
             $showunread = true;
         }
         if ($count > 0 || $thisunread > 0) {
-            $str .= '<div class="overview forum"><div class="name">'.$strforum.': <a title="'.$strforum.'" href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'">'.
-                $forum->name.'</a></div>';
+            $str .= '<div class="overview digestforum"><div class="name">'.$strdigestforum.': <a title="'.$strdigestforum.'" href="'.$CFG->wwwroot.'/mod/digestforum/view.php?f='.$digestforum->id.'">'.
+                $digestforum->name.'</a></div>';
             $str .= '<div class="info"><span class="postsincelogin">';
-            $str .= get_string('overviewnumpostssince', 'forum', $count)."</span>";
+            $str .= get_string('overviewnumpostssince', 'digestforum', $count)."</span>";
             if (!empty($showunread)) {
-                $str .= '<div class="unreadposts">'.get_string('overviewnumunread', 'forum', $thisunread).'</div>';
+                $str .= '<div class="unreadposts">'.get_string('overviewnumunread', 'digestforum', $thisunread).'</div>';
             }
             $str .= '</div></div>';
         }
         if (!empty($str)) {
-            if (!array_key_exists($forum->course,$htmlarray)) {
-                $htmlarray[$forum->course] = array();
+            if (!array_key_exists($digestforum->course,$htmlarray)) {
+                $htmlarray[$digestforum->course] = array();
             }
-            if (!array_key_exists('forum',$htmlarray[$forum->course])) {
-                $htmlarray[$forum->course]['forum'] = ''; // initialize, avoid warnings
+            if (!array_key_exists('digestforum',$htmlarray[$digestforum->course])) {
+                $htmlarray[$digestforum->course]['digestforum'] = ''; // initialize, avoid warnings
             }
-            $htmlarray[$forum->course]['forum'] .= $str;
+            $htmlarray[$digestforum->course]['digestforum'] .= $str;
         }
     }
 }
@@ -1582,17 +1586,17 @@ function forum_print_overview($courses,&$htmlarray) {
  * @param int $timestart
  * @return bool success
  */
-function forum_print_recent_activity($course, $viewfullnames, $timestart) {
+function digestforum_print_recent_activity($course, $viewfullnames, $timestart) {
     global $CFG, $USER, $DB, $OUTPUT;
 
     // do not use log table if possible, it may be huge and is expensive to join with other tables
 
     $allnamefields = user_picture::fields('u', null, 'duserid');
-    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid,
+    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS digestforumtype, d.digestforum, d.groupid,
                                               d.timestart, d.timeend, $allnamefields
-                                         FROM {forum_posts} p
-                                              JOIN {forum_discussions} d ON d.id = p.discussion
-                                              JOIN {forum} f             ON f.id = d.forum
+                                         FROM {digestforum_posts} p
+                                              JOIN {digestforum_discussions} d ON d.id = p.discussion
+                                              JOIN {digestforum} f             ON f.id = d.digestforum
                                               JOIN {user} u              ON u.id = p.userid
                                         WHERE p.created > ? AND f.course = ? AND p.deleted <> 1
                                      ORDER BY p.id ASC", array($timestart, $course->id))) { // order by initial posting date
@@ -1608,29 +1612,29 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
 
     $printposts = array();
     foreach ($posts as $post) {
-        if (!isset($modinfo->instances['forum'][$post->forum])) {
+        if (!isset($modinfo->instances['digestforum'][$post->digestforum])) {
             // not visible
             continue;
         }
-        $cm = $modinfo->instances['forum'][$post->forum];
+        $cm = $modinfo->instances['digestforum'][$post->digestforum];
         if (!$cm->uservisible) {
             continue;
         }
         $context = context_module::instance($cm->id);
 
-        if (!has_capability('mod/forum:viewdiscussion', $context)) {
+        if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
             continue;
         }
 
-        if (!empty($CFG->forum_enabletimedposts) and $USER->id != $post->duserid
+        if (!empty($CFG->digestforum_enabletimedposts) and $USER->id != $post->duserid
           and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))) {
-            if (!has_capability('mod/forum:viewhiddentimedposts', $context)) {
+            if (!has_capability('mod/digestforum:viewhiddentimedposts', $context)) {
                 continue;
             }
         }
 
         // Check that the user can see the discussion.
-        if (forum_is_user_group_discussion($cm, $post->groupid)) {
+        if (digestforum_is_user_group_discussion($cm, $post->groupid)) {
             $printposts[] = $post;
         }
 
@@ -1641,12 +1645,12 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
         return false;
     }
 
-    echo $OUTPUT->heading(get_string('newforumposts', 'forum').':', 3);
+    echo $OUTPUT->heading(get_string('newdigestforumposts', 'digestforum').':', 3);
     $list = html_writer::start_tag('ul', ['class' => 'unlist']);
 
     foreach ($printposts as $post) {
         $subjectclass = empty($post->parent) ? ' bold' : '';
-        $authorhidden = forum_is_author_hidden($post, (object) ['type' => $post->forumtype]);
+        $authorhidden = digestforum_is_author_hidden($post, (object) ['type' => $post->digestforumtype]);
 
         $list .= html_writer::start_tag('li');
         $list .= html_writer::start_div('head');
@@ -1657,7 +1661,7 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
         $list .= html_writer::end_div(); // Head.
 
         $list .= html_writer::start_div('info' . $subjectclass);
-        $discussionurl = new moodle_url('/mod/forum/discuss.php', ['d' => $post->discussion]);
+        $discussionurl = new moodle_url('/mod/digestforum/discuss.php', ['d' => $post->discussion]);
         if (!empty($post->parent)) {
             $discussionurl->param('parent', $post->parent);
             $discussionurl->set_anchor('p'. $post->id);
@@ -1679,26 +1683,26 @@ function forum_print_recent_activity($course, $viewfullnames, $timestart) {
  *
  * @global object
  * @global object
- * @param object $forum
+ * @param object $digestforum
  * @param int $userid optional user id, 0 means all users
  * @return array array of grades, false if none
  */
-function forum_get_user_grades($forum, $userid = 0) {
+function digestforum_get_user_grades($digestforum, $userid = 0) {
     global $CFG;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
     $ratingoptions = new stdClass;
-    $ratingoptions->component = 'mod_forum';
+    $ratingoptions->component = 'mod_digestforum';
     $ratingoptions->ratingarea = 'post';
 
     //need these to work backwards to get a context id. Is there a better way to get contextid from a module instance?
-    $ratingoptions->modulename = 'forum';
-    $ratingoptions->moduleid   = $forum->id;
+    $ratingoptions->modulename = 'digestforum';
+    $ratingoptions->moduleid   = $digestforum->id;
     $ratingoptions->userid = $userid;
-    $ratingoptions->aggregationmethod = $forum->assessed;
-    $ratingoptions->scaleid = $forum->scale;
-    $ratingoptions->itemtable = 'forum_posts';
+    $ratingoptions->aggregationmethod = $digestforum->assessed;
+    $ratingoptions->scaleid = $digestforum->scale;
+    $ratingoptions->itemtable = 'digestforum_posts';
     $ratingoptions->itemtableusercolumn = 'userid';
 
     $rm = new rating_manager();
@@ -1709,62 +1713,62 @@ function forum_get_user_grades($forum, $userid = 0) {
  * Update activity grades
  *
  * @category grade
- * @param object $forum
+ * @param object $digestforum
  * @param int $userid specific user only, 0 means all
  * @param boolean $nullifnone return null if grade does not exist
  * @return void
  */
-function forum_update_grades($forum, $userid=0, $nullifnone=true) {
+function digestforum_update_grades($digestforum, $userid=0, $nullifnone=true) {
     global $CFG, $DB;
     require_once($CFG->libdir.'/gradelib.php');
 
-    if (!$forum->assessed) {
-        forum_grade_item_update($forum);
+    if (!$digestforum->assessed) {
+        digestforum_grade_item_update($digestforum);
 
-    } else if ($grades = forum_get_user_grades($forum, $userid)) {
-        forum_grade_item_update($forum, $grades);
+    } else if ($grades = digestforum_get_user_grades($digestforum, $userid)) {
+        digestforum_grade_item_update($digestforum, $grades);
 
     } else if ($userid and $nullifnone) {
         $grade = new stdClass();
         $grade->userid   = $userid;
         $grade->rawgrade = NULL;
-        forum_grade_item_update($forum, $grade);
+        digestforum_grade_item_update($digestforum, $grade);
 
     } else {
-        forum_grade_item_update($forum);
+        digestforum_grade_item_update($digestforum);
     }
 }
 
 /**
- * Create/update grade item for given forum
+ * Create/update grade item for given digestforum
  *
  * @category grade
  * @uses GRADE_TYPE_NONE
  * @uses GRADE_TYPE_VALUE
  * @uses GRADE_TYPE_SCALE
- * @param stdClass $forum Forum object with extra cmidnumber
+ * @param stdClass $digestforum Forum object with extra cmidnumber
  * @param mixed $grades Optional array/object of grade(s); 'reset' means reset grades in gradebook
  * @return int 0 if ok
  */
-function forum_grade_item_update($forum, $grades=NULL) {
+function digestforum_grade_item_update($digestforum, $grades=NULL) {
     global $CFG;
     if (!function_exists('grade_update')) { //workaround for buggy PHP versions
         require_once($CFG->libdir.'/gradelib.php');
     }
 
-    $params = array('itemname'=>$forum->name, 'idnumber'=>$forum->cmidnumber);
+    $params = array('itemname'=>$digestforum->name, 'idnumber'=>$digestforum->cmidnumber);
 
-    if (!$forum->assessed or $forum->scale == 0) {
+    if (!$digestforum->assessed or $digestforum->scale == 0) {
         $params['gradetype'] = GRADE_TYPE_NONE;
 
-    } else if ($forum->scale > 0) {
+    } else if ($digestforum->scale > 0) {
         $params['gradetype'] = GRADE_TYPE_VALUE;
-        $params['grademax']  = $forum->scale;
+        $params['grademax']  = $digestforum->scale;
         $params['grademin']  = 0;
 
-    } else if ($forum->scale < 0) {
+    } else if ($digestforum->scale < 0) {
         $params['gradetype'] = GRADE_TYPE_SCALE;
-        $params['scaleid']   = -$forum->scale;
+        $params['scaleid']   = -$digestforum->scale;
     }
 
     if ($grades  === 'reset') {
@@ -1772,37 +1776,37 @@ function forum_grade_item_update($forum, $grades=NULL) {
         $grades = NULL;
     }
 
-    return grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, $grades, $params);
+    return grade_update('mod/digestforum', $digestforum->course, 'mod', 'digestforum', $digestforum->id, 0, $grades, $params);
 }
 
 /**
- * Delete grade item for given forum
+ * Delete grade item for given digestforum
  *
  * @category grade
- * @param stdClass $forum Forum object
+ * @param stdClass $digestforum Forum object
  * @return grade_item
  */
-function forum_grade_item_delete($forum) {
+function digestforum_grade_item_delete($digestforum) {
     global $CFG;
     require_once($CFG->libdir.'/gradelib.php');
 
-    return grade_update('mod/forum', $forum->course, 'mod', 'forum', $forum->id, 0, NULL, array('deleted'=>1));
+    return grade_update('mod/digestforum', $digestforum->course, 'mod', 'digestforum', $digestforum->id, 0, NULL, array('deleted'=>1));
 }
 
 
 /**
- * This function returns if a scale is being used by one forum
+ * This function returns if a scale is being used by one digestforum
  *
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $scaleid negative number
  * @return bool
  */
-function forum_scale_used ($forumid,$scaleid) {
+function digestforum_scale_used ($digestforumid,$scaleid) {
     global $DB;
     $return = false;
 
-    $rec = $DB->get_record("forum",array("id" => "$forumid","scale" => "-$scaleid"));
+    $rec = $DB->get_record("digestforum",array("id" => "$digestforumid","scale" => "-$scaleid"));
 
     if (!empty($rec) && !empty($scaleid)) {
         $return = true;
@@ -1812,17 +1816,17 @@ function forum_scale_used ($forumid,$scaleid) {
 }
 
 /**
- * Checks if scale is being used by any instance of forum
+ * Checks if scale is being used by any instance of digestforum
  *
  * This is used to find out if scale used anywhere
  *
  * @global object
  * @param $scaleid int
- * @return boolean True if the scale is used by any forum
+ * @return boolean True if the scale is used by any digestforum
  */
-function forum_scale_used_anywhere($scaleid) {
+function digestforum_scale_used_anywhere($scaleid) {
     global $DB;
-    if ($scaleid and $DB->record_exists('forum', array('scale' => -$scaleid))) {
+    if ($scaleid and $DB->record_exists('digestforum', array('scale' => -$scaleid))) {
         return true;
     } else {
         return false;
@@ -1832,21 +1836,21 @@ function forum_scale_used_anywhere($scaleid) {
 // SQL FUNCTIONS ///////////////////////////////////////////////////////////
 
 /**
- * Gets a post with all info ready for forum_print_post
- * Most of these joins are just to get the forum id
+ * Gets a post with all info ready for digestforum_print_post
+ * Most of these joins are just to get the digestforum id
  *
  * @global object
  * @global object
  * @param int $postid
  * @return mixed array of posts or false
  */
-function forum_get_post_full($postid) {
+function digestforum_get_post_full($postid) {
     global $CFG, $DB;
 
     $allnames = get_all_user_name_fields(true, 'u');
-    return $DB->get_record_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt
-                             FROM {forum_posts} p
-                                  JOIN {forum_discussions} d ON p.discussion = d.id
+    return $DB->get_record_sql("SELECT p.*, d.digestforum, $allnames, u.email, u.picture, u.imagealt
+                             FROM {digestforum_posts} p
+                                  JOIN {digestforum_discussions} d ON p.discussion = d.id
                                   LEFT JOIN {user} u ON p.userid = u.id
                             WHERE p.id = ?", array($postid));
 }
@@ -1859,10 +1863,10 @@ function forum_get_post_full($postid) {
  * @global object
  * @param int $discussionid
  * @param string $sort
- * @param bool $tracking does user track the forum?
+ * @param bool $tracking does user track the digestforum?
  * @return array of posts
  */
-function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
+function digestforum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
     global $CFG, $DB, $USER;
 
     $tr_sel  = "";
@@ -1871,14 +1875,14 @@ function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
 
     if ($tracking) {
         $tr_sel  = ", fr.id AS postread";
-        $tr_join = "LEFT JOIN {forum_read} fr ON (fr.postid = p.id AND fr.userid = ?)";
+        $tr_join = "LEFT JOIN {digestforum_read} fr ON (fr.postid = p.id AND fr.userid = ?)";
         $params[] = $USER->id;
     }
 
     $allnames = get_all_user_name_fields(true, 'u');
     $params[] = $discussionid;
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
-                                     FROM {forum_posts} p
+                                     FROM {digestforum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
@@ -1888,7 +1892,7 @@ function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
 
     foreach ($posts as $pid=>$p) {
         if ($tracking) {
-            if (forum_tp_is_post_old($p)) {
+            if (digestforum_tp_is_post_old($p)) {
                  $posts[$pid]->postread = true;
             }
         }
@@ -1922,25 +1926,25 @@ function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
 }
 
 /**
- * An array of forum objects that the user is allowed to read/search through.
+ * An array of digestforum objects that the user is allowed to read/search through.
  *
  * @global object
  * @global object
  * @global object
  * @param int $userid
- * @param int $courseid if 0, we look for forums throughout the whole site.
- * @return array of forum objects, or false if no matches
+ * @param int $courseid if 0, we look for digestforums throughout the whole site.
+ * @return array of digestforum objects, or false if no matches
  *         Forum objects have the following attributes:
  *         id, type, course, cmid, cmvisible, cmgroupmode, accessallgroups,
  *         viewhiddentimedposts
  */
-function forum_get_readable_forums($userid, $courseid=0) {
+function digestforum_get_readable_digestforums($userid, $courseid=0) {
 
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/course/lib.php');
 
-    if (!$forummod = $DB->get_record('modules', array('name' => 'forum'))) {
-        print_error('notinstalled', 'forum');
+    if (!$digestforummod = $DB->get_record('modules', array('name' => 'digestforum'))) {
+        print_error('notinstalled', 'digestforum');
     }
 
     if ($courseid) {
@@ -1955,69 +1959,69 @@ function forum_get_readable_forums($userid, $courseid=0) {
         return array();
     }
 
-    $readableforums = array();
+    $readabledigestforums = array();
 
     foreach ($courses as $course) {
 
         $modinfo = get_fast_modinfo($course);
 
-        if (empty($modinfo->instances['forum'])) {
-            // hmm, no forums?
+        if (empty($modinfo->instances['digestforum'])) {
+            // hmm, no digestforums?
             continue;
         }
 
-        $courseforums = $DB->get_records('forum', array('course' => $course->id));
+        $coursedigestforums = $DB->get_records('digestforum', array('course' => $course->id));
 
-        foreach ($modinfo->instances['forum'] as $forumid => $cm) {
-            if (!$cm->uservisible or !isset($courseforums[$forumid])) {
+        foreach ($modinfo->instances['digestforum'] as $digestforumid => $cm) {
+            if (!$cm->uservisible or !isset($coursedigestforums[$digestforumid])) {
                 continue;
             }
             $context = context_module::instance($cm->id);
-            $forum = $courseforums[$forumid];
-            $forum->context = $context;
-            $forum->cm = $cm;
+            $digestforum = $coursedigestforums[$digestforumid];
+            $digestforum->context = $context;
+            $digestforum->cm = $cm;
 
-            if (!has_capability('mod/forum:viewdiscussion', $context)) {
+            if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
                 continue;
             }
 
          /// group access
             if (groups_get_activity_groupmode($cm, $course) == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $context)) {
 
-                $forum->onlygroups = $modinfo->get_groups($cm->groupingid);
-                $forum->onlygroups[] = -1;
+                $digestforum->onlygroups = $modinfo->get_groups($cm->groupingid);
+                $digestforum->onlygroups[] = -1;
             }
 
         /// hidden timed discussions
-            $forum->viewhiddentimedposts = true;
-            if (!empty($CFG->forum_enabletimedposts)) {
-                if (!has_capability('mod/forum:viewhiddentimedposts', $context)) {
-                    $forum->viewhiddentimedposts = false;
+            $digestforum->viewhiddentimedposts = true;
+            if (!empty($CFG->digestforum_enabletimedposts)) {
+                if (!has_capability('mod/digestforum:viewhiddentimedposts', $context)) {
+                    $digestforum->viewhiddentimedposts = false;
                 }
             }
 
         /// qanda access
-            if ($forum->type == 'qanda'
-                    && !has_capability('mod/forum:viewqandawithoutposting', $context)) {
+            if ($digestforum->type == 'qanda'
+                    && !has_capability('mod/digestforum:viewqandawithoutposting', $context)) {
 
-                // We need to check whether the user has posted in the qanda forum.
-                $forum->onlydiscussions = array();  // Holds discussion ids for the discussions
-                                                    // the user is allowed to see in this forum.
-                if ($discussionspostedin = forum_discussions_user_has_posted_in($forum->id, $USER->id)) {
+                // We need to check whether the user has posted in the qanda digestforum.
+                $digestforum->onlydiscussions = array();  // Holds discussion ids for the discussions
+                                                    // the user is allowed to see in this digestforum.
+                if ($discussionspostedin = digestforum_discussions_user_has_posted_in($digestforum->id, $USER->id)) {
                     foreach ($discussionspostedin as $d) {
-                        $forum->onlydiscussions[] = $d->id;
+                        $digestforum->onlydiscussions[] = $d->id;
                     }
                 }
             }
 
-            $readableforums[$forum->id] = $forum;
+            $readabledigestforums[$digestforum->id] = $digestforum;
         }
 
         unset($modinfo);
 
     } // End foreach $courses
 
-    return $readableforums;
+    return $readabledigestforums;
 }
 
 /**
@@ -2034,14 +2038,14 @@ function forum_get_readable_forums($userid, $courseid=0) {
  * @param string $extrasql
  * @return array|bool Array of posts found or false
  */
-function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=50,
+function digestforum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=50,
                             &$totalcount, $extrasql='') {
     global $CFG, $DB, $USER;
     require_once($CFG->libdir.'/searchlib.php');
 
-    $forums = forum_get_readable_forums($USER->id, $courseid);
+    $digestforums = digestforum_get_readable_digestforums($USER->id, $courseid);
 
-    if (count($forums) == 0) {
+    if (count($digestforums) == 0) {
         $totalcount = 0;
         return false;
     }
@@ -2052,21 +2056,21 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
     $where = array();
     $params = array();
 
-    foreach ($forums as $forumid => $forum) {
+    foreach ($digestforums as $digestforumid => $digestforum) {
         $select = array();
 
-        if (!$forum->viewhiddentimedposts) {
-            $select[] = "(d.userid = :userid{$forumid} OR (d.timestart < :timestart{$forumid} AND (d.timeend = 0 OR d.timeend > :timeend{$forumid})))";
-            $params = array_merge($params, array('userid'.$forumid=>$USER->id, 'timestart'.$forumid=>$now, 'timeend'.$forumid=>$now));
+        if (!$digestforum->viewhiddentimedposts) {
+            $select[] = "(d.userid = :userid{$digestforumid} OR (d.timestart < :timestart{$digestforumid} AND (d.timeend = 0 OR d.timeend > :timeend{$digestforumid})))";
+            $params = array_merge($params, array('userid'.$digestforumid=>$USER->id, 'timestart'.$digestforumid=>$now, 'timeend'.$digestforumid=>$now));
         }
 
-        $cm = $forum->cm;
-        $context = $forum->context;
+        $cm = $digestforum->cm;
+        $context = $digestforum->context;
 
-        if ($forum->type == 'qanda'
-            && !has_capability('mod/forum:viewqandawithoutposting', $context)) {
-            if (!empty($forum->onlydiscussions)) {
-                list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($forum->onlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$forumid.'_');
+        if ($digestforum->type == 'qanda'
+            && !has_capability('mod/digestforum:viewqandawithoutposting', $context)) {
+            if (!empty($digestforum->onlydiscussions)) {
+                list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($digestforum->onlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$digestforumid.'_');
                 $params = array_merge($params, $discussionid_params);
                 $select[] = "(d.id $discussionid_sql OR p.parent = 0)";
             } else {
@@ -2074,25 +2078,25 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
             }
         }
 
-        if (!empty($forum->onlygroups)) {
-            list($groupid_sql, $groupid_params) = $DB->get_in_or_equal($forum->onlygroups, SQL_PARAMS_NAMED, 'grps'.$forumid.'_');
+        if (!empty($digestforum->onlygroups)) {
+            list($groupid_sql, $groupid_params) = $DB->get_in_or_equal($digestforum->onlygroups, SQL_PARAMS_NAMED, 'grps'.$digestforumid.'_');
             $params = array_merge($params, $groupid_params);
             $select[] = "d.groupid $groupid_sql";
         }
 
         if ($select) {
             $selects = implode(" AND ", $select);
-            $where[] = "(d.forum = :forum{$forumid} AND $selects)";
-            $params['forum'.$forumid] = $forumid;
+            $where[] = "(d.digestforum = :digestforum{$digestforumid} AND $selects)";
+            $params['digestforum'.$digestforumid] = $digestforumid;
         } else {
-            $fullaccess[] = $forumid;
+            $fullaccess[] = $digestforumid;
         }
     }
 
     if ($fullaccess) {
         list($fullid_sql, $fullid_params) = $DB->get_in_or_equal($fullaccess, SQL_PARAMS_NAMED, 'fula');
         $params = array_merge($params, $fullid_params);
-        $where[] = "(d.forum $fullid_sql)";
+        $where[] = "(d.digestforum $fullid_sql)";
     }
 
     $selectdiscussion = "(".implode(" OR ", $where).")";
@@ -2129,8 +2133,8 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
                     }
                     $tagjoins .= " LEFT JOIN {tag_instance} ti_$tagfieldcount
                                         ON p.id = ti_$tagfieldcount.itemid
-                                            AND ti_$tagfieldcount.component = 'mod_forum'
-                                            AND ti_$tagfieldcount.itemtype = 'forum_posts'";
+                                            AND ti_$tagfieldcount.component = 'mod_digestforum'
+                                            AND ti_$tagfieldcount.itemtype = 'digestforum_posts'";
                     $tagjoins .= " LEFT JOIN {tag} t_$tagfieldcount ON t_$tagfieldcount.id = ti_$tagfieldcount.tagid";
                     $tagfields[] = "t_$tagfieldcount.rawname";
                     $tagfieldcount++;
@@ -2139,13 +2143,13 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
         }
         list($messagesearch, $msparams) = search_generate_SQL($parsearray, 'p.message', 'p.subject',
                                                               'p.userid', 'u.id', 'u.firstname',
-                                                              'u.lastname', 'p.modified', 'd.forum',
+                                                              'u.lastname', 'p.modified', 'd.digestforum',
                                                               $tagfields);
         $params = array_merge($params, $msparams);
     }
 
-    $fromsql = "{forum_posts} p
-                  INNER JOIN {forum_discussions} d ON d.id = p.discussion
+    $fromsql = "{digestforum_posts} p
+                  INNER JOIN {digestforum_discussions} d ON d.id = p.discussion
                   INNER JOIN {user} u ON u.id = p.userid $tagjoins";
 
     $selectsql = " $messagesearch
@@ -2160,7 +2164,7 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
 
     $allnames = get_all_user_name_fields(true, 'u');
     $searchsql = "SELECT p.*,
-                         d.forum,
+                         d.digestforum,
                          $allnames,
                          u.email,
                          u.picture,
@@ -2182,16 +2186,16 @@ function forum_search_posts($searchterms, $courseid=0, $limitfrom=0, $limitnum=5
  * @param int $now used for timed discussions only
  * @return array
  */
-function forum_get_unmailed_posts($starttime, $endtime, $now=null) {
+function digestforum_get_unmailed_posts($starttime, $endtime, $now=null) {
     global $CFG, $DB;
 
     $params = array();
-    $params['mailed'] = FORUM_MAILED_PENDING;
+    $params['mailed'] = DFORUM_MAILED_PENDING;
     $params['ptimestart'] = $starttime;
     $params['ptimeend'] = $endtime;
     $params['mailnow'] = 1;
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         if (empty($now)) {
             $now = time();
         }
@@ -2205,9 +2209,9 @@ function forum_get_unmailed_posts($starttime, $endtime, $now=null) {
         $selectsql = "AND p.created >= :ptimestart";
     }
 
-    return $DB->get_records_sql("SELECT p.*, d.course, d.forum
-                                 FROM {forum_posts} p
-                                 JOIN {forum_discussions} d ON d.id = p.discussion
+    return $DB->get_records_sql("SELECT p.*, d.course, d.digestforum
+                                 FROM {digestforum_posts} p
+                                 JOIN {digestforum_discussions} d ON d.id = p.discussion
                                  WHERE p.mailed = :mailed
                                  $selectsql
                                  AND (p.created < :ptimeend OR p.mailnow = :mailnow)
@@ -2224,7 +2228,7 @@ function forum_get_unmailed_posts($starttime, $endtime, $now=null) {
  * @param int $now Defaults to time()
  * @return bool
  */
-function forum_mark_old_posts_as_mailed($endtime, $now=null) {
+function digestforum_mark_old_posts_as_mailed($endtime, $now=null) {
     global $CFG, $DB;
 
     if (empty($now)) {
@@ -2232,22 +2236,22 @@ function forum_mark_old_posts_as_mailed($endtime, $now=null) {
     }
 
     $params = array();
-    $params['mailedsuccess'] = FORUM_MAILED_SUCCESS;
+    $params['mailedsuccess'] = DFORUM_MAILED_SUCCESS;
     $params['now'] = $now;
     $params['endtime'] = $endtime;
     $params['mailnow'] = 1;
-    $params['mailedpending'] = FORUM_MAILED_PENDING;
+    $params['mailedpending'] = DFORUM_MAILED_PENDING;
 
-    if (empty($CFG->forum_enabletimedposts)) {
-        return $DB->execute("UPDATE {forum_posts}
+    if (empty($CFG->digestforum_enabletimedposts)) {
+        return $DB->execute("UPDATE {digestforum_posts}
                              SET mailed = :mailedsuccess
                              WHERE (created < :endtime OR mailnow = :mailnow)
                              AND mailed = :mailedpending", $params);
     } else {
-        return $DB->execute("UPDATE {forum_posts}
+        return $DB->execute("UPDATE {digestforum_posts}
                              SET mailed = :mailedsuccess
                              WHERE discussion NOT IN (SELECT d.id
-                                                      FROM {forum_discussions} d
+                                                      FROM {digestforum_discussions} d
                                                       WHERE d.timestart > :now)
                              AND (created < :endtime OR mailnow = :mailnow)
                              AND mailed = :mailedpending", $params);
@@ -2255,22 +2259,22 @@ function forum_mark_old_posts_as_mailed($endtime, $now=null) {
 }
 
 /**
- * Get all the posts for a user in a forum suitable for forum_print_post
+ * Get all the posts for a user in a digestforum suitable for digestforum_print_post
  *
  * @global object
  * @global object
  * @uses CONTEXT_MODULE
  * @return array
  */
-function forum_get_user_posts($forumid, $userid) {
+function digestforum_get_user_posts($digestforumid, $userid) {
     global $CFG, $DB;
 
     $timedsql = "";
-    $params = array($forumid, $userid);
+    $params = array($digestforumid, $userid);
 
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , context_module::instance($cm->id))) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        $cm = get_coursemodule_from_instance('digestforum', $digestforumid);
+        if (!has_capability('mod/digestforum:viewhiddentimedposts' , context_module::instance($cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2279,10 +2283,10 @@ function forum_get_user_posts($forumid, $userid) {
     }
 
     $allnames = get_all_user_name_fields(true, 'u');
-    return $DB->get_records_sql("SELECT p.*, d.forum, $allnames, u.email, u.picture, u.imagealt
-                              FROM {forum} f
-                                   JOIN {forum_discussions} d ON d.forum = f.id
-                                   JOIN {forum_posts} p       ON p.discussion = d.id
+    return $DB->get_records_sql("SELECT p.*, d.digestforum, $allnames, u.email, u.picture, u.imagealt
+                              FROM {digestforum} f
+                                   JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                                   JOIN {digestforum_posts} p       ON p.discussion = d.id
                                    JOIN {user} u              ON u.id = p.userid
                              WHERE f.id = ?
                                    AND p.userid = ?
@@ -2296,18 +2300,18 @@ function forum_get_user_posts($forumid, $userid) {
  * @global object
  * @global object
  * @uses CONTEXT_MODULE
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $userid
  * @return array Array or false
  */
-function forum_get_user_involved_discussions($forumid, $userid) {
+function digestforum_get_user_involved_discussions($digestforumid, $userid) {
     global $CFG, $DB;
 
     $timedsql = "";
-    $params = array($forumid, $userid);
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , context_module::instance($cm->id))) {
+    $params = array($digestforumid, $userid);
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        $cm = get_coursemodule_from_instance('digestforum', $digestforumid);
+        if (!has_capability('mod/digestforum:viewhiddentimedposts' , context_module::instance($cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2316,31 +2320,31 @@ function forum_get_user_involved_discussions($forumid, $userid) {
     }
 
     return $DB->get_records_sql("SELECT DISTINCT d.*
-                              FROM {forum} f
-                                   JOIN {forum_discussions} d ON d.forum = f.id
-                                   JOIN {forum_posts} p       ON p.discussion = d.id
+                              FROM {digestforum} f
+                                   JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                                   JOIN {digestforum_posts} p       ON p.discussion = d.id
                              WHERE f.id = ?
                                    AND p.userid = ?
                                    $timedsql", $params);
 }
 
 /**
- * Get all the posts for a user in a forum suitable for forum_print_post
+ * Get all the posts for a user in a digestforum suitable for digestforum_print_post
  *
  * @global object
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $userid
  * @return array of counts or false
  */
-function forum_count_user_posts($forumid, $userid) {
+function digestforum_count_user_posts($digestforumid, $userid) {
     global $CFG, $DB;
 
     $timedsql = "";
-    $params = array($forumid, $userid);
-    if (!empty($CFG->forum_enabletimedposts)) {
-        $cm = get_coursemodule_from_instance('forum', $forumid);
-        if (!has_capability('mod/forum:viewhiddentimedposts' , context_module::instance($cm->id))) {
+    $params = array($digestforumid, $userid);
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        $cm = get_coursemodule_from_instance('digestforum', $digestforumid);
+        if (!has_capability('mod/digestforum:viewhiddentimedposts' , context_module::instance($cm->id))) {
             $now = time();
             $timedsql = "AND (d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -2349,9 +2353,9 @@ function forum_count_user_posts($forumid, $userid) {
     }
 
     return $DB->get_record_sql("SELECT COUNT(p.id) AS postcount, MAX(p.modified) AS lastpost
-                             FROM {forum} f
-                                  JOIN {forum_discussions} d ON d.forum = f.id
-                                  JOIN {forum_posts} p       ON p.discussion = d.id
+                             FROM {digestforum} f
+                                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                                  JOIN {digestforum_posts} p       ON p.discussion = d.id
                                   JOIN {user} u              ON u.id = p.userid
                             WHERE f.id = ?
                                   AND p.userid = ?
@@ -2359,43 +2363,43 @@ function forum_count_user_posts($forumid, $userid) {
 }
 
 /**
- * Given a log entry, return the forum post details for it.
+ * Given a log entry, return the digestforum post details for it.
  *
  * @global object
  * @global object
  * @param object $log
  * @return array|null
  */
-function forum_get_post_from_log($log) {
+function digestforum_get_post_from_log($log) {
     global $CFG, $DB;
 
     $allnames = get_all_user_name_fields(true, 'u');
     if ($log->action == "add post") {
 
-        return $DB->get_record_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid, $allnames, u.email, u.picture
-                                 FROM {forum_discussions} d,
-                                      {forum_posts} p,
-                                      {forum} f,
+        return $DB->get_record_sql("SELECT p.*, f.type AS digestforumtype, d.digestforum, d.groupid, $allnames, u.email, u.picture
+                                 FROM {digestforum_discussions} d,
+                                      {digestforum_posts} p,
+                                      {digestforum} f,
                                       {user} u
                                 WHERE p.id = ?
                                   AND d.id = p.discussion
                                   AND p.userid = u.id
                                   AND u.deleted <> '1'
-                                  AND f.id = d.forum", array($log->info));
+                                  AND f.id = d.digestforum", array($log->info));
 
 
     } else if ($log->action == "add discussion") {
 
-        return $DB->get_record_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid, $allnames, u.email, u.picture
-                                 FROM {forum_discussions} d,
-                                      {forum_posts} p,
-                                      {forum} f,
+        return $DB->get_record_sql("SELECT p.*, f.type AS digestforumtype, d.digestforum, d.groupid, $allnames, u.email, u.picture
+                                 FROM {digestforum_discussions} d,
+                                      {digestforum_posts} p,
+                                      {digestforum} f,
                                       {user} u
                                 WHERE d.id = ?
                                   AND d.firstpost = p.id
                                   AND p.userid = u.id
                                   AND u.deleted <> '1'
-                                  AND f.id = d.forum", array($log->info));
+                                  AND f.id = d.digestforum", array($log->info));
     }
     return NULL;
 }
@@ -2408,12 +2412,12 @@ function forum_get_post_from_log($log) {
  * @param int $dicsussionid
  * @return array
  */
-function forum_get_firstpost_from_discussion($discussionid) {
+function digestforum_get_firstpost_from_discussion($discussionid) {
     global $CFG, $DB;
 
     return $DB->get_record_sql("SELECT p.*
-                             FROM {forum_discussions} d,
-                                  {forum_posts} p
+                             FROM {digestforum_discussions} d,
+                                  {digestforum_posts} p
                             WHERE d.id = ?
                               AND d.firstpost = p.id ", array($discussionid));
 }
@@ -2423,14 +2427,14 @@ function forum_get_firstpost_from_discussion($discussionid) {
  *
  * @global object
  * @global object
- * @param int $forumid
- * @param string $forumsort
+ * @param int $digestforumid
+ * @param string $digestforumsort
  * @param int $limit
  * @param int $page
  * @param int $perpage
  * @return array
  */
-function forum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $page=-1, $perpage=0) {
+function digestforum_count_discussion_replies($digestforumid, $digestforumsort="", $limit=-1, $page=-1, $perpage=0) {
     global $CFG, $DB;
 
     if ($limit > 0) {
@@ -2444,32 +2448,32 @@ function forum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $pag
         $limitnum  = 0;
     }
 
-    if ($forumsort == "") {
+    if ($digestforumsort == "") {
         $orderby = "";
         $groupby = "";
 
     } else {
-        $orderby = "ORDER BY $forumsort";
-        $groupby = ", ".strtolower($forumsort);
+        $orderby = "ORDER BY $digestforumsort";
+        $groupby = ", ".strtolower($digestforumsort);
         $groupby = str_replace('desc', '', $groupby);
         $groupby = str_replace('asc', '', $groupby);
     }
 
-    if (($limitfrom == 0 and $limitnum == 0) or $forumsort == "") {
+    if (($limitfrom == 0 and $limitnum == 0) or $digestforumsort == "") {
         $sql = "SELECT p.discussion, COUNT(p.id) AS replies, MAX(p.id) AS lastpostid
-                  FROM {forum_posts} p
-                       JOIN {forum_discussions} d ON p.discussion = d.id
-                 WHERE p.parent > 0 AND d.forum = ?
+                  FROM {digestforum_posts} p
+                       JOIN {digestforum_discussions} d ON p.discussion = d.id
+                 WHERE p.parent > 0 AND d.digestforum = ?
               GROUP BY p.discussion";
-        return $DB->get_records_sql($sql, array($forumid));
+        return $DB->get_records_sql($sql, array($digestforumid));
 
     } else {
         $sql = "SELECT p.discussion, (COUNT(p.id) - 1) AS replies, MAX(p.id) AS lastpostid
-                  FROM {forum_posts} p
-                       JOIN {forum_discussions} d ON p.discussion = d.id
-                 WHERE d.forum = ?
+                  FROM {digestforum_posts} p
+                       JOIN {digestforum_discussions} d ON p.discussion = d.id
+                 WHERE d.digestforum = ?
               GROUP BY p.discussion $groupby $orderby";
-        return $DB->get_records_sql($sql, array($forumid), $limitfrom, $limitnum);
+        return $DB->get_records_sql($sql, array($digestforumid), $limitfrom, $limitnum);
     }
 }
 
@@ -2478,12 +2482,12 @@ function forum_count_discussion_replies($forumid, $forumsort="", $limit=-1, $pag
  * @global object
  * @global object
  * @staticvar array $cache
- * @param object $forum
+ * @param object $digestforum
  * @param object $cm
  * @param object $course
  * @return mixed
  */
-function forum_count_discussions($forum, $cm, $course) {
+function digestforum_count_discussions($digestforum, $cm, $course) {
     global $CFG, $DB, $USER;
 
     static $cache = array();
@@ -2493,7 +2497,7 @@ function forum_count_discussions($forum, $cm, $course) {
     $params = array($course->id);
 
     if (!isset($cache[$course->id])) {
-        if (!empty($CFG->forum_enabletimedposts)) {
+        if (!empty($CFG->digestforum_enabletimedposts)) {
             $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
             $params[] = $now;
             $params[] = $now;
@@ -2502,8 +2506,8 @@ function forum_count_discussions($forum, $cm, $course) {
         }
 
         $sql = "SELECT f.id, COUNT(d.id) as dcount
-                  FROM {forum} f
-                       JOIN {forum_discussions} d ON d.forum = f.id
+                  FROM {digestforum} f
+                       JOIN {digestforum_discussions} d ON d.digestforum = f.id
                  WHERE f.course = ?
                        $timedsql
               GROUP BY f.id";
@@ -2518,18 +2522,18 @@ function forum_count_discussions($forum, $cm, $course) {
         }
     }
 
-    if (empty($cache[$course->id][$forum->id])) {
+    if (empty($cache[$course->id][$digestforum->id])) {
         return 0;
     }
 
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
     if ($groupmode != SEPARATEGROUPS) {
-        return $cache[$course->id][$forum->id];
+        return $cache[$course->id][$digestforum->id];
     }
 
     if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
-        return $cache[$course->id][$forum->id];
+        return $cache[$course->id][$digestforum->id];
     }
 
     require_once($CFG->dirroot.'/course/lib.php');
@@ -2542,9 +2546,9 @@ function forum_count_discussions($forum, $cm, $course) {
     $mygroups[-1] = -1;
 
     list($mygroups_sql, $params) = $DB->get_in_or_equal($mygroups);
-    $params[] = $forum->id;
+    $params[] = $digestforum->id;
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < $now AND (d.timeend = 0 OR d.timeend > $now)";
         $params[] = $now;
         $params[] = $now;
@@ -2553,15 +2557,15 @@ function forum_count_discussions($forum, $cm, $course) {
     }
 
     $sql = "SELECT COUNT(d.id)
-              FROM {forum_discussions} d
-             WHERE d.groupid $mygroups_sql AND d.forum = ?
+              FROM {digestforum_discussions} d
+             WHERE d.groupid $mygroups_sql AND d.digestforum = ?
                    $timedsql";
 
     return $DB->get_field_sql($sql, $params);
 }
 
 /**
- * Get all discussions in a forum
+ * Get all discussions in a digestforum
  *
  * @global object
  * @global object
@@ -2569,7 +2573,7 @@ function forum_count_discussions($forum, $cm, $course) {
  * @uses CONTEXT_MODULE
  * @uses VISIBLEGROUPS
  * @param object $cm
- * @param string $forumsort
+ * @param string $digestforumsort
  * @param bool $fullpost
  * @param int $unused
  * @param int $limit
@@ -2577,11 +2581,11 @@ function forum_count_discussions($forum, $cm, $course) {
  * @param int $page
  * @param int $perpage
  * @param int $groupid if groups enabled, get discussions for this group overriding the current group.
- *                     Use FORUM_POSTS_ALL_USER_GROUPS for all the user groups
+ *                     Use DFORUM_POSTS_ALL_USER_GROUPS for all the user groups
  * @param int $updatedsince retrieve only discussions updated since the given time
  * @return array
  */
-function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $limit=-1,
+function digestforum_get_discussions($cm, $digestforumsort="", $fullpost=true, $unused=-1, $limit=-1,
                                 $userlastmodified=false, $page=-1, $perpage=0, $groupid = -1,
                                 $updatedsince = 0) {
     global $CFG, $DB, $USER;
@@ -2593,13 +2597,13 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!has_capability('mod/forum:viewdiscussion', $modcontext)) { /// User must have perms to view discussions
+    if (!has_capability('mod/digestforum:viewdiscussion', $modcontext)) { /// User must have perms to view discussions
         return array();
     }
 
-    if (!empty($CFG->forum_enabletimedposts)) { /// Users must fulfill timed posts
+    if (!empty($CFG->digestforum_enabletimedposts)) { /// Users must fulfill timed posts
 
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+        if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
             $params[] = $now;
@@ -2676,8 +2680,8 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
     } else {
         $groupselect = "";
     }
-    if (empty($forumsort)) {
-        $forumsort = forum_get_default_sort_order();
+    if (empty($digestforumsort)) {
+        $digestforumsort = digestforum_get_default_sort_order();
     }
     if (empty($fullpost)) {
         $postdata = "p.id, p.subject, p.modified, p.discussion, p.userid, p.created";
@@ -2703,13 +2707,13 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
     $allnames = get_all_user_name_fields(true, 'u');
     $sql = "SELECT $postdata, d.name, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend, d.pinned,
                    $allnames, u.email, u.picture, u.imagealt $umfields
-              FROM {forum_discussions} d
-                   JOIN {forum_posts} p ON p.discussion = d.id
+              FROM {digestforum_discussions} d
+                   JOIN {digestforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
                    $umtable
-             WHERE d.forum = ? AND p.parent = 0
+             WHERE d.digestforum = ? AND p.parent = 0
                    $timelimit $groupselect $updatedsincesql
-          ORDER BY $forumsort, d.id DESC";
+          ORDER BY $digestforumsort, d.id DESC";
 
     return $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
 }
@@ -2720,7 +2724,7 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
  * The calculation is based on the timemodified when time modified or time created is identical
  * It will revert to using the ID to sort consistently. This is better tha skipping a discussion.
  *
- * For blog-style forums, the calculation is based on the original creation time of the
+ * For blog-style digestforums, the calculation is based on the original creation time of the
  * blog post.
  *
  * Please note that this does not check whether or not the discussion passed is accessible
@@ -2729,16 +2733,16 @@ function forum_get_discussions($cm, $forumsort="", $fullpost=true, $unused=-1, $
  *
  * @param object $cm The CM record.
  * @param object $discussion The discussion record.
- * @param object $forum The forum instance record.
+ * @param object $digestforum The digestforum instance record.
  * @return array That always contains the keys 'prev' and 'next'. When there is a result
  *               they contain the record with minimal information such as 'id' and 'name'.
  *               When the neighbour is not found the value is false.
  */
-function forum_get_discussion_neighbours($cm, $discussion, $forum) {
+function digestforum_get_discussion_neighbours($cm, $discussion, $digestforum) {
     global $CFG, $DB, $USER;
 
-    if ($cm->instance != $discussion->forum or $discussion->forum != $forum->id or $forum->id != $cm->instance) {
-        throw new coding_exception('Discussion is not part of the same forum.');
+    if ($cm->instance != $discussion->digestforum or $discussion->digestforum != $digestforum->id or $digestforum->id != $cm->instance) {
+        throw new coding_exception('Discussion is not part of the same digestforum.');
     }
 
     $neighbours = array('prev' => false, 'next' => false);
@@ -2751,8 +2755,8 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
 
     // Users must fulfill timed posts.
     $timelimit = '';
-    if (!empty($CFG->forum_enabletimedposts)) {
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = ' AND ((d.timestart <= :tltimestart AND (d.timeend = 0 OR d.timeend > :tltimeend))';
             $params['tltimestart'] = $now;
             $params['tltimeend'] = $now;
@@ -2782,7 +2786,7 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
         }
     }
 
-    $params['forumid'] = $cm->instance;
+    $params['digestforumid'] = $cm->instance;
     $params['discid1'] = $discussion->id;
     $params['discid2'] = $discussion->id;
     $params['discid3'] = $discussion->id;
@@ -2795,16 +2799,16 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
     $params['pinnedstate4'] = (int) $discussion->pinned;
 
     $sql = "SELECT d.id, d.name, d.timemodified, d.groupid, d.timestart, d.timeend
-              FROM {forum_discussions} d
-              JOIN {forum_posts} p ON d.firstpost = p.id
-             WHERE d.forum = :forumid
+              FROM {digestforum_discussions} d
+              JOIN {digestforum_posts} p ON d.firstpost = p.id
+             WHERE d.digestforum = :digestforumid
                AND d.id <> :discid1
                    $timelimit
                    $groupselect";
     $comparefield = "d.timemodified";
     $comparevalue = ":disctimecompare1";
     $comparevalue2  = ":disctimecompare2";
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         // Here we need to take into account the release time (timestart)
         // if one is set, of the neighbouring posts and compare it to the
         // timestart or timemodified of *this* post depending on if the
@@ -2823,13 +2827,13 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
             $params['disctimecompare2'] = $discussion->timestart;
         }
     }
-    $orderbydesc = forum_get_default_sort_order(true, $comparefield, 'd', false);
-    $orderbyasc = forum_get_default_sort_order(false, $comparefield, 'd', false);
+    $orderbydesc = digestforum_get_default_sort_order(true, $comparefield, 'd', false);
+    $orderbyasc = digestforum_get_default_sort_order(false, $comparefield, 'd', false);
 
-    if ($forum->type === 'blog') {
+    if ($digestforum->type === 'blog') {
          $subselect = "SELECT pp.created
-                   FROM {forum_discussions} dd
-                   JOIN {forum_posts} pp ON dd.firstpost = pp.id ";
+                   FROM {digestforum_discussions} dd
+                   JOIN {digestforum_posts} pp ON dd.firstpost = pp.id ";
 
          $subselectwhere1 = " WHERE dd.id = :discid3";
          $subselectwhere2 = " WHERE dd.id = :discid4";
@@ -2862,7 +2866,7 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
 }
 
 /**
- * Get the sql to use in the ORDER BY clause for forum discussions.
+ * Get the sql to use in the ORDER BY clause for digestforum discussions.
  *
  * This has the ordering take timed discussion windows into account.
  *
@@ -2872,7 +2876,7 @@ function forum_get_discussion_neighbours($cm, $discussion, $forum) {
  * @param bool $pinned sort pinned posts to the top
  * @return string
  */
-function forum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd', $pinned = true) {
+function digestforum_get_default_sort_order($desc = true, $compare = 'd.timemodified', $prefix = 'd', $pinned = true) {
     global $CFG;
 
     if (!empty($prefix)) {
@@ -2888,7 +2892,7 @@ function forum_get_default_sort_order($desc = true, $compare = 'd.timemodified',
     }
 
     $sort = "{$prefix}timemodified";
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $sort = "CASE WHEN {$compare} < {$prefix}timestart
                  THEN {$prefix}timestart
                  ELSE {$compare}
@@ -2907,11 +2911,11 @@ function forum_get_default_sort_order($desc = true, $compare = 'd.timemodified',
  * @param object $cm
  * @return array
  */
-function forum_get_discussions_unread($cm) {
+function digestforum_get_discussions_unread($cm) {
     global $CFG, $DB, $USER;
 
     $now = floor(time() / 60) * 60;
-    $cutoffdate = $now - ($CFG->forum_oldpostdays*24*60*60);
+    $cutoffdate = $now - ($CFG->digestforum_oldpostdays*24*60*60);
 
     $params = array();
     $groupmode    = groups_get_activity_groupmode($cm);
@@ -2941,7 +2945,7 @@ function forum_get_discussions_unread($cm) {
         $groupselect = "";
     }
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < :now1 AND (d.timeend = 0 OR d.timeend > :now2)";
         $params['now1'] = $now;
         $params['now2'] = $now;
@@ -2950,10 +2954,10 @@ function forum_get_discussions_unread($cm) {
     }
 
     $sql = "SELECT d.id, COUNT(p.id) AS unread
-              FROM {forum_discussions} d
-                   JOIN {forum_posts} p     ON p.discussion = d.id
-                   LEFT JOIN {forum_read} r ON (r.postid = p.id AND r.userid = $USER->id)
-             WHERE d.forum = {$cm->instance}
+              FROM {digestforum_discussions} d
+                   JOIN {digestforum_posts} p     ON p.discussion = d.id
+                   LEFT JOIN {digestforum_read} r ON (r.postid = p.id AND r.userid = $USER->id)
+             WHERE d.digestforum = {$cm->instance}
                    AND p.modified >= :cutoffdate AND r.id is NULL
                    $groupselect
                    $timedsql
@@ -2979,7 +2983,7 @@ function forum_get_discussions_unread($cm) {
  * @param object $cm
  * @return array
  */
-function forum_get_discussions_count($cm) {
+function digestforum_get_discussions_count($cm) {
     global $CFG, $DB, $USER;
 
     $now = floor(time() / 60) * 60;
@@ -3013,11 +3017,11 @@ function forum_get_discussions_count($cm) {
 
     $timelimit = "";
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
 
         $modcontext = context_module::instance($cm->id);
 
-        if (!has_capability('mod/forum:viewhiddentimedposts', $modcontext)) {
+        if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
             $params[] = $now;
@@ -3030,9 +3034,9 @@ function forum_get_discussions_count($cm) {
     }
 
     $sql = "SELECT COUNT(d.id)
-              FROM {forum_discussions} d
-                   JOIN {forum_posts} p ON p.discussion = d.id
-             WHERE d.forum = ? AND p.parent = 0
+              FROM {digestforum_discussions} d
+                   JOIN {digestforum_posts} p ON p.discussion = d.id
+             WHERE d.digestforum = ? AND p.parent = 0
                    $groupselect $timelimit";
 
     return $DB->get_field_sql($sql, $params);
@@ -3048,68 +3052,68 @@ function forum_get_discussions_count($cm) {
  * @param int $courseid
  * @param string $type
  */
-function forum_get_course_forum($courseid, $type) {
-// How to set up special 1-per-course forums
+function digestforum_get_course_digestforum($courseid, $type) {
+// How to set up special 1-per-course digestforums
     global $CFG, $DB, $OUTPUT, $USER;
 
-    if ($forums = $DB->get_records_select("forum", "course = ? AND type = ?", array($courseid, $type), "id ASC")) {
+    if ($digestforums = $DB->get_records_select("digestforum", "course = ? AND type = ?", array($courseid, $type), "id ASC")) {
         // There should always only be ONE, but with the right combination of
         // errors there might be more.  In this case, just return the oldest one (lowest ID).
-        foreach ($forums as $forum) {
-            return $forum;   // ie the first one
+        foreach ($digestforums as $digestforum) {
+            return $digestforum;   // ie the first one
         }
     }
 
     // Doesn't exist, so create one now.
-    $forum = new stdClass();
-    $forum->course = $courseid;
-    $forum->type = "$type";
+    $digestforum = new stdClass();
+    $digestforum->course = $courseid;
+    $digestforum->type = "$type";
     if (!empty($USER->htmleditor)) {
-        $forum->introformat = $USER->htmleditor;
+        $digestforum->introformat = $USER->htmleditor;
     }
-    switch ($forum->type) {
+    switch ($digestforum->type) {
         case "news":
-            $forum->name  = get_string("namenews", "forum");
-            $forum->intro = get_string("intronews", "forum");
-            $forum->introformat = FORMAT_HTML;
-            $forum->forcesubscribe = FORUM_FORCESUBSCRIBE;
-            $forum->assessed = 0;
+            $digestforum->name  = get_string("namenews", "digestforum");
+            $digestforum->intro = get_string("intronews", "digestforum");
+            $digestforum->introformat = FORMAT_HTML;
+            $digestforum->forcesubscribe = DFORUM_FORCESUBSCRIBE;
+            $digestforum->assessed = 0;
             if ($courseid == SITEID) {
-                $forum->name  = get_string("sitenews");
-                $forum->forcesubscribe = 0;
+                $digestforum->name  = get_string("sitenews");
+                $digestforum->forcesubscribe = 0;
             }
             break;
         case "social":
-            $forum->name  = get_string("namesocial", "forum");
-            $forum->intro = get_string("introsocial", "forum");
-            $forum->introformat = FORMAT_HTML;
-            $forum->assessed = 0;
-            $forum->forcesubscribe = 0;
+            $digestforum->name  = get_string("namesocial", "digestforum");
+            $digestforum->intro = get_string("introsocial", "digestforum");
+            $digestforum->introformat = FORMAT_HTML;
+            $digestforum->assessed = 0;
+            $digestforum->forcesubscribe = 0;
             break;
         case "blog":
-            $forum->name = get_string('blogforum', 'forum');
-            $forum->intro = get_string('introblog', 'forum');
-            $forum->introformat = FORMAT_HTML;
-            $forum->assessed = 0;
-            $forum->forcesubscribe = 0;
+            $digestforum->name = get_string('blogdigestforum', 'digestforum');
+            $digestforum->intro = get_string('introblog', 'digestforum');
+            $digestforum->introformat = FORMAT_HTML;
+            $digestforum->assessed = 0;
+            $digestforum->forcesubscribe = 0;
             break;
         default:
-            echo $OUTPUT->notification("That forum type doesn't exist!");
+            echo $OUTPUT->notification("That digestforum type doesn't exist!");
             return false;
             break;
     }
 
-    $forum->timemodified = time();
-    $forum->id = $DB->insert_record("forum", $forum);
+    $digestforum->timemodified = time();
+    $digestforum->id = $DB->insert_record("digestforum", $digestforum);
 
-    if (! $module = $DB->get_record("modules", array("name" => "forum"))) {
-        echo $OUTPUT->notification("Could not find forum module!!");
+    if (! $module = $DB->get_record("modules", array("name" => "digestforum"))) {
+        echo $OUTPUT->notification("Could not find digestforum module!!");
         return false;
     }
     $mod = new stdClass();
     $mod->course = $courseid;
     $mod->module = $module->id;
-    $mod->instance = $forum->id;
+    $mod->instance = $digestforum->id;
     $mod->section = 0;
     include_once("$CFG->dirroot/course/lib.php");
     if (! $mod->coursemodule = add_course_module($mod) ) {
@@ -3117,7 +3121,7 @@ function forum_get_course_forum($courseid, $type) {
         return false;
     }
     $sectionid = course_add_cm_to_section($courseid, $mod->coursemodule, 0);
-    return $DB->get_record("forum", array("id" => "$forum->id"));
+    return $DB->get_record("digestforum", array("id" => "$digestforum->id"));
 }
 
 /**
@@ -3125,7 +3129,7 @@ function forum_get_course_forum($courseid, $type) {
  *
  * @return array
  */
-function forum_post_nesting_cache() {
+function digestforum_post_nesting_cache() {
     static $nesting = array();
     return $nesting;
 }
@@ -3136,8 +3140,8 @@ function forum_post_nesting_cache() {
  * @param int $id The id of the post to start
  * @return bool
  */
-function forum_should_start_post_nesting($id) {
-    $cache = forum_post_nesting_cache();
+function digestforum_should_start_post_nesting($id) {
+    $cache = digestforum_post_nesting_cache();
     if (!array_key_exists($id, $cache)) {
         $cache[$id] = 1;
         return true;
@@ -3153,8 +3157,8 @@ function forum_should_start_post_nesting($id) {
  * @param int $id The id of the post to end
  * @return bool
  */
-function forum_should_end_post_nesting($id) {
-    $cache = forum_post_nesting_cache();
+function digestforum_should_end_post_nesting($id) {
+    $cache = digestforum_post_nesting_cache();
     if (!array_key_exists($id, $cache)) {
         return true;
     } else {
@@ -3168,16 +3172,16 @@ function forum_should_end_post_nesting($id) {
 }
 
 /**
- * Start a forum post container
+ * Start a digestforum post container
  *
  * @param object $post The post to print.
  * @param bool $return Return the string or print it
  * @return string
  */
-function forum_print_post_start($post, $return = false) {
+function digestforum_print_post_start($post, $return = false) {
     $output = '';
 
-    if (forum_should_start_post_nesting($post->id)) {
+    if (digestforum_should_start_post_nesting($post->id)) {
         $attributes = [
             'id' => 'p'.$post->id,
             'tabindex' => -1,
@@ -3193,16 +3197,16 @@ function forum_print_post_start($post, $return = false) {
 }
 
 /**
- * End a forum post container
+ * End a digestforum post container
  *
  * @param object $post The post to print.
  * @param bool $return Return the string or print it
  * @return string
  */
-function forum_print_post_end($post, $return = false) {
+function digestforum_print_post_end($post, $return = false) {
     $output = '';
 
-    if (forum_should_end_post_nesting($post->id)) {
+    if (digestforum_should_end_post_nesting($post->id)) {
         $output .= html_writer::end_tag('article');
     }
     if ($return) {
@@ -3213,15 +3217,15 @@ function forum_print_post_end($post, $return = false) {
 }
 
 /**
- * Print a forum post
- * This function should always be surrounded with calls to forum_print_post_start
- * and forum_print_post_end to create the surrounding container for the post.
- * Replies can be nested before forum_print_post_end and should reflect the structure of
+ * Print a digestforum post
+ * This function should always be surrounded with calls to digestforum_print_post_start
+ * and digestforum_print_post_end to create the surrounding container for the post.
+ * Replies can be nested before digestforum_print_post_end and should reflect the structure of
  * thread.
  *
  * @global object
  * @global object
- * @uses FORUM_MODE_THREADED
+ * @uses DFORUM_MODE_THREADED
  * @uses PORTFOLIO_FORMAT_PLAINHTML
  * @uses PORTFOLIO_FORMAT_FILE
  * @uses PORTFOLIO_FORMAT_RICHHTML
@@ -3229,7 +3233,7 @@ function forum_print_post_end($post, $return = false) {
  * @uses CONTEXT_MODULE
  * @param object $post The post to print.
  * @param object $discussion
- * @param object $forum
+ * @param object $digestforum
  * @param object $cm
  * @param object $course
  * @param boolean $ownpost Whether this post belongs to the current user.
@@ -3240,14 +3244,14 @@ function forum_print_post_end($post, $return = false) {
  * @param int $post_read true, false or -99. If we already know whether this user
  *          has read this post, pass that in, otherwise, pass in -99, and this
  *          function will work it out.
- * @param boolean $dummyifcantsee When forum_user_can_see_post says that
+ * @param boolean $dummyifcantsee When digestforum_user_can_see_post says that
  *          the current user can't see this post, if this argument is true
  *          (the default) then print a dummy 'you can't see this post' post.
  *          If false, don't output anything at all.
  * @param bool|null $istracked
  * @return void
  */
-function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
+function digestforum_print_post($post, $discussion, $digestforum, &$cm, $course, $ownpost=false, $reply=false, $link=false,
                           $footer="", $highlight="", $postisread=null, $dummyifcantsee=true, $istracked=null, $return=false) {
     global $USER, $CFG, $OUTPUT;
 
@@ -3265,15 +3269,15 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     $modcontext = context_module::instance($cm->id);
 
     $post->course = $course->id;
-    $post->forum  = $forum->id;
-    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_forum', 'post', $post->id);
+    $post->digestforum  = $digestforum->id;
+    $post->message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php', $modcontext->id, 'mod_digestforum', 'post', $post->id);
     if (!empty($CFG->enableplagiarism)) {
         require_once($CFG->libdir.'/plagiarismlib.php');
         $post->message .= plagiarism_get_links(array('userid' => $post->userid,
             'content' => $post->message,
             'cmid' => $cm->id,
             'course' => $post->course,
-            'forum' => $post->forum));
+            'digestforum' => $post->digestforum));
     }
 
     // caching
@@ -3283,15 +3287,15 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     if (!isset($cm->cache->caps)) {
         $cm->cache->caps = array();
-        $cm->cache->caps['mod/forum:viewdiscussion']   = has_capability('mod/forum:viewdiscussion', $modcontext);
+        $cm->cache->caps['mod/digestforum:viewdiscussion']   = has_capability('mod/digestforum:viewdiscussion', $modcontext);
         $cm->cache->caps['moodle/site:viewfullnames']  = has_capability('moodle/site:viewfullnames', $modcontext);
-        $cm->cache->caps['mod/forum:editanypost']      = has_capability('mod/forum:editanypost', $modcontext);
-        $cm->cache->caps['mod/forum:splitdiscussions'] = has_capability('mod/forum:splitdiscussions', $modcontext);
-        $cm->cache->caps['mod/forum:deleteownpost']    = has_capability('mod/forum:deleteownpost', $modcontext);
-        $cm->cache->caps['mod/forum:deleteanypost']    = has_capability('mod/forum:deleteanypost', $modcontext);
-        $cm->cache->caps['mod/forum:viewanyrating']    = has_capability('mod/forum:viewanyrating', $modcontext);
-        $cm->cache->caps['mod/forum:exportpost']       = has_capability('mod/forum:exportpost', $modcontext);
-        $cm->cache->caps['mod/forum:exportownpost']    = has_capability('mod/forum:exportownpost', $modcontext);
+        $cm->cache->caps['mod/digestforum:editanypost']      = has_capability('mod/digestforum:editanypost', $modcontext);
+        $cm->cache->caps['mod/digestforum:splitdiscussions'] = has_capability('mod/digestforum:splitdiscussions', $modcontext);
+        $cm->cache->caps['mod/digestforum:deleteownpost']    = has_capability('mod/digestforum:deleteownpost', $modcontext);
+        $cm->cache->caps['mod/digestforum:deleteanypost']    = has_capability('mod/digestforum:deleteanypost', $modcontext);
+        $cm->cache->caps['mod/digestforum:viewanyrating']    = has_capability('mod/digestforum:viewanyrating', $modcontext);
+        $cm->cache->caps['mod/digestforum:exportpost']       = has_capability('mod/digestforum:exportpost', $modcontext);
+        $cm->cache->caps['mod/digestforum:exportownpost']    = has_capability('mod/digestforum:exportownpost', $modcontext);
     }
 
     if (!isset($cm->uservisible)) {
@@ -3299,10 +3303,10 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 
     if ($istracked && is_null($postisread)) {
-        $postisread = forum_tp_is_post_read($USER->id, $post);
+        $postisread = digestforum_tp_is_post_read($USER->id, $post);
     }
 
-    if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
+    if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm, false)) {
         // Do _not_ check the deleted flag - we need to display a different UI.
         $output = '';
         if (!$dummyifcantsee) {
@@ -3313,8 +3317,8 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             return;
         }
 
-        $output .= html_writer::start_tag('div', array('class' => 'forumpost clearfix',
-                                                       'aria-label' => get_string('hiddenforumpost', 'forum')));
+        $output .= html_writer::start_tag('div', array('class' => 'digestforumpost clearfix',
+                                                       'aria-label' => get_string('hiddendigestforumpost', 'digestforum')));
         $output .= html_writer::start_tag('header', array('class' => 'row header'));
         $output .= html_writer::tag('div', '', array('class' => 'left picture', 'role' => 'presentation')); // Picture.
         if ($post->parent) {
@@ -3322,18 +3326,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         } else {
             $output .= html_writer::start_tag('div', array('class' => 'topic starter'));
         }
-        $output .= html_writer::tag('div', get_string('forumsubjecthidden','forum'), array('class' => 'subject',
+        $output .= html_writer::tag('div', get_string('digestforumsubjecthidden','digestforum'), array('class' => 'subject',
                                                                                            'role' => 'header',
                                                                                            'id' => ('headp' . $post->id))); // Subject.
         $authorclasses = array('class' => 'author');
-        $output .= html_writer::tag('address', get_string('forumauthorhidden', 'forum'), $authorclasses); // Author.
+        $output .= html_writer::tag('address', get_string('digestforumauthorhidden', 'digestforum'), $authorclasses); // Author.
         $output .= html_writer::end_tag('div');
         $output .= html_writer::end_tag('header'); // Header.
         $output .= html_writer::start_tag('div', array('class'=>'row'));
         $output .= html_writer::tag('div', '&nbsp;', array('class'=>'left side')); // Groups
-        $output .= html_writer::tag('div', get_string('forumbodyhidden','forum'), array('class'=>'content')); // Content
+        $output .= html_writer::tag('div', get_string('digestforumbodyhidden','digestforum'), array('class'=>'content')); // Content
         $output .= html_writer::end_tag('div'); // row
-        $output .= html_writer::end_tag('div'); // forumpost
+        $output .= html_writer::end_tag('div'); // digestforumpost
 
         if ($return) {
             return $output;
@@ -3343,7 +3347,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 
     if (!empty($post->deleted)) {
-        // Note: Posts marked as deleted are still returned by the above forum_user_can_post because it is required for
+        // Note: Posts marked as deleted are still returned by the above digestforum_user_can_post because it is required for
         // nesting of posts.
         $output = '';
         if (!$dummyifcantsee) {
@@ -3354,8 +3358,8 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
             return;
         }
         $output .= html_writer::start_tag('div', [
-                'class' => 'forumpost clearfix',
-                'aria-label' => get_string('forumbodydeleted', 'forum'),
+                'class' => 'digestforumpost clearfix',
+                'aria-label' => get_string('digestforumbodydeleted', 'digestforum'),
             ]);
 
         $output .= html_writer::start_tag('header', array('class' => 'row header'));
@@ -3368,7 +3372,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $output .= html_writer::start_tag('div', ['class' => implode(' ', $classes)]);
 
         // Subject.
-        $output .= html_writer::tag('div', get_string('forumsubjectdeleted', 'forum'), [
+        $output .= html_writer::tag('div', get_string('digestforumsubjectdeleted', 'digestforum'), [
                 'class' => 'subject',
                 'role' => 'header',
                 'id' => ('headp' . $post->id)
@@ -3381,9 +3385,9 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $output .= html_writer::end_tag('header'); // End header.
         $output .= html_writer::start_tag('div', ['class' => 'row']);
         $output .= html_writer::tag('div', '&nbsp;', ['class' => 'left side']); // Groups.
-        $output .= html_writer::tag('div', get_string('forumbodydeleted', 'forum'), ['class' => 'content']); // Content.
+        $output .= html_writer::tag('div', get_string('digestforumbodydeleted', 'digestforum'), ['class' => 'content']); // Content.
         $output .= html_writer::end_tag('div'); // End row.
-        $output .= html_writer::end_tag('div'); // End forumpost.
+        $output .= html_writer::end_tag('div'); // End digestforumpost.
 
         if ($return) {
             return $output;
@@ -3394,18 +3398,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     if (empty($str)) {
         $str = new stdClass;
-        $str->edit         = get_string('edit', 'forum');
-        $str->delete       = get_string('delete', 'forum');
-        $str->reply        = get_string('reply', 'forum');
-        $str->parent       = get_string('parent', 'forum');
-        $str->pruneheading = get_string('pruneheading', 'forum');
-        $str->prune        = get_string('prune', 'forum');
-        $str->displaymode     = get_user_preferences('forum_displaymode', $CFG->forum_displaymode);
-        $str->markread     = get_string('markread', 'forum');
-        $str->markunread   = get_string('markunread', 'forum');
+        $str->edit         = get_string('edit', 'digestforum');
+        $str->delete       = get_string('delete', 'digestforum');
+        $str->reply        = get_string('reply', 'digestforum');
+        $str->parent       = get_string('parent', 'digestforum');
+        $str->pruneheading = get_string('pruneheading', 'digestforum');
+        $str->prune        = get_string('prune', 'digestforum');
+        $str->displaymode     = get_user_preferences('digestforum_displaymode', $CFG->digestforum_displaymode);
+        $str->markread     = get_string('markread', 'digestforum');
+        $str->markunread   = get_string('markunread', 'digestforum');
     }
 
-    $discussionlink = new moodle_url('/mod/forum/discuss.php', array('d'=>$post->discussion));
+    $discussionlink = new moodle_url('/mod/digestforum/discuss.php', array('d'=>$post->discussion));
 
     // Build an object that represents the posting user
     $postuser = new stdClass;
@@ -3428,10 +3432,10 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 
     // Prepare the attachements for the post, files then images
-    list($attachments, $attachedimages) = forum_print_attachments($post, $cm, 'separateimages');
+    list($attachments, $attachedimages) = digestforum_print_attachments($post, $cm, 'separateimages');
 
     // Determine if we need to shorten this post
-    $shortenpost = ($link && (strlen(strip_tags($post->message)) > $CFG->forum_longpost));
+    $shortenpost = ($link && (strlen(strip_tags($post->message)) > $CFG->digestforum_longpost));
 
     // Prepare an array of commands
     $commands = array();
@@ -3439,18 +3443,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // Add a permalink.
     $permalink = new moodle_url($discussionlink);
     $permalink->set_anchor('p' . $post->id);
-    $commands[] = array('url' => $permalink, 'text' => get_string('permalink', 'forum'), 'attributes' => ['rel' => 'bookmark']);
+    $commands[] = array('url' => $permalink, 'text' => get_string('permalink', 'digestforum'), 'attributes' => ['rel' => 'bookmark']);
 
     // SPECIAL CASE: The front page can display a news item post to non-logged in users.
     // Don't display the mark read / unread controls in this case.
-    if ($istracked && $CFG->forum_usermarksread && isloggedin()) {
+    if ($istracked && $CFG->digestforum_usermarksread && isloggedin()) {
         $url = new moodle_url($discussionlink, array('postid'=>$post->id, 'mark'=>'unread'));
         $text = $str->markunread;
         if (!$postisread) {
             $url->param('mark', 'read');
             $text = $str->markread;
         }
-        if ($str->displaymode == FORUM_MODE_THREADED) {
+        if ($str->displaymode == DFORUM_MODE_THREADED) {
             $url->param('parent', $post->parent);
         } else {
             $url->set_anchor('p'.$post->id);
@@ -3461,7 +3465,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // Zoom in to the parent specifically
     if ($post->parent) {
         $url = new moodle_url($discussionlink);
-        if ($str->displaymode == FORUM_MODE_THREADED) {
+        if ($str->displaymode == DFORUM_MODE_THREADED) {
             $url->param('parent', $post->parent);
         } else {
             $url->set_anchor('p'.$post->parent);
@@ -3471,38 +3475,38 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     // Hack for allow to edit news posts those are not displayed yet until they are displayed
     $age = time() - $post->created;
-    if (!$post->parent && $forum->type == 'news' && $discussion->timestart > time()) {
+    if (!$post->parent && $digestforum->type == 'news' && $discussion->timestart > time()) {
         $age = 0;
     }
 
-    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
+    if ($digestforum->type == 'single' and $discussion->firstpost == $post->id) {
         if (has_capability('moodle/course:manageactivities', $modcontext)) {
-            // The first post in single simple is the forum description.
+            // The first post in single simple is the digestforum description.
             $commands[] = array('url'=>new moodle_url('/course/modedit.php', array('update'=>$cm->id, 'sesskey'=>sesskey(), 'return'=>1)), 'text'=>$str->edit);
         }
-    } else if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/forum:editanypost']) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
+    } else if (($ownpost && $age < $CFG->maxeditingtime) || $cm->cache->caps['mod/digestforum:editanypost']) {
+        $commands[] = array('url'=>new moodle_url('/mod/digestforum/post.php', array('edit'=>$post->id)), 'text'=>$str->edit);
     }
 
-    if ($cm->cache->caps['mod/forum:splitdiscussions'] && $post->parent && $forum->type != 'single') {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('prune'=>$post->id)), 'text'=>$str->prune, 'title'=>$str->pruneheading);
+    if ($cm->cache->caps['mod/digestforum:splitdiscussions'] && $post->parent && $digestforum->type != 'single') {
+        $commands[] = array('url'=>new moodle_url('/mod/digestforum/post.php', array('prune'=>$post->id)), 'text'=>$str->prune, 'title'=>$str->pruneheading);
     }
 
-    if ($forum->type == 'single' and $discussion->firstpost == $post->id) {
+    if ($digestforum->type == 'single' and $discussion->firstpost == $post->id) {
         // Do not allow deleting of first post in single simple type.
-    } else if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/forum:deleteownpost']) || $cm->cache->caps['mod/forum:deleteanypost']) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
+    } else if (($ownpost && $age < $CFG->maxeditingtime && $cm->cache->caps['mod/digestforum:deleteownpost']) || $cm->cache->caps['mod/digestforum:deleteanypost']) {
+        $commands[] = array('url'=>new moodle_url('/mod/digestforum/post.php', array('delete'=>$post->id)), 'text'=>$str->delete);
     }
 
     if ($reply) {
-        $commands[] = array('url'=>new moodle_url('/mod/forum/post.php#mformforum', array('reply'=>$post->id)), 'text'=>$str->reply);
+        $commands[] = array('url'=>new moodle_url('/mod/digestforum/post.php#mformdigestforum', array('reply'=>$post->id)), 'text'=>$str->reply);
     }
 
-    if ($CFG->enableportfolios && ($cm->cache->caps['mod/forum:exportpost'] || ($ownpost && $cm->cache->caps['mod/forum:exportownpost']))) {
+    if ($CFG->enableportfolios && ($cm->cache->caps['mod/digestforum:exportpost'] || ($ownpost && $cm->cache->caps['mod/digestforum:exportownpost']))) {
         $p = array('postid' => $post->id);
         require_once($CFG->libdir.'/portfoliolib.php');
         $button = new portfolio_add_button();
-        $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id), 'mod_forum');
+        $button->set_callback_options('digestforum_portfolio_caller', array('postid' => $post->id), 'mod_digestforum');
         if (empty($attachments)) {
             $button->set_formats(PORTFOLIO_FORMAT_PLAINHTML);
         } else {
@@ -3523,9 +3527,9 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     if ($istracked) {
         if ($postisread) {
-            $forumpostclass = ' read';
+            $digestforumpostclass = ' read';
         } else {
-            $forumpostclass = ' unread';
+            $digestforumpostclass = ' unread';
             // If this is the first unread post printed then give it an anchor and id of unread.
             if (!$firstunreadanchorprinted) {
                 $output .= html_writer::tag('a', '', array('id' => 'unread'));
@@ -3534,7 +3538,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         }
     } else {
         // ignore trackign status if not tracked or tracked param missing
-        $forumpostclass = '';
+        $digestforumpostclass = '';
     }
 
     $topicclass = '';
@@ -3543,17 +3547,17 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 
     if (!empty($post->lastpost)) {
-        $forumpostclass .= ' lastpost';
+        $digestforumpostclass .= ' lastpost';
     }
 
     // Flag to indicate whether we should hide the author or not.
-    $authorhidden = forum_is_author_hidden($post, $forum);
+    $authorhidden = digestforum_is_author_hidden($post, $digestforum);
     $postbyuser = new stdClass;
     $postbyuser->post = $post->subject;
     $postbyuser->user = $postuser->fullname;
-    $discussionbyuser = get_string('postbyuser', 'forum', $postbyuser);
-    // Begin forum post.
-    $output .= html_writer::start_div('forumpost clearfix' . $forumpostclass . $topicclass,
+    $discussionbyuser = get_string('postbyuser', 'digestforum', $postbyuser);
+    // Begin digestforum post.
+    $output .= html_writer::start_div('digestforumpost clearfix' . $digestforumpostclass . $topicclass,
         ['aria-label' => $discussionbyuser]);
     // Begin header row.
     $output .= html_writer::start_tag('header', ['class' => 'row header clearfix']);
@@ -3579,7 +3583,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         $by = new stdClass();
         $by->date = userdate_htmltime($post->created);
         $by->name = html_writer::link($postuser->profilelink, $postuser->fullname);
-        $bytext = get_string('bynameondate', 'forum', $by);
+        $bytext = get_string('bynameondate', 'digestforum', $by);
     }
     $bytextoptions = [
         'class' => 'author'
@@ -3591,7 +3595,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // End header row.
     $output .= html_writer::end_tag('header');
 
-    // Row with the forum post content.
+    // Row with the digestforum post content.
     $output .= html_writer::start_div('row maincontent clearfix');
     // Show if author is not hidden or we have groups.
     if (!$authorhidden || $groups) {
@@ -3618,8 +3622,8 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         // Prepare shortened version by filtering the text then shortening it.
         $postclass    = 'shortenedpost';
         $postcontent  = format_text($post->message, $post->messageformat, $options);
-        $postcontent  = shorten_text($postcontent, $CFG->forum_shortpost);
-        $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'forum'));
+        $postcontent  = shorten_text($postcontent, $CFG->digestforum_shortpost);
+        $postcontent .= html_writer::link($discussionlink, get_string('readtherest', 'digestforum'));
         $postcontent .= html_writer::tag('div', '('.get_string('numwords', 'moodle', count_words($post->message)).')',
             array('class'=>'post-word-count'));
     } else {
@@ -3629,15 +3633,15 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
         if (!empty($highlight)) {
             $postcontent = highlight($highlight, $postcontent);
         }
-        if (!empty($forum->displaywordcount)) {
+        if (!empty($digestforum->displaywordcount)) {
             $postcontent .= html_writer::tag('div', get_string('numwords', 'moodle', count_words($postcontent)),
                 array('class'=>'post-word-count'));
         }
         $postcontent .= html_writer::tag('div', $attachedimages, array('class'=>'attachedimages'));
     }
 
-    if (\core_tag_tag::is_enabled('mod_forum', 'forum_posts')) {
-        $postcontent .= $OUTPUT->tag_list(core_tag_tag::get_item_tags('mod_forum', 'forum_posts', $post->id), null, 'forum-tags');
+    if (\core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
+        $postcontent .= $OUTPUT->tag_list(core_tag_tag::get_item_tags('mod_digestforum', 'digestforum_posts', $post->id), null, 'digestforum-tags');
     }
 
     // Output the post content
@@ -3656,7 +3660,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     // Output ratings
     if (!empty($post->rating)) {
-        $output .= html_writer::tag('div', $OUTPUT->render($post->rating), array('class'=>'forum-post-rating'));
+        $output .= html_writer::tag('div', $OUTPUT->render($post->rating), array('class'=>'digestforum-post-rating'));
     }
 
     // Output the commands
@@ -3676,29 +3680,29 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
 
     // Output link to post if required
     if ($link) {
-        if (forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext)) {
+        if (digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $modcontext)) {
             $langstring = 'discussthistopic';
         } else {
             $langstring = 'viewthediscussion';
         }
         if ($post->replies == 1) {
-            $replystring = get_string('repliesone', 'forum', $post->replies);
+            $replystring = get_string('repliesone', 'digestforum', $post->replies);
         } else {
-            $replystring = get_string('repliesmany', 'forum', $post->replies);
+            $replystring = get_string('repliesmany', 'digestforum', $post->replies);
         }
         if (!empty($discussion->unread) && $discussion->unread !== '-') {
             $replystring .= ' <span class="sep">/</span> <span class="unread">';
             $unreadlink = new moodle_url($discussionlink, null, 'unread');
             if ($discussion->unread == 1) {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'forum'));
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsone', 'digestforum'));
             } else {
-                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'forum', $discussion->unread));
+                $replystring .= html_writer::link($unreadlink, get_string('unreadpostsnumber', 'digestforum', $discussion->unread));
             }
             $replystring .= '</span>';
         }
 
         $output .= html_writer::start_tag('div', array('class'=>'link'));
-        $output .= html_writer::link($discussionlink, get_string($langstring, 'forum'));
+        $output .= html_writer::link($discussionlink, get_string($langstring, 'digestforum'));
         $output .= '&nbsp;('.$replystring.')';
         $output .= html_writer::end_tag('div'); // link
     }
@@ -3711,11 +3715,11 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // Close remaining open divs
     $output .= html_writer::end_tag('div'); // content
     $output .= html_writer::end_tag('nav'); // row
-    $output .= html_writer::end_tag('div'); // forumpost
+    $output .= html_writer::end_tag('div'); // digestforumpost
 
-    // Mark the forum post as read if required
-    if ($istracked && !$CFG->forum_usermarksread && !$postisread) {
-        forum_tp_mark_post_read($USER->id, $post);
+    // Mark the digestforum post as read if required
+    if ($istracked && !$CFG->digestforum_usermarksread && !$postisread) {
+        digestforum_tp_mark_post_read($USER->id, $post);
     }
 
     if ($return) {
@@ -3731,18 +3735,18 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
  * @param string $options the context id
  * @return array an associative array of the user's rating permissions
  */
-function forum_rating_permissions($contextid, $component, $ratingarea) {
+function digestforum_rating_permissions($contextid, $component, $ratingarea) {
     $context = context::instance_by_id($contextid, MUST_EXIST);
-    if ($component != 'mod_forum' || $ratingarea != 'post') {
+    if ($component != 'mod_digestforum' || $ratingarea != 'post') {
         // We don't know about this component/ratingarea so just return null to get the
         // default restrictive permissions.
         return null;
     }
     return array(
-        'view'    => has_capability('mod/forum:viewrating', $context),
-        'viewany' => has_capability('mod/forum:viewanyrating', $context),
-        'viewall' => has_capability('mod/forum:viewallratings', $context),
-        'rate'    => has_capability('mod/forum:rate', $context)
+        'view'    => has_capability('mod/digestforum:viewrating', $context),
+        'viewany' => has_capability('mod/digestforum:viewanyrating', $context),
+        'viewall' => has_capability('mod/digestforum:viewallratings', $context),
+        'rate'    => has_capability('mod/digestforum:rate', $context)
     );
 }
 
@@ -3750,7 +3754,7 @@ function forum_rating_permissions($contextid, $component, $ratingarea) {
  * Validates a submitted rating
  * @param array $params submitted data
  *            context => object the context in which the rated items exists [required]
- *            component => The component for this module - should always be mod_forum [required]
+ *            component => The component for this module - should always be mod_digestforum [required]
  *            ratingarea => object the context in which the rated items exists [required]
  *
  *            itemid => int the ID of the object being rated [required]
@@ -3760,15 +3764,15 @@ function forum_rating_permissions($contextid, $component, $ratingarea) {
  *            aggregation => int the aggregation method to apply when calculating grades ie RATING_AGGREGATE_AVERAGE [required]
  * @return boolean true if the rating is valid. Will throw rating_exception if not
  */
-function forum_rating_validate($params) {
+function digestforum_rating_validate($params) {
     global $DB, $USER;
 
-    // Check the component is mod_forum
-    if ($params['component'] != 'mod_forum') {
+    // Check the component is mod_digestforum
+    if ($params['component'] != 'mod_digestforum') {
         throw new rating_exception('invalidcomponent');
     }
 
-    // Check the ratingarea is post (the only rating area in forum)
+    // Check the ratingarea is post (the only rating area in digestforum)
     if ($params['ratingarea'] != 'post') {
         throw new rating_exception('invalidratingarea');
     }
@@ -3778,27 +3782,27 @@ function forum_rating_validate($params) {
         throw new rating_exception('nopermissiontorate');
     }
 
-    // Fetch all the related records ... we need to do this anyway to call forum_user_can_see_post
-    $post = $DB->get_record('forum_posts', array('id' => $params['itemid'], 'userid' => $params['rateduserid']), '*', MUST_EXIST);
-    $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
-    $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
-    $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id , false, MUST_EXIST);
+    // Fetch all the related records ... we need to do this anyway to call digestforum_user_can_see_post
+    $post = $DB->get_record('digestforum_posts', array('id' => $params['itemid'], 'userid' => $params['rateduserid']), '*', MUST_EXIST);
+    $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+    $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id , false, MUST_EXIST);
     $context = context_module::instance($cm->id);
 
-    // Make sure the context provided is the context of the forum
+    // Make sure the context provided is the context of the digestforum
     if ($context->id != $params['context']->id) {
         throw new rating_exception('invalidcontext');
     }
 
-    if ($forum->scale != $params['scaleid']) {
+    if ($digestforum->scale != $params['scaleid']) {
         //the scale being submitted doesnt match the one in the database
         throw new rating_exception('invalidscaleid');
     }
 
     // check the item we're rating was created in the assessable time window
-    if (!empty($forum->assesstimestart) && !empty($forum->assesstimefinish)) {
-        if ($post->created < $forum->assesstimestart || $post->created > $forum->assesstimefinish) {
+    if (!empty($digestforum->assesstimestart) && !empty($digestforum->assesstimefinish)) {
+        if ($post->created < $digestforum->assesstimestart || $post->created > $digestforum->assesstimefinish) {
             throw new rating_exception('notavailable');
         }
     }
@@ -3811,9 +3815,9 @@ function forum_rating_validate($params) {
     }
 
     // upper limit
-    if ($forum->scale < 0) {
+    if ($digestforum->scale < 0) {
         //its a custom scale
-        $scalerecord = $DB->get_record('scale', array('id' => -$forum->scale));
+        $scalerecord = $DB->get_record('scale', array('id' => -$digestforum->scale));
         if ($scalerecord) {
             $scalearray = explode(',', $scalerecord->scale);
             if ($params['rating'] > count($scalearray)) {
@@ -3822,7 +3826,7 @@ function forum_rating_validate($params) {
         } else {
             throw new rating_exception('invalidscaleid');
         }
-    } else if ($params['rating'] > $forum->scale) {
+    } else if ($params['rating'] > $digestforum->scale) {
         //if its numeric and submitted rating is above maximum
         throw new rating_exception('invalidnum');
     }
@@ -3840,7 +3844,7 @@ function forum_rating_validate($params) {
     }
 
     // perform some final capability checks
-    if (!forum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
+    if (!digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
         throw new rating_exception('nopermissiontorate');
     }
 
@@ -3852,7 +3856,7 @@ function forum_rating_validate($params) {
  *
  * @param array $params submitted data
  *            contextid => int contextid [required]
- *            component => The component for this module - should always be mod_forum [required]
+ *            component => The component for this module - should always be mod_digestforum [required]
  *            ratingarea => object the context in which the rated items exists [required]
  *            itemid => int the ID of the object being rated [required]
  *            scaleid => int scale id [optional]
@@ -3860,15 +3864,15 @@ function forum_rating_validate($params) {
  * @throws coding_exception
  * @throws rating_exception
  */
-function mod_forum_rating_can_see_item_ratings($params) {
+function mod_digestforum_rating_can_see_item_ratings($params) {
     global $DB, $USER;
 
-    // Check the component is mod_forum.
-    if (!isset($params['component']) || $params['component'] != 'mod_forum') {
+    // Check the component is mod_digestforum.
+    if (!isset($params['component']) || $params['component'] != 'mod_digestforum') {
         throw new rating_exception('invalidcomponent');
     }
 
-    // Check the ratingarea is post (the only rating area in forum).
+    // Check the ratingarea is post (the only rating area in digestforum).
     if (!isset($params['ratingarea']) || $params['ratingarea'] != 'post') {
         throw new rating_exception('invalidratingarea');
     }
@@ -3877,14 +3881,14 @@ function mod_forum_rating_can_see_item_ratings($params) {
         throw new rating_exception('invaliditemid');
     }
 
-    $post = $DB->get_record('forum_posts', array('id' => $params['itemid']), '*', MUST_EXIST);
-    $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
-    $forum = $DB->get_record('forum', array('id' => $discussion->forum), '*', MUST_EXIST);
-    $course = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
-    $cm = get_coursemodule_from_instance('forum', $forum->id, $course->id , false, MUST_EXIST);
+    $post = $DB->get_record('digestforum_posts', array('id' => $params['itemid']), '*', MUST_EXIST);
+    $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion), '*', MUST_EXIST);
+    $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum), '*', MUST_EXIST);
+    $course = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+    $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id , false, MUST_EXIST);
 
     // Perform some final capability checks.
-    if (!forum_user_can_see_post($forum, $discussion, $post, $USER, $cm)) {
+    if (!digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
         return false;
     }
 
@@ -3892,24 +3896,24 @@ function mod_forum_rating_can_see_item_ratings($params) {
 }
 
 /**
- * This function prints the overview of a discussion in the forum listing.
+ * This function prints the overview of a discussion in the digestforum listing.
  * It needs some discussion information and some post information, these
  * happen to be combined for efficiency in the $post parameter by the function
- * that calls this one: forum_print_latest_discussions()
+ * that calls this one: digestforum_print_latest_discussions()
  *
  * @global object
  * @global object
  * @param object $post The post object (passed by reference for speed).
- * @param object $forum The forum object.
+ * @param object $digestforum The digestforum object.
  * @param int $group Current group.
  * @param string $datestring Format to use for the dates.
- * @param boolean $cantrack Is tracking enabled for this forum.
- * @param boolean $forumtracked Is the user tracking this forum.
+ * @param boolean $cantrack Is tracking enabled for this digestforum.
+ * @param boolean $digestforumtracked Is the user tracking this digestforum.
  * @param boolean $canviewparticipants True if user has the viewparticipants permission for this course
- * @param boolean $canviewhiddentimedposts True if user has the viewhiddentimedposts permission for this forum
+ * @param boolean $canviewhiddentimedposts True if user has the viewhiddentimedposts permission for this digestforum
  */
-function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring = "",
-                                        $cantrack = true, $forumtracked = true, $canviewparticipants = true, $modcontext = null,
+function digestforum_print_discussion_header(&$post, $digestforum, $group = -1, $datestring = "",
+                                        $cantrack = true, $digestforumtracked = true, $canviewparticipants = true, $modcontext = null,
                                         $canviewhiddentimedposts = false) {
 
     global $COURSE, $USER, $CFG, $OUTPUT, $PAGE;
@@ -3918,7 +3922,7 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     static $strmarkalldread;
 
     if (empty($modcontext)) {
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
             print_error('invalidcoursemodule');
         }
         $modcontext = context_module::instance($cm->id);
@@ -3926,7 +3930,7 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
 
     if (!isset($rowcount)) {
         $rowcount = 0;
-        $strmarkalldread = get_string('markalldread', 'forum');
+        $strmarkalldread = get_string('markalldread', 'digestforum');
     } else {
         $rowcount = ($rowcount + 1) % 2;
     }
@@ -3934,7 +3938,7 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     $post->subject = format_string($post->subject,true);
 
     $canviewfullnames = has_capability('moodle/site:viewfullnames', $modcontext);
-    $timeddiscussion = !empty($CFG->forum_enabletimedposts) && ($post->timestart || $post->timeend);
+    $timeddiscussion = !empty($CFG->digestforum_enabletimedposts) && ($post->timestart || $post->timeend);
     $timedoutsidewindow = '';
     if ($timeddiscussion && ($post->timestart > time() || ($post->timeend != 0 && $post->timeend < time()))) {
         $timedoutsidewindow = ' dimmed_text';
@@ -3944,19 +3948,19 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     echo '<tr class="discussion r'.$rowcount.$timedoutsidewindow.'">';
 
     $topicclass = 'topic starter';
-    if (FORUM_DISCUSSION_PINNED == $post->pinned) {
+    if (DFORUM_DISCUSSION_PINNED == $post->pinned) {
         $topicclass .= ' pinned';
     }
     echo '<td class="'.$topicclass.'">';
-    if (FORUM_DISCUSSION_PINNED == $post->pinned) {
-        echo $OUTPUT->pix_icon('i/pinned', get_string('discussionpinned', 'forum'), 'mod_forum');
+    if (DFORUM_DISCUSSION_PINNED == $post->pinned) {
+        echo $OUTPUT->pix_icon('i/pinned', get_string('discussionpinned', 'digestforum'), 'mod_digestforum');
     }
     $canalwaysseetimedpost = $USER->id == $post->userid || $canviewhiddentimedposts;
     if ($timeddiscussion && $canalwaysseetimedpost) {
-        echo $PAGE->get_renderer('mod_forum')->timed_discussion_tooltip($post, empty($timedoutsidewindow));
+        echo $PAGE->get_renderer('mod_digestforum')->timed_discussion_tooltip($post, empty($timedoutsidewindow));
     }
 
-    echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'">'.$post->subject.'</a>';
+    echo '<a href="'.$CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.'">'.$post->subject.'</a>';
     echo "</td>\n";
 
     // Picture
@@ -3967,12 +3971,12 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     echo '<td class="author">';
     echo '<div class="media">';
     echo '<span class="pull-left">';
-    echo $OUTPUT->user_picture($postuser, array('courseid'=>$forum->course));
+    echo $OUTPUT->user_picture($postuser, array('courseid'=>$digestforum->course));
     echo '</span>';
     // User name
     echo '<div class="media-body">';
     $fullname = fullname($postuser, $canviewfullnames);
-    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$forum->course.'">'.$fullname.'</a>';
+    echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->userid.'&amp;course='.$digestforum->course.'">'.$fullname.'</a>';
     echo '</div>';
     echo '</div>';
     echo "</td>\n";
@@ -3986,10 +3990,10 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
             } else {
                 $picturelink = false;
             }
-            print_group_picture($group, $forum->course, false, false, $picturelink);
+            print_group_picture($group, $digestforum->course, false, false, $picturelink);
         } else if (isset($group->id)) {
             if ($canviewparticipants && $COURSE->groupmode) {
-                echo '<a href="'.$CFG->wwwroot.'/user/index.php?id='.$forum->course.'&amp;group='.$group->id.'">'.$group->name.'</a>';
+                echo '<a href="'.$CFG->wwwroot.'/user/index.php?id='.$digestforum->course.'&amp;group='.$group->id.'">'.$group->name.'</a>';
             } else {
                 echo $group->name;
             }
@@ -3997,22 +4001,22 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
         echo "</td>\n";
     }
 
-    if (has_capability('mod/forum:viewdiscussion', $modcontext)) {   // Show the column with replies
+    if (has_capability('mod/digestforum:viewdiscussion', $modcontext)) {   // Show the column with replies
         echo '<td class="replies">';
-        echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'">';
+        echo '<a href="'.$CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.'">';
         echo $post->replies.'</a>';
         echo "</td>\n";
 
         if ($cantrack) {
             echo '<td class="replies">';
-            if ($forumtracked) {
+            if ($digestforumtracked) {
                 if ($post->unread > 0) {
                     echo '<span class="unread">';
-                    echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.'#unread">';
+                    echo '<a href="'.$CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.'#unread">';
                     echo $post->unread;
                     echo '</a>';
-                    echo '<a title="'.$strmarkalldread.'" href="'.$CFG->wwwroot.'/mod/forum/markposts.php?f='.
-                         $forum->id.'&amp;d='.$post->discussion.'&amp;mark=read&amp;returnpage=view.php&amp;sesskey=' . sesskey() . '">' .
+                    echo '<a title="'.$strmarkalldread.'" href="'.$CFG->wwwroot.'/mod/digestforum/markposts.php?f='.
+                         $digestforum->id.'&amp;d='.$post->discussion.'&amp;mark=read&amp;returnpage=view.php&amp;sesskey=' . sesskey() . '">' .
                          $OUTPUT->pix_icon('t/markasread', $strmarkalldread) . '</a>';
                     echo '</span>';
                 } else {
@@ -4036,24 +4040,24 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
     $usermodified->id = $post->usermodified;
     $usermodified = username_load_fields_from_object($usermodified, $post, 'um');
 
-    // In QA forums we check that the user can view participants.
-    if ($forum->type !== 'qanda' || $canviewparticipants) {
-        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$forum->course.'">'.
+    // In QA digestforums we check that the user can view participants.
+    if ($digestforum->type !== 'qanda' || $canviewparticipants) {
+        echo '<a href="'.$CFG->wwwroot.'/user/view.php?id='.$post->usermodified.'&amp;course='.$digestforum->course.'">'.
              fullname($usermodified, $canviewfullnames).'</a><br />';
         $parenturl = (empty($post->lastpostid)) ? '' : '&amp;parent='.$post->lastpostid;
     }
 
-    echo '<a href="'.$CFG->wwwroot.'/mod/forum/discuss.php?d='.$post->discussion.$parenturl.'">'.
+    echo '<a href="'.$CFG->wwwroot.'/mod/digestforum/discuss.php?d='.$post->discussion.$parenturl.'">'.
           userdate_htmltime($usedate, $datestring).'</a>';
     echo "</td>\n";
 
     // is_guest should be used here as this also checks whether the user is a guest in the current course.
     // Guests and visitors cannot subscribe - only enrolled users.
-    if ((!is_guest($modcontext, $USER) && isloggedin()) && has_capability('mod/forum:viewdiscussion', $modcontext)) {
+    if ((!is_guest($modcontext, $USER) && isloggedin()) && has_capability('mod/digestforum:viewdiscussion', $modcontext)) {
         // Discussion subscription.
-        if (\mod_forum\subscriptions::is_subscribable($forum)) {
+        if (\mod_digestforum\subscriptions::is_subscribable($digestforum)) {
             echo '<td class="discussionsubscription">';
-            echo forum_get_discussion_subscription_icon($forum, $post->discussion);
+            echo digestforum_get_discussion_subscription_icon($digestforum, $post->discussion);
             echo '</td>';
         }
     }
@@ -4065,11 +4069,11 @@ function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring 
 /**
  * Return the markup for the discussion subscription toggling icon.
  *
- * @param stdClass $forum The forum object.
+ * @param stdClass $digestforum The digestforum object.
  * @param int $discussionid The discussion to create an icon for.
  * @return string The generated markup.
  */
-function forum_get_discussion_subscription_icon($forum, $discussionid, $returnurl = null, $includetext = false) {
+function digestforum_get_discussion_subscription_icon($digestforum, $discussionid, $returnurl = null, $includetext = false) {
     global $USER, $OUTPUT, $PAGE;
 
     if ($returnurl === null && $PAGE->url) {
@@ -4077,42 +4081,42 @@ function forum_get_discussion_subscription_icon($forum, $discussionid, $returnur
     }
 
     $o = '';
-    $subscriptionstatus = \mod_forum\subscriptions::is_subscribed($USER->id, $forum, $discussionid);
-    $subscriptionlink = new moodle_url('/mod/forum/subscribe.php', array(
+    $subscriptionstatus = \mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforum, $discussionid);
+    $subscriptionlink = new moodle_url('/mod/digestforum/subscribe.php', array(
         'sesskey' => sesskey(),
-        'id' => $forum->id,
+        'id' => $digestforum->id,
         'd' => $discussionid,
         'returnurl' => $returnurl,
     ));
 
     if ($includetext) {
-        $o .= $subscriptionstatus ? get_string('subscribed', 'mod_forum') : get_string('notsubscribed', 'mod_forum');
+        $o .= $subscriptionstatus ? get_string('subscribed', 'mod_digestforum') : get_string('notsubscribed', 'mod_digestforum');
     }
 
     if ($subscriptionstatus) {
-        $output = $OUTPUT->pix_icon('t/subscribed', get_string('clicktounsubscribe', 'forum'), 'mod_forum');
+        $output = $OUTPUT->pix_icon('t/subscribed', get_string('clicktounsubscribe', 'digestforum'), 'mod_digestforum');
         if ($includetext) {
-            $output .= get_string('subscribed', 'mod_forum');
+            $output .= get_string('subscribed', 'mod_digestforum');
         }
 
         return html_writer::link($subscriptionlink, $output, array(
-                'title' => get_string('clicktounsubscribe', 'forum'),
+                'title' => get_string('clicktounsubscribe', 'digestforum'),
                 'class' => 'discussiontoggle iconsmall',
-                'data-forumid' => $forum->id,
+                'data-digestforumid' => $digestforum->id,
                 'data-discussionid' => $discussionid,
                 'data-includetext' => $includetext,
             ));
 
     } else {
-        $output = $OUTPUT->pix_icon('t/unsubscribed', get_string('clicktosubscribe', 'forum'), 'mod_forum');
+        $output = $OUTPUT->pix_icon('t/unsubscribed', get_string('clicktosubscribe', 'digestforum'), 'mod_digestforum');
         if ($includetext) {
-            $output .= get_string('notsubscribed', 'mod_forum');
+            $output .= get_string('notsubscribed', 'mod_digestforum');
         }
 
         return html_writer::link($subscriptionlink, $output, array(
-                'title' => get_string('clicktosubscribe', 'forum'),
+                'title' => get_string('clicktosubscribe', 'digestforum'),
                 'class' => 'discussiontoggle iconsmall',
-                'data-forumid' => $forum->id,
+                'data-digestforumid' => $digestforum->id,
                 'data-discussionid' => $discussionid,
                 'data-includetext' => $includetext,
             ));
@@ -4125,7 +4129,7 @@ function forum_get_discussion_subscription_icon($forum, $discussionid, $returnur
  *
  * @return string The generated markup
  */
-function forum_get_discussion_subscription_icon_preloaders() {
+function digestforum_get_discussion_subscription_icon_preloaders() {
     $o = '';
     $o .= html_writer::span('&nbsp;', 'preload-subscribe');
     $o .= html_writer::span('&nbsp;', 'preload-unsubscribe');
@@ -4136,20 +4140,20 @@ function forum_get_discussion_subscription_icon_preloaders() {
  * Print the drop down that allows the user to select how they want to have
  * the discussion displayed.
  *
- * @param int $id forum id if $forumtype is 'single',
- *              discussion id for any other forum type
- * @param mixed $mode forum layout mode
- * @param string $forumtype optional
+ * @param int $id digestforum id if $digestforumtype is 'single',
+ *              discussion id for any other digestforum type
+ * @param mixed $mode digestforum layout mode
+ * @param string $digestforumtype optional
  */
-function forum_print_mode_form($id, $mode, $forumtype='') {
+function digestforum_print_mode_form($id, $mode, $digestforumtype='') {
     global $OUTPUT;
-    if ($forumtype == 'single') {
-        $select = new single_select(new moodle_url("/mod/forum/view.php", array('f'=>$id)), 'mode', forum_get_layout_modes(), $mode, null, "mode");
-        $select->set_label(get_string('displaymode', 'forum'), array('class' => 'accesshide'));
-        $select->class = "forummode";
+    if ($digestforumtype == 'single') {
+        $select = new single_select(new moodle_url("/mod/digestforum/view.php", array('f'=>$id)), 'mode', digestforum_get_layout_modes(), $mode, null, "mode");
+        $select->set_label(get_string('displaymode', 'digestforum'), array('class' => 'accesshide'));
+        $select->class = "digestforummode";
     } else {
-        $select = new single_select(new moodle_url("/mod/forum/discuss.php", array('d'=>$id)), 'mode', forum_get_layout_modes(), $mode, null, "mode");
-        $select->set_label(get_string('displaymode', 'forum'), array('class' => 'accesshide'));
+        $select = new single_select(new moodle_url("/mod/digestforum/discuss.php", array('d'=>$id)), 'mode', digestforum_get_layout_modes(), $mode, null, "mode");
+        $select->set_label(get_string('displaymode', 'digestforum'), array('class' => 'accesshide'));
     }
     echo $OUTPUT->render($select);
 }
@@ -4160,11 +4164,11 @@ function forum_print_mode_form($id, $mode, $forumtype='') {
  * @param string $search
  * @return string
  */
-function forum_search_form($course, $search='') {
+function digestforum_search_form($course, $search='') {
     global $CFG, $PAGE;
-    $forumsearch = new \mod_forum\output\quick_search_form($course->id, $search);
-    $output = $PAGE->get_renderer('mod_forum');
-    return $output->render($forumsearch);
+    $digestforumsearch = new \mod_digestforum\output\quick_search_form($course->id, $search);
+    $output = $PAGE->get_renderer('mod_digestforum');
+    return $output->render($digestforumsearch);
 }
 
 
@@ -4172,7 +4176,7 @@ function forum_search_form($course, $search='') {
  * @global object
  * @global object
  */
-function forum_set_return() {
+function digestforum_set_return() {
     global $CFG, $SESSION;
 
     if (! isset($SESSION->fromdiscussion)) {
@@ -4190,7 +4194,7 @@ function forum_set_return() {
  * @param string|\moodle_url $default
  * @return string
  */
-function forum_go_back_to($default) {
+function digestforum_go_back_to($default) {
     global $SESSION;
 
     if (!empty($SESSION->fromdiscussion)) {
@@ -4203,43 +4207,43 @@ function forum_go_back_to($default) {
 }
 
 /**
- * Given a discussion object that is being moved to $forumto,
+ * Given a discussion object that is being moved to $digestforumto,
  * this function checks all posts in that discussion
  * for attachments, and if any are found, these are
- * moved to the new forum directory.
+ * moved to the new digestforum directory.
  *
  * @global object
  * @param object $discussion
- * @param int $forumfrom source forum id
- * @param int $forumto target forum id
+ * @param int $digestforumfrom source digestforum id
+ * @param int $digestforumto target digestforum id
  * @return bool success
  */
-function forum_move_attachments($discussion, $forumfrom, $forumto) {
+function digestforum_move_attachments($discussion, $digestforumfrom, $digestforumto) {
     global $DB;
 
     $fs = get_file_storage();
 
-    $newcm = get_coursemodule_from_instance('forum', $forumto);
-    $oldcm = get_coursemodule_from_instance('forum', $forumfrom);
+    $newcm = get_coursemodule_from_instance('digestforum', $digestforumto);
+    $oldcm = get_coursemodule_from_instance('digestforum', $digestforumfrom);
 
     $newcontext = context_module::instance($newcm->id);
     $oldcontext = context_module::instance($oldcm->id);
 
     // loop through all posts, better not use attachment flag ;-)
-    if ($posts = $DB->get_records('forum_posts', array('discussion'=>$discussion->id), '', 'id, attachment')) {
+    if ($posts = $DB->get_records('digestforum_posts', array('discussion'=>$discussion->id), '', 'id, attachment')) {
         foreach ($posts as $post) {
             $fs->move_area_files_to_new_context($oldcontext->id,
-                    $newcontext->id, 'mod_forum', 'post', $post->id);
+                    $newcontext->id, 'mod_digestforum', 'post', $post->id);
             $attachmentsmoved = $fs->move_area_files_to_new_context($oldcontext->id,
-                    $newcontext->id, 'mod_forum', 'attachment', $post->id);
+                    $newcontext->id, 'mod_digestforum', 'attachment', $post->id);
             if ($attachmentsmoved > 0 && $post->attachment != '1') {
                 // Weird - let's fix it
                 $post->attachment = '1';
-                $DB->update_record('forum_posts', $post);
+                $DB->update_record('digestforum_posts', $post);
             } else if ($attachmentsmoved == 0 && $post->attachment != '') {
                 // Weird - let's fix it
                 $post->attachment = '';
-                $DB->update_record('forum_posts', $post);
+                $DB->update_record('digestforum_posts', $post);
             }
         }
     }
@@ -4258,7 +4262,7 @@ function forum_move_attachments($discussion, $forumfrom, $forumto) {
  * @param string $type html/text/separateimages
  * @return mixed string or array of (html text withouth images and image HTML)
  */
-function forum_print_attachments($post, $cm, $type) {
+function digestforum_print_attachments($post, $cm, $type) {
     global $CFG, $DB, $USER, $OUTPUT;
 
     if (empty($post->attachment)) {
@@ -4272,14 +4276,14 @@ function forum_print_attachments($post, $cm, $type) {
     if (!$context = context_module::instance($cm->id)) {
         return $type !== 'separateimages' ? '' : array('', '');
     }
-    $strattachment = get_string('attachment', 'forum');
+    $strattachment = get_string('attachment', 'digestforum');
 
     $fs = get_file_storage();
 
     $imagereturn = '';
     $output = '';
 
-    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/forum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/forum:exportownpost', $context)));
+    $canexport = !empty($CFG->enableportfolios) && (has_capability('mod/digestforum:exportpost', $context) || ($post->userid == $USER->id && has_capability('mod/digestforum:exportownpost', $context)));
 
     if ($canexport) {
         require_once($CFG->libdir.'/portfoliolib.php');
@@ -4287,7 +4291,7 @@ function forum_print_attachments($post, $cm, $type) {
 
     // We retrieve all files according to the time that they were created.  In the case that several files were uploaded
     // at the sametime (e.g. in the case of drag/drop upload) we revert to using the filename.
-    $files = $fs->get_area_files($context->id, 'mod_forum', 'attachment', $post->id, "filename", false);
+    $files = $fs->get_area_files($context->id, 'mod_digestforum', 'attachment', $post->id, "filename", false);
     if ($files) {
         if ($canexport) {
             $button = new portfolio_add_button();
@@ -4296,13 +4300,13 @@ function forum_print_attachments($post, $cm, $type) {
             $filename = $file->get_filename();
             $mimetype = $file->get_mimetype();
             $iconimage = $OUTPUT->pix_icon(file_file_icon($file), get_mimetype_description($file), 'moodle', array('class' => 'icon'));
-            $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_forum/attachment/'.$post->id.'/'.$filename);
+            $path = file_encode_url($CFG->wwwroot.'/pluginfile.php', '/'.$context->id.'/mod_digestforum/attachment/'.$post->id.'/'.$filename);
 
             if ($type == 'html') {
                 $output .= "<a href=\"$path\">$iconimage</a> ";
                 $output .= "<a href=\"$path\">".s($filename)."</a>";
                 if ($canexport) {
-                    $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
+                    $button->set_callback_options('digestforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_digestforum');
                     $button->set_format_by_file($file);
                     $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                 }
@@ -4316,7 +4320,7 @@ function forum_print_attachments($post, $cm, $type) {
                     // Image attachments don't get printed as links
                     $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
                     if ($canexport) {
-                        $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
+                        $button->set_callback_options('digestforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_digestforum');
                         $button->set_format_by_file($file);
                         $imagereturn .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
@@ -4324,7 +4328,7 @@ function forum_print_attachments($post, $cm, $type) {
                     $output .= "<a href=\"$path\">$iconimage</a> ";
                     $output .= format_text("<a href=\"$path\">".s($filename)."</a>", FORMAT_HTML, array('context'=>$context));
                     if ($canexport) {
-                        $button->set_callback_options('forum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_forum');
+                        $button->set_callback_options('digestforum_portfolio_caller', array('postid' => $post->id, 'attachment' => $file->get_id()), 'mod_digestforum');
                         $button->set_format_by_file($file);
                         $output .= $button->to_html(PORTFOLIO_ADD_ICON_LINK);
                     }
@@ -4338,7 +4342,7 @@ function forum_print_attachments($post, $cm, $type) {
                     'file' => $file,
                     'cmid' => $cm->id,
                     'course' => $cm->course,
-                    'forum' => $cm->instance));
+                    'digestforum' => $cm->instance));
                 $output .= '<br />';
             }
         }
@@ -4359,24 +4363,24 @@ function forum_print_attachments($post, $cm, $type) {
 /**
  * Lists all browsable file areas
  *
- * @package  mod_forum
+ * @package  mod_digestforum
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
  * @param stdClass $context context object
  * @return array
  */
-function forum_get_file_areas($course, $cm, $context) {
+function digestforum_get_file_areas($course, $cm, $context) {
     return array(
-        'attachment' => get_string('areaattachment', 'mod_forum'),
-        'post' => get_string('areapost', 'mod_forum'),
+        'attachment' => get_string('areaattachment', 'mod_digestforum'),
+        'post' => get_string('areapost', 'mod_digestforum'),
     );
 }
 
 /**
- * File browsing support for forum module.
+ * File browsing support for digestforum module.
  *
- * @package  mod_forum
+ * @package  mod_digestforum
  * @category files
  * @param stdClass $browser file browser object
  * @param stdClass $areas file areas
@@ -4389,7 +4393,7 @@ function forum_get_file_areas($course, $cm, $context) {
  * @param string $filename file name
  * @return file_info instance or null if not found
  */
-function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
+function digestforum_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
     global $CFG, $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -4401,20 +4405,20 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
         return null;
     }
 
-    // Note that forum_user_can_see_post() additionally allows access for parent roles
-    // and it explicitly checks qanda forum type, too. One day, when we stop requiring
+    // Note that digestforum_user_can_see_post() additionally allows access for parent roles
+    // and it explicitly checks qanda digestforum type, too. One day, when we stop requiring
     // course:managefiles, we will need to extend this.
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
         return null;
     }
 
     if (is_null($itemid)) {
-        require_once($CFG->dirroot.'/mod/forum/locallib.php');
-        return new forum_file_info_container($browser, $course, $cm, $context, $areas, $filearea);
+        require_once($CFG->dirroot.'/mod/digestforum/locallib.php');
+        return new digestforum_file_info_container($browser, $course, $cm, $context, $areas, $filearea);
     }
 
     static $cached = array();
-    // $cached will store last retrieved post, discussion and forum. To make sure that the cache
+    // $cached will store last retrieved post, discussion and digestforum. To make sure that the cache
     // is cleared between unit tests we check if this is the same session
     if (!isset($cached['sesskey']) || $cached['sesskey'] != sesskey()) {
         $cached = array('sesskey' => sesskey());
@@ -4422,7 +4426,7 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
 
     if (isset($cached['post']) && $cached['post']->id == $itemid) {
         $post = $cached['post'];
-    } else if ($post = $DB->get_record('forum_posts', array('id' => $itemid))) {
+    } else if ($post = $DB->get_record('digestforum_posts', array('id' => $itemid))) {
         $cached['post'] = $post;
     } else {
         return null;
@@ -4430,16 +4434,16 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
 
     if (isset($cached['discussion']) && $cached['discussion']->id == $post->discussion) {
         $discussion = $cached['discussion'];
-    } else if ($discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion))) {
+    } else if ($discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion))) {
         $cached['discussion'] = $discussion;
     } else {
         return null;
     }
 
-    if (isset($cached['forum']) && $cached['forum']->id == $cm->instance) {
-        $forum = $cached['forum'];
-    } else if ($forum = $DB->get_record('forum', array('id' => $cm->instance))) {
-        $cached['forum'] = $forum;
+    if (isset($cached['digestforum']) && $cached['digestforum']->id == $cm->instance) {
+        $digestforum = $cached['digestforum'];
+    } else if ($digestforum = $DB->get_record('digestforum', array('id' => $cm->instance))) {
+        $cached['digestforum'] = $digestforum;
     } else {
         return null;
     }
@@ -4447,7 +4451,7 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
     $fs = get_file_storage();
     $filepath = is_null($filepath) ? '/' : $filepath;
     $filename = is_null($filename) ? '.' : $filename;
-    if (!($storedfile = $fs->get_file($context->id, 'mod_forum', $filearea, $itemid, $filepath, $filename))) {
+    if (!($storedfile = $fs->get_file($context->id, 'mod_digestforum', $filearea, $itemid, $filepath, $filename))) {
         return null;
     }
 
@@ -4465,7 +4469,7 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
     }
 
     // Make sure we're allowed to see it...
-    if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
+    if (!digestforum_user_can_see_post($digestforum, $discussion, $post, NULL, $cm)) {
         return null;
     }
 
@@ -4474,9 +4478,9 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
 }
 
 /**
- * Serves the forum attachments. Implements needed access control ;-)
+ * Serves the digestforum attachments. Implements needed access control ;-)
  *
- * @package  mod_forum
+ * @package  mod_digestforum
  * @category files
  * @param stdClass $course course object
  * @param stdClass $cm course module object
@@ -4487,7 +4491,7 @@ function forum_get_file_info($browser, $areas, $course, $cm, $context, $filearea
  * @param array $options additional options affecting the file serving
  * @return bool false if file not found, does not return if found - justsend the file
  */
-function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+function digestforum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
     global $CFG, $DB;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
@@ -4496,7 +4500,7 @@ function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
 
     require_course_login($course, true, $cm);
 
-    $areas = forum_get_file_areas($course, $cm, $context);
+    $areas = digestforum_get_file_areas($course, $cm, $context);
 
     // filearea must contain a real area
     if (!isset($areas[$filearea])) {
@@ -4505,21 +4509,21 @@ function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
 
     $postid = (int)array_shift($args);
 
-    if (!$post = $DB->get_record('forum_posts', array('id'=>$postid))) {
+    if (!$post = $DB->get_record('digestforum_posts', array('id'=>$postid))) {
         return false;
     }
 
-    if (!$discussion = $DB->get_record('forum_discussions', array('id'=>$post->discussion))) {
+    if (!$discussion = $DB->get_record('digestforum_discussions', array('id'=>$post->discussion))) {
         return false;
     }
 
-    if (!$forum = $DB->get_record('forum', array('id'=>$cm->instance))) {
+    if (!$digestforum = $DB->get_record('digestforum', array('id'=>$cm->instance))) {
         return false;
     }
 
     $fs = get_file_storage();
     $relativepath = implode('/', $args);
-    $fullpath = "/$context->id/mod_forum/$filearea/$postid/$relativepath";
+    $fullpath = "/$context->id/mod_digestforum/$filearea/$postid/$relativepath";
     if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
         return false;
     }
@@ -4535,7 +4539,7 @@ function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
     }
 
     // Make sure we're allowed to see it...
-    if (!forum_user_can_see_post($forum, $discussion, $post, NULL, $cm)) {
+    if (!digestforum_user_can_see_post($digestforum, $discussion, $post, NULL, $cm)) {
         return false;
     }
 
@@ -4547,14 +4551,14 @@ function forum_pluginfile($course, $cm, $context, $filearea, $args, $forcedownlo
  * If successful, this function returns the name of the file
  *
  * @global object
- * @param object $post is a full post record, including course and forum
- * @param object $forum
+ * @param object $post is a full post record, including course and digestforum
+ * @param object $digestforum
  * @param object $cm
  * @param mixed $mform
  * @param string $unused
  * @return bool
  */
-function forum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) {
+function digestforum_add_attachment($post, $digestforum, $cm, $mform=null, $unused=null) {
     global $DB;
 
     if (empty($mform)) {
@@ -4569,10 +4573,10 @@ function forum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) {
 
     $info = file_get_draft_area_info($post->attachments);
     $present = ($info['filecount']>0) ? '1' : '';
-    file_save_draft_area_files($post->attachments, $context->id, 'mod_forum', 'attachment', $post->id,
-            mod_forum_post_form::attachment_options($forum));
+    file_save_draft_area_files($post->attachments, $context->id, 'mod_digestforum', 'attachment', $post->id,
+            mod_digestforum_post_form::attachment_options($digestforum));
 
-    $DB->set_field('forum_posts', 'attachment', $present, array('id'=>$post->id));
+    $DB->set_field('digestforum_posts', 'attachment', $present, array('id'=>$post->id));
 
     return true;
 }
@@ -4585,16 +4589,16 @@ function forum_add_attachment($post, $forum, $cm, $mform=null, $unused=null) {
  * @param   string      $unused
  * @return int
  */
-function forum_add_new_post($post, $mform, $unused = null) {
+function digestforum_add_new_post($post, $mform, $unused = null) {
     global $USER, $DB;
 
-    $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion));
-    $forum      = $DB->get_record('forum', array('id' => $discussion->forum));
-    $cm         = get_coursemodule_from_instance('forum', $forum->id);
+    $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion));
+    $digestforum      = $DB->get_record('digestforum', array('id' => $discussion->digestforum));
+    $cm         = get_coursemodule_from_instance('digestforum', $digestforum->id);
     $context    = context_module::instance($cm->id);
 
     $post->created    = $post->modified = time();
-    $post->mailed     = FORUM_MAILED_PENDING;
+    $post->mailed     = DFORUM_MAILED_PENDING;
     $post->userid     = $USER->id;
     $post->attachment = "";
     if (!isset($post->totalscore)) {
@@ -4604,26 +4608,26 @@ function forum_add_new_post($post, $mform, $unused = null) {
         $post->mailnow    = 0;
     }
 
-    $post->id = $DB->insert_record("forum_posts", $post);
-    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_forum', 'post', $post->id,
-            mod_forum_post_form::editor_options($context, null), $post->message);
-    $DB->set_field('forum_posts', 'message', $post->message, array('id'=>$post->id));
-    forum_add_attachment($post, $forum, $cm, $mform);
+    $post->id = $DB->insert_record("digestforum_posts", $post);
+    $post->message = file_save_draft_area_files($post->itemid, $context->id, 'mod_digestforum', 'post', $post->id,
+            mod_digestforum_post_form::editor_options($context, null), $post->message);
+    $DB->set_field('digestforum_posts', 'message', $post->message, array('id'=>$post->id));
+    digestforum_add_attachment($post, $digestforum, $cm, $mform);
 
     // Update discussion modified date
-    $DB->set_field("forum_discussions", "timemodified", $post->modified, array("id" => $post->discussion));
-    $DB->set_field("forum_discussions", "usermodified", $post->userid, array("id" => $post->discussion));
+    $DB->set_field("digestforum_discussions", "timemodified", $post->modified, array("id" => $post->discussion));
+    $DB->set_field("digestforum_discussions", "usermodified", $post->userid, array("id" => $post->discussion));
 
-    if (forum_tp_can_track_forums($forum) && forum_tp_is_tracked($forum)) {
-        forum_tp_mark_post_read($post->userid, $post);
+    if (digestforum_tp_can_track_digestforums($digestforum) && digestforum_tp_is_tracked($digestforum)) {
+        digestforum_tp_mark_post_read($post->userid, $post);
     }
 
     if (isset($post->tags)) {
-        core_tag_tag::set_item_tags('mod_forum', 'forum_posts', $post->id, $context, $post->tags);
+        core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, $post->tags);
     }
 
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
-    forum_trigger_content_uploaded_event($post, $cm, 'forum_add_new_post');
+    digestforum_trigger_content_uploaded_event($post, $cm, 'digestforum_add_new_post');
 
     return $post->id;
 }
@@ -4636,13 +4640,13 @@ function forum_add_new_post($post, $mform, $unused = null) {
  * @param   string      $unused
  * @return  bool
  */
-function forum_update_post($newpost, $mform, $unused = null) {
+function digestforum_update_post($newpost, $mform, $unused = null) {
     global $DB, $USER;
 
-    $post       = $DB->get_record('forum_posts', array('id' => $newpost->id));
-    $discussion = $DB->get_record('forum_discussions', array('id' => $post->discussion));
-    $forum      = $DB->get_record('forum', array('id' => $discussion->forum));
-    $cm         = get_coursemodule_from_instance('forum', $forum->id);
+    $post       = $DB->get_record('digestforum_posts', array('id' => $newpost->id));
+    $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion));
+    $digestforum      = $DB->get_record('digestforum', array('id' => $discussion->digestforum));
+    $cm         = get_coursemodule_from_instance('digestforum', $digestforum->id);
     $context    = context_module::instance($cm->id);
 
     // Allowed modifiable fields.
@@ -4672,24 +4676,24 @@ function forum_update_post($newpost, $mform, $unused = null) {
             $discussion->pinned = $post->pinned;
         }
     }
-    $post->message = file_save_draft_area_files($newpost->itemid, $context->id, 'mod_forum', 'post', $post->id,
-            mod_forum_post_form::editor_options($context, $post->id), $post->message);
-    $DB->update_record('forum_posts', $post);
+    $post->message = file_save_draft_area_files($newpost->itemid, $context->id, 'mod_digestforum', 'post', $post->id,
+            mod_digestforum_post_form::editor_options($context, $post->id), $post->message);
+    $DB->update_record('digestforum_posts', $post);
     // Note: Discussion modified time/user are intentionally not updated, to enable them to track the latest new post.
-    $DB->update_record('forum_discussions', $discussion);
+    $DB->update_record('digestforum_discussions', $discussion);
 
-    forum_add_attachment($post, $forum, $cm, $mform);
+    digestforum_add_attachment($post, $digestforum, $cm, $mform);
 
     if (isset($newpost->tags)) {
-        core_tag_tag::set_item_tags('mod_forum', 'forum_posts', $post->id, $context, $newpost->tags);
+        core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, $newpost->tags);
     }
 
-    if (forum_tp_can_track_forums($forum) && forum_tp_is_tracked($forum)) {
-        forum_tp_mark_post_read($USER->id, $post);
+    if (digestforum_tp_can_track_digestforums($digestforum) && digestforum_tp_is_tracked($digestforum)) {
+        digestforum_tp_mark_post_read($USER->id, $post);
     }
 
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
-    forum_trigger_content_uploaded_event($post, $cm, 'forum_update_post');
+    digestforum_trigger_content_uploaded_event($post, $cm, 'digestforum_update_post');
 
     return true;
 }
@@ -4704,7 +4708,7 @@ function forum_update_post($newpost, $mform, $unused = null) {
  * @param int $userid
  * @return object
  */
-function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=null) {
+function digestforum_add_discussion($discussion, $mform=null, $unused=null, $userid=null) {
     global $USER, $CFG, $DB;
 
     $timenow = isset($discussion->timenow) ? $discussion->timenow : time();
@@ -4716,8 +4720,8 @@ function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=nu
     // The first post is stored as a real post, and linked
     // to from the discuss entry.
 
-    $forum = $DB->get_record('forum', array('id'=>$discussion->forum));
-    $cm    = get_coursemodule_from_instance('forum', $forum->id);
+    $digestforum = $DB->get_record('digestforum', array('id'=>$discussion->digestforum));
+    $cm    = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
     $post = new stdClass();
     $post->discussion    = 0;
@@ -4725,24 +4729,24 @@ function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=nu
     $post->userid        = $userid;
     $post->created       = $timenow;
     $post->modified      = $timenow;
-    $post->mailed        = FORUM_MAILED_PENDING;
+    $post->mailed        = DFORUM_MAILED_PENDING;
     $post->subject       = $discussion->name;
     $post->message       = $discussion->message;
     $post->messageformat = $discussion->messageformat;
     $post->messagetrust  = $discussion->messagetrust;
     $post->attachments   = isset($discussion->attachments) ? $discussion->attachments : null;
-    $post->forum         = $forum->id;     // speedup
-    $post->course        = $forum->course; // speedup
+    $post->digestforum         = $digestforum->id;     // speedup
+    $post->course        = $digestforum->course; // speedup
     $post->mailnow       = $discussion->mailnow;
 
-    $post->id = $DB->insert_record("forum_posts", $post);
+    $post->id = $DB->insert_record("digestforum_posts", $post);
 
     // TODO: Fix the calling code so that there always is a $cm when this function is called
     if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet
         $context = context_module::instance($cm->id);
-        $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_forum', 'post', $post->id,
-                mod_forum_post_form::editor_options($context, null), $post->message);
-        $DB->set_field('forum_posts', 'message', $text, array('id'=>$post->id));
+        $text = file_save_draft_area_files($discussion->itemid, $context->id, 'mod_digestforum', 'post', $post->id,
+                mod_digestforum_post_form::editor_options($context, null), $post->message);
+        $DB->set_field('digestforum_posts', 'message', $text, array('id'=>$post->id));
     }
 
     // Now do the main entry for the discussion, linking to this first post
@@ -4753,26 +4757,26 @@ function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=nu
     $discussion->userid       = $userid;
     $discussion->assessed     = 0;
 
-    $post->discussion = $DB->insert_record("forum_discussions", $discussion);
+    $post->discussion = $DB->insert_record("digestforum_discussions", $discussion);
 
     // Finally, set the pointer on the post.
-    $DB->set_field("forum_posts", "discussion", $post->discussion, array("id"=>$post->id));
+    $DB->set_field("digestforum_posts", "discussion", $post->discussion, array("id"=>$post->id));
 
     if (!empty($cm->id)) {
-        forum_add_attachment($post, $forum, $cm, $mform, $unused);
+        digestforum_add_attachment($post, $digestforum, $cm, $mform, $unused);
     }
 
     if (isset($discussion->tags)) {
-        core_tag_tag::set_item_tags('mod_forum', 'forum_posts', $post->id, context_module::instance($cm->id), $discussion->tags);
+        core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, context_module::instance($cm->id), $discussion->tags);
     }
 
-    if (forum_tp_can_track_forums($forum) && forum_tp_is_tracked($forum)) {
-        forum_tp_mark_post_read($post->userid, $post);
+    if (digestforum_tp_can_track_digestforums($digestforum) && digestforum_tp_is_tracked($digestforum)) {
+        digestforum_tp_mark_post_read($post->userid, $post);
     }
 
     // Let Moodle know that assessable content is uploaded (eg for plagiarism detection)
     if (!empty($cm->id)) {
-        forum_trigger_content_uploaded_event($post, $cm, 'forum_add_discussion');
+        digestforum_trigger_content_uploaded_event($post, $cm, 'digestforum_add_discussion');
     }
 
     return $post->discussion;
@@ -4784,33 +4788,33 @@ function forum_add_discussion($discussion, $mform=null, $unused=null, $userid=nu
  *
  * @global object
  * @param object $discussion Discussion to delete
- * @param bool $fulldelete True when deleting entire forum
+ * @param bool $fulldelete True when deleting entire digestforum
  * @param object $course Course
  * @param object $cm Course-module
- * @param object $forum Forum
+ * @param object $digestforum Forum
  * @return bool
  */
-function forum_delete_discussion($discussion, $fulldelete, $course, $cm, $forum) {
+function digestforum_delete_discussion($discussion, $fulldelete, $course, $cm, $digestforum) {
     global $DB, $CFG;
     require_once($CFG->libdir.'/completionlib.php');
 
     $result = true;
 
-    if ($posts = $DB->get_records("forum_posts", array("discussion" => $discussion->id))) {
+    if ($posts = $DB->get_records("digestforum_posts", array("discussion" => $discussion->id))) {
         foreach ($posts as $post) {
             $post->course = $discussion->course;
-            $post->forum  = $discussion->forum;
-            if (!forum_delete_post($post, 'ignore', $course, $cm, $forum, $fulldelete)) {
+            $post->digestforum  = $discussion->digestforum;
+            if (!digestforum_delete_post($post, 'ignore', $course, $cm, $digestforum, $fulldelete)) {
                 $result = false;
             }
         }
     }
 
-    forum_tp_delete_read_records(-1, -1, $discussion->id);
+    digestforum_tp_delete_read_records(-1, -1, $discussion->id);
 
     // Discussion subscriptions must be removed before discussions because of key constraints.
-    $DB->delete_records('forum_discussion_subs', array('discussion' => $discussion->id));
-    if (!$DB->delete_records("forum_discussions", array("id" => $discussion->id))) {
+    $DB->delete_records('digestforum_discussion_subs', array('discussion' => $discussion->id));
+    if (!$DB->delete_records("digestforum_discussions", array("id" => $discussion->id))) {
         $result = false;
     }
 
@@ -4819,7 +4823,7 @@ function forum_delete_discussion($discussion, $fulldelete, $course, $cm, $forum)
     if (!$fulldelete) {
         $completion = new completion_info($course);
         if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC &&
-           ($forum->completiondiscussions || $forum->completionreplies || $forum->completionposts)) {
+           ($digestforum->completiondiscussions || $digestforum->completionreplies || $digestforum->completionposts)) {
             $completion->update_state($cm, COMPLETION_INCOMPLETE, $discussion->userid);
         }
     }
@@ -4829,7 +4833,7 @@ function forum_delete_discussion($discussion, $fulldelete, $course, $cm, $forum)
 
 
 /**
- * Deletes a single forum post.
+ * Deletes a single digestforum post.
  *
  * @global object
  * @param object $post Forum post object
@@ -4840,21 +4844,21 @@ function forum_delete_discussion($discussion, $fulldelete, $course, $cm, $forum)
  *   in a disussion).
  * @param object $course Course
  * @param object $cm Course-module
- * @param object $forum Forum
+ * @param object $digestforum Forum
  * @param bool $skipcompletion True to skip updating completion state if it
- *   would otherwise be updated, i.e. when deleting entire forum anyway.
+ *   would otherwise be updated, i.e. when deleting entire digestforum anyway.
  * @return bool
  */
-function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompletion=false) {
+function digestforum_delete_post($post, $children, $course, $cm, $digestforum, $skipcompletion=false) {
     global $DB, $CFG, $USER;
     require_once($CFG->libdir.'/completionlib.php');
 
     $context = context_module::instance($cm->id);
 
-    if ($children !== 'ignore' && ($childposts = $DB->get_records('forum_posts', array('parent'=>$post->id)))) {
+    if ($children !== 'ignore' && ($childposts = $DB->get_records('digestforum_posts', array('parent'=>$post->id)))) {
        if ($children) {
            foreach ($childposts as $childpost) {
-               forum_delete_post($childpost, true, $course, $cm, $forum, $skipcompletion);
+               digestforum_delete_post($childpost, true, $course, $cm, $digestforum, $skipcompletion);
            }
        } else {
            return false;
@@ -4865,7 +4869,7 @@ function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompleti
     require_once($CFG->dirroot.'/rating/lib.php');
     $delopt = new stdClass;
     $delopt->contextid = $context->id;
-    $delopt->component = 'mod_forum';
+    $delopt->component = 'mod_digestforum';
     $delopt->ratingarea = 'post';
     $delopt->itemid = $post->id;
     $rm = new rating_manager();
@@ -4873,21 +4877,21 @@ function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompleti
 
     // Delete attachments.
     $fs = get_file_storage();
-    $fs->delete_area_files($context->id, 'mod_forum', 'attachment', $post->id);
-    $fs->delete_area_files($context->id, 'mod_forum', 'post', $post->id);
+    $fs->delete_area_files($context->id, 'mod_digestforum', 'attachment', $post->id);
+    $fs->delete_area_files($context->id, 'mod_digestforum', 'post', $post->id);
 
     // Delete cached RSS feeds.
     if (!empty($CFG->enablerssfeeds)) {
-        require_once($CFG->dirroot.'/mod/forum/rsslib.php');
-        forum_rss_delete_file($forum);
+        require_once($CFG->dirroot.'/mod/digestforum/rsslib.php');
+        digestforum_rss_delete_file($digestforum);
     }
 
-    if ($DB->delete_records("forum_posts", array("id" => $post->id))) {
+    if ($DB->delete_records("digestforum_posts", array("id" => $post->id))) {
 
-        forum_tp_delete_read_records(-1, $post->id);
+        digestforum_tp_delete_read_records(-1, $post->id);
 
     // Just in case we are deleting the last post
-        forum_discussion_update_last_post($post->discussion);
+        digestforum_discussion_update_last_post($post->discussion);
 
         // Update completion state if we are tracking completion based on number of posts
         // But don't bother when deleting whole thing
@@ -4895,7 +4899,7 @@ function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompleti
         if (!$skipcompletion) {
             $completion = new completion_info($course);
             if ($completion->is_enabled($cm) == COMPLETION_TRACKING_AUTOMATIC &&
-               ($forum->completiondiscussions || $forum->completionreplies || $forum->completionposts)) {
+               ($digestforum->completiondiscussions || $digestforum->completionreplies || $digestforum->completionposts)) {
                 $completion->update_state($cm, COMPLETION_INCOMPLETE, $post->userid);
             }
         }
@@ -4905,16 +4909,16 @@ function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompleti
             'objectid' => $post->id,
             'other' => array(
                 'discussionid' => $post->discussion,
-                'forumid' => $forum->id,
-                'forumtype' => $forum->type,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
             )
         );
         $post->deleted = 1;
         if ($post->userid !== $USER->id) {
             $params['relateduserid'] = $post->userid;
         }
-        $event = \mod_forum\event\post_deleted::create($params);
-        $event->add_record_snapshot('forum_posts', $post);
+        $event = \mod_digestforum\event\post_deleted::create($params);
+        $event->add_record_snapshot('digestforum_posts', $post);
         $event->trigger();
 
         return true;
@@ -4929,10 +4933,10 @@ function forum_delete_post($post, $children, $course, $cm, $forum, $skipcompleti
  * @param string $name
  * @return bool
 */
-function forum_trigger_content_uploaded_event($post, $cm, $name) {
+function digestforum_trigger_content_uploaded_event($post, $cm, $name) {
     $context = context_module::instance($cm->id);
     $fs = get_file_storage();
-    $files = $fs->get_area_files($context->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
+    $files = $fs->get_area_files($context->id, 'mod_digestforum', 'attachment', $post->id, "timemodified", false);
     $params = array(
         'context' => $context,
         'objectid' => $post->id,
@@ -4943,7 +4947,7 @@ function forum_trigger_content_uploaded_event($post, $cm, $name) {
             'triggeredfrom' => $name,
         )
     );
-    $event = \mod_forum\event\assessable_uploaded::create($params);
+    $event = \mod_digestforum\event\assessable_uploaded::create($params);
     $event->trigger();
     return true;
 }
@@ -4954,19 +4958,19 @@ function forum_trigger_content_uploaded_event($post, $cm, $name) {
  * @param bool $children
  * @return int
  */
-function forum_count_replies($post, $children=true) {
+function digestforum_count_replies($post, $children=true) {
     global $DB;
     $count = 0;
 
     if ($children) {
-        if ($childposts = $DB->get_records('forum_posts', array('parent' => $post->id))) {
+        if ($childposts = $DB->get_records('digestforum_posts', array('parent' => $post->id))) {
            foreach ($childposts as $childpost) {
                $count ++;                   // For this child
-               $count += forum_count_replies($childpost, true);
+               $count += digestforum_count_replies($childpost, true);
            }
         }
     } else {
-        $count += $DB->count_records('forum_posts', array('parent' => $post->id));
+        $count += $DB->count_records('digestforum_posts', array('parent' => $post->id));
     }
 
     return $count;
@@ -4977,20 +4981,20 @@ function forum_count_replies($post, $children=true) {
  * Returns some text which describes what happened.
  *
  * @param object $fromform The submitted form
- * @param stdClass $forum The forum record
- * @param stdClass $discussion The forum discussion record
+ * @param stdClass $digestforum The digestforum record
+ * @param stdClass $discussion The digestforum discussion record
  * @return string
  */
-function forum_post_subscription($fromform, $forum, $discussion) {
+function digestforum_post_subscription($fromform, $digestforum, $discussion) {
     global $USER;
 
-    if (\mod_forum\subscriptions::is_forcesubscribed($forum)) {
+    if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
         return "";
-    } else if (\mod_forum\subscriptions::subscription_disabled($forum)) {
-        $subscribed = \mod_forum\subscriptions::is_subscribed($USER->id, $forum);
-        if ($subscribed && !has_capability('moodle/course:manageactivities', context_course::instance($forum->course), $USER->id)) {
-            // This user should not be subscribed to the forum.
-            \mod_forum\subscriptions::unsubscribe_user($USER->id, $forum);
+    } else if (\mod_digestforum\subscriptions::subscription_disabled($digestforum)) {
+        $subscribed = \mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforum);
+        if ($subscribed && !has_capability('moodle/course:manageactivities', context_course::instance($digestforum->course), $USER->id)) {
+            // This user should not be subscribed to the digestforum.
+            \mod_digestforum\subscriptions::unsubscribe_user($USER->id, $digestforum);
         }
         return "";
     }
@@ -4998,15 +5002,15 @@ function forum_post_subscription($fromform, $forum, $discussion) {
     $info = new stdClass();
     $info->name  = fullname($USER);
     $info->discussion = format_string($discussion->name);
-    $info->forum = format_string($forum->name);
+    $info->digestforum = format_string($digestforum->name);
 
     if (isset($fromform->discussionsubscribe) && $fromform->discussionsubscribe) {
-        if ($result = \mod_forum\subscriptions::subscribe_user_to_discussion($USER->id, $discussion)) {
-            return html_writer::tag('p', get_string('discussionnowsubscribed', 'forum', $info));
+        if ($result = \mod_digestforum\subscriptions::subscribe_user_to_discussion($USER->id, $discussion)) {
+            return html_writer::tag('p', get_string('discussionnowsubscribed', 'digestforum', $info));
         }
     } else {
-        if ($result = \mod_forum\subscriptions::unsubscribe_user_from_discussion($USER->id, $discussion)) {
-            return html_writer::tag('p', get_string('discussionnownotsubscribed', 'forum', $info));
+        if ($result = \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($USER->id, $discussion)) {
+            return html_writer::tag('p', get_string('discussionnownotsubscribed', 'digestforum', $info));
         }
     }
 
@@ -5014,10 +5018,10 @@ function forum_post_subscription($fromform, $forum, $discussion) {
 }
 
 /**
- * Generate and return the subscribe or unsubscribe link for a forum.
+ * Generate and return the subscribe or unsubscribe link for a digestforum.
  *
- * @param object $forum the forum. Fields used are $forum->id and $forum->forcesubscribe.
- * @param object $context the context object for this forum.
+ * @param object $digestforum the digestforum. Fields used are $digestforum->id and $digestforum->forcesubscribe.
+ * @param object $context the context object for this digestforum.
  * @param array $messages text used for the link in its various states
  *      (subscribed, unsubscribed, forcesubscribed or cantsubscribe).
  *      Any strings not passed in are taken from the $defaultmessages array
@@ -5028,22 +5032,22 @@ function forum_post_subscription($fromform, $forum, $discussion) {
  * @param array $unused2
  * @return string
  */
-function forum_get_subscribe_link($forum, $context, $messages = array(), $cantaccessagroup = false, $unused1 = true,
+function digestforum_get_subscribe_link($digestforum, $context, $messages = array(), $cantaccessagroup = false, $unused1 = true,
     $backtoindex = false, $unused2 = null) {
     global $CFG, $USER, $PAGE, $OUTPUT;
     $defaultmessages = array(
-        'subscribed' => get_string('unsubscribe', 'forum'),
-        'unsubscribed' => get_string('subscribe', 'forum'),
+        'subscribed' => get_string('unsubscribe', 'digestforum'),
+        'unsubscribed' => get_string('subscribe', 'digestforum'),
         'cantaccessgroup' => get_string('no'),
-        'forcesubscribed' => get_string('everyoneissubscribed', 'forum'),
-        'cantsubscribe' => get_string('disallowsubscribe','forum')
+        'forcesubscribed' => get_string('everyoneissubscribed', 'digestforum'),
+        'cantsubscribe' => get_string('disallowsubscribe','digestforum')
     );
     $messages = $messages + $defaultmessages;
 
-    if (\mod_forum\subscriptions::is_forcesubscribed($forum)) {
+    if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
         return $messages['forcesubscribed'];
-    } else if (\mod_forum\subscriptions::subscription_disabled($forum) &&
-            !has_capability('mod/forum:managesubscriptions', $context)) {
+    } else if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) &&
+            !has_capability('mod/digestforum:managesubscriptions', $context)) {
         return $messages['cantsubscribe'];
     } else if ($cantaccessagroup) {
         return $messages['cantaccessgroup'];
@@ -5052,13 +5056,13 @@ function forum_get_subscribe_link($forum, $context, $messages = array(), $cantac
             return '';
         }
 
-        $subscribed = \mod_forum\subscriptions::is_subscribed($USER->id, $forum);
+        $subscribed = \mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforum);
         if ($subscribed) {
             $linktext = $messages['subscribed'];
-            $linktitle = get_string('subscribestop', 'forum');
+            $linktitle = get_string('subscribestop', 'digestforum');
         } else {
             $linktext = $messages['unsubscribed'];
-            $linktitle = get_string('subscribestart', 'forum');
+            $linktitle = get_string('subscribestart', 'digestforum');
         }
 
         $options = array();
@@ -5069,9 +5073,9 @@ function forum_get_subscribe_link($forum, $context, $messages = array(), $cantac
             $backtoindexlink = '';
         }
 
-        $options['id'] = $forum->id;
+        $options['id'] = $digestforum->id;
         $options['sesskey'] = sesskey();
-        $url = new moodle_url('/mod/forum/subscribe.php', $options);
+        $url = new moodle_url('/mod/digestforum/subscribe.php', $options);
         return $OUTPUT->single_button($url, $linktext, 'get', array('title' => $linktitle));
     }
 }
@@ -5079,19 +5083,19 @@ function forum_get_subscribe_link($forum, $context, $messages = array(), $cantac
 /**
  * Returns true if user created new discussion already.
  *
- * @param int $forumid  The forum to check for postings
+ * @param int $digestforumid  The digestforum to check for postings
  * @param int $userid   The user to check for postings
  * @param int $groupid  The group to restrict the check to
  * @return bool
  */
-function forum_user_has_posted_discussion($forumid, $userid, $groupid = null) {
+function digestforum_user_has_posted_discussion($digestforumid, $userid, $groupid = null) {
     global $CFG, $DB;
 
     $sql = "SELECT 'x'
-              FROM {forum_discussions} d, {forum_posts} p
-             WHERE d.forum = ? AND p.discussion = d.id AND p.parent = 0 AND p.userid = ?";
+              FROM {digestforum_discussions} d, {digestforum_posts} p
+             WHERE d.digestforum = ? AND p.discussion = d.id AND p.parent = 0 AND p.userid = ?";
 
-    $params = [$forumid, $userid];
+    $params = [$digestforumid, $userid];
 
     if ($groupid) {
         $sql .= " AND d.groupid = ?";
@@ -5104,44 +5108,44 @@ function forum_user_has_posted_discussion($forumid, $userid, $groupid = null) {
 /**
  * @global object
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $userid
  * @return array
  */
-function forum_discussions_user_has_posted_in($forumid, $userid) {
+function digestforum_discussions_user_has_posted_in($digestforumid, $userid) {
     global $CFG, $DB;
 
     $haspostedsql = "SELECT d.id AS id,
                             d.*
-                       FROM {forum_posts} p,
-                            {forum_discussions} d
+                       FROM {digestforum_posts} p,
+                            {digestforum_discussions} d
                       WHERE p.discussion = d.id
-                        AND d.forum = ?
+                        AND d.digestforum = ?
                         AND p.userid = ?";
 
-    return $DB->get_records_sql($haspostedsql, array($forumid, $userid));
+    return $DB->get_records_sql($haspostedsql, array($digestforumid, $userid));
 }
 
 /**
  * @global object
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $did
  * @param int $userid
  * @return bool
  */
-function forum_user_has_posted($forumid, $did, $userid) {
+function digestforum_user_has_posted($digestforumid, $did, $userid) {
     global $DB;
 
     if (empty($did)) {
-        // posted in any forum discussion?
+        // posted in any digestforum discussion?
         $sql = "SELECT 'x'
-                  FROM {forum_posts} p
-                  JOIN {forum_discussions} d ON d.id = p.discussion
-                 WHERE p.userid = :userid AND d.forum = :forumid";
-        return $DB->record_exists_sql($sql, array('forumid'=>$forumid,'userid'=>$userid));
+                  FROM {digestforum_posts} p
+                  JOIN {digestforum_discussions} d ON d.id = p.discussion
+                 WHERE p.userid = :userid AND d.digestforum = :digestforumid";
+        return $DB->record_exists_sql($sql, array('digestforumid'=>$digestforumid,'userid'=>$userid));
     } else {
-        return $DB->record_exists('forum_posts', array('discussion'=>$did,'userid'=>$userid));
+        return $DB->record_exists('digestforum_posts', array('discussion'=>$did,'userid'=>$userid));
     }
 }
 
@@ -5152,10 +5156,10 @@ function forum_user_has_posted($forumid, $did, $userid) {
  * @param int $userid User id
  * @return int|bool post creation time stamp or return false
  */
-function forum_get_user_posted_time($did, $userid) {
+function digestforum_get_user_posted_time($did, $userid) {
     global $DB;
 
-    $posttime = $DB->get_field('forum_posts', 'MIN(created)', array('userid'=>$userid, 'discussion'=>$did));
+    $posttime = $DB->get_field('digestforum_posts', 'MIN(created)', array('userid'=>$userid, 'discussion'=>$did));
     if (empty($posttime)) {
         return false;
     }
@@ -5164,15 +5168,15 @@ function forum_get_user_posted_time($did, $userid) {
 
 /**
  * @global object
- * @param object $forum
+ * @param object $digestforum
  * @param object $currentgroup
  * @param int $unused
  * @param object $cm
  * @param object $context
  * @return bool
  */
-function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, $cm=NULL, $context=NULL) {
-// $forum is an object
+function digestforum_user_can_post_discussion($digestforum, $currentgroup=null, $unused=-1, $cm=NULL, $context=NULL) {
+// $digestforum is an object
     global $USER;
 
     // shortcut - guest and not-logged-in users can not post
@@ -5182,7 +5186,7 @@ function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, 
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -5197,24 +5201,24 @@ function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, 
 
     $groupmode = groups_get_activity_groupmode($cm);
 
-    if ($forum->type == 'news') {
-        $capname = 'mod/forum:addnews';
-    } else if ($forum->type == 'qanda') {
-        $capname = 'mod/forum:addquestion';
+    if ($digestforum->type == 'news') {
+        $capname = 'mod/digestforum:addnews';
+    } else if ($digestforum->type == 'qanda') {
+        $capname = 'mod/digestforum:addquestion';
     } else {
-        $capname = 'mod/forum:startdiscussion';
+        $capname = 'mod/digestforum:startdiscussion';
     }
 
     if (!has_capability($capname, $context)) {
         return false;
     }
 
-    if ($forum->type == 'single') {
+    if ($digestforum->type == 'single') {
         return false;
     }
 
-    if ($forum->type == 'eachuser') {
-        if (forum_user_has_posted_discussion($forum->id, $USER->id, $currentgroup)) {
+    if ($digestforum->type == 'eachuser') {
+        if (digestforum_user_has_posted_discussion($digestforum->id, $USER->id, $currentgroup)) {
             return false;
         }
     }
@@ -5233,8 +5237,8 @@ function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, 
 }
 
 /**
- * This function checks whether the user can reply to posts in a forum
- * discussion. Use forum_user_can_post_discussion() to check whether the user
+ * This function checks whether the user can reply to posts in a digestforum
+ * discussion. Use digestforum_user_can_post_discussion() to check whether the user
  * can start discussions.
  *
  * @global object
@@ -5242,7 +5246,7 @@ function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, 
  * @uses DEBUG_DEVELOPER
  * @uses CONTEXT_MODULE
  * @uses VISIBLEGROUPS
- * @param object $forum forum object
+ * @param object $digestforum digestforum object
  * @param object $discussion
  * @param object $user
  * @param object $cm
@@ -5250,7 +5254,7 @@ function forum_user_can_post_discussion($forum, $currentgroup=null, $unused=-1, 
  * @param object $context
  * @return bool
  */
-function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=NULL, $context=NULL) {
+function digestforum_user_can_post($digestforum, $discussion, $user=NULL, $cm=NULL, $course=NULL, $context=NULL) {
     global $USER, $DB;
     if (empty($user)) {
         $user = $USER;
@@ -5268,14 +5272,14 @@ function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
             print_error('invalidcoursemodule');
         }
     }
 
     if (!$course) {
         debugging('missing course', DEBUG_DEVELOPER);
-        if (!$course = $DB->get_record('course', array('id' => $forum->course))) {
+        if (!$course = $DB->get_record('course', array('id' => $digestforum->course))) {
             print_error('invalidcourseid');
         }
     }
@@ -5285,8 +5289,8 @@ function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=
     }
 
     // Check whether the discussion is locked.
-    if (forum_discussion_is_locked($forum, $discussion)) {
-        if (!has_capability('mod/forum:canoverridediscussionlock', $context)) {
+    if (digestforum_discussion_is_locked($digestforum, $discussion)) {
+        if (!has_capability('mod/digestforum:canoverridediscussionlock', $context)) {
             return false;
         }
     }
@@ -5296,10 +5300,10 @@ function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=
         return false;
     }
 
-    if ($forum->type == 'news') {
-        $capname = 'mod/forum:replynews';
+    if ($digestforum->type == 'news') {
+        $capname = 'mod/digestforum:replynews';
     } else {
-        $capname = 'mod/forum:replypost';
+        $capname = 'mod/digestforum:replypost';
     }
 
     if (!has_capability($capname, $context, $user->id)) {
@@ -5338,15 +5342,15 @@ function forum_user_can_post($forum, $discussion, $user=NULL, $cm=NULL, $course=
 * @param object $context
 * @return boolean returns true if they can view post, false otherwise
 */
-function forum_user_can_see_timed_discussion($discussion, $user, $context) {
+function digestforum_user_can_see_timed_discussion($discussion, $user, $context) {
     global $CFG;
 
     // Check that the user can view a discussion that is normally hidden due to access times.
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $time = time();
         if (($discussion->timestart != 0 && $discussion->timestart > $time)
             || ($discussion->timeend != 0 && $discussion->timeend < $time)) {
-            if (!has_capability('mod/forum:viewhiddentimedposts', $context, $user->id)) {
+            if (!has_capability('mod/digestforum:viewhiddentimedposts', $context, $user->id)) {
                 return false;
             }
         }
@@ -5363,7 +5367,7 @@ function forum_user_can_see_timed_discussion($discussion, $user, $context) {
 * @param object $context
 * @return boolean returns true if they can view post, false otherwise
 */
-function forum_user_can_see_group_discussion($discussion, $cm, $context) {
+function digestforum_user_can_see_group_discussion($discussion, $cm, $context) {
 
     // If it's a grouped discussion, make sure the user is a member.
     if ($discussion->groupid > 0) {
@@ -5380,13 +5384,13 @@ function forum_user_can_see_group_discussion($discussion, $cm, $context) {
  * @global object
  * @global object
  * @uses DEBUG_DEVELOPER
- * @param object $forum
+ * @param object $digestforum
  * @param object $discussion
  * @param object $context
  * @param object $user
  * @return bool
  */
-function forum_user_can_see_discussion($forum, $discussion, $context, $user=NULL) {
+function digestforum_user_can_see_discussion($digestforum, $discussion, $context, $user=NULL) {
     global $USER, $DB;
 
     if (empty($user) || empty($user->id)) {
@@ -5394,31 +5398,31 @@ function forum_user_can_see_discussion($forum, $discussion, $context, $user=NULL
     }
 
     // retrieve objects (yuk)
-    if (is_numeric($forum)) {
-        debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
+    if (is_numeric($digestforum)) {
+        debugging('missing full digestforum', DEBUG_DEVELOPER);
+        if (!$digestforum = $DB->get_record('digestforum',array('id'=>$digestforum))) {
             return false;
         }
     }
     if (is_numeric($discussion)) {
         debugging('missing full discussion', DEBUG_DEVELOPER);
-        if (!$discussion = $DB->get_record('forum_discussions',array('id'=>$discussion))) {
+        if (!$discussion = $DB->get_record('digestforum_discussions',array('id'=>$discussion))) {
             return false;
         }
     }
-    if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+    if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
         print_error('invalidcoursemodule');
     }
 
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
         return false;
     }
 
-    if (!forum_user_can_see_timed_discussion($discussion, $user, $context)) {
+    if (!digestforum_user_can_see_timed_discussion($discussion, $user, $context)) {
         return false;
     }
 
-    if (!forum_user_can_see_group_discussion($discussion, $cm, $context)) {
+    if (!digestforum_user_can_see_group_discussion($discussion, $cm, $context)) {
         return false;
     }
 
@@ -5428,34 +5432,34 @@ function forum_user_can_see_discussion($forum, $discussion, $context, $user=NULL
 /**
  * Check whether a user can see the specified post.
  *
- * @param   \stdClass $forum The forum to chcek
+ * @param   \stdClass $digestforum The digestforum to chcek
  * @param   \stdClass $discussion The discussion the post is in
  * @param   \stdClass $post The post in question
  * @param   \stdClass $user The user to test - if not specified, the current user is checked.
- * @param   \stdClass $cm The Course Module that the forum is in (required).
+ * @param   \stdClass $cm The Course Module that the digestforum is in (required).
  * @param   bool      $checkdeleted Whether to check the deleted flag on the post.
  * @return  bool
  */
-function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm = null, $checkdeleted = true) {
+function digestforum_user_can_see_post($digestforum, $discussion, $post, $user = null, $cm = null, $checkdeleted = true) {
     global $CFG, $USER, $DB;
 
     // retrieve objects (yuk)
-    if (is_numeric($forum)) {
-        debugging('missing full forum', DEBUG_DEVELOPER);
-        if (!$forum = $DB->get_record('forum',array('id'=>$forum))) {
+    if (is_numeric($digestforum)) {
+        debugging('missing full digestforum', DEBUG_DEVELOPER);
+        if (!$digestforum = $DB->get_record('digestforum',array('id'=>$digestforum))) {
             return false;
         }
     }
 
     if (is_numeric($discussion)) {
         debugging('missing full discussion', DEBUG_DEVELOPER);
-        if (!$discussion = $DB->get_record('forum_discussions',array('id'=>$discussion))) {
+        if (!$discussion = $DB->get_record('digestforum_discussions',array('id'=>$discussion))) {
             return false;
         }
     }
     if (is_numeric($post)) {
         debugging('missing full post', DEBUG_DEVELOPER);
-        if (!$post = $DB->get_record('forum_posts',array('id'=>$post))) {
+        if (!$post = $DB->get_record('digestforum_posts',array('id'=>$post))) {
             return false;
         }
     }
@@ -5470,7 +5474,7 @@ function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm =
 
     if (!$cm) {
         debugging('missing cm', DEBUG_DEVELOPER);
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
             print_error('invalidcoursemodule');
         }
     }
@@ -5482,8 +5486,8 @@ function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm =
         $user = $USER;
     }
 
-    $canviewdiscussion = (isset($cm->cache) && !empty($cm->cache->caps['mod/forum:viewdiscussion']))
-        || has_capability('mod/forum:viewdiscussion', $modcontext, $user->id);
+    $canviewdiscussion = (isset($cm->cache) && !empty($cm->cache->caps['mod/digestforum:viewdiscussion']))
+        || has_capability('mod/digestforum:viewdiscussion', $modcontext, $user->id);
     if (!$canviewdiscussion && !has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), context_user::instance($post->userid))) {
         return false;
     }
@@ -5498,24 +5502,24 @@ function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm =
         }
     }
 
-    if (!forum_user_can_see_timed_discussion($discussion, $user, $modcontext)) {
+    if (!digestforum_user_can_see_timed_discussion($discussion, $user, $modcontext)) {
         return false;
     }
 
-    if (!forum_user_can_see_group_discussion($discussion, $cm, $modcontext)) {
+    if (!digestforum_user_can_see_group_discussion($discussion, $cm, $modcontext)) {
         return false;
     }
 
-    if ($forum->type == 'qanda') {
-        if (has_capability('mod/forum:viewqandawithoutposting', $modcontext, $user->id) || $post->userid == $user->id
+    if ($digestforum->type == 'qanda') {
+        if (has_capability('mod/digestforum:viewqandawithoutposting', $modcontext, $user->id) || $post->userid == $user->id
                 || (isset($discussion->firstpost) && $discussion->firstpost == $post->id)) {
             return true;
         }
-        $firstpost = forum_get_firstpost_from_discussion($discussion->id);
+        $firstpost = digestforum_get_firstpost_from_discussion($discussion->id);
         if ($firstpost->userid == $user->id) {
             return true;
         }
-        $userfirstpost = forum_get_user_posted_time($discussion->id, $user->id);
+        $userfirstpost = digestforum_get_user_posted_time($discussion->id, $user->id);
         return (($userfirstpost !== false && (time() - $userfirstpost >= $CFG->maxeditingtime)));
     }
     return true;
@@ -5523,37 +5527,37 @@ function forum_user_can_see_post($forum, $discussion, $post, $user = null, $cm =
 
 
 /**
- * Prints the discussion view screen for a forum.
+ * Prints the discussion view screen for a digestforum.
  *
  * @global object
  * @global object
  * @param object $course The current course object.
- * @param object $forum Forum to be printed.
+ * @param object $digestforum Forum to be printed.
  * @param int $maxdiscussions .
  * @param string $displayformat The display format to use (optional).
  * @param string $sort Sort arguments for database query (optional).
- * @param int $groupmode Group mode of the forum (optional).
+ * @param int $groupmode Group mode of the digestforum (optional).
  * @param void $unused (originally current group)
  * @param int $page Page mode, page to display (optional).
  * @param int $perpage The maximum number of discussions per page(optional)
  * @param boolean $subscriptionstatus Whether the user is currently subscribed to the discussion in some fashion.
  *
  */
-function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $displayformat = 'plain', $sort = '',
+function digestforum_print_latest_discussions($course, $digestforum, $maxdiscussions = -1, $displayformat = 'plain', $sort = '',
                                         $currentgroup = -1, $groupmode = -1, $page = -1, $perpage = 100, $cm = null) {
     global $CFG, $USER, $OUTPUT;
 
     require_once($CFG->dirroot . '/course/lib.php');
 
     if (!$cm) {
-        if (!$cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course)) {
+        if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course)) {
             print_error('invalidcoursemodule');
         }
     }
     $context = context_module::instance($cm->id);
 
     if (empty($sort)) {
-        $sort = forum_get_default_sort_order();
+        $sort = digestforum_get_default_sort_order();
     }
 
     $olddiscussionlink = false;
@@ -5597,8 +5601,8 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
 // button for it. We do not show the button if we are showing site news
 // and the current user is a guest.
 
-    $canstart = forum_user_can_post_discussion($forum, $currentgroup, $groupmode, $cm, $context);
-    if (!$canstart and $forum->type !== 'news') {
+    $canstart = digestforum_user_can_post_discussion($digestforum, $currentgroup, $groupmode, $cm, $context);
+    if (!$canstart and $digestforum->type !== 'news') {
         if (isguestuser() or !isloggedin()) {
             $canstart = true;
         }
@@ -5611,38 +5615,38 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
     }
 
     if ($canstart) {
-        switch ($forum->type) {
+        switch ($digestforum->type) {
             case 'news':
             case 'blog':
-                $buttonadd = get_string('addanewtopic', 'forum');
+                $buttonadd = get_string('addanewtopic', 'digestforum');
                 break;
             case 'qanda':
-                $buttonadd = get_string('addanewquestion', 'forum');
+                $buttonadd = get_string('addanewquestion', 'digestforum');
                 break;
             default:
-                $buttonadd = get_string('addanewdiscussion', 'forum');
+                $buttonadd = get_string('addanewdiscussion', 'digestforum');
                 break;
         }
-        $button = new single_button(new moodle_url('/mod/forum/post.php', ['forum' => $forum->id]), $buttonadd, 'get');
-        $button->class = 'singlebutton forumaddnew';
+        $button = new single_button(new moodle_url('/mod/digestforum/post.php', ['digestforum' => $digestforum->id]), $buttonadd, 'get');
+        $button->class = 'singlebutton digestforumaddnew';
         $button->formid = 'newdiscussionform';
         echo $OUTPUT->render($button);
 
-    } else if (isguestuser() or !isloggedin() or $forum->type == 'news' or
-        $forum->type == 'qanda' and !has_capability('mod/forum:addquestion', $context) or
-        $forum->type != 'qanda' and !has_capability('mod/forum:startdiscussion', $context)) {
+    } else if (isguestuser() or !isloggedin() or $digestforum->type == 'news' or
+        $digestforum->type == 'qanda' and !has_capability('mod/digestforum:addquestion', $context) or
+        $digestforum->type != 'qanda' and !has_capability('mod/digestforum:startdiscussion', $context)) {
         // no button and no info
 
     } else if ($groupmode and !has_capability('moodle/site:accessallgroups', $context)) {
         // inform users why they can not post new discussion
         if (!$currentgroup) {
-            if (!has_capability('mod/forum:canposttomygroups', $context)) {
-                echo $OUTPUT->notification(get_string('cannotadddiscussiongroup', 'forum'));
+            if (!has_capability('mod/digestforum:canposttomygroups', $context)) {
+                echo $OUTPUT->notification(get_string('cannotadddiscussiongroup', 'digestforum'));
             } else {
-                echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'forum'));
+                echo $OUTPUT->notification(get_string('cannotadddiscussionall', 'digestforum'));
             }
         } else if (!groups_is_member($currentgroup)) {
-            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'forum'));
+            echo $OUTPUT->notification(get_string('cannotadddiscussion', 'digestforum'));
         }
     }
 
@@ -5650,14 +5654,14 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
 
     $getuserlastmodified = ($displayformat == 'header');
 
-    if (! $discussions = forum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage) ) {
-        echo '<div class="forumnodiscuss">';
-        if ($forum->type == 'news') {
-            echo '('.get_string('nonews', 'forum').')';
-        } else if ($forum->type == 'qanda') {
-            echo '('.get_string('noquestions','forum').')';
+    if (! $discussions = digestforum_get_discussions($cm, $sort, $fullpost, null, $maxdiscussions, $getuserlastmodified, $page, $perpage) ) {
+        echo '<div class="digestforumnodiscuss">';
+        if ($digestforum->type == 'news') {
+            echo '('.get_string('nonews', 'digestforum').')';
+        } else if ($digestforum->type == 'qanda') {
+            echo '('.get_string('noquestions','digestforum').')';
         } else {
-            echo '('.get_string('nodiscussions', 'forum').')';
+            echo '('.get_string('nodiscussions', 'digestforum').')';
         }
         echo "</div>\n";
         return;
@@ -5666,19 +5670,19 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
 // If we want paging
     if ($page != -1) {
         ///Get the number of discussions found
-        $numdiscussions = forum_get_discussions_count($cm);
+        $numdiscussions = digestforum_get_discussions_count($cm);
 
         ///Show the paging bar
-        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$digestforum->id");
         if ($numdiscussions > 1000) {
-            // saves some memory on sites with very large forums
-            $replies = forum_count_discussion_replies($forum->id, $sort, $maxdiscussions, $page, $perpage);
+            // saves some memory on sites with very large digestforums
+            $replies = digestforum_count_discussion_replies($digestforum->id, $sort, $maxdiscussions, $page, $perpage);
         } else {
-            $replies = forum_count_discussion_replies($forum->id);
+            $replies = digestforum_count_discussion_replies($digestforum->id);
         }
 
     } else {
-        $replies = forum_count_discussion_replies($forum->id);
+        $replies = digestforum_count_discussion_replies($digestforum->id);
 
         if ($maxdiscussions > 0 and $maxdiscussions <= count($discussions)) {
             $olddiscussionlink = true;
@@ -5686,51 +5690,51 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
     }
 
     $canviewparticipants = course_can_view_participants($context);
-    $canviewhiddentimedposts = has_capability('mod/forum:viewhiddentimedposts', $context);
+    $canviewhiddentimedposts = has_capability('mod/digestforum:viewhiddentimedposts', $context);
 
     $strdatestring = get_string('strftimerecentfull');
 
-    // Check if the forum is tracked.
-    if ($cantrack = forum_tp_can_track_forums($forum)) {
-        $forumtracked = forum_tp_is_tracked($forum);
+    // Check if the digestforum is tracked.
+    if ($cantrack = digestforum_tp_can_track_digestforums($digestforum)) {
+        $digestforumtracked = digestforum_tp_is_tracked($digestforum);
     } else {
-        $forumtracked = false;
+        $digestforumtracked = false;
     }
 
-    if ($forumtracked) {
-        $unreads = forum_get_discussions_unread($cm);
+    if ($digestforumtracked) {
+        $unreads = digestforum_get_discussions_unread($cm);
     } else {
         $unreads = array();
     }
 
     if ($displayformat == 'header') {
-        echo '<table cellspacing="0" class="forumheaderlist">';
+        echo '<table cellspacing="0" class="digestforumheaderlist">';
         echo '<thead class="text-left">';
         echo '<tr>';
-        echo '<th class="header topic" scope="col">'.get_string('discussion', 'forum').'</th>';
-        echo '<th class="header author" scope="col">'.get_string('startedby', 'forum').'</th>';
+        echo '<th class="header topic" scope="col">'.get_string('discussion', 'digestforum').'</th>';
+        echo '<th class="header author" scope="col">'.get_string('startedby', 'digestforum').'</th>';
         if ($groupmode > 0) {
             echo '<th class="header group" scope="col">'.get_string('group').'</th>';
         }
-        if (has_capability('mod/forum:viewdiscussion', $context)) {
-            echo '<th class="header replies" scope="col">'.get_string('replies', 'forum').'</th>';
-            // If the forum can be tracked, display the unread column.
+        if (has_capability('mod/digestforum:viewdiscussion', $context)) {
+            echo '<th class="header replies" scope="col">'.get_string('replies', 'digestforum').'</th>';
+            // If the digestforum can be tracked, display the unread column.
             if ($cantrack) {
-                echo '<th class="header replies" scope="col">'.get_string('unread', 'forum');
-                if ($forumtracked) {
-                    echo '<a title="'.get_string('markallread', 'forum').
-                         '" href="'.$CFG->wwwroot.'/mod/forum/markposts.php?f='.
-                         $forum->id.'&amp;mark=read&amp;returnpage=view.php&amp;sesskey=' . sesskey() . '">'.
-                         $OUTPUT->pix_icon('t/markasread', get_string('markallread', 'forum')) . '</a>';
+                echo '<th class="header replies" scope="col">'.get_string('unread', 'digestforum');
+                if ($digestforumtracked) {
+                    echo '<a title="'.get_string('markallread', 'digestforum').
+                         '" href="'.$CFG->wwwroot.'/mod/digestforum/markposts.php?f='.
+                         $digestforum->id.'&amp;mark=read&amp;returnpage=view.php&amp;sesskey=' . sesskey() . '">'.
+                         $OUTPUT->pix_icon('t/markasread', get_string('markallread', 'digestforum')) . '</a>';
                 }
                 echo '</th>';
             }
         }
-        echo '<th class="header lastpost" scope="col">'.get_string('lastpost', 'forum').'</th>';
-        if ((!is_guest($context, $USER) && isloggedin()) && has_capability('mod/forum:viewdiscussion', $context)) {
-            if (\mod_forum\subscriptions::is_subscribable($forum)) {
+        echo '<th class="header lastpost" scope="col">'.get_string('lastpost', 'digestforum').'</th>';
+        if ((!is_guest($context, $USER) && isloggedin()) && has_capability('mod/digestforum:viewdiscussion', $context)) {
+            if (\mod_digestforum\subscriptions::is_subscribable($digestforum)) {
                 echo '<th class="header discussionsubscription" scope="col">';
-                echo forum_get_discussion_subscription_icon_preloaders();
+                echo digestforum_get_discussion_subscription_icon_preloaders();
                 echo '</th>';
             }
         }
@@ -5740,8 +5744,8 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
     }
 
     foreach ($discussions as $discussion) {
-        if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $context) &&
-            !forum_user_has_posted($forum->id, $discussion->discussion, $USER->id)) {
+        if ($digestforum->type == 'qanda' && !has_capability('mod/digestforum:viewqandawithoutposting', $context) &&
+            !digestforum_user_has_posted($digestforum->id, $discussion->discussion, $USER->id)) {
             $canviewparticipants = false;
         }
 
@@ -5754,7 +5758,7 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
 
         // SPECIAL CASE: The front page can display a news item post to non-logged in users.
         // All posts are read in this case.
-        if (!$forumtracked) {
+        if (!$digestforumtracked) {
             $discussion->unread = '-';
         } else if (empty($USER)) {
             $discussion->unread = 0;
@@ -5785,7 +5789,7 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
                 } else {
                     $group = -1;
                 }
-                forum_print_discussion_header($discussion, $forum, $group, $strdatestring, $cantrack, $forumtracked,
+                digestforum_print_discussion_header($discussion, $digestforum, $group, $strdatestring, $cantrack, $digestforumtracked,
                     $canviewparticipants, $context, $canviewhiddentimedposts);
             break;
             default:
@@ -5795,15 +5799,15 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
                     $link = true;
                 } else {
                     $modcontext = context_module::instance($cm->id);
-                    $link = forum_user_can_see_discussion($forum, $discussion, $modcontext, $USER);
+                    $link = digestforum_user_can_see_discussion($digestforum, $discussion, $modcontext, $USER);
                 }
 
-                $discussion->forum = $forum->id;
+                $discussion->digestforum = $digestforum->id;
 
-                forum_print_post_start($discussion);
-                forum_print_post($discussion, $discussion, $forum, $cm, $course, $ownpost, 0, $link, false,
-                        '', null, true, $forumtracked);
-                forum_print_post_end($discussion);
+                digestforum_print_post_start($discussion);
+                digestforum_print_post($discussion, $discussion, $digestforum, $cm, $course, $ownpost, 0, $link, false,
+                        '', null, true, $digestforumtracked);
+                digestforum_print_post_end($discussion);
             break;
         }
     }
@@ -5814,40 +5818,40 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
     }
 
     if ($olddiscussionlink) {
-        if ($forum->type == 'news') {
-            $strolder = get_string('oldertopics', 'forum');
+        if ($digestforum->type == 'news') {
+            $strolder = get_string('oldertopics', 'digestforum');
         } else {
-            $strolder = get_string('olderdiscussions', 'forum');
+            $strolder = get_string('olderdiscussions', 'digestforum');
         }
-        echo '<div class="forumolddiscuss">';
-        echo '<a href="'.$CFG->wwwroot.'/mod/forum/view.php?f='.$forum->id.'&amp;showall=1">';
+        echo '<div class="digestforumolddiscuss">';
+        echo '<a href="'.$CFG->wwwroot.'/mod/digestforum/view.php?f='.$digestforum->id.'&amp;showall=1">';
         echo $strolder.'</a> ...</div>';
     }
 
     if ($page != -1) { ///Show the paging bar
-        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$forum->id");
+        echo $OUTPUT->paging_bar($numdiscussions, $page, $perpage, "view.php?f=$digestforum->id");
     }
 }
 
 
 /**
- * Prints a forum discussion
+ * Prints a digestforum discussion
  *
  * @uses CONTEXT_MODULE
- * @uses FORUM_MODE_FLATNEWEST
- * @uses FORUM_MODE_FLATOLDEST
- * @uses FORUM_MODE_THREADED
- * @uses FORUM_MODE_NESTED
+ * @uses DFORUM_MODE_FLATNEWEST
+ * @uses DFORUM_MODE_FLATOLDEST
+ * @uses DFORUM_MODE_THREADED
+ * @uses DFORUM_MODE_NESTED
  * @param stdClass $course
  * @param stdClass $cm
- * @param stdClass $forum
+ * @param stdClass $digestforum
  * @param stdClass $discussion
  * @param stdClass $post
  * @param int $mode
  * @param mixed $canreply
  * @param bool $canrate
  */
-function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
+function digestforum_print_discussion($course, $cm, $digestforum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
     global $USER, $CFG;
 
     require_once($CFG->dirroot.'/rating/lib.php');
@@ -5856,12 +5860,12 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
 
     $modcontext = context_module::instance($cm->id);
     if ($canreply === NULL) {
-        $reply = forum_user_can_post($forum, $discussion, $USER, $cm, $course, $modcontext);
+        $reply = digestforum_user_can_post($digestforum, $discussion, $USER, $cm, $course, $modcontext);
     } else {
         $reply = $canreply;
     }
 
-    // $cm holds general cache for forum functions
+    // $cm holds general cache for digestforum functions
     $cm->cache = new stdClass;
     $cm->cache->groups      = groups_get_all_groups($course->id, 0, $cm->groupingid);
     $cm->cache->usersgroups = array();
@@ -5869,14 +5873,14 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     $posters = array();
 
     // preload all posts - TODO: improve...
-    if ($mode == FORUM_MODE_FLATNEWEST) {
+    if ($mode == DFORUM_MODE_FLATNEWEST) {
         $sort = "p.created DESC";
     } else {
         $sort = "p.created ASC";
     }
 
-    $forumtracked = forum_tp_is_tracked($forum);
-    $posts = forum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
+    $digestforumtracked = digestforum_tp_is_tracked($digestforum);
+    $posts = digestforum_get_all_discussion_posts($discussion->id, $sort, $digestforumtracked);
     $post = $posts[$post->id];
 
     foreach ($posts as $pid=>$p) {
@@ -5895,74 +5899,74 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     }
 
     //load ratings
-    if ($forum->assessed != RATING_AGGREGATE_NONE) {
+    if ($digestforum->assessed != RATING_AGGREGATE_NONE) {
         $ratingoptions = new stdClass;
         $ratingoptions->context = $modcontext;
-        $ratingoptions->component = 'mod_forum';
+        $ratingoptions->component = 'mod_digestforum';
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->items = $posts;
-        $ratingoptions->aggregate = $forum->assessed;//the aggregation method
-        $ratingoptions->scaleid = $forum->scale;
+        $ratingoptions->aggregate = $digestforum->assessed;//the aggregation method
+        $ratingoptions->scaleid = $digestforum->scale;
         $ratingoptions->userid = $USER->id;
-        if ($forum->type == 'single' or !$discussion->id) {
-            $ratingoptions->returnurl = "$CFG->wwwroot/mod/forum/view.php?id=$cm->id";
+        if ($digestforum->type == 'single' or !$discussion->id) {
+            $ratingoptions->returnurl = "$CFG->wwwroot/mod/digestforum/view.php?id=$cm->id";
         } else {
-            $ratingoptions->returnurl = "$CFG->wwwroot/mod/forum/discuss.php?d=$discussion->id";
+            $ratingoptions->returnurl = "$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id";
         }
-        $ratingoptions->assesstimestart = $forum->assesstimestart;
-        $ratingoptions->assesstimefinish = $forum->assesstimefinish;
+        $ratingoptions->assesstimestart = $digestforum->assesstimestart;
+        $ratingoptions->assesstimefinish = $digestforum->assesstimefinish;
 
         $rm = new rating_manager();
         $posts = $rm->get_ratings($ratingoptions);
     }
 
 
-    $post->forum = $forum->id;   // Add the forum id to the post object, later used by forum_print_post
-    $post->forumtype = $forum->type;
+    $post->digestforum = $digestforum->id;   // Add the digestforum id to the post object, later used by digestforum_print_post
+    $post->digestforumtype = $digestforum->type;
 
     $post->subject = format_string($post->subject);
 
     $postread = !empty($post->postread);
 
-    forum_print_post_start($post);
-    forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, false,
-                         '', '', $postread, true, $forumtracked);
+    digestforum_print_post_start($post);
+    digestforum_print_post($post, $discussion, $digestforum, $cm, $course, $ownpost, $reply, false,
+                         '', '', $postread, true, $digestforumtracked);
 
     switch ($mode) {
-        case FORUM_MODE_FLATOLDEST :
-        case FORUM_MODE_FLATNEWEST :
+        case DFORUM_MODE_FLATOLDEST :
+        case DFORUM_MODE_FLATNEWEST :
         default:
-            forum_print_posts_flat($course, $cm, $forum, $discussion, $post, $mode, $reply, $forumtracked, $posts);
+            digestforum_print_posts_flat($course, $cm, $digestforum, $discussion, $post, $mode, $reply, $digestforumtracked, $posts);
             break;
 
-        case FORUM_MODE_THREADED :
-            forum_print_posts_threaded($course, $cm, $forum, $discussion, $post, 0, $reply, $forumtracked, $posts);
+        case DFORUM_MODE_THREADED :
+            digestforum_print_posts_threaded($course, $cm, $digestforum, $discussion, $post, 0, $reply, $digestforumtracked, $posts);
             break;
 
-        case FORUM_MODE_NESTED :
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
+        case DFORUM_MODE_NESTED :
+            digestforum_print_posts_nested($course, $cm, $digestforum, $discussion, $post, $reply, $digestforumtracked, $posts);
             break;
     }
-    forum_print_post_end($post);
+    digestforum_print_post_end($post);
 }
 
 
 /**
  * @global object
  * @global object
- * @uses FORUM_MODE_FLATNEWEST
+ * @uses DFORUM_MODE_FLATNEWEST
  * @param object $course
  * @param object $cm
- * @param object $forum
+ * @param object $digestforum
  * @param object $discussion
  * @param object $post
  * @param object $mode
  * @param bool $reply
- * @param bool $forumtracked
+ * @param bool $digestforumtracked
  * @param array $posts
  * @return void
  */
-function forum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $mode, $reply, $forumtracked, $posts) {
+function digestforum_print_posts_flat($course, &$cm, $digestforum, $discussion, $post, $mode, $reply, $digestforumtracked, $posts) {
     global $USER, $CFG;
 
     $link  = false;
@@ -5976,10 +5980,10 @@ function forum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $mode
 
         $postread = !empty($post->postread);
 
-        forum_print_post_start($post);
-        forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                             '', '', $postread, true, $forumtracked);
-        forum_print_post_end($post);
+        digestforum_print_post_start($post);
+        digestforum_print_post($post, $discussion, $digestforum, $cm, $course, $ownpost, $reply, $link,
+                             '', '', $postread, true, $digestforumtracked);
+        digestforum_print_post_end($post);
     }
 }
 
@@ -5991,7 +5995,7 @@ function forum_print_posts_flat($course, &$cm, $forum, $discussion, $post, $mode
  * @uses CONTEXT_MODULE
  * @return void
  */
-function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent, $depth, $reply, $forumtracked, $posts) {
+function digestforum_print_posts_threaded($course, &$cm, $digestforum, $discussion, $parent, $depth, $reply, $digestforumtracked, $posts) {
     global $USER, $CFG;
 
     $link  = false;
@@ -6011,15 +6015,15 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
 
                 $postread = !empty($post->postread);
 
-                forum_print_post_start($post);
-                forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                                     '', '', $postread, true, $forumtracked);
-                forum_print_post_end($post);
+                digestforum_print_post_start($post);
+                digestforum_print_post($post, $discussion, $digestforum, $cm, $course, $ownpost, $reply, $link,
+                                     '', '', $postread, true, $digestforumtracked);
+                digestforum_print_post_end($post);
             } else {
-                if (!forum_user_can_see_post($forum, $discussion, $post, null, $cm, true)) {
-                    if (forum_user_can_see_post($forum, $discussion, $post, null, $cm, false)) {
+                if (!digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm, true)) {
+                    if (digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm, false)) {
                         // This post has been deleted but still exists and may have children.
-                        $subject = get_string('privacy:request:delete:post:subject', 'mod_forum');
+                        $subject = get_string('privacy:request:delete:post:subject', 'mod_digestforum');
                         $byline = '';
                     } else {
                         // The user can't see this post at all.
@@ -6030,23 +6034,23 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
                     $by = new stdClass();
                     $by->name = fullname($post, $canviewfullnames);
                     $by->date = userdate_htmltime($post->modified);
-                    $byline = ' ' . get_string("bynameondate", "forum", $by);
+                    $byline = ' ' . get_string("bynameondate", "digestforum", $by);
                     $subject = format_string($post->subject, true);
                 }
 
-                if ($forumtracked) {
+                if ($digestforumtracked) {
                     if (!empty($post->postread)) {
-                        $style = '<span class="forumthread read">';
+                        $style = '<span class="digestforumthread read">';
                     } else {
-                        $style = '<span class="forumthread unread">';
+                        $style = '<span class="digestforumthread unread">';
                     }
                 } else {
-                    $style = '<span class="forumthread">';
+                    $style = '<span class="digestforumthread">';
                 }
 
                 echo $style;
                 echo "<a name='{$post->id}'></a>";
-                echo html_writer::link(new moodle_url('/mod/forum/discuss.php', [
+                echo html_writer::link(new moodle_url('/mod/digestforum/discuss.php', [
                         'd' => $post->discussion,
                         'parent' => $post->id,
                     ]), $subject);
@@ -6054,7 +6058,7 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
                 echo "</span>";
             }
 
-            forum_print_posts_threaded($course, $cm, $forum, $discussion, $post, $depth-1, $reply, $forumtracked, $posts);
+            digestforum_print_posts_threaded($course, $cm, $digestforum, $discussion, $post, $depth-1, $reply, $digestforumtracked, $posts);
             echo "</div>\n";
         }
     }
@@ -6066,7 +6070,7 @@ function forum_print_posts_threaded($course, &$cm, $forum, $discussion, $parent,
  * @global object
  * @return void
  */
-function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $reply, $forumtracked, $posts) {
+function digestforum_print_posts_nested($course, &$cm, $digestforum, $discussion, $parent, $reply, $digestforumtracked, $posts) {
     global $USER, $CFG;
 
     $link  = false;
@@ -6086,18 +6090,18 @@ function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $
             $post->subject = format_string($post->subject);
             $postread = !empty($post->postread);
 
-            forum_print_post_start($post);
-            forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, $link,
-                                 '', '', $postread, true, $forumtracked);
-            forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
-            forum_print_post_end($post);
+            digestforum_print_post_start($post);
+            digestforum_print_post($post, $discussion, $digestforum, $cm, $course, $ownpost, $reply, $link,
+                                 '', '', $postread, true, $digestforumtracked);
+            digestforum_print_posts_nested($course, $cm, $digestforum, $discussion, $post, $reply, $digestforumtracked, $posts);
+            digestforum_print_post_end($post);
             echo "</div>\n";
         }
     }
 }
 
 /**
- * Returns all forum posts since a given time in specified forum.
+ * Returns all digestforum posts since a given time in specified digestforum.
  *
  * @todo Document this functions args
  * @global object
@@ -6105,7 +6109,7 @@ function forum_print_posts_nested($course, &$cm, $forum, $discussion, $parent, $
  * @global object
  * @global object
  */
-function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0)  {
+function digestforum_get_recent_mod_activity(&$activities, &$index, $timestart, $courseid, $cmid, $userid=0, $groupid=0)  {
     global $CFG, $COURSE, $USER, $DB;
 
     if ($COURSE->id == $courseid) {
@@ -6134,12 +6138,12 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
     }
 
     $allnames = get_all_user_name_fields(true, 'u');
-    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS forumtype, d.forum, d.groupid,
+    if (!$posts = $DB->get_records_sql("SELECT p.*, f.type AS digestforumtype, d.digestforum, d.groupid,
                                               d.timestart, d.timeend, d.userid AS duserid,
                                               $allnames, u.email, u.picture, u.imagealt, u.email
-                                         FROM {forum_posts} p
-                                              JOIN {forum_discussions} d ON d.id = p.discussion
-                                              JOIN {forum} f             ON f.id = d.forum
+                                         FROM {digestforum_posts} p
+                                              JOIN {digestforum_discussions} d ON d.id = p.discussion
+                                              JOIN {digestforum} f             ON f.id = d.digestforum
                                               JOIN {user} u              ON u.id = p.userid
                                         WHERE p.created > ? AND f.id = ?
                                               $userselect $groupselect
@@ -6149,13 +6153,13 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
 
     $groupmode       = groups_get_activity_groupmode($cm, $course);
     $cm_context      = context_module::instance($cm->id);
-    $viewhiddentimed = has_capability('mod/forum:viewhiddentimedposts', $cm_context);
+    $viewhiddentimed = has_capability('mod/digestforum:viewhiddentimedposts', $cm_context);
     $accessallgroups = has_capability('moodle/site:accessallgroups', $cm_context);
 
     $printposts = array();
     foreach ($posts as $post) {
 
-        if (!empty($CFG->forum_enabletimedposts) and $USER->id != $post->duserid
+        if (!empty($CFG->digestforum_enabletimedposts) and $USER->id != $post->duserid
           and (($post->timestart > 0 and $post->timestart > time()) or ($post->timeend > 0 and $post->timeend < time()))) {
             if (!$viewhiddentimed) {
                 continue;
@@ -6190,7 +6194,7 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
     foreach ($printposts as $post) {
         $tmpactivity = new stdClass();
 
-        $tmpactivity->type         = 'forum';
+        $tmpactivity->type         = 'digestforum';
         $tmpactivity->cmid         = $cm->id;
         $tmpactivity->name         = $aname;
         $tmpactivity->sectionnum   = $cm->sectionnum;
@@ -6201,7 +6205,7 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
         $tmpactivity->content->discussion = $post->discussion;
         $tmpactivity->content->subject    = format_string($post->subject);
         $tmpactivity->content->parent     = $post->parent;
-        $tmpactivity->content->forumtype  = $post->forumtype;
+        $tmpactivity->content->digestforumtype  = $post->digestforumtype;
 
         $tmpactivity->user = new stdClass();
         $additionalfields = array('id' => 'userid', 'picture', 'imagealt', 'email');
@@ -6216,15 +6220,15 @@ function forum_get_recent_mod_activity(&$activities, &$index, $timestart, $cours
 }
 
 /**
- * Outputs the forum post indicated by $activity.
+ * Outputs the digestforum post indicated by $activity.
  *
- * @param object $activity      the activity object the forum resides in
- * @param int    $courseid      the id of the course the forum resides in
+ * @param object $activity      the activity object the digestforum resides in
+ * @param int    $courseid      the id of the course the digestforum resides in
  * @param bool   $detail        not used, but required for compatibilty with other modules
  * @param int    $modnames      not used, but required for compatibilty with other modules
  * @param bool   $viewfullnames not used, but required for compatibilty with other modules
  */
-function forum_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
+function digestforum_print_recent_mod_activity($activity, $courseid, $detail, $modnames, $viewfullnames) {
     global $OUTPUT;
 
     $content = $activity->content;
@@ -6238,14 +6242,14 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
         'border' => '0',
         'cellpadding' => '3',
         'cellspacing' => '0',
-        'class' => 'forum-recent'
+        'class' => 'digestforum-recent'
     ];
     $output = html_writer::start_tag('table', $tableoptions);
     $output .= html_writer::start_tag('tr');
 
     $post = (object) ['parent' => $content->parent];
-    $forum = (object) ['type' => $content->forumtype];
-    $authorhidden = forum_is_author_hidden($post, $forum);
+    $digestforum = (object) ['type' => $content->digestforumtype];
+    $authorhidden = digestforum_is_author_hidden($post, $digestforum);
 
     // Show user picture if author should not be hidden.
     if (!$authorhidden) {
@@ -6272,7 +6276,7 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
         $aname = s($activity->name);
         $output .= $OUTPUT->image_icon('icon', $aname, $activity->type);
     }
-    $discussionurl = new moodle_url('/mod/forum/discuss.php', ['d' => $content->discussion]);
+    $discussionurl = new moodle_url('/mod/digestforum/discuss.php', ['d' => $content->discussion]);
     $discussionurl->set_anchor('p' . $activity->content->id);
     $output .= html_writer::link($discussionurl, $content->subject);
     $output .= html_writer::end_div();
@@ -6287,7 +6291,7 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
         $by = new stdClass();
         $by->name = html_writer::link($userurl, $fullname);
         $by->date = $timestamp;
-        $authornamedate = get_string('bynameondate', 'forum', $by);
+        $authornamedate = get_string('bynameondate', 'digestforum', $by);
     }
     $output .= html_writer::div($authornamedate, 'user');
     $output .= html_writer::end_tag('td');
@@ -6306,12 +6310,12 @@ function forum_print_recent_mod_activity($activity, $courseid, $detail, $modname
  * @param int $discussionid
  * @return bool
  */
-function forum_change_discussionid($postid, $discussionid) {
+function digestforum_change_discussionid($postid, $discussionid) {
     global $DB;
-    $DB->set_field('forum_posts', 'discussion', $discussionid, array('id' => $postid));
-    if ($posts = $DB->get_records('forum_posts', array('parent' => $postid))) {
+    $DB->set_field('digestforum_posts', 'discussion', $discussionid, array('id' => $postid));
+    if ($posts = $DB->get_records('digestforum_posts', array('parent' => $postid))) {
         foreach ($posts as $post) {
-            forum_change_discussionid($post->id, $discussionid);
+            digestforum_change_discussionid($post->id, $discussionid);
         }
     }
     return true;
@@ -6323,25 +6327,25 @@ function forum_change_discussionid($postid, $discussionid) {
  * @global object
  * @global object
  * @param int $courseid
- * @param int $forumid
+ * @param int $digestforumid
  * @return string
  */
-function forum_update_subscriptions_button($courseid, $forumid) {
+function digestforum_update_subscriptions_button($courseid, $digestforumid) {
     global $CFG, $USER;
 
     if (!empty($USER->subscriptionsediting)) {
-        $string = get_string('managesubscriptionsoff', 'forum');
+        $string = get_string('managesubscriptionsoff', 'digestforum');
         $edit = "off";
     } else {
-        $string = get_string('managesubscriptionson', 'forum');
+        $string = get_string('managesubscriptionson', 'digestforum');
         $edit = "on";
     }
 
-    $subscribers = html_writer::start_tag('form', array('action' => $CFG->wwwroot . '/mod/forum/subscribers.php',
+    $subscribers = html_writer::start_tag('form', array('action' => $CFG->wwwroot . '/mod/digestforum/subscribers.php',
         'method' => 'get', 'class' => 'form-inline'));
     $subscribers .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => $string,
         'class' => 'btn btn-secondary'));
-    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $forumid));
+    $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $digestforumid));
     $subscribers .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'edit', 'value' => $edit));
     $subscribers .= html_writer::end_tag('form');
 
@@ -6359,24 +6363,24 @@ function forum_update_subscriptions_button($courseid, $forumid) {
  * @param array $postids array of post ids
  * @return boolean success
  */
-function forum_tp_mark_posts_read($user, $postids) {
+function digestforum_tp_mark_posts_read($user, $postids) {
     global $CFG, $DB;
 
-    if (!forum_tp_can_track_forums(false, $user)) {
+    if (!digestforum_tp_can_track_digestforums(false, $user)) {
         return true;
     }
 
     $status = true;
 
     $now = time();
-    $cutoffdate = $now - ($CFG->forum_oldpostdays * 24 * 3600);
+    $cutoffdate = $now - ($CFG->digestforum_oldpostdays * 24 * 3600);
 
     if (empty($postids)) {
         return true;
 
     } else if (count($postids) > 200) {
         while ($part = array_splice($postids, 0, 200)) {
-            $status = forum_tp_mark_posts_read($user, $part) && $status;
+            $status = digestforum_tp_mark_posts_read($user, $part) && $status;
         }
         return $status;
     }
@@ -6393,27 +6397,27 @@ function forum_tp_mark_posts_read($user, $postids) {
     );
     $params = array_merge($postidparams, $insertparams);
 
-    if ($CFG->forum_allowforcedreadtracking) {
-        $trackingsql = "AND (f.trackingtype = ".FORUM_TRACKING_FORCED."
-                        OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
+    if ($CFG->digestforum_allowforcedreadtracking) {
+        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_FORCED."
+                        OR (f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL))";
     } else {
-        $trackingsql = "AND ((f.trackingtype = ".FORUM_TRACKING_OPTIONAL."  OR f.trackingtype = ".FORUM_TRACKING_FORCED.")
+        $trackingsql = "AND ((f.trackingtype = ".DFORUM_TRACKING_OPTIONAL."  OR f.trackingtype = ".DFORUM_TRACKING_FORCED.")
                             AND tf.id IS NULL)";
     }
 
     // First insert any new entries.
-    $sql = "INSERT INTO {forum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+    $sql = "INSERT INTO {digestforum_read} (userid, postid, discussionid, digestforumid, firstread, lastread)
 
-            SELECT :userid1, p.id, p.discussion, d.forum, :firstread, :lastread
-                FROM {forum_posts} p
-                    JOIN {forum_discussions} d       ON d.id = p.discussion
-                    JOIN {forum} f                   ON f.id = d.forum
-                    LEFT JOIN {forum_track_prefs} tf ON (tf.userid = :userid2 AND tf.forumid = f.id)
-                    LEFT JOIN {forum_read} fr        ON (
+            SELECT :userid1, p.id, p.discussion, d.digestforum, :firstread, :lastread
+                FROM {digestforum_posts} p
+                    JOIN {digestforum_discussions} d       ON d.id = p.discussion
+                    JOIN {digestforum} f                   ON f.id = d.digestforum
+                    LEFT JOIN {digestforum_track_prefs} tf ON (tf.userid = :userid2 AND tf.digestforumid = f.id)
+                    LEFT JOIN {digestforum_read} fr        ON (
                             fr.userid = :userid3
                         AND fr.postid = p.id
                         AND fr.discussionid = d.id
-                        AND fr.forumid = f.id
+                        AND fr.digestforumid = f.id
                     )
                 WHERE p.id $usql
                     AND p.modified >= :cutoffdate
@@ -6428,7 +6432,7 @@ function forum_tp_mark_posts_read($user, $postids) {
         'lastread' => $now,
     );
     $params = array_merge($postidparams, $updateparams);
-    $status = $DB->set_field_select('forum_read', 'lastread', $now, '
+    $status = $DB->set_field_select('digestforum_read', 'lastread', $now, '
                 userid      =  :userid
             AND lastread    <> :lastread
             AND postid      ' . $usql,
@@ -6444,23 +6448,23 @@ function forum_tp_mark_posts_read($user, $postids) {
  * @param int $userid
  * @param int $postid
  */
-function forum_tp_add_read_record($userid, $postid) {
+function digestforum_tp_add_read_record($userid, $postid) {
     global $CFG, $DB;
 
     $now = time();
-    $cutoffdate = $now - ($CFG->forum_oldpostdays * 24 * 3600);
+    $cutoffdate = $now - ($CFG->digestforum_oldpostdays * 24 * 3600);
 
-    if (!$DB->record_exists('forum_read', array('userid' => $userid, 'postid' => $postid))) {
-        $sql = "INSERT INTO {forum_read} (userid, postid, discussionid, forumid, firstread, lastread)
+    if (!$DB->record_exists('digestforum_read', array('userid' => $userid, 'postid' => $postid))) {
+        $sql = "INSERT INTO {digestforum_read} (userid, postid, discussionid, digestforumid, firstread, lastread)
 
-                SELECT ?, p.id, p.discussion, d.forum, ?, ?
-                  FROM {forum_posts} p
-                       JOIN {forum_discussions} d ON d.id = p.discussion
+                SELECT ?, p.id, p.discussion, d.digestforum, ?, ?
+                  FROM {digestforum_posts} p
+                       JOIN {digestforum_discussions} d ON d.id = p.discussion
                  WHERE p.id = ? AND p.modified >= ?";
         return $DB->execute($sql, array($userid, $now, $now, $postid, $cutoffdate));
 
     } else {
-        $sql = "UPDATE {forum_read}
+        $sql = "UPDATE {digestforum_read}
                    SET lastread = ?
                  WHERE userid = ? AND postid = ?";
         return $DB->execute($sql, array($now, $userid, $userid));
@@ -6475,31 +6479,31 @@ function forum_tp_add_read_record($userid, $postid) {
  * @param   mixed   $unused
  * @return bool
  */
-function forum_tp_mark_post_read($userid, $post, $unused = null) {
-    if (!forum_tp_is_post_old($post)) {
-        return forum_tp_add_read_record($userid, $post->id);
+function digestforum_tp_mark_post_read($userid, $post, $unused = null) {
+    if (!digestforum_tp_is_post_old($post)) {
+        return digestforum_tp_add_read_record($userid, $post->id);
     } else {
         return true;
     }
 }
 
 /**
- * Marks a whole forum as read, for a given user
+ * Marks a whole digestforum as read, for a given user
  *
  * @global object
  * @global object
  * @param object $user
- * @param int $forumid
+ * @param int $digestforumid
  * @param int|bool $groupid
  * @return bool
  */
-function forum_tp_mark_forum_read($user, $forumid, $groupid=false) {
+function digestforum_tp_mark_digestforum_read($user, $digestforumid, $groupid=false) {
     global $CFG, $DB;
 
-    $cutoffdate = time() - ($CFG->forum_oldpostdays*24*60*60);
+    $cutoffdate = time() - ($CFG->digestforum_oldpostdays*24*60*60);
 
     $groupsel = "";
-    $params = array($user->id, $forumid, $cutoffdate);
+    $params = array($user->id, $digestforumid, $cutoffdate);
 
     if ($groupid !== false) {
         $groupsel = " AND (d.groupid = ? OR d.groupid = -1)";
@@ -6507,16 +6511,16 @@ function forum_tp_mark_forum_read($user, $forumid, $groupid=false) {
     }
 
     $sql = "SELECT p.id
-              FROM {forum_posts} p
-                   LEFT JOIN {forum_discussions} d ON d.id = p.discussion
-                   LEFT JOIN {forum_read} r        ON (r.postid = p.id AND r.userid = ?)
-             WHERE d.forum = ?
+              FROM {digestforum_posts} p
+                   LEFT JOIN {digestforum_discussions} d ON d.id = p.discussion
+                   LEFT JOIN {digestforum_read} r        ON (r.postid = p.id AND r.userid = ?)
+             WHERE d.digestforum = ?
                    AND p.modified >= ? AND r.id is NULL
                    $groupsel";
 
     if ($posts = $DB->get_records_sql($sql, $params)) {
         $postids = array_keys($posts);
-        return forum_tp_mark_posts_read($user, $postids);
+        return digestforum_tp_mark_posts_read($user, $postids);
     }
 
     return true;
@@ -6531,20 +6535,20 @@ function forum_tp_mark_forum_read($user, $forumid, $groupid=false) {
  * @param int $discussionid
  * @return bool
  */
-function forum_tp_mark_discussion_read($user, $discussionid) {
+function digestforum_tp_mark_discussion_read($user, $discussionid) {
     global $CFG, $DB;
 
-    $cutoffdate = time() - ($CFG->forum_oldpostdays*24*60*60);
+    $cutoffdate = time() - ($CFG->digestforum_oldpostdays*24*60*60);
 
     $sql = "SELECT p.id
-              FROM {forum_posts} p
-                   LEFT JOIN {forum_read} r ON (r.postid = p.id AND r.userid = ?)
+              FROM {digestforum_posts} p
+                   LEFT JOIN {digestforum_read} r ON (r.postid = p.id AND r.userid = ?)
              WHERE p.discussion = ?
                    AND p.modified >= ? AND r.id is NULL";
 
     if ($posts = $DB->get_records_sql($sql, array($user->id, $discussionid, $cutoffdate))) {
         $postids = array_keys($posts);
-        return forum_tp_mark_posts_read($user, $postids);
+        return digestforum_tp_mark_posts_read($user, $postids);
     }
 
     return true;
@@ -6555,10 +6559,10 @@ function forum_tp_mark_discussion_read($user, $discussionid) {
  * @param int $userid
  * @param object $post
  */
-function forum_tp_is_post_read($userid, $post) {
+function digestforum_tp_is_post_read($userid, $post) {
     global $DB;
-    return (forum_tp_is_post_old($post) ||
-            $DB->record_exists('forum_read', array('userid' => $userid, 'postid' => $post->id)));
+    return (digestforum_tp_is_post_old($post) ||
+            $DB->record_exists('digestforum_read', array('userid' => $userid, 'postid' => $post->id)));
 }
 
 /**
@@ -6566,13 +6570,13 @@ function forum_tp_is_post_read($userid, $post) {
  * @param object $post
  * @param int $time Defautls to time()
  */
-function forum_tp_is_post_old($post, $time=null) {
+function digestforum_tp_is_post_old($post, $time=null) {
     global $CFG;
 
     if (is_null($time)) {
         $time = time();
     }
-    return ($post->modified < ($time - ($CFG->forum_oldpostdays * 24 * 3600)));
+    return ($post->modified < ($time - ($CFG->digestforum_oldpostdays * 24 * 3600)));
 }
 
 /**
@@ -6585,14 +6589,14 @@ function forum_tp_is_post_old($post, $time=null) {
  * @param int $courseid
  * @return array
  */
-function forum_tp_get_course_unread_posts($userid, $courseid) {
+function digestforum_tp_get_course_unread_posts($userid, $courseid) {
     global $CFG, $DB;
 
     $now = floor(time() / 60) * 60; // DB cache friendliness.
-    $cutoffdate = $now - ($CFG->forum_oldpostdays * 24 * 60 * 60);
+    $cutoffdate = $now - ($CFG->digestforum_oldpostdays * 24 * 60 * 60);
     $params = array($userid, $userid, $courseid, $cutoffdate, $userid);
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
         $params[] = $now;
         $params[] = $now;
@@ -6600,23 +6604,23 @@ function forum_tp_get_course_unread_posts($userid, $courseid) {
         $timedsql = "";
     }
 
-    if ($CFG->forum_allowforcedreadtracking) {
-        $trackingsql = "AND (f.trackingtype = ".FORUM_TRACKING_FORCED."
-                            OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND tf.id IS NULL
+    if ($CFG->digestforum_allowforcedreadtracking) {
+        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_FORCED."
+                            OR (f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." AND tf.id IS NULL
                                 AND (SELECT trackforums FROM {user} WHERE id = ?) = 1))";
     } else {
-        $trackingsql = "AND ((f.trackingtype = ".FORUM_TRACKING_OPTIONAL." OR f.trackingtype = ".FORUM_TRACKING_FORCED.")
+        $trackingsql = "AND ((f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." OR f.trackingtype = ".DFORUM_TRACKING_FORCED.")
                             AND tf.id IS NULL
                             AND (SELECT trackforums FROM {user} WHERE id = ?) = 1)";
     }
 
     $sql = "SELECT f.id, COUNT(p.id) AS unread
-              FROM {forum_posts} p
-                   JOIN {forum_discussions} d       ON d.id = p.discussion
-                   JOIN {forum} f                   ON f.id = d.forum
+              FROM {digestforum_posts} p
+                   JOIN {digestforum_discussions} d       ON d.id = p.discussion
+                   JOIN {digestforum} f                   ON f.id = d.digestforum
                    JOIN {course} c                  ON c.id = f.course
-                   LEFT JOIN {forum_read} r         ON (r.postid = p.id AND r.userid = ?)
-                   LEFT JOIN {forum_track_prefs} tf ON (tf.userid = ? AND tf.forumid = f.id)
+                   LEFT JOIN {digestforum_read} r         ON (r.postid = p.id AND r.userid = ?)
+                   LEFT JOIN {digestforum_track_prefs} tf ON (tf.userid = ? AND tf.digestforumid = f.id)
              WHERE f.course = ?
                    AND p.modified >= ? AND r.id is NULL
                    $trackingsql
@@ -6631,7 +6635,7 @@ function forum_tp_get_course_unread_posts($userid, $courseid) {
 }
 
 /**
- * Returns the count of records for the provided user and forum and [optionally] group.
+ * Returns the count of records for the provided user and digestforum and [optionally] group.
  *
  * @global object
  * @global object
@@ -6641,7 +6645,7 @@ function forum_tp_get_course_unread_posts($userid, $courseid) {
  * @param bool   $resetreadcache optional, true to reset the function static $readcache var
  * @return int
  */
-function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false) {
+function digestforum_tp_count_digestforum_unread_posts($cm, $course, $resetreadcache = false) {
     global $CFG, $USER, $DB;
 
     static $readcache = array();
@@ -6650,18 +6654,18 @@ function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false
         $readcache = array();
     }
 
-    $forumid = $cm->instance;
+    $digestforumid = $cm->instance;
 
     if (!isset($readcache[$course->id])) {
         $readcache[$course->id] = array();
-        if ($counts = forum_tp_get_course_unread_posts($USER->id, $course->id)) {
+        if ($counts = digestforum_tp_get_course_unread_posts($USER->id, $course->id)) {
             foreach ($counts as $count) {
                 $readcache[$course->id][$count->id] = $count->unread;
             }
         }
     }
 
-    if (empty($readcache[$course->id][$forumid])) {
+    if (empty($readcache[$course->id][$digestforumid])) {
         // no need to check group mode ;-)
         return 0;
     }
@@ -6669,11 +6673,11 @@ function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false
     $groupmode = groups_get_activity_groupmode($cm, $course);
 
     if ($groupmode != SEPARATEGROUPS) {
-        return $readcache[$course->id][$forumid];
+        return $readcache[$course->id][$digestforumid];
     }
 
     if (has_capability('moodle/site:accessallgroups', context_module::instance($cm->id))) {
-        return $readcache[$course->id][$forumid];
+        return $readcache[$course->id][$digestforumid];
     }
 
     require_once($CFG->dirroot.'/course/lib.php');
@@ -6688,10 +6692,10 @@ function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false
     list ($groups_sql, $groups_params) = $DB->get_in_or_equal($mygroups);
 
     $now = floor(time() / 60) * 60; // DB Cache friendliness.
-    $cutoffdate = $now - ($CFG->forum_oldpostdays*24*60*60);
-    $params = array($USER->id, $forumid, $cutoffdate);
+    $cutoffdate = $now - ($CFG->digestforum_oldpostdays*24*60*60);
+    $params = array($USER->id, $digestforumid, $cutoffdate);
 
-    if (!empty($CFG->forum_enabletimedposts)) {
+    if (!empty($CFG->digestforum_enabletimedposts)) {
         $timedsql = "AND d.timestart < ? AND (d.timeend = 0 OR d.timeend > ?)";
         $params[] = $now;
         $params[] = $now;
@@ -6702,10 +6706,10 @@ function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false
     $params = array_merge($params, $groups_params);
 
     $sql = "SELECT COUNT(p.id)
-              FROM {forum_posts} p
-                   JOIN {forum_discussions} d ON p.discussion = d.id
-                   LEFT JOIN {forum_read} r   ON (r.postid = p.id AND r.userid = ?)
-             WHERE d.forum = ?
+              FROM {digestforum_posts} p
+                   JOIN {digestforum_discussions} d ON p.discussion = d.id
+                   LEFT JOIN {digestforum_read} r   ON (r.postid = p.id AND r.userid = ?)
+             WHERE d.digestforum = ?
                    AND p.modified >= ? AND r.id is NULL
                    $timedsql
                    AND d.groupid $groups_sql";
@@ -6720,10 +6724,10 @@ function forum_tp_count_forum_unread_posts($cm, $course, $resetreadcache = false
  * @param int $userid
  * @param int $postid
  * @param int $discussionid
- * @param int $forumid
+ * @param int $digestforumid
  * @return bool
  */
-function forum_tp_delete_read_records($userid=-1, $postid=-1, $discussionid=-1, $forumid=-1) {
+function digestforum_tp_delete_read_records($userid=-1, $postid=-1, $discussionid=-1, $digestforumid=-1) {
     global $DB;
     $params = array();
 
@@ -6743,52 +6747,52 @@ function forum_tp_delete_read_records($userid=-1, $postid=-1, $discussionid=-1, 
         $select .= 'discussionid = ?';
         $params[] = $discussionid;
     }
-    if ($forumid > -1) {
+    if ($digestforumid > -1) {
         if ($select != '') $select .= ' AND ';
-        $select .= 'forumid = ?';
-        $params[] = $forumid;
+        $select .= 'digestforumid = ?';
+        $params[] = $digestforumid;
     }
     if ($select == '') {
         return false;
     }
     else {
-        return $DB->delete_records_select('forum_read', $select, $params);
+        return $DB->delete_records_select('digestforum_read', $select, $params);
     }
 }
 /**
- * Get a list of forums not tracked by the user.
+ * Get a list of digestforums not tracked by the user.
  *
  * @global object
  * @global object
  * @param int $userid The id of the user to use.
  * @param int $courseid The id of the course being checked.
- * @return mixed An array indexed by forum id, or false.
+ * @return mixed An array indexed by digestforum id, or false.
  */
-function forum_tp_get_untracked_forums($userid, $courseid) {
+function digestforum_tp_get_untracked_digestforums($userid, $courseid) {
     global $CFG, $DB;
 
-    if ($CFG->forum_allowforcedreadtracking) {
-        $trackingsql = "AND (f.trackingtype = ".FORUM_TRACKING_OFF."
-                            OR (f.trackingtype = ".FORUM_TRACKING_OPTIONAL." AND (ft.id IS NOT NULL
+    if ($CFG->digestforum_allowforcedreadtracking) {
+        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_OFF."
+                            OR (f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." AND (ft.id IS NOT NULL
                                 OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     } else {
-        $trackingsql = "AND (f.trackingtype = ".FORUM_TRACKING_OFF."
-                            OR ((f.trackingtype = ".FORUM_TRACKING_OPTIONAL." OR f.trackingtype = ".FORUM_TRACKING_FORCED.")
+        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_OFF."
+                            OR ((f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." OR f.trackingtype = ".DFORUM_TRACKING_FORCED.")
                                 AND (ft.id IS NOT NULL
                                     OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     }
 
     $sql = "SELECT f.id
-              FROM {forum} f
-                   LEFT JOIN {forum_track_prefs} ft ON (ft.forumid = f.id AND ft.userid = ?)
+              FROM {digestforum} f
+                   LEFT JOIN {digestforum_track_prefs} ft ON (ft.digestforumid = f.id AND ft.userid = ?)
              WHERE f.course = ?
                    $trackingsql";
 
-    if ($forums = $DB->get_records_sql($sql, array($userid, $courseid, $userid))) {
-        foreach ($forums as $forum) {
-            $forums[$forum->id] = $forum;
+    if ($digestforums = $DB->get_records_sql($sql, array($userid, $courseid, $userid))) {
+        foreach ($digestforums as $digestforum) {
+            $digestforums[$digestforum->id] = $digestforum;
         }
-        return $forums;
+        return $digestforums;
 
     } else {
         return array();
@@ -6796,23 +6800,23 @@ function forum_tp_get_untracked_forums($userid, $courseid) {
 }
 
 /**
- * Determine if a user can track forums and optionally a particular forum.
- * Checks the site settings, the user settings and the forum settings (if
+ * Determine if a user can track digestforums and optionally a particular digestforum.
+ * Checks the site settings, the user settings and the digestforum settings (if
  * requested).
  *
  * @global object
  * @global object
  * @global object
- * @param mixed $forum The forum object to test, or the int id (optional).
+ * @param mixed $digestforum The digestforum object to test, or the int id (optional).
  * @param mixed $userid The user object to check for (optional).
  * @return boolean
  */
-function forum_tp_can_track_forums($forum=false, $user=false) {
+function digestforum_tp_can_track_digestforums($digestforum=false, $user=false) {
     global $USER, $CFG, $DB;
 
     // if possible, avoid expensive
     // queries
-    if (empty($CFG->forum_trackreadposts)) {
+    if (empty($CFG->digestforum_trackreadposts)) {
         return false;
     }
 
@@ -6824,9 +6828,9 @@ function forum_tp_can_track_forums($forum=false, $user=false) {
         return false;
     }
 
-    if ($forum === false) {
-        if ($CFG->forum_allowforcedreadtracking) {
-            // Since we can force tracking, assume yes without a specific forum.
+    if ($digestforum === false) {
+        if ($CFG->digestforum_allowforcedreadtracking) {
+            // Since we can force tracking, assume yes without a specific digestforum.
             return true;
         } else {
             return (bool)$user->trackforums;
@@ -6834,35 +6838,35 @@ function forum_tp_can_track_forums($forum=false, $user=false) {
     }
 
     // Work toward always passing an object...
-    if (is_numeric($forum)) {
-        debugging('Better use proper forum object.', DEBUG_DEVELOPER);
-        $forum = $DB->get_record('forum', array('id' => $forum), '', 'id,trackingtype');
+    if (is_numeric($digestforum)) {
+        debugging('Better use proper digestforum object.', DEBUG_DEVELOPER);
+        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum), '', 'id,trackingtype');
     }
 
-    $forumallows = ($forum->trackingtype == FORUM_TRACKING_OPTIONAL);
-    $forumforced = ($forum->trackingtype == FORUM_TRACKING_FORCED);
+    $digestforumallows = ($digestforum->trackingtype == DFORUM_TRACKING_OPTIONAL);
+    $digestforumforced = ($digestforum->trackingtype == DFORUM_TRACKING_FORCED);
 
-    if ($CFG->forum_allowforcedreadtracking) {
-        // If we allow forcing, then forced forums takes procidence over user setting.
-        return ($forumforced || ($forumallows  && (!empty($user->trackforums) && (bool)$user->trackforums)));
+    if ($CFG->digestforum_allowforcedreadtracking) {
+        // If we allow forcing, then forced digestforums takes procidence over user setting.
+        return ($digestforumforced || ($digestforumallows  && (!empty($user->trackforums) && (bool)$user->trackforums)));
     } else {
         // If we don't allow forcing, user setting trumps.
-        return ($forumforced || $forumallows)  && !empty($user->trackforums);
+        return ($digestforumforced || $digestforumallows)  && !empty($user->trackforums);
     }
 }
 
 /**
- * Tells whether a specific forum is tracked by the user. A user can optionally
+ * Tells whether a specific digestforum is tracked by the user. A user can optionally
  * be specified. If not specified, the current user is assumed.
  *
  * @global object
  * @global object
  * @global object
- * @param mixed $forum If int, the id of the forum being checked; if object, the forum object
+ * @param mixed $digestforum If int, the id of the digestforum being checked; if object, the digestforum object
  * @param int $userid The id of the user being checked (optional).
  * @return boolean
  */
-function forum_tp_is_tracked($forum, $user=false) {
+function digestforum_tp_is_tracked($digestforum, $user=false) {
     global $USER, $CFG, $DB;
 
     if ($user === false) {
@@ -6874,85 +6878,85 @@ function forum_tp_is_tracked($forum, $user=false) {
     }
 
     // Work toward always passing an object...
-    if (is_numeric($forum)) {
-        debugging('Better use proper forum object.', DEBUG_DEVELOPER);
-        $forum = $DB->get_record('forum', array('id' => $forum));
+    if (is_numeric($digestforum)) {
+        debugging('Better use proper digestforum object.', DEBUG_DEVELOPER);
+        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum));
     }
 
-    if (!forum_tp_can_track_forums($forum, $user)) {
+    if (!digestforum_tp_can_track_digestforums($digestforum, $user)) {
         return false;
     }
 
-    $forumallows = ($forum->trackingtype == FORUM_TRACKING_OPTIONAL);
-    $forumforced = ($forum->trackingtype == FORUM_TRACKING_FORCED);
-    $userpref = $DB->get_record('forum_track_prefs', array('userid' => $user->id, 'forumid' => $forum->id));
+    $digestforumallows = ($digestforum->trackingtype == DFORUM_TRACKING_OPTIONAL);
+    $digestforumforced = ($digestforum->trackingtype == DFORUM_TRACKING_FORCED);
+    $userpref = $DB->get_record('digestforum_track_prefs', array('userid' => $user->id, 'digestforumid' => $digestforum->id));
 
-    if ($CFG->forum_allowforcedreadtracking) {
-        return $forumforced || ($forumallows && $userpref === false);
+    if ($CFG->digestforum_allowforcedreadtracking) {
+        return $digestforumforced || ($digestforumallows && $userpref === false);
     } else {
-        return  ($forumallows || $forumforced) && $userpref === false;
+        return  ($digestforumallows || $digestforumforced) && $userpref === false;
     }
 }
 
 /**
  * @global object
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $userid
  */
-function forum_tp_start_tracking($forumid, $userid=false) {
+function digestforum_tp_start_tracking($digestforumid, $userid=false) {
     global $USER, $DB;
 
     if ($userid === false) {
         $userid = $USER->id;
     }
 
-    return $DB->delete_records('forum_track_prefs', array('userid' => $userid, 'forumid' => $forumid));
+    return $DB->delete_records('digestforum_track_prefs', array('userid' => $userid, 'digestforumid' => $digestforumid));
 }
 
 /**
  * @global object
  * @global object
- * @param int $forumid
+ * @param int $digestforumid
  * @param int $userid
  */
-function forum_tp_stop_tracking($forumid, $userid=false) {
+function digestforum_tp_stop_tracking($digestforumid, $userid=false) {
     global $USER, $DB;
 
     if ($userid === false) {
         $userid = $USER->id;
     }
 
-    if (!$DB->record_exists('forum_track_prefs', array('userid' => $userid, 'forumid' => $forumid))) {
+    if (!$DB->record_exists('digestforum_track_prefs', array('userid' => $userid, 'digestforumid' => $digestforumid))) {
         $track_prefs = new stdClass();
         $track_prefs->userid = $userid;
-        $track_prefs->forumid = $forumid;
-        $DB->insert_record('forum_track_prefs', $track_prefs);
+        $track_prefs->digestforumid = $digestforumid;
+        $DB->insert_record('digestforum_track_prefs', $track_prefs);
     }
 
-    return forum_tp_delete_read_records($userid, -1, -1, $forumid);
+    return digestforum_tp_delete_read_records($userid, -1, -1, $digestforumid);
 }
 
 
 /**
- * Clean old records from the forum_read table.
+ * Clean old records from the digestforum_read table.
  * @global object
  * @global object
  * @return void
  */
-function forum_tp_clean_read_records() {
+function digestforum_tp_clean_read_records() {
     global $CFG, $DB;
 
-    if (!isset($CFG->forum_oldpostdays)) {
+    if (!isset($CFG->digestforum_oldpostdays)) {
         return;
     }
-// Look for records older than the cutoffdate that are still in the forum_read table.
-    $cutoffdate = time() - ($CFG->forum_oldpostdays*24*60*60);
+// Look for records older than the cutoffdate that are still in the digestforum_read table.
+    $cutoffdate = time() - ($CFG->digestforum_oldpostdays*24*60*60);
 
     //first get the oldest tracking present - we need tis to speedup the next delete query
     $sql = "SELECT MIN(fp.modified) AS first
-              FROM {forum_posts} fp
-                   JOIN {forum_read} fr ON fr.postid=fp.id";
+              FROM {digestforum_posts} fp
+                   JOIN {digestforum_read} fr ON fr.postid=fp.id";
     if (!$first = $DB->get_field_sql($sql)) {
         // nothing to delete;
         return;
@@ -6960,9 +6964,9 @@ function forum_tp_clean_read_records() {
 
     // now delete old tracking info
     $sql = "DELETE
-              FROM {forum_read}
+              FROM {digestforum_read}
              WHERE postid IN (SELECT fp.id
-                                FROM {forum_posts} fp
+                                FROM {digestforum_posts} fp
                                WHERE fp.modified >= ? AND fp.modified < ?)";
     $DB->execute($sql, array($first, $cutoffdate));
 }
@@ -6975,17 +6979,17 @@ function forum_tp_clean_read_records() {
  * @param into $discussionid
  * @return bool|int
  **/
-function forum_discussion_update_last_post($discussionid) {
+function digestforum_discussion_update_last_post($discussionid) {
     global $CFG, $DB;
 
 // Check the given discussion exists
-    if (!$DB->record_exists('forum_discussions', array('id' => $discussionid))) {
+    if (!$DB->record_exists('digestforum_discussions', array('id' => $discussionid))) {
         return false;
     }
 
 // Use SQL to find the last post for this discussion
     $sql = "SELECT id, userid, modified
-              FROM {forum_posts}
+              FROM {digestforum_posts}
              WHERE discussion=?
              ORDER BY modified DESC";
 
@@ -6996,7 +7000,7 @@ function forum_discussion_update_last_post($discussionid) {
         $discussionobject->id           = $discussionid;
         $discussionobject->usermodified = $lastpost->userid;
         $discussionobject->timemodified = $lastpost->modified;
-        $DB->update_record('forum_discussions', $discussionobject);
+        $DB->update_record('digestforum_discussions', $discussionobject);
         return $lastpost->id;
     }
 
@@ -7016,22 +7020,22 @@ function forum_discussion_update_last_post($discussionid) {
  *
  * @return array
  */
-function forum_get_view_actions() {
-    return array('view discussion', 'search', 'forum', 'forums', 'subscribers', 'view forum');
+function digestforum_get_view_actions() {
+    return array('view discussion', 'search', 'digestforum', 'digestforums', 'subscribers', 'view digestforum');
 }
 
 /**
- * List the options for forum subscription modes.
+ * List the options for digestforum subscription modes.
  * This is used by the settings page and by the mod_form page.
  *
  * @return array
  */
-function forum_get_subscriptionmode_options() {
+function digestforum_get_subscriptionmode_options() {
     $options = array();
-    $options[FORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'forum');
-    $options[FORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'forum');
-    $options[FORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'forum');
-    $options[FORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled', 'forum');
+    $options[DFORUM_CHOOSESUBSCRIBE] = get_string('subscriptionoptional', 'digestforum');
+    $options[DFORUM_FORCESUBSCRIBE] = get_string('subscriptionforced', 'digestforum');
+    $options[DFORUM_INITIALSUBSCRIBE] = get_string('subscriptionauto', 'digestforum');
+    $options[DFORUM_DISALLOWSUBSCRIBE] = get_string('subscriptiondisabled', 'digestforum');
     return $options;
 }
 
@@ -7045,7 +7049,7 @@ function forum_get_subscriptionmode_options() {
  *
  * @return array
  */
-function forum_get_post_actions() {
+function digestforum_get_post_actions() {
     return array('add discussion','add post','delete discussion','delete post','move discussion','prune post','update post');
 }
 
@@ -7053,68 +7057,68 @@ function forum_get_post_actions() {
  * Returns a warning object if a user has reached the number of posts equal to
  * the warning/blocking setting, or false if there is no warning to show.
  *
- * @param int|stdClass $forum the forum id or the forum object
+ * @param int|stdClass $digestforum the digestforum id or the digestforum object
  * @param stdClass $cm the course module
  * @return stdClass|bool returns an object with the warning information, else
  *         returns false if no warning is required.
  */
-function forum_check_throttling($forum, $cm = null) {
+function digestforum_check_throttling($digestforum, $cm = null) {
     global $CFG, $DB, $USER;
 
-    if (is_numeric($forum)) {
-        $forum = $DB->get_record('forum', array('id' => $forum), '*', MUST_EXIST);
+    if (is_numeric($digestforum)) {
+        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum), '*', MUST_EXIST);
     }
 
-    if (!is_object($forum)) {
+    if (!is_object($digestforum)) {
         return false; // This is broken.
     }
 
     if (!$cm) {
-        $cm = get_coursemodule_from_instance('forum', $forum->id, $forum->course, false, MUST_EXIST);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course, false, MUST_EXIST);
     }
 
-    if (empty($forum->blockafter)) {
+    if (empty($digestforum->blockafter)) {
         return false;
     }
 
-    if (empty($forum->blockperiod)) {
+    if (empty($digestforum->blockperiod)) {
         return false;
     }
 
     $modcontext = context_module::instance($cm->id);
-    if (has_capability('mod/forum:postwithoutthrottling', $modcontext)) {
+    if (has_capability('mod/digestforum:postwithoutthrottling', $modcontext)) {
         return false;
     }
 
     // Get the number of posts in the last period we care about.
     $timenow = time();
-    $timeafter = $timenow - $forum->blockperiod;
-    $numposts = $DB->count_records_sql('SELECT COUNT(p.id) FROM {forum_posts} p
-                                        JOIN {forum_discussions} d
-                                        ON p.discussion = d.id WHERE d.forum = ?
-                                        AND p.userid = ? AND p.created > ?', array($forum->id, $USER->id, $timeafter));
+    $timeafter = $timenow - $digestforum->blockperiod;
+    $numposts = $DB->count_records_sql('SELECT COUNT(p.id) FROM {digestforum_posts} p
+                                        JOIN {digestforum_discussions} d
+                                        ON p.discussion = d.id WHERE d.digestforum = ?
+                                        AND p.userid = ? AND p.created > ?', array($digestforum->id, $USER->id, $timeafter));
 
     $a = new stdClass();
-    $a->blockafter = $forum->blockafter;
+    $a->blockafter = $digestforum->blockafter;
     $a->numposts = $numposts;
-    $a->blockperiod = get_string('secondstotime'.$forum->blockperiod);
+    $a->blockperiod = get_string('secondstotime'.$digestforum->blockperiod);
 
-    if ($forum->blockafter <= $numposts) {
+    if ($digestforum->blockafter <= $numposts) {
         $warning = new stdClass();
         $warning->canpost = false;
-        $warning->errorcode = 'forumblockingtoomanyposts';
+        $warning->errorcode = 'digestforumblockingtoomanyposts';
         $warning->module = 'error';
         $warning->additional = $a;
-        $warning->link = $CFG->wwwroot . '/mod/forum/view.php?f=' . $forum->id;
+        $warning->link = $CFG->wwwroot . '/mod/digestforum/view.php?f=' . $digestforum->id;
 
         return $warning;
     }
 
-    if ($forum->warnafter <= $numposts) {
+    if ($digestforum->warnafter <= $numposts) {
         $warning = new stdClass();
         $warning->canpost = true;
-        $warning->errorcode = 'forumblockingalmosttoomanyposts';
-        $warning->module = 'forum';
+        $warning->errorcode = 'digestforumblockingalmosttoomanyposts';
+        $warning->module = 'digestforum';
         $warning->additional = $a;
         $warning->link = null;
 
@@ -7129,9 +7133,9 @@ function forum_check_throttling($forum, $cm = null) {
  *
  * @since Moodle 2.5
  * @param stdClass $thresholdwarning the warning information returned
- *        from the function forum_check_throttling.
+ *        from the function digestforum_check_throttling.
  */
-function forum_check_blocking_threshold($thresholdwarning) {
+function digestforum_check_blocking_threshold($thresholdwarning) {
     if (!empty($thresholdwarning) && !$thresholdwarning->canpost) {
         print_error($thresholdwarning->errorcode,
                     $thresholdwarning->module,
@@ -7149,7 +7153,7 @@ function forum_check_blocking_threshold($thresholdwarning) {
  * @param int $courseid
  * @param string $type optional
  */
-function forum_reset_gradebook($courseid, $type='') {
+function digestforum_reset_gradebook($courseid, $type='') {
     global $CFG, $DB;
 
     $wheresql = '';
@@ -7160,19 +7164,19 @@ function forum_reset_gradebook($courseid, $type='') {
     }
 
     $sql = "SELECT f.*, cm.idnumber as cmidnumber, f.course as courseid
-              FROM {forum} f, {course_modules} cm, {modules} m
-             WHERE m.name='forum' AND m.id=cm.module AND cm.instance=f.id AND f.course=? $wheresql";
+              FROM {digestforum} f, {course_modules} cm, {modules} m
+             WHERE m.name='digestforum' AND m.id=cm.module AND cm.instance=f.id AND f.course=? $wheresql";
 
-    if ($forums = $DB->get_records_sql($sql, $params)) {
-        foreach ($forums as $forum) {
-            forum_grade_item_update($forum, 'reset');
+    if ($digestforums = $DB->get_records_sql($sql, $params)) {
+        foreach ($digestforums as $digestforum) {
+            digestforum_grade_item_update($digestforum, 'reset');
         }
     }
 }
 
 /**
  * This function is used by the reset_course_userdata function in moodlelib.
- * This function will remove all posts from the specified forum
+ * This function will remove all posts from the specified digestforum
  * and clean up any related data.
  *
  * @global object
@@ -7180,31 +7184,31 @@ function forum_reset_gradebook($courseid, $type='') {
  * @param $data the data submitted from the reset course.
  * @return array status array
  */
-function forum_reset_userdata($data) {
+function digestforum_reset_userdata($data) {
     global $CFG, $DB;
     require_once($CFG->dirroot.'/rating/lib.php');
 
-    $componentstr = get_string('modulenameplural', 'forum');
+    $componentstr = get_string('modulenameplural', 'digestforum');
     $status = array();
 
     $params = array($data->courseid);
 
     $removeposts = false;
     $typesql     = "";
-    if (!empty($data->reset_forum_all)) {
+    if (!empty($data->reset_digestforum_all)) {
         $removeposts = true;
-        $typesstr    = get_string('resetforumsall', 'forum');
+        $typesstr    = get_string('resetdigestforumsall', 'digestforum');
         $types       = array();
-    } else if (!empty($data->reset_forum_types)){
+    } else if (!empty($data->reset_digestforum_types)){
         $removeposts = true;
         $types       = array();
         $sqltypes    = array();
-        $forum_types_all = forum_get_forum_types_all();
-        foreach ($data->reset_forum_types as $type) {
-            if (!array_key_exists($type, $forum_types_all)) {
+        $digestforum_types_all = digestforum_get_digestforum_types_all();
+        foreach ($data->reset_digestforum_types as $type) {
+            if (!array_key_exists($type, $digestforum_types_all)) {
                 continue;
             }
-            $types[] = $forum_types_all[$type];
+            $types[] = $digestforum_types_all[$type];
             $sqltypes[] = $type;
         }
         if (!empty($sqltypes)) {
@@ -7212,33 +7216,33 @@ function forum_reset_userdata($data) {
             $typesql = " AND f.type " . $typesql;
             $params = array_merge($params, $typeparams);
         }
-        $typesstr = get_string('resetforums', 'forum').': '.implode(', ', $types);
+        $typesstr = get_string('resetdigestforums', 'digestforum').': '.implode(', ', $types);
     }
     $alldiscussionssql = "SELECT fd.id
-                            FROM {forum_discussions} fd, {forum} f
-                           WHERE f.course=? AND f.id=fd.forum";
+                            FROM {digestforum_discussions} fd, {digestforum} f
+                           WHERE f.course=? AND f.id=fd.digestforum";
 
-    $allforumssql      = "SELECT f.id
-                            FROM {forum} f
+    $alldigestforumssql      = "SELECT f.id
+                            FROM {digestforum} f
                            WHERE f.course=?";
 
     $allpostssql       = "SELECT fp.id
-                            FROM {forum_posts} fp, {forum_discussions} fd, {forum} f
-                           WHERE f.course=? AND f.id=fd.forum AND fd.id=fp.discussion";
+                            FROM {digestforum_posts} fp, {digestforum_discussions} fd, {digestforum} f
+                           WHERE f.course=? AND f.id=fd.digestforum AND fd.id=fp.discussion";
 
-    $forumssql = $forums = $rm = null;
+    $digestforumssql = $digestforums = $rm = null;
 
     // Check if we need to get additional data.
-    if ($removeposts || !empty($data->reset_forum_ratings) || !empty($data->reset_forum_tags)) {
+    if ($removeposts || !empty($data->reset_digestforum_ratings) || !empty($data->reset_digestforum_tags)) {
         // Set this up if we have to remove ratings.
         $rm = new rating_manager();
         $ratingdeloptions = new stdClass;
-        $ratingdeloptions->component = 'mod_forum';
+        $ratingdeloptions->component = 'mod_digestforum';
         $ratingdeloptions->ratingarea = 'post';
 
-        // Get the forums for actions that require it.
-        $forumssql = "$allforumssql $typesql";
-        $forums = $DB->get_records_sql($forumssql, $params);
+        // Get the digestforums for actions that require it.
+        $digestforumssql = "$alldigestforumssql $typesql";
+        $digestforums = $DB->get_records_sql($digestforumssql, $params);
     }
 
     if ($removeposts) {
@@ -7247,46 +7251,46 @@ function forum_reset_userdata($data) {
 
         // now get rid of all attachments
         $fs = get_file_storage();
-        if ($forums) {
-            foreach ($forums as $forumid=>$unused) {
-                if (!$cm = get_coursemodule_from_instance('forum', $forumid)) {
+        if ($digestforums) {
+            foreach ($digestforums as $digestforumid=>$unused) {
+                if (!$cm = get_coursemodule_from_instance('digestforum', $digestforumid)) {
                     continue;
                 }
                 $context = context_module::instance($cm->id);
-                $fs->delete_area_files($context->id, 'mod_forum', 'attachment');
-                $fs->delete_area_files($context->id, 'mod_forum', 'post');
+                $fs->delete_area_files($context->id, 'mod_digestforum', 'attachment');
+                $fs->delete_area_files($context->id, 'mod_digestforum', 'post');
 
                 //remove ratings
                 $ratingdeloptions->contextid = $context->id;
                 $rm->delete_ratings($ratingdeloptions);
 
-                core_tag_tag::delete_instances('mod_forum', null, $context->id);
+                core_tag_tag::delete_instances('mod_digestforum', null, $context->id);
             }
         }
 
         // first delete all read flags
-        $DB->delete_records_select('forum_read', "forumid IN ($forumssql)", $params);
+        $DB->delete_records_select('digestforum_read', "digestforumid IN ($digestforumssql)", $params);
 
         // remove tracking prefs
-        $DB->delete_records_select('forum_track_prefs', "forumid IN ($forumssql)", $params);
+        $DB->delete_records_select('digestforum_track_prefs', "digestforumid IN ($digestforumssql)", $params);
 
         // remove posts from queue
-        $DB->delete_records_select('forum_queue', "discussionid IN ($discussionssql)", $params);
+        $DB->delete_records_select('digestforum_queue', "discussionid IN ($discussionssql)", $params);
 
-        // all posts - initial posts must be kept in single simple discussion forums
-        $DB->delete_records_select('forum_posts', "discussion IN ($discussionssql) AND parent <> 0", $params); // first all children
-        $DB->delete_records_select('forum_posts', "discussion IN ($discussionssql AND f.type <> 'single') AND parent = 0", $params); // now the initial posts for non single simple
+        // all posts - initial posts must be kept in single simple discussion digestforums
+        $DB->delete_records_select('digestforum_posts', "discussion IN ($discussionssql) AND parent <> 0", $params); // first all children
+        $DB->delete_records_select('digestforum_posts', "discussion IN ($discussionssql AND f.type <> 'single') AND parent = 0", $params); // now the initial posts for non single simple
 
-        // finally all discussions except single simple forums
-        $DB->delete_records_select('forum_discussions', "forum IN ($forumssql AND f.type <> 'single')", $params);
+        // finally all discussions except single simple digestforums
+        $DB->delete_records_select('digestforum_discussions', "digestforum IN ($digestforumssql AND f.type <> 'single')", $params);
 
         // remove all grades from gradebook
         if (empty($data->reset_gradebook_grades)) {
             if (empty($types)) {
-                forum_reset_gradebook($data->courseid);
+                digestforum_reset_gradebook($data->courseid);
             } else {
                 foreach ($types as $type) {
-                    forum_reset_gradebook($data->courseid, $type);
+                    digestforum_reset_gradebook($data->courseid, $type);
                 }
             }
         }
@@ -7294,11 +7298,11 @@ function forum_reset_userdata($data) {
         $status[] = array('component'=>$componentstr, 'item'=>$typesstr, 'error'=>false);
     }
 
-    // remove all ratings in this course's forums
-    if (!empty($data->reset_forum_ratings)) {
-        if ($forums) {
-            foreach ($forums as $forumid=>$unused) {
-                if (!$cm = get_coursemodule_from_instance('forum', $forumid)) {
+    // remove all ratings in this course's digestforums
+    if (!empty($data->reset_digestforum_ratings)) {
+        if ($digestforums) {
+            foreach ($digestforums as $digestforumid=>$unused) {
+                if (!$cm = get_coursemodule_from_instance('digestforum', $digestforumid)) {
                     continue;
                 }
                 $context = context_module::instance($cm->id);
@@ -7311,50 +7315,50 @@ function forum_reset_userdata($data) {
 
         // remove all grades from gradebook
         if (empty($data->reset_gradebook_grades)) {
-            forum_reset_gradebook($data->courseid);
+            digestforum_reset_gradebook($data->courseid);
         }
     }
 
     // Remove all the tags.
-    if (!empty($data->reset_forum_tags)) {
-        if ($forums) {
-            foreach ($forums as $forumid => $unused) {
-                if (!$cm = get_coursemodule_from_instance('forum', $forumid)) {
+    if (!empty($data->reset_digestforum_tags)) {
+        if ($digestforums) {
+            foreach ($digestforums as $digestforumid => $unused) {
+                if (!$cm = get_coursemodule_from_instance('digestforum', $digestforumid)) {
                     continue;
                 }
 
                 $context = context_module::instance($cm->id);
-                core_tag_tag::delete_instances('mod_forum', null, $context->id);
+                core_tag_tag::delete_instances('mod_digestforum', null, $context->id);
             }
         }
 
-        $status[] = array('component' => $componentstr, 'item' => get_string('tagsdeleted', 'forum'), 'error' => false);
+        $status[] = array('component' => $componentstr, 'item' => get_string('tagsdeleted', 'digestforum'), 'error' => false);
     }
 
     // remove all digest settings unconditionally - even for users still enrolled in course.
-    if (!empty($data->reset_forum_digests)) {
-        $DB->delete_records_select('forum_digests', "forum IN ($allforumssql)", $params);
-        $status[] = array('component' => $componentstr, 'item' => get_string('resetdigests', 'forum'), 'error' => false);
+    if (!empty($data->reset_digestforum_digests)) {
+        $DB->delete_records_select('digestforum_digests', "digestforum IN ($alldigestforumssql)", $params);
+        $status[] = array('component' => $componentstr, 'item' => get_string('resetdigests', 'digestforum'), 'error' => false);
     }
 
     // remove all subscriptions unconditionally - even for users still enrolled in course
-    if (!empty($data->reset_forum_subscriptions)) {
-        $DB->delete_records_select('forum_subscriptions', "forum IN ($allforumssql)", $params);
-        $DB->delete_records_select('forum_discussion_subs', "forum IN ($allforumssql)", $params);
-        $status[] = array('component' => $componentstr, 'item' => get_string('resetsubscriptions', 'forum'), 'error' => false);
+    if (!empty($data->reset_digestforum_subscriptions)) {
+        $DB->delete_records_select('digestforum_subscriptions', "digestforum IN ($alldigestforumssql)", $params);
+        $DB->delete_records_select('digestforum_discussion_subs', "digestforum IN ($alldigestforumssql)", $params);
+        $status[] = array('component' => $componentstr, 'item' => get_string('resetsubscriptions', 'digestforum'), 'error' => false);
     }
 
     // remove all tracking prefs unconditionally - even for users still enrolled in course
-    if (!empty($data->reset_forum_track_prefs)) {
-        $DB->delete_records_select('forum_track_prefs', "forumid IN ($allforumssql)", $params);
-        $status[] = array('component'=>$componentstr, 'item'=>get_string('resettrackprefs','forum'), 'error'=>false);
+    if (!empty($data->reset_digestforum_track_prefs)) {
+        $DB->delete_records_select('digestforum_track_prefs', "digestforumid IN ($alldigestforumssql)", $params);
+        $status[] = array('component'=>$componentstr, 'item'=>get_string('resettrackprefs','digestforum'), 'error'=>false);
     }
 
     /// updating dates - shift may be negative too
     if ($data->timeshift) {
         // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
         // See MDL-9367.
-        shift_course_mod_dates('forum', array('assesstimestart', 'assesstimefinish'), $data->timeshift, $data->courseid);
+        shift_course_mod_dates('digestforum', array('assesstimestart', 'assesstimefinish'), $data->timeshift, $data->courseid);
         $status[] = array('component'=>$componentstr, 'item'=>get_string('datechanged'), 'error'=>false);
     }
 
@@ -7366,78 +7370,78 @@ function forum_reset_userdata($data) {
  *
  * @param $mform form passed by reference
  */
-function forum_reset_course_form_definition(&$mform) {
-    $mform->addElement('header', 'forumheader', get_string('modulenameplural', 'forum'));
+function digestforum_reset_course_form_definition(&$mform) {
+    $mform->addElement('header', 'digestforumheader', get_string('modulenameplural', 'digestforum'));
 
-    $mform->addElement('checkbox', 'reset_forum_all', get_string('resetforumsall','forum'));
+    $mform->addElement('checkbox', 'reset_digestforum_all', get_string('resetdigestforumsall','digestforum'));
 
-    $mform->addElement('select', 'reset_forum_types', get_string('resetforums', 'forum'), forum_get_forum_types_all(), array('multiple' => 'multiple'));
-    $mform->setAdvanced('reset_forum_types');
-    $mform->disabledIf('reset_forum_types', 'reset_forum_all', 'checked');
+    $mform->addElement('select', 'reset_digestforum_types', get_string('resetdigestforums', 'digestforum'), digestforum_get_digestforum_types_all(), array('multiple' => 'multiple'));
+    $mform->setAdvanced('reset_digestforum_types');
+    $mform->disabledIf('reset_digestforum_types', 'reset_digestforum_all', 'checked');
 
-    $mform->addElement('checkbox', 'reset_forum_digests', get_string('resetdigests','forum'));
-    $mform->setAdvanced('reset_forum_digests');
+    $mform->addElement('checkbox', 'reset_digestforum_digests', get_string('resetdigests','digestforum'));
+    $mform->setAdvanced('reset_digestforum_digests');
 
-    $mform->addElement('checkbox', 'reset_forum_subscriptions', get_string('resetsubscriptions','forum'));
-    $mform->setAdvanced('reset_forum_subscriptions');
+    $mform->addElement('checkbox', 'reset_digestforum_subscriptions', get_string('resetsubscriptions','digestforum'));
+    $mform->setAdvanced('reset_digestforum_subscriptions');
 
-    $mform->addElement('checkbox', 'reset_forum_track_prefs', get_string('resettrackprefs','forum'));
-    $mform->setAdvanced('reset_forum_track_prefs');
-    $mform->disabledIf('reset_forum_track_prefs', 'reset_forum_all', 'checked');
+    $mform->addElement('checkbox', 'reset_digestforum_track_prefs', get_string('resettrackprefs','digestforum'));
+    $mform->setAdvanced('reset_digestforum_track_prefs');
+    $mform->disabledIf('reset_digestforum_track_prefs', 'reset_digestforum_all', 'checked');
 
-    $mform->addElement('checkbox', 'reset_forum_ratings', get_string('deleteallratings'));
-    $mform->disabledIf('reset_forum_ratings', 'reset_forum_all', 'checked');
+    $mform->addElement('checkbox', 'reset_digestforum_ratings', get_string('deleteallratings'));
+    $mform->disabledIf('reset_digestforum_ratings', 'reset_digestforum_all', 'checked');
 
-    $mform->addElement('checkbox', 'reset_forum_tags', get_string('removeallforumtags', 'forum'));
-    $mform->disabledIf('reset_forum_tags', 'reset_forum_all', 'checked');
+    $mform->addElement('checkbox', 'reset_digestforum_tags', get_string('removealldigestforumtags', 'digestforum'));
+    $mform->disabledIf('reset_digestforum_tags', 'reset_digestforum_all', 'checked');
 }
 
 /**
  * Course reset form defaults.
  * @return array
  */
-function forum_reset_course_form_defaults($course) {
-    return array('reset_forum_all'=>1, 'reset_forum_digests' => 0, 'reset_forum_subscriptions'=>0, 'reset_forum_track_prefs'=>0, 'reset_forum_ratings'=>1);
+function digestforum_reset_course_form_defaults($course) {
+    return array('reset_digestforum_all'=>1, 'reset_digestforum_digests' => 0, 'reset_digestforum_subscriptions'=>0, 'reset_digestforum_track_prefs'=>0, 'reset_digestforum_ratings'=>1);
 }
 
 /**
- * Returns array of forum layout modes
+ * Returns array of digestforum layout modes
  *
  * @return array
  */
-function forum_get_layout_modes() {
-    return array (FORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'forum'),
-                  FORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'forum'),
-                  FORUM_MODE_THREADED   => get_string('modethreaded', 'forum'),
-                  FORUM_MODE_NESTED     => get_string('modenested', 'forum'));
+function digestforum_get_layout_modes() {
+    return array (DFORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'digestforum'),
+                  DFORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'digestforum'),
+                  DFORUM_MODE_THREADED   => get_string('modethreaded', 'digestforum'),
+                  DFORUM_MODE_NESTED     => get_string('modenested', 'digestforum'));
 }
 
 /**
- * Returns array of forum types chooseable on the forum editing form
+ * Returns array of digestforum types chooseable on the digestforum editing form
  *
  * @return array
  */
-function forum_get_forum_types() {
-    return array ('general'  => get_string('generalforum', 'forum'),
-                  'eachuser' => get_string('eachuserforum', 'forum'),
-                  'single'   => get_string('singleforum', 'forum'),
-                  'qanda'    => get_string('qandaforum', 'forum'),
-                  'blog'     => get_string('blogforum', 'forum'));
+function digestforum_get_digestforum_types() {
+    return array ('general'  => get_string('generaldigestforum', 'digestforum'),
+                  'eachuser' => get_string('eachuserdigestforum', 'digestforum'),
+                  'single'   => get_string('singledigestforum', 'digestforum'),
+                  'qanda'    => get_string('qandadigestforum', 'digestforum'),
+                  'blog'     => get_string('blogdigestforum', 'digestforum'));
 }
 
 /**
- * Returns array of all forum layout modes
+ * Returns array of all digestforum layout modes
  *
  * @return array
  */
-function forum_get_forum_types_all() {
-    return array ('news'     => get_string('namenews','forum'),
-                  'social'   => get_string('namesocial','forum'),
-                  'general'  => get_string('generalforum', 'forum'),
-                  'eachuser' => get_string('eachuserforum', 'forum'),
-                  'single'   => get_string('singleforum', 'forum'),
-                  'qanda'    => get_string('qandaforum', 'forum'),
-                  'blog'     => get_string('blogforum', 'forum'));
+function digestforum_get_digestforum_types_all() {
+    return array ('news'     => get_string('namenews','digestforum'),
+                  'social'   => get_string('namesocial','digestforum'),
+                  'general'  => get_string('generaldigestforum', 'digestforum'),
+                  'eachuser' => get_string('eachuserdigestforum', 'digestforum'),
+                  'single'   => get_string('singledigestforum', 'digestforum'),
+                  'qanda'    => get_string('qandadigestforum', 'digestforum'),
+                  'blog'     => get_string('blogdigestforum', 'digestforum'));
 }
 
 /**
@@ -7445,7 +7449,7 @@ function forum_get_forum_types_all() {
  *
  * @return array
  */
-function forum_get_extra_capabilities() {
+function digestforum_get_extra_capabilities() {
     return ['moodle/rating:view', 'moodle/rating:viewany', 'moodle/rating:viewall', 'moodle/rating:rate'];
 }
 
@@ -7453,12 +7457,12 @@ function forum_get_extra_capabilities() {
  * Adds module specific settings to the settings block
  *
  * @param settings_navigation $settings The settings navigation object
- * @param navigation_node $forumnode The node to add module settings to
+ * @param navigation_node $digestforumnode The node to add module settings to
  */
-function forum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $forumnode) {
+function digestforum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $digestforumnode) {
     global $USER, $PAGE, $CFG, $DB, $OUTPUT;
 
-    $forumobject = $DB->get_record("forum", array("id" => $PAGE->cm->instance));
+    $digestforumobject = $DB->get_record("digestforum", array("id" => $PAGE->cm->instance));
     if (empty($PAGE->cm->context)) {
         $PAGE->cm->context = context_module::instance($PAGE->cm->instance);
     }
@@ -7472,104 +7476,104 @@ function forum_extend_settings_navigation(settings_navigation $settingsnav, navi
     $enrolled = is_enrolled($PAGE->cm->context, $USER, '', false);
     $activeenrolled = is_enrolled($PAGE->cm->context, $USER, '', true);
 
-    $canmanage  = has_capability('mod/forum:managesubscriptions', $PAGE->cm->context);
-    $subscriptionmode = \mod_forum\subscriptions::get_subscription_mode($forumobject);
-    $cansubscribe = $activeenrolled && !\mod_forum\subscriptions::is_forcesubscribed($forumobject) &&
-            (!\mod_forum\subscriptions::subscription_disabled($forumobject) || $canmanage);
+    $canmanage  = has_capability('mod/digestforum:managesubscriptions', $PAGE->cm->context);
+    $subscriptionmode = \mod_digestforum\subscriptions::get_subscription_mode($digestforumobject);
+    $cansubscribe = $activeenrolled && !\mod_digestforum\subscriptions::is_forcesubscribed($digestforumobject) &&
+            (!\mod_digestforum\subscriptions::subscription_disabled($digestforumobject) || $canmanage);
 
     if ($canmanage) {
-        $mode = $forumnode->add(get_string('subscriptionmode', 'forum'), null, navigation_node::TYPE_CONTAINER);
+        $mode = $digestforumnode->add(get_string('subscriptionmode', 'digestforum'), null, navigation_node::TYPE_CONTAINER);
         $mode->add_class('subscriptionmode');
 
-        $allowchoice = $mode->add(get_string('subscriptionoptional', 'forum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceforever = $mode->add(get_string("subscriptionforced", "forum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $forceinitially = $mode->add(get_string("subscriptionauto", "forum"), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
-        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'forum'), new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'mode'=>FORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $allowchoice = $mode->add(get_string('subscriptionoptional', 'digestforum'), new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$digestforumobject->id, 'mode'=>DFORUM_CHOOSESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceforever = $mode->add(get_string("subscriptionforced", "digestforum"), new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$digestforumobject->id, 'mode'=>DFORUM_FORCESUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $forceinitially = $mode->add(get_string("subscriptionauto", "digestforum"), new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$digestforumobject->id, 'mode'=>DFORUM_INITIALSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
+        $disallowchoice = $mode->add(get_string('subscriptiondisabled', 'digestforum'), new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$digestforumobject->id, 'mode'=>DFORUM_DISALLOWSUBSCRIBE, 'sesskey'=>sesskey())), navigation_node::TYPE_SETTING);
 
         switch ($subscriptionmode) {
-            case FORUM_CHOOSESUBSCRIBE : // 0
+            case DFORUM_CHOOSESUBSCRIBE : // 0
                 $allowchoice->action = null;
                 $allowchoice->add_class('activesetting');
-                $allowchoice->icon = new pix_icon('t/selected', '', 'mod_forum');
+                $allowchoice->icon = new pix_icon('t/selected', '', 'mod_digestforum');
                 break;
-            case FORUM_FORCESUBSCRIBE : // 1
+            case DFORUM_FORCESUBSCRIBE : // 1
                 $forceforever->action = null;
                 $forceforever->add_class('activesetting');
-                $forceforever->icon = new pix_icon('t/selected', '', 'mod_forum');
+                $forceforever->icon = new pix_icon('t/selected', '', 'mod_digestforum');
                 break;
-            case FORUM_INITIALSUBSCRIBE : // 2
+            case DFORUM_INITIALSUBSCRIBE : // 2
                 $forceinitially->action = null;
                 $forceinitially->add_class('activesetting');
-                $forceinitially->icon = new pix_icon('t/selected', '', 'mod_forum');
+                $forceinitially->icon = new pix_icon('t/selected', '', 'mod_digestforum');
                 break;
-            case FORUM_DISALLOWSUBSCRIBE : // 3
+            case DFORUM_DISALLOWSUBSCRIBE : // 3
                 $disallowchoice->action = null;
                 $disallowchoice->add_class('activesetting');
-                $disallowchoice->icon = new pix_icon('t/selected', '', 'mod_forum');
+                $disallowchoice->icon = new pix_icon('t/selected', '', 'mod_digestforum');
                 break;
         }
 
     } else if ($activeenrolled) {
 
         switch ($subscriptionmode) {
-            case FORUM_CHOOSESUBSCRIBE : // 0
-                $notenode = $forumnode->add(get_string('subscriptionoptional', 'forum'));
+            case DFORUM_CHOOSESUBSCRIBE : // 0
+                $notenode = $digestforumnode->add(get_string('subscriptionoptional', 'digestforum'));
                 break;
-            case FORUM_FORCESUBSCRIBE : // 1
-                $notenode = $forumnode->add(get_string('subscriptionforced', 'forum'));
+            case DFORUM_FORCESUBSCRIBE : // 1
+                $notenode = $digestforumnode->add(get_string('subscriptionforced', 'digestforum'));
                 break;
-            case FORUM_INITIALSUBSCRIBE : // 2
-                $notenode = $forumnode->add(get_string('subscriptionauto', 'forum'));
+            case DFORUM_INITIALSUBSCRIBE : // 2
+                $notenode = $digestforumnode->add(get_string('subscriptionauto', 'digestforum'));
                 break;
-            case FORUM_DISALLOWSUBSCRIBE : // 3
-                $notenode = $forumnode->add(get_string('subscriptiondisabled', 'forum'));
+            case DFORUM_DISALLOWSUBSCRIBE : // 3
+                $notenode = $digestforumnode->add(get_string('subscriptiondisabled', 'digestforum'));
                 break;
         }
     }
 
     if ($cansubscribe) {
-        if (\mod_forum\subscriptions::is_subscribed($USER->id, $forumobject, null, $PAGE->cm)) {
-            $linktext = get_string('unsubscribe', 'forum');
+        if (\mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforumobject, null, $PAGE->cm)) {
+            $linktext = get_string('unsubscribe', 'digestforum');
         } else {
-            $linktext = get_string('subscribe', 'forum');
+            $linktext = get_string('subscribe', 'digestforum');
         }
-        $url = new moodle_url('/mod/forum/subscribe.php', array('id'=>$forumobject->id, 'sesskey'=>sesskey()));
-        $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
+        $url = new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$digestforumobject->id, 'sesskey'=>sesskey()));
+        $digestforumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
 
         if (isset($discussionid)) {
-            if (\mod_forum\subscriptions::is_subscribed($USER->id, $forumobject, $discussionid, $PAGE->cm)) {
-                $linktext = get_string('unsubscribediscussion', 'forum');
+            if (\mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforumobject, $discussionid, $PAGE->cm)) {
+                $linktext = get_string('unsubscribediscussion', 'digestforum');
             } else {
-                $linktext = get_string('subscribediscussion', 'forum');
+                $linktext = get_string('subscribediscussion', 'digestforum');
             }
-            $url = new moodle_url('/mod/forum/subscribe.php', array(
-                    'id' => $forumobject->id,
+            $url = new moodle_url('/mod/digestforum/subscribe.php', array(
+                    'id' => $digestforumobject->id,
                     'sesskey' => sesskey(),
                     'd' => $discussionid,
                     'returnurl' => $PAGE->url->out(),
                 ));
-            $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
+            $digestforumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
         }
     }
 
-    if (has_capability('mod/forum:viewsubscribers', $PAGE->cm->context)){
-        $url = new moodle_url('/mod/forum/subscribers.php', array('id'=>$forumobject->id));
-        $forumnode->add(get_string('showsubscribers', 'forum'), $url, navigation_node::TYPE_SETTING);
+    if (has_capability('mod/digestforum:viewsubscribers', $PAGE->cm->context)){
+        $url = new moodle_url('/mod/digestforum/subscribers.php', array('id'=>$digestforumobject->id));
+        $digestforumnode->add(get_string('showsubscribers', 'digestforum'), $url, navigation_node::TYPE_SETTING);
     }
 
-    if ($enrolled && forum_tp_can_track_forums($forumobject)) { // keep tracking info for users with suspended enrolments
-        if ($forumobject->trackingtype == FORUM_TRACKING_OPTIONAL
-                || ((!$CFG->forum_allowforcedreadtracking) && $forumobject->trackingtype == FORUM_TRACKING_FORCED)) {
-            if (forum_tp_is_tracked($forumobject)) {
-                $linktext = get_string('notrackforum', 'forum');
+    if ($enrolled && digestforum_tp_can_track_digestforums($digestforumobject)) { // keep tracking info for users with suspended enrolments
+        if ($digestforumobject->trackingtype == DFORUM_TRACKING_OPTIONAL
+                || ((!$CFG->digestforum_allowforcedreadtracking) && $digestforumobject->trackingtype == DFORUM_TRACKING_FORCED)) {
+            if (digestforum_tp_is_tracked($digestforumobject)) {
+                $linktext = get_string('notrackdigestforum', 'digestforum');
             } else {
-                $linktext = get_string('trackforum', 'forum');
+                $linktext = get_string('trackdigestforum', 'digestforum');
             }
-            $url = new moodle_url('/mod/forum/settracking.php', array(
-                    'id' => $forumobject->id,
+            $url = new moodle_url('/mod/digestforum/settracking.php', array(
+                    'id' => $digestforumobject->id,
                     'sesskey' => sesskey(),
                 ));
-            $forumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
+            $digestforumnode->add($linktext, $url, navigation_node::TYPE_SETTING);
         }
     }
 
@@ -7580,22 +7584,22 @@ function forum_extend_settings_navigation(settings_navigation $settingsnav, navi
     }
 
     $hascourseaccess = ($PAGE->course->id == SITEID) || can_access_course($PAGE->course, $userid);
-    $enablerssfeeds = !empty($CFG->enablerssfeeds) && !empty($CFG->forum_enablerssfeeds);
+    $enablerssfeeds = !empty($CFG->enablerssfeeds) && !empty($CFG->digestforum_enablerssfeeds);
 
-    if ($enablerssfeeds && $forumobject->rsstype && $forumobject->rssarticles && $hascourseaccess) {
+    if ($enablerssfeeds && $digestforumobject->rsstype && $digestforumobject->rssarticles && $hascourseaccess) {
 
         if (!function_exists('rss_get_url')) {
             require_once("$CFG->libdir/rsslib.php");
         }
 
-        if ($forumobject->rsstype == 1) {
-            $string = get_string('rsssubscriberssdiscussions','forum');
+        if ($digestforumobject->rsstype == 1) {
+            $string = get_string('rsssubscriberssdiscussions','digestforum');
         } else {
-            $string = get_string('rsssubscriberssposts','forum');
+            $string = get_string('rsssubscriberssposts','digestforum');
         }
 
-        $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_forum", $forumobject->id));
-        $forumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
+        $url = new moodle_url(rss_get_url($PAGE->cm->context->id, $userid, "mod_digestforum", $digestforumobject->id));
+        $digestforumnode->add($string, $url, settings_navigation::TYPE_SETTING, null, null, new pix_icon('i/rss', ''));
     }
 }
 
@@ -7604,16 +7608,16 @@ function forum_extend_settings_navigation(settings_navigation $settingsnav, navi
  * similar), to the course-module object.
  * @param cm_info $cm Course-module object
  */
-function forum_cm_info_view(cm_info $cm) {
+function digestforum_cm_info_view(cm_info $cm) {
     global $CFG;
 
-    if (forum_tp_can_track_forums()) {
-        if ($unread = forum_tp_count_forum_unread_posts($cm, $cm->get_course())) {
+    if (digestforum_tp_can_track_digestforums()) {
+        if ($unread = digestforum_tp_count_digestforum_unread_posts($cm, $cm->get_course())) {
             $out = '<span class="unread"> <a href="' . $cm->url . '#unread">';
             if ($unread == 1) {
-                $out .= get_string('unreadpostsone', 'forum');
+                $out .= get_string('unreadpostsone', 'digestforum');
             } else {
-                $out .= get_string('unreadpostsnumber', 'forum', $unread);
+                $out .= get_string('unreadpostsnumber', 'digestforum', $unread);
             }
             $out .= '</a></span>';
             $cm->set_after_link($out);
@@ -7627,17 +7631,17 @@ function forum_cm_info_view(cm_info $cm) {
  * @param stdClass $parentcontext Block's parent context
  * @param stdClass $currentcontext Current context of block
  */
-function forum_page_type_list($pagetype, $parentcontext, $currentcontext) {
-    $forum_pagetype = array(
-        'mod-forum-*'=>get_string('page-mod-forum-x', 'forum'),
-        'mod-forum-view'=>get_string('page-mod-forum-view', 'forum'),
-        'mod-forum-discuss'=>get_string('page-mod-forum-discuss', 'forum')
+function digestforum_page_type_list($pagetype, $parentcontext, $currentcontext) {
+    $digestforum_pagetype = array(
+        'mod-digestforum-*'=>get_string('page-mod-digestforum-x', 'digestforum'),
+        'mod-digestforum-view'=>get_string('page-mod-digestforum-view', 'digestforum'),
+        'mod-digestforum-discuss'=>get_string('page-mod-digestforum-discuss', 'digestforum')
     );
-    return $forum_pagetype;
+    return $digestforum_pagetype;
 }
 
 /**
- * Gets all of the courses where the provided user has posted in a forum.
+ * Gets all of the courses where the provided user has posted in a digestforum.
  *
  * @global moodle_database $DB The database connection
  * @param stdClass $user The user who's posts we are looking for
@@ -7647,20 +7651,20 @@ function forum_page_type_list($pagetype, $parentcontext, $currentcontext) {
  * @param int $limitnum The number of records to return
  * @return array An array of courses
  */
-function forum_get_courses_user_posted_in($user, $discussionsonly = false, $includecontexts = true, $limitfrom = null, $limitnum = null) {
+function digestforum_get_courses_user_posted_in($user, $discussionsonly = false, $includecontexts = true, $limitfrom = null, $limitnum = null) {
     global $DB;
 
-    // If we are only after discussions we need only look at the forum_discussions
+    // If we are only after discussions we need only look at the digestforum_discussions
     // table and join to the userid there. If we are looking for posts then we need
-    // to join to the forum_posts table.
+    // to join to the digestforum_posts table.
     if (!$discussionsonly) {
         $subquery = "(SELECT DISTINCT fd.course
-                         FROM {forum_discussions} fd
-                         JOIN {forum_posts} fp ON fp.discussion = fd.id
+                         FROM {digestforum_discussions} fd
+                         JOIN {digestforum_posts} fp ON fp.discussion = fd.id
                         WHERE fp.userid = :userid )";
     } else {
         $subquery= "(SELECT DISTINCT fd.course
-                         FROM {forum_discussions} fd
+                         FROM {digestforum_discussions} fd
                         WHERE fd.userid = :userid )";
     }
 
@@ -7677,7 +7681,7 @@ function forum_get_courses_user_posted_in($user, $discussionsonly = false, $incl
     }
 
     // Now we need to get all of the courses to search.
-    // All courses where the user has posted within a forum will be returned.
+    // All courses where the user has posted within a digestforum will be returned.
     $sql = "SELECT c.* $ctxselect
             FROM {course} c
             $ctxjoin
@@ -7690,19 +7694,19 @@ function forum_get_courses_user_posted_in($user, $discussionsonly = false, $incl
 }
 
 /**
- * Gets all of the forums a user has posted in for one or more courses.
+ * Gets all of the digestforums a user has posted in for one or more courses.
  *
  * @global moodle_database $DB
  * @param stdClass $user
  * @param array $courseids An array of courseids to search or if not provided
  *                       all courses the user has posted within
- * @param bool $discussionsonly If true then only forums where the user has started
+ * @param bool $discussionsonly If true then only digestforums where the user has started
  *                       a discussion will be returned.
  * @param int $limitfrom The offset of records to return
  * @param int $limitnum The number of records to return
- * @return array An array of forums the user has posted within in the provided courses
+ * @return array An array of digestforums the user has posted within in the provided courses
  */
-function forum_get_forums_user_posted_in($user, array $courseids = null, $discussionsonly = false, $limitfrom = null, $limitnum = null) {
+function digestforum_get_digestforums_user_posted_in($user, array $courseids = null, $discussionsonly = false, $limitfrom = null, $limitnum = null) {
     global $DB;
 
     if (!is_null($courseids)) {
@@ -7713,31 +7717,31 @@ function forum_get_forums_user_posted_in($user, array $courseids = null, $discus
         $params = array();
     }
     $params['userid'] = $user->id;
-    $params['forum'] = 'forum';
+    $params['digestforum'] = 'digestforum';
 
     if ($discussionsonly) {
-        $join = 'JOIN {forum_discussions} ff ON ff.forum = f.id';
+        $join = 'JOIN {digestforum_discussions} ff ON ff.digestforum = f.id';
     } else {
-        $join = 'JOIN {forum_discussions} fd ON fd.forum = f.id
-                 JOIN {forum_posts} ff ON ff.discussion = fd.id';
+        $join = 'JOIN {digestforum_discussions} fd ON fd.digestforum = f.id
+                 JOIN {digestforum_posts} ff ON ff.discussion = fd.id';
     }
 
     $sql = "SELECT f.*, cm.id AS cmid
-              FROM {forum} f
+              FROM {digestforum} f
               JOIN {course_modules} cm ON cm.instance = f.id
               JOIN {modules} m ON m.id = cm.module
               JOIN (
                   SELECT f.id
-                    FROM {forum} f
+                    FROM {digestforum} f
                     {$join}
                    WHERE ff.userid = :userid
                 GROUP BY f.id
                    ) j ON j.id = f.id
-             WHERE m.name = :forum
+             WHERE m.name = :digestforum
                  {$coursewhere}";
 
-    $courseforums = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
-    return $courseforums;
+    $coursedigestforums = $DB->get_records_sql($sql, $params, $limitfrom, $limitnum);
+    return $coursedigestforums;
 }
 
 /**
@@ -7746,7 +7750,7 @@ function forum_get_forums_user_posted_in($user, array $courseids = null, $discus
  * This method can be used to return all of the posts made by the requested user
  * within the given courses.
  * For each course the access of the current user and requested user is checked
- * and then for each post access to the post and forum is checked as well.
+ * and then for each post access to the post and digestforum is checked as well.
  *
  * This function is safe to use with usercapabilities.
  *
@@ -7764,17 +7768,17 @@ function forum_get_forums_user_posted_in($user, array $courseids = null, $discus
  *                             that the current user can see.
  *               ->courses: An array of courses the current user can see that the
  *                          requested user has posted in.
- *               ->forums: An array of forums relating to the posts returned in the
+ *               ->digestforums: An array of digestforums relating to the posts returned in the
  *                         property below.
  *               ->posts: An array containing the posts to show for this request.
  */
-function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false, $discussionsonly = false, $limitfrom = 0, $limitnum = 50) {
+function digestforum_get_posts_by_user($user, array $courses, $musthaveaccess = false, $discussionsonly = false, $limitfrom = 0, $limitnum = 50) {
     global $DB, $USER, $CFG;
 
     $return = new stdClass;
     $return->totalcount = 0;    // The total number of posts that the current user is able to view
     $return->courses = array(); // The courses the current user can access
-    $return->forums = array();  // The forums that the current user can access that contain posts
+    $return->digestforums = array();  // The digestforums that the current user can access that contain posts
     $return->posts = array();   // The posts to display
 
     // First up a small sanity check. If there are no courses to check we can
@@ -7812,7 +7816,7 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
             if (!is_viewing($coursecontext, $user) && !is_enrolled($coursecontext, $user)) {
                 // Need to have full access to a course to see the rest of own info
                 if ($musthaveaccess) {
-                    print_error('errorenrolmentrequired', 'forum');
+                    print_error('errorenrolmentrequired', 'digestforum');
                 }
                 continue;
             }
@@ -7821,7 +7825,7 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
             // if they don't we immediately have a problem.
             if (!can_access_course($course)) {
                 if ($musthaveaccess) {
-                    print_error('errorenrolmentrequired', 'forum');
+                    print_error('errorenrolmentrequired', 'digestforum');
                 }
                 continue;
             }
@@ -7830,7 +7834,7 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
             // we can meet in at least one course level group.
             // Note that we check if either the current user or the requested user have
             // the capability to access all groups. This is because with that capability
-            // a user in group A could post in the group B forum. Grrrr.
+            // a user in group A could post in the group B digestforum. Grrrr.
             if (groups_get_course_groupmode($course) == SEPARATEGROUPS && $course->groupmodeforce
               && !has_capability('moodle/site:accessallgroups', $coursecontext) && !has_capability('moodle/site:accessallgroups', $coursecontext, $user->id)) {
                 // If its the guest user to bad... the guest user cannot access groups
@@ -7859,7 +7863,7 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
         }
         // Woo hoo we got this far which means the current user can search this
         // this course for the requested user. Although this is only the course accessibility
-        // handling that is complete, the forum accessibility tests are yet to come.
+        // handling that is complete, the digestforum accessibility tests are yet to come.
         $return->courses[$course->id] = $course;
     }
     // No longer beed $courses array - lose it not it may be big
@@ -7877,123 +7881,123 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
         }
     }
 
-    // Next step: Collect all of the forums that we will want to search.
+    // Next step: Collect all of the digestforums that we will want to search.
     // It is important to note that this step isn't actually about searching, it is
-    // about determining which forums we can search by testing accessibility.
-    $forums = forum_get_forums_user_posted_in($user, array_keys($return->courses), $discussionsonly);
+    // about determining which digestforums we can search by testing accessibility.
+    $digestforums = digestforum_get_digestforums_user_posted_in($user, array_keys($return->courses), $discussionsonly);
 
     // Will be used to build the where conditions for the search
-    $forumsearchwhere = array();
+    $digestforumsearchwhere = array();
     // Will be used to store the where condition params for the search
-    $forumsearchparams = array();
-    // Will record forums where the user can freely access everything
-    $forumsearchfullaccess = array();
+    $digestforumsearchparams = array();
+    // Will record digestforums where the user can freely access everything
+    $digestforumsearchfullaccess = array();
     // DB caching friendly
     $now = floor(time() / 60) * 60;
-    // For each course to search we want to find the forums the user has posted in
-    // and providing the current user can access the forum create a search condition
-    // for the forum to get the requested users posts.
+    // For each course to search we want to find the digestforums the user has posted in
+    // and providing the current user can access the digestforum create a search condition
+    // for the digestforum to get the requested users posts.
     foreach ($return->courses as $course) {
-        // Now we need to get the forums
+        // Now we need to get the digestforums
         $modinfo = get_fast_modinfo($course);
-        if (empty($modinfo->instances['forum'])) {
-            // hmmm, no forums? well at least its easy... skip!
+        if (empty($modinfo->instances['digestforum'])) {
+            // hmmm, no digestforums? well at least its easy... skip!
             continue;
         }
         // Iterate
-        foreach ($modinfo->get_instances_of('forum') as $forumid => $cm) {
-            if (!$cm->uservisible or !isset($forums[$forumid])) {
+        foreach ($modinfo->get_instances_of('digestforum') as $digestforumid => $cm) {
+            if (!$cm->uservisible or !isset($digestforums[$digestforumid])) {
                 continue;
             }
-            // Get the forum in question
-            $forum = $forums[$forumid];
+            // Get the digestforum in question
+            $digestforum = $digestforums[$digestforumid];
 
-            // This is needed for functionality later on in the forum code. It is converted to an object
+            // This is needed for functionality later on in the digestforum code. It is converted to an object
             // because the cm_info is readonly from 2.6. This is a dirty hack because some other parts of the
-            // code were expecting an writeable object. See {@link forum_print_post()}.
-            $forum->cm = new stdClass();
+            // code were expecting an writeable object. See {@link digestforum_print_post()}.
+            $digestforum->cm = new stdClass();
             foreach ($cm as $key => $value) {
-                $forum->cm->$key = $value;
+                $digestforum->cm->$key = $value;
             }
 
-            // Check that either the current user can view the forum, or that the
+            // Check that either the current user can view the digestforum, or that the
             // current user has capabilities over the requested user and the requested
             // user can view the discussion
-            if (!has_capability('mod/forum:viewdiscussion', $cm->context) && !($hascapsonuser && has_capability('mod/forum:viewdiscussion', $cm->context, $user->id))) {
+            if (!has_capability('mod/digestforum:viewdiscussion', $cm->context) && !($hascapsonuser && has_capability('mod/digestforum:viewdiscussion', $cm->context, $user->id))) {
                 continue;
             }
 
-            // This will contain forum specific where clauses
-            $forumsearchselect = array();
+            // This will contain digestforum specific where clauses
+            $digestforumsearchselect = array();
             if (!$iscurrentuser && !$hascapsonuser) {
                 // Make sure we check group access
                 if (groups_get_activity_groupmode($cm, $course) == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $cm->context)) {
                     $groups = $modinfo->get_groups($cm->groupingid);
                     $groups[] = -1;
-                    list($groupid_sql, $groupid_params) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED, 'grps'.$forumid.'_');
-                    $forumsearchparams = array_merge($forumsearchparams, $groupid_params);
-                    $forumsearchselect[] = "d.groupid $groupid_sql";
+                    list($groupid_sql, $groupid_params) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED, 'grps'.$digestforumid.'_');
+                    $digestforumsearchparams = array_merge($digestforumsearchparams, $groupid_params);
+                    $digestforumsearchselect[] = "d.groupid $groupid_sql";
                 }
 
                 // hidden timed discussions
-                if (!empty($CFG->forum_enabletimedposts) && !has_capability('mod/forum:viewhiddentimedposts', $cm->context)) {
-                    $forumsearchselect[] = "(d.userid = :userid{$forumid} OR (d.timestart < :timestart{$forumid} AND (d.timeend = 0 OR d.timeend > :timeend{$forumid})))";
-                    $forumsearchparams['userid'.$forumid] = $user->id;
-                    $forumsearchparams['timestart'.$forumid] = $now;
-                    $forumsearchparams['timeend'.$forumid] = $now;
+                if (!empty($CFG->digestforum_enabletimedposts) && !has_capability('mod/digestforum:viewhiddentimedposts', $cm->context)) {
+                    $digestforumsearchselect[] = "(d.userid = :userid{$digestforumid} OR (d.timestart < :timestart{$digestforumid} AND (d.timeend = 0 OR d.timeend > :timeend{$digestforumid})))";
+                    $digestforumsearchparams['userid'.$digestforumid] = $user->id;
+                    $digestforumsearchparams['timestart'.$digestforumid] = $now;
+                    $digestforumsearchparams['timeend'.$digestforumid] = $now;
                 }
 
                 // qanda access
-                if ($forum->type == 'qanda' && !has_capability('mod/forum:viewqandawithoutposting', $cm->context)) {
-                    // We need to check whether the user has posted in the qanda forum.
-                    $discussionspostedin = forum_discussions_user_has_posted_in($forum->id, $user->id);
+                if ($digestforum->type == 'qanda' && !has_capability('mod/digestforum:viewqandawithoutposting', $cm->context)) {
+                    // We need to check whether the user has posted in the qanda digestforum.
+                    $discussionspostedin = digestforum_discussions_user_has_posted_in($digestforum->id, $user->id);
                     if (!empty($discussionspostedin)) {
-                        $forumonlydiscussions = array();  // Holds discussion ids for the discussions the user is allowed to see in this forum.
+                        $digestforumonlydiscussions = array();  // Holds discussion ids for the discussions the user is allowed to see in this digestforum.
                         foreach ($discussionspostedin as $d) {
-                            $forumonlydiscussions[] = $d->id;
+                            $digestforumonlydiscussions[] = $d->id;
                         }
-                        list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($forumonlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$forumid.'_');
-                        $forumsearchparams = array_merge($forumsearchparams, $discussionid_params);
-                        $forumsearchselect[] = "(d.id $discussionid_sql OR p.parent = 0)";
+                        list($discussionid_sql, $discussionid_params) = $DB->get_in_or_equal($digestforumonlydiscussions, SQL_PARAMS_NAMED, 'qanda'.$digestforumid.'_');
+                        $digestforumsearchparams = array_merge($digestforumsearchparams, $discussionid_params);
+                        $digestforumsearchselect[] = "(d.id $discussionid_sql OR p.parent = 0)";
                     } else {
-                        $forumsearchselect[] = "p.parent = 0";
+                        $digestforumsearchselect[] = "p.parent = 0";
                     }
 
                 }
 
-                if (count($forumsearchselect) > 0) {
-                    $forumsearchwhere[] = "(d.forum = :forum{$forumid} AND ".implode(" AND ", $forumsearchselect).")";
-                    $forumsearchparams['forum'.$forumid] = $forumid;
+                if (count($digestforumsearchselect) > 0) {
+                    $digestforumsearchwhere[] = "(d.digestforum = :digestforum{$digestforumid} AND ".implode(" AND ", $digestforumsearchselect).")";
+                    $digestforumsearchparams['digestforum'.$digestforumid] = $digestforumid;
                 } else {
-                    $forumsearchfullaccess[] = $forumid;
+                    $digestforumsearchfullaccess[] = $digestforumid;
                 }
             } else {
                 // The current user/parent can see all of their own posts
-                $forumsearchfullaccess[] = $forumid;
+                $digestforumsearchfullaccess[] = $digestforumid;
             }
         }
     }
 
-    // If we dont have any search conditions, and we don't have any forums where
+    // If we dont have any search conditions, and we don't have any digestforums where
     // the user has full access then we just return the default.
-    if (empty($forumsearchwhere) && empty($forumsearchfullaccess)) {
+    if (empty($digestforumsearchwhere) && empty($digestforumsearchfullaccess)) {
         return $return;
     }
 
-    // Prepare a where condition for the full access forums.
-    if (count($forumsearchfullaccess) > 0) {
-        list($fullidsql, $fullidparams) = $DB->get_in_or_equal($forumsearchfullaccess, SQL_PARAMS_NAMED, 'fula');
-        $forumsearchparams = array_merge($forumsearchparams, $fullidparams);
-        $forumsearchwhere[] = "(d.forum $fullidsql)";
+    // Prepare a where condition for the full access digestforums.
+    if (count($digestforumsearchfullaccess) > 0) {
+        list($fullidsql, $fullidparams) = $DB->get_in_or_equal($digestforumsearchfullaccess, SQL_PARAMS_NAMED, 'fula');
+        $digestforumsearchparams = array_merge($digestforumsearchparams, $fullidparams);
+        $digestforumsearchwhere[] = "(d.digestforum $fullidsql)";
     }
 
     // Prepare SQL to both count and search.
-    // We alias user.id to useridx because we forum_posts already has a userid field and not aliasing this would break
+    // We alias user.id to useridx because we digestforum_posts already has a userid field and not aliasing this would break
     // oracle and mssql.
     $userfields = user_picture::fields('u', null, 'useridx');
     $countsql = 'SELECT COUNT(*) ';
-    $selectsql = 'SELECT p.*, d.forum, d.name AS discussionname, '.$userfields.' ';
-    $wheresql = implode(" OR ", $forumsearchwhere);
+    $selectsql = 'SELECT p.*, d.digestforum, d.name AS discussionname, '.$userfields.' ';
+    $wheresql = implode(" OR ", $digestforumsearchwhere);
 
     if ($discussionsonly) {
         if ($wheresql == '') {
@@ -8003,26 +8007,26 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
         }
     }
 
-    $sql = "FROM {forum_posts} p
-            JOIN {forum_discussions} d ON d.id = p.discussion
+    $sql = "FROM {digestforum_posts} p
+            JOIN {digestforum_discussions} d ON d.id = p.discussion
             JOIN {user} u ON u.id = p.userid
            WHERE ($wheresql)
              AND p.userid = :userid ";
     $orderby = "ORDER BY p.modified DESC";
-    $forumsearchparams['userid'] = $user->id;
+    $digestforumsearchparams['userid'] = $user->id;
 
     // Set the total number posts made by the requested user that the current user can see
-    $return->totalcount = $DB->count_records_sql($countsql.$sql, $forumsearchparams);
+    $return->totalcount = $DB->count_records_sql($countsql.$sql, $digestforumsearchparams);
     // Set the collection of posts that has been requested
-    $return->posts = $DB->get_records_sql($selectsql.$sql.$orderby, $forumsearchparams, $limitfrom, $limitnum);
+    $return->posts = $DB->get_records_sql($selectsql.$sql.$orderby, $digestforumsearchparams, $limitfrom, $limitnum);
 
-    // We need to build an array of forums for which posts will be displayed.
+    // We need to build an array of digestforums for which posts will be displayed.
     // We do this here to save the caller needing to retrieve them themselves before
-    // printing these forums posts. Given we have the forums already there is
+    // printing these digestforums posts. Given we have the digestforums already there is
     // practically no overhead here.
     foreach ($return->posts as $post) {
-        if (!array_key_exists($post->forum, $return->forums)) {
-            $return->forums[$post->forum] = $forums[$post->forum];
+        if (!array_key_exists($post->digestforum, $return->digestforums)) {
+            $return->digestforums[$post->digestforum] = $digestforums[$post->digestforum];
         }
     }
 
@@ -8030,79 +8034,81 @@ function forum_get_posts_by_user($user, array $courses, $musthaveaccess = false,
 }
 
 /**
- * Set the per-forum maildigest option for the specified user.
+ * Set the per-digestforum maildigest option for the specified user.
  *
- * @param stdClass $forum The forum to set the option for.
+ * @param stdClass $digestforum The digestforum to set the option for.
  * @param int $maildigest The maildigest option.
  * @param stdClass $user The user object. This defaults to the global $USER object.
  * @throws invalid_digest_setting thrown if an invalid maildigest option is provided.
  */
-function forum_set_user_maildigest($forum, $maildigest, $user = null) {
+function digestforum_set_user_maildigest($digestforum, $maildigest, $user = null) {
     global $DB, $USER;
 
-    if (is_number($forum)) {
-        $forum = $DB->get_record('forum', array('id' => $forum));
+    if (is_number($digestforum)) {
+        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum));
     }
 
     if ($user === null) {
         $user = $USER;
     }
 
-    $course  = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
-    $cm      = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+    $course  = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+    $cm      = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
     $context = context_module::instance($cm->id);
 
-    // User must be allowed to see this forum.
-    require_capability('mod/forum:viewdiscussion', $context, $user->id);
+    // User must be allowed to see this digestforum.
+    require_capability('mod/digestforum:viewdiscussion', $context, $user->id);
 
     // Validate the maildigest setting.
-    $digestoptions = forum_get_user_digest_options($user);
+    $digestoptions = digestforum_get_user_digest_options($user);
 
     if (!isset($digestoptions[$maildigest])) {
-        throw new moodle_exception('invaliddigestsetting', 'mod_forum');
+        throw new moodle_exception('invaliddigestsetting', 'mod_digestforum');
     }
 
-    // Attempt to retrieve any existing forum digest record.
-    $subscription = $DB->get_record('forum_digests', array(
+    // Attempt to retrieve any existing digestforum digest record.
+    $subscription = $DB->get_record('digestforum_digests', array(
         'userid' => $user->id,
-        'forum' => $forum->id,
+        'digestforum' => $digestforum->id,
     ));
 
     // Create or Update the existing maildigest setting.
     if ($subscription) {
         if ($maildigest == -1) {
-            $DB->delete_records('forum_digests', array('forum' => $forum->id, 'userid' => $user->id));
+            $DB->delete_records('digestforum_digests', array('digestforum' => $digestforum->id, 'userid' => $user->id));
         } else if ($maildigest !== $subscription->maildigest) {
             // Only update the maildigest setting if it's changed.
 
             $subscription->maildigest = $maildigest;
-            $DB->update_record('forum_digests', $subscription);
+            $DB->update_record('digestforum_digests', $subscription);
         }
     } else {
         if ($maildigest != -1) {
             // Only insert the maildigest setting if it's non-default.
 
             $subscription = new stdClass();
-            $subscription->forum = $forum->id;
+            $subscription->digestforum = $digestforum->id;
             $subscription->userid = $user->id;
             $subscription->maildigest = $maildigest;
-            $subscription->id = $DB->insert_record('forum_digests', $subscription);
+            $subscription->id = $DB->insert_record('digestforum_digests', $subscription);
         }
     }
 }
 
 /**
  * Determine the maildigest setting for the specified user against the
- * specified forum.
+ * specified digestforum.
  *
- * @param Array $digests An array of forums and user digest settings.
+ * @param Array $digests An array of digestforums and user digest settings.
  * @param stdClass $user The user object containing the id and maildigest default.
- * @param int $forumid The ID of the forum to check.
- * @return int The calculated maildigest setting for this user and forum.
+ * @param int $digestforumid The ID of the digestforum to check.
+ * @return int The calculated maildigest setting for this user and digestforum.
  */
-function forum_get_user_maildigest_bulk($digests, $user, $forumid) {
-    if (isset($digests[$forumid]) && isset($digests[$forumid][$user->id])) {
-        $maildigest = $digests[$forumid][$user->id];
+function digestforum_get_user_maildigest_bulk($digests, $user, $digestforumid) {
+	return 1; //hack, but isn't this the easy way to force it to be digest forum?
+	/*
+    if (isset($digests[$digestforumid]) && isset($digests[$digestforumid][$user->id])) {
+        $maildigest = $digests[$digestforumid][$user->id];
         if ($maildigest === -1) {
             $maildigest = $user->maildigest;
         }
@@ -8110,6 +8116,7 @@ function forum_get_user_maildigest_bulk($digests, $user, $forumid) {
         $maildigest = $user->maildigest;
     }
     return $maildigest;
+	*/
 }
 
 /**
@@ -8118,7 +8125,7 @@ function forum_get_user_maildigest_bulk($digests, $user, $forumid) {
  * @param stdClass $user The user object. This defaults to the global $USER object.
  * @return array The mapping of values to digest options.
  */
-function forum_get_user_digest_options($user = null) {
+function digestforum_get_user_digest_options($user = null) {
     global $USER;
 
     // Revert to the global user object.
@@ -8127,14 +8134,15 @@ function forum_get_user_digest_options($user = null) {
     }
 
     $digestoptions = array();
-    $digestoptions['0']  = get_string('emaildigestoffshort', 'mod_forum');
-    $digestoptions['1']  = get_string('emaildigestcompleteshort', 'mod_forum');
-    $digestoptions['2']  = get_string('emaildigestsubjectsshort', 'mod_forum');
+    //$digestoptions['0']  = get_string('emaildigestoffshort', 'mod_digestforum');
+    $digestoptions['1']  = get_string('emaildigestcompleteshort', 'mod_digestforum');
+    //$digestoptions['2']  = get_string('emaildigestsubjectsshort', 'mod_digestforum');
 
     // We need to add the default digest option at the end - it relies on
     // the contents of the existing values.
-    $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_forum',
-            $digestoptions[$user->maildigest]);
+    $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_digestforum',
+			$digestoptions['1']);
+            //$digestoptions[$user->maildigest]);
 
     // Resort the options to be in a sensible order.
     ksort($digestoptions);
@@ -8148,20 +8156,20 @@ function forum_get_user_digest_options($user = null) {
  * If a context of type context_module is specified, it is immediately
  * returned and not checked.
  *
- * @param int $forumid The ID of the forum
+ * @param int $digestforumid The ID of the digestforum
  * @param context_module $context The current context.
  * @return context_module The context determined
  */
-function forum_get_context($forumid, $context = null) {
+function digestforum_get_context($digestforumid, $context = null) {
     global $PAGE;
 
     if (!$context || !($context instanceof context_module)) {
-        // Find out forum context. First try to take current page context to save on DB query.
-        if ($PAGE->cm && $PAGE->cm->modname === 'forum' && $PAGE->cm->instance == $forumid
+        // Find out digestforum context. First try to take current page context to save on DB query.
+        if ($PAGE->cm && $PAGE->cm->modname === 'digestforum' && $PAGE->cm->instance == $digestforumid
                 && $PAGE->context->contextlevel == CONTEXT_MODULE && $PAGE->context->instanceid == $PAGE->cm->id) {
             $context = $PAGE->context;
         } else {
-            $cm = get_coursemodule_from_instance('forum', $forumid);
+            $cm = get_coursemodule_from_instance('digestforum', $digestforumid);
             $context = \context_module::instance($cm->id);
         }
     }
@@ -8172,13 +8180,13 @@ function forum_get_context($forumid, $context = null) {
 /**
  * Mark the activity completed (if required) and trigger the course_module_viewed event.
  *
- * @param  stdClass $forum   forum object
+ * @param  stdClass $digestforum   digestforum object
  * @param  stdClass $course  course object
  * @param  stdClass $cm      course module object
  * @param  stdClass $context context object
  * @since Moodle 2.9
  */
-function forum_view($forum, $course, $cm, $context) {
+function digestforum_view($digestforum, $course, $cm, $context) {
 
     // Completion.
     $completion = new completion_info($course);
@@ -8188,13 +8196,13 @@ function forum_view($forum, $course, $cm, $context) {
 
     $params = array(
         'context' => $context,
-        'objectid' => $forum->id
+        'objectid' => $digestforum->id
     );
 
-    $event = \mod_forum\event\course_module_viewed::create($params);
+    $event = \mod_digestforum\event\course_module_viewed::create($params);
     $event->add_record_snapshot('course_modules', $cm);
     $event->add_record_snapshot('course', $course);
-    $event->add_record_snapshot('forum', $forum);
+    $event->add_record_snapshot('digestforum', $digestforum);
     $event->trigger();
 }
 
@@ -8202,19 +8210,19 @@ function forum_view($forum, $course, $cm, $context) {
  * Trigger the discussion viewed event
  *
  * @param  stdClass $modcontext module context object
- * @param  stdClass $forum      forum object
+ * @param  stdClass $digestforum      digestforum object
  * @param  stdClass $discussion discussion object
  * @since Moodle 2.9
  */
-function forum_discussion_view($modcontext, $forum, $discussion) {
+function digestforum_discussion_view($modcontext, $digestforum, $discussion) {
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
     );
 
-    $event = \mod_forum\event\discussion_viewed::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
-    $event->add_record_snapshot('forum', $forum);
+    $event = \mod_digestforum\event\discussion_viewed::create($params);
+    $event->add_record_snapshot('digestforum_discussions', $discussion);
+    $event->add_record_snapshot('digestforum', $digestforum);
     $event->trigger();
 }
 
@@ -8222,23 +8230,23 @@ function forum_discussion_view($modcontext, $forum, $discussion) {
  * Set the discussion to pinned and trigger the discussion pinned event
  *
  * @param  stdClass $modcontext module context object
- * @param  stdClass $forum      forum object
+ * @param  stdClass $digestforum      digestforum object
  * @param  stdClass $discussion discussion object
  * @since Moodle 3.1
  */
-function forum_discussion_pin($modcontext, $forum, $discussion) {
+function digestforum_discussion_pin($modcontext, $digestforum, $discussion) {
     global $DB;
 
-    $DB->set_field('forum_discussions', 'pinned', FORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
+    $DB->set_field('digestforum_discussions', 'pinned', DFORUM_DISCUSSION_PINNED, array('id' => $discussion->id));
 
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
+        'other' => array('digestforumid' => $digestforum->id)
     );
 
-    $event = \mod_forum\event\discussion_pinned::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
+    $event = \mod_digestforum\event\discussion_pinned::create($params);
+    $event->add_record_snapshot('digestforum_discussions', $discussion);
     $event->trigger();
 }
 
@@ -8246,23 +8254,23 @@ function forum_discussion_pin($modcontext, $forum, $discussion) {
  * Set discussion to unpinned and trigger the discussion unpin event
  *
  * @param  stdClass $modcontext module context object
- * @param  stdClass $forum      forum object
+ * @param  stdClass $digestforum      digestforum object
  * @param  stdClass $discussion discussion object
  * @since Moodle 3.1
  */
-function forum_discussion_unpin($modcontext, $forum, $discussion) {
+function digestforum_discussion_unpin($modcontext, $digestforum, $discussion) {
     global $DB;
 
-    $DB->set_field('forum_discussions', 'pinned', FORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
+    $DB->set_field('digestforum_discussions', 'pinned', DFORUM_DISCUSSION_UNPINNED, array('id' => $discussion->id));
 
     $params = array(
         'context' => $modcontext,
         'objectid' => $discussion->id,
-        'other' => array('forumid' => $forum->id)
+        'other' => array('digestforumid' => $digestforum->id)
     );
 
-    $event = \mod_forum\event\discussion_unpinned::create($params);
-    $event->add_record_snapshot('forum_discussions', $discussion);
+    $event = \mod_digestforum\event\discussion_unpinned::create($params);
+    $event->add_record_snapshot('digestforum_discussions', $discussion);
     $event->trigger();
 }
 
@@ -8276,26 +8284,26 @@ function forum_discussion_unpin($modcontext, $forum, $discussion) {
  *
  * @return bool
  */
-function mod_forum_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+function mod_digestforum_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
     if (isguestuser($user)) {
         // The guest user cannot post, so it is not possible to view any posts.
         // May as well just bail aggressively here.
         return false;
     }
-    $postsurl = new moodle_url('/mod/forum/user.php', array('id' => $user->id));
+    $postsurl = new moodle_url('/mod/digestforum/user.php', array('id' => $user->id));
     if (!empty($course)) {
         $postsurl->param('course', $course->id);
     }
-    $string = get_string('forumposts', 'mod_forum');
-    $node = new core_user\output\myprofile\node('miscellaneous', 'forumposts', $string, null, $postsurl);
+    $string = get_string('digestforumposts', 'mod_digestforum');
+    $node = new core_user\output\myprofile\node('miscellaneous', 'digestforumposts', $string, null, $postsurl);
     $tree->add_node($node);
 
-    $discussionssurl = new moodle_url('/mod/forum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
+    $discussionssurl = new moodle_url('/mod/digestforum/user.php', array('id' => $user->id, 'mode' => 'discussions'));
     if (!empty($course)) {
         $discussionssurl->param('course', $course->id);
     }
-    $string = get_string('myprofileotherdis', 'mod_forum');
-    $node = new core_user\output\myprofile\node('miscellaneous', 'forumdiscussions', $string, null,
+    $string = get_string('myprofileotherdis', 'mod_digestforum');
+    $node = new core_user\output\myprofile\node('miscellaneous', 'digestforumdiscussions', $string, null,
         $discussionssurl);
     $tree->add_node($node);
 
@@ -8305,19 +8313,19 @@ function mod_forum_myprofile_navigation(core_user\output\myprofile\tree $tree, $
 /**
  * Checks whether the author's name and picture for a given post should be hidden or not.
  *
- * @param object $post The forum post.
- * @param object $forum The forum object.
+ * @param object $post The digestforum post.
+ * @param object $digestforum The digestforum object.
  * @return bool
  * @throws coding_exception
  */
-function forum_is_author_hidden($post, $forum) {
+function digestforum_is_author_hidden($post, $digestforum) {
     if (!isset($post->parent)) {
         throw new coding_exception('$post->parent must be set.');
     }
-    if (!isset($forum->type)) {
-        throw new coding_exception('$forum->type must be set.');
+    if (!isset($digestforum->type)) {
+        throw new coding_exception('$digestforum->type must be set.');
     }
-    if ($forum->type === 'single' && empty($post->parent)) {
+    if ($digestforum->type === 'single' && empty($post->parent)) {
         return true;
     }
     return false;
@@ -8331,43 +8339,43 @@ function forum_is_author_hidden($post, $forum) {
  * @param   mixed       $newvalue       The new value
  * @return  string
  */
-function mod_forum_inplace_editable($itemtype, $itemid, $newvalue) {
+function mod_digestforum_inplace_editable($itemtype, $itemid, $newvalue) {
     global $DB, $PAGE;
 
     if ($itemtype === 'digestoptions') {
-        // The itemid is the forumid.
-        $forum   = $DB->get_record('forum', array('id' => $itemid), '*', MUST_EXIST);
-        $course  = $DB->get_record('course', array('id' => $forum->course), '*', MUST_EXIST);
-        $cm      = get_coursemodule_from_instance('forum', $forum->id, $course->id, false, MUST_EXIST);
+        // The itemid is the digestforumid.
+        $digestforum   = $DB->get_record('digestforum', array('id' => $itemid), '*', MUST_EXIST);
+        $course  = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+        $cm      = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
         $context = context_module::instance($cm->id);
 
         $PAGE->set_context($context);
         require_login($course, false, $cm);
-        forum_set_user_maildigest($forum, $newvalue);
+        digestforum_set_user_maildigest($digestforum, $newvalue);
 
-        $renderer = $PAGE->get_renderer('mod_forum');
-        return $renderer->render_digest_options($forum, $newvalue);
+        $renderer = $PAGE->get_renderer('mod_digestforum');
+        return $renderer->render_digest_options($digestforum, $newvalue);
     }
 }
 
 /**
  * Determine whether the specified discussion is time-locked.
  *
- * @param   stdClass    $forum          The forum that the discussion belongs to
+ * @param   stdClass    $digestforum          The digestforum that the discussion belongs to
  * @param   stdClass    $discussion     The discussion to test
  * @return  bool
  */
-function forum_discussion_is_locked($forum, $discussion) {
-    if (empty($forum->lockdiscussionafter)) {
+function digestforum_discussion_is_locked($digestforum, $discussion) {
+    if (empty($digestforum->lockdiscussionafter)) {
         return false;
     }
 
-    if ($forum->type === 'single') {
-        // It does not make sense to lock a single discussion forum.
+    if ($digestforum->type === 'single') {
+        // It does not make sense to lock a single discussion digestforum.
         return false;
     }
 
-    if (($discussion->timemodified + $forum->lockdiscussionafter) < time()) {
+    if (($discussion->timemodified + $digestforum->lockdiscussionafter) < time()) {
         return true;
     }
 
@@ -8383,19 +8391,19 @@ function forum_discussion_is_locked($forum, $discussion) {
  * @return stdClass an object with the different type of areas indicating if they were updated or not
  * @since Moodle 3.2
  */
-function forum_check_updates_since(cm_info $cm, $from, $filter = array()) {
+function digestforum_check_updates_since(cm_info $cm, $from, $filter = array()) {
 
     $context = $cm->context;
     $updates = new stdClass();
-    if (!has_capability('mod/forum:viewdiscussion', $context)) {
+    if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
         return $updates;
     }
 
     $updates = course_check_module_updates_since($cm, $from, array(), $filter);
 
-    // Check if there are new discussions in the forum.
+    // Check if there are new discussions in the digestforum.
     $updates->discussions = (object) array('updated' => false);
-    $discussions = forum_get_discussions($cm, '', false, -1, -1, true, -1, 0, FORUM_POSTS_ALL_USER_GROUPS, $from);
+    $discussions = digestforum_get_discussions($cm, '', false, -1, -1, true, -1, 0, DFORUM_POSTS_ALL_USER_GROUPS, $from);
     if (!empty($discussions)) {
         $updates->discussions->updated = true;
         $updates->discussions->itemids = array_keys($discussions);
@@ -8405,16 +8413,16 @@ function forum_check_updates_since(cm_info $cm, $from, $filter = array()) {
 }
 
 /**
- * Check if the user can create attachments in a forum.
- * @param  stdClass $forum   forum object
+ * Check if the user can create attachments in a digestforum.
+ * @param  stdClass $digestforum   digestforum object
  * @param  stdClass $context context object
  * @return bool true if the user can create attachments, false otherwise
  * @since  Moodle 3.3
  */
-function forum_can_create_attachment($forum, $context) {
+function digestforum_can_create_attachment($digestforum, $context) {
     // If maxbytes == 1 it means no attachments at all.
-    if (empty($forum->maxattachments) || $forum->maxbytes == 1 ||
-            !has_capability('mod/forum:createattachment', $context)) {
+    if (empty($digestforum->maxattachments) || $digestforum->maxbytes == 1 ||
+            !has_capability('mod/digestforum:createattachment', $context)) {
         return false;
     }
     return true;
@@ -8425,12 +8433,12 @@ function forum_can_create_attachment($forum, $context) {
  *
  * @return  array
  */
-function mod_forum_get_fontawesome_icon_map() {
+function mod_digestforum_get_fontawesome_icon_map() {
     return [
-        'mod_forum:i/pinned' => 'fa-map-pin',
-        'mod_forum:t/selected' => 'fa-check',
-        'mod_forum:t/subscribed' => 'fa-envelope-o',
-        'mod_forum:t/unsubscribed' => 'fa-envelope-open-o',
+        'mod_digestforum:i/pinned' => 'fa-map-pin',
+        'mod_digestforum:t/selected' => 'fa-check',
+        'mod_digestforum:t/subscribed' => 'fa-envelope-o',
+        'mod_digestforum:t/unsubscribed' => 'fa-envelope-open-o',
     ];
 }
 
@@ -8442,8 +8450,8 @@ function mod_forum_get_fontawesome_icon_map() {
  * @param int $itemcount The item count associated with the action event.
  * @return bool
  */
-function mod_forum_core_calendar_event_action_shows_item_count(calendar_event $event, $itemcount = 0) {
-    // Always show item count for forums if item count is greater than 1.
+function mod_digestforum_core_calendar_event_action_shows_item_count(calendar_event $event, $itemcount = 0) {
+    // Always show item count for digestforums if item count is greater than 1.
     // If only one action is required than it is obvious and we don't show it for other modules.
     return $itemcount > 1;
 }
@@ -8459,7 +8467,7 @@ function mod_forum_core_calendar_event_action_shows_item_count(calendar_event $e
  * @param int $userid User id to use for all capability checks, etc. Set to 0 for current user (default).
  * @return \core_calendar\local\event\entities\action_interface|null
  */
-function mod_forum_core_calendar_provide_event_action(calendar_event $event,
+function mod_digestforum_core_calendar_provide_event_action(calendar_event $event,
                                                       \core_calendar\action_factory $factory,
                                                       int $userid = 0) {
     global $DB, $USER;
@@ -8468,7 +8476,7 @@ function mod_forum_core_calendar_provide_event_action(calendar_event $event,
         $userid = $USER->id;
     }
 
-    $cm = get_fast_modinfo($event->courseid, $userid)->instances['forum'][$event->instance];
+    $cm = get_fast_modinfo($event->courseid, $userid)->instances['digestforum'][$event->instance];
 
     if (!$cm->uservisible) {
         // The module is not visible to the user for any reason.
@@ -8477,7 +8485,7 @@ function mod_forum_core_calendar_provide_event_action(calendar_event $event,
 
     $context = context_module::instance($cm->id);
 
-    if (!has_capability('mod/forum:viewdiscussion', $context, $userid)) {
+    if (!has_capability('mod/digestforum:viewdiscussion', $context, $userid)) {
         return null;
     }
 
@@ -8491,45 +8499,45 @@ function mod_forum_core_calendar_provide_event_action(calendar_event $event,
 
     // Get action itemcount.
     $itemcount = 0;
-    $forum = $DB->get_record('forum', array('id' => $cm->instance));
+    $digestforum = $DB->get_record('digestforum', array('id' => $cm->instance));
     $postcountsql = "
                 SELECT
                     COUNT(1)
                   FROM
-                    {forum_posts} fp
-                    INNER JOIN {forum_discussions} fd ON fp.discussion=fd.id
+                    {digestforum_posts} fp
+                    INNER JOIN {digestforum_discussions} fd ON fp.discussion=fd.id
                  WHERE
-                    fp.userid=:userid AND fd.forum=:forumid";
-    $postcountparams = array('userid' => $userid, 'forumid' => $forum->id);
+                    fp.userid=:userid AND fd.digestforum=:digestforumid";
+    $postcountparams = array('userid' => $userid, 'digestforumid' => $digestforum->id);
 
-    if ($forum->completiondiscussions) {
-        $count = $DB->count_records('forum_discussions', array('forum' => $forum->id, 'userid' => $userid));
-        $itemcount += ($forum->completiondiscussions >= $count) ? ($forum->completiondiscussions - $count) : 0;
+    if ($digestforum->completiondiscussions) {
+        $count = $DB->count_records('digestforum_discussions', array('digestforum' => $digestforum->id, 'userid' => $userid));
+        $itemcount += ($digestforum->completiondiscussions >= $count) ? ($digestforum->completiondiscussions - $count) : 0;
     }
 
-    if ($forum->completionreplies) {
+    if ($digestforum->completionreplies) {
         $count = $DB->get_field_sql( $postcountsql.' AND fp.parent<>0', $postcountparams);
-        $itemcount += ($forum->completionreplies >= $count) ? ($forum->completionreplies - $count) : 0;
+        $itemcount += ($digestforum->completionreplies >= $count) ? ($digestforum->completionreplies - $count) : 0;
     }
 
-    if ($forum->completionposts) {
+    if ($digestforum->completionposts) {
         $count = $DB->get_field_sql($postcountsql, $postcountparams);
-        $itemcount += ($forum->completionposts >= $count) ? ($forum->completionposts - $count) : 0;
+        $itemcount += ($digestforum->completionposts >= $count) ? ($digestforum->completionposts - $count) : 0;
     }
 
-    // Well there is always atleast one actionable item (view forum, etc).
+    // Well there is always atleast one actionable item (view digestforum, etc).
     $itemcount = $itemcount > 0 ? $itemcount : 1;
 
     return $factory->create_instance(
         get_string('view'),
-        new \moodle_url('/mod/forum/view.php', ['id' => $cm->id]),
+        new \moodle_url('/mod/digestforum/view.php', ['id' => $cm->id]),
         $itemcount,
         true
     );
 }
 
 /**
- * Add a get_coursemodule_info function in case any forum type wants to add 'extra' information
+ * Add a get_coursemodule_info function in case any digestforum type wants to add 'extra' information
  * for the course (see resource).
  *
  * Given a course_module object, this function returns any "extra" information that may be needed
@@ -8539,28 +8547,28 @@ function mod_forum_core_calendar_provide_event_action(calendar_event $event,
  * @return cached_cm_info An object on information that the courses
  *                        will know about (most noticeably, an icon).
  */
-function forum_get_coursemodule_info($coursemodule) {
+function digestforum_get_coursemodule_info($coursemodule) {
     global $DB;
 
     $dbparams = ['id' => $coursemodule->instance];
     $fields = 'id, name, intro, introformat, completionposts, completiondiscussions, completionreplies';
-    if (!$forum = $DB->get_record('forum', $dbparams, $fields)) {
+    if (!$digestforum = $DB->get_record('digestforum', $dbparams, $fields)) {
         return false;
     }
 
     $result = new cached_cm_info();
-    $result->name = $forum->name;
+    $result->name = $digestforum->name;
 
     if ($coursemodule->showdescription) {
         // Convert intro to html. Do not filter cached version, filters run at display time.
-        $result->content = format_module_intro('forum', $forum, $coursemodule->id, false);
+        $result->content = format_module_intro('digestforum', $digestforum, $coursemodule->id, false);
     }
 
     // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
     if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
-        $result->customdata['customcompletionrules']['completiondiscussions'] = $forum->completiondiscussions;
-        $result->customdata['customcompletionrules']['completionreplies'] = $forum->completionreplies;
-        $result->customdata['customcompletionrules']['completionposts'] = $forum->completionposts;
+        $result->customdata['customcompletionrules']['completiondiscussions'] = $digestforum->completiondiscussions;
+        $result->customdata['customcompletionrules']['completionreplies'] = $digestforum->completionreplies;
+        $result->customdata['customcompletionrules']['completionposts'] = $digestforum->completionposts;
     }
 
     return $result;
@@ -8572,7 +8580,7 @@ function forum_get_coursemodule_info($coursemodule) {
  * @param cm_info|stdClass $cm object with fields ->completion and ->customdata['customcompletionrules']
  * @return array $descriptions the array of descriptions for the custom rules.
  */
-function mod_forum_get_completion_active_rule_descriptions($cm) {
+function mod_digestforum_get_completion_active_rule_descriptions($cm) {
     // Values will be present in cm_info, and we assume these are up to date.
     if (empty($cm->customdata['customcompletionrules'])
         || $cm->completion != COMPLETION_TRACKING_AUTOMATIC) {
@@ -8584,17 +8592,17 @@ function mod_forum_get_completion_active_rule_descriptions($cm) {
         switch ($key) {
             case 'completiondiscussions':
                 if (!empty($val)) {
-                    $descriptions[] = get_string('completiondiscussionsdesc', 'forum', $val);
+                    $descriptions[] = get_string('completiondiscussionsdesc', 'digestforum', $val);
                 }
                 break;
             case 'completionreplies':
                 if (!empty($val)) {
-                    $descriptions[] = get_string('completionrepliesdesc', 'forum', $val);
+                    $descriptions[] = get_string('completionrepliesdesc', 'digestforum', $val);
                 }
                 break;
             case 'completionposts':
                 if (!empty($val)) {
-                    $descriptions[] = get_string('completionpostsdesc', 'forum', $val);
+                    $descriptions[] = get_string('completionpostsdesc', 'digestforum', $val);
                 }
                 break;
             default:
