@@ -1062,7 +1062,8 @@ function digestforum_cron() {
                 $posttext = get_string('digestmailheader', 'digestforum')."\n\n";
 
                 $posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>'
-                    . '<br /><hr size="1" noshade="noshade" />';
+                    //. '<br /><hr size="1" noshade="noshade" />';
+					. '<br /><hr style="height: 3px; width: 100%; color:#000; background-color:#000" />';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -1109,7 +1110,7 @@ function digestforum_cron() {
                     //if ($discussion->name == $digestforum->name) {
                         //$posthtml .= "</font></p>";
                     //} else {
-                        $posthtml .= " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
+                        //$posthtml .= " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
                     //}
                     $posthtml .= '<p>';
 
@@ -1209,7 +1210,8 @@ function digestforum_cron() {
                     $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/digestforum/index.php?id={$digestforum->course}'>" . get_string("digestmailpost", "digestforum") . '</a>';
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
 					*/
-                    $posthtml .= '<hr size="1" noshade="noshade" /></p>';
+                    //$posthtml .= '<hr size="1" noshade="noshade" /></p>';
+					$posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000" /></p>';
                 }
 
                 if (empty($userto->mailformat) || $userto->mailformat != 1) {
