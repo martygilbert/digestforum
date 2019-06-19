@@ -482,7 +482,7 @@ function digestforum_cron() {
 
     // caches
     $discussions        = array();
-    $digestforums             = array();
+    $digestforums		= array();
     $courses            = array();
     $coursemodules      = array();
     $subscribedusers    = array();
@@ -931,19 +931,19 @@ function digestforum_cron() {
 
     core_php_time_limit::raise(300); // terminate if not able to fetch all digests in 5 minutes
 
-    if (!isset($CFG->digestmailtimelast)) {    // To catch the first time
-        set_config('digestmailtimelast', 0);
+    if (!isset($CFG->digestforum_mailtimelast)) {    // To catch the first time
+        set_config('digestforum_mailtimelast', 0);
     }
 
     $timenow = time();
-    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestmailtime * 3600);
+    $digesttime = usergetmidnight($timenow, $sitetimezone) + ($CFG->digestforum_mailtime * 3600);
 
     // Delete any really old ones (normally there shouldn't be any)
     $weekago = $timenow - (7 * 24 * 3600);
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    //if ($CFG->digestmailtimelast < $digesttime and $timenow > $digesttime) {
+    //if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
 	if (true) { //MJG - testing only!
 		$digesttime += 86400; //MJG - testing only!
 
@@ -1248,8 +1248,8 @@ function digestforum_cron() {
             }
 		}
         }
-    /// We have finishied all digest emails, update $CFG->digestmailtimelast
-        set_config('digestmailtimelast', $timenow);
+    /// We have finishied all digest emails, update $CFG->digestforum_mailtimelast
+        set_config('digestforum_mailtimelast', $timenow);
     }
 
     cron_setup_user();

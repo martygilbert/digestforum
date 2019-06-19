@@ -92,8 +92,8 @@ if ($ADMIN->fulltree) {
                        get_string('configcleanreadtime', 'digestforum'), 2, $options));
 
     // Default time (hour) to send digest email
-    $settings->add(new admin_setting_configselect('digestmailtime', get_string('digestmailtime', 'digestforum'),
-                       get_string('configdigestmailtime', 'digestforum'), 7, $options));
+    $settings->add(new admin_setting_configselect('digestforum_mailtime', get_string('digestforum_mailtime', 'digestforum'),
+                       get_string('configdigestforum_mailtime', 'digestforum'), 7, $options));
 
     if (empty($CFG->enablerssfeeds)) {
         $options = array(0 => get_string('rssglobaldisabled', 'admin'));
