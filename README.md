@@ -9,8 +9,8 @@ Modified by Marty Gilbert (martygilbert at gmail)
 CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digest-digestforumed it. 
 
 ```
-find . -type f ! -name 'README.md' -exec sed -i 's/forum/digestforum/g' '{}' \;
-find . -type f ! -name 'README.md' -exec sed -i 's/FORUM/DIGESTFORUM/g' '{}' \;
+find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/forum/digestforum/g' '{}' \;
+find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/FORUM/DFORUM/g' '{}' \;
 ```
 
 Pay special attention to the module name strings (singular AND plural) in the lang files.
