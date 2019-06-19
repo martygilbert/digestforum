@@ -1,7 +1,7 @@
 {
-    "name": "moodle-mod_forum-subscriptiontoggle",
+    "name": "moodle-mod_digestforum-subscriptiontoggle",
     "builds": {
-        "moodle-mod_forum-subscriptiontoggle": {
+        "moodle-mod_digestforum-subscriptiontoggle": {
             "jsfiles": [
                 "toggle.js"
             ]

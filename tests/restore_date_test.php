@@ -17,7 +17,7 @@
 /**
  * Restore date tests.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2017 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -31,11 +31,11 @@ require_once($CFG->dirroot . '/rating/lib.php');
 /**
  * Restore date tests.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2017 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_forum_restore_date_testcase extends restore_date_testcase {
+class mod_digestforum_restore_date_testcase extends restore_date_testcase {
 
     /**
      * Test restore dates.
@@ -43,9 +43,9 @@ class mod_forum_restore_date_testcase extends restore_date_testcase {
     public function test_restore_dates() {
         global $DB, $USER;
 
-        $gg = $this->getDataGenerator()->get_plugin_generator('mod_forum');
+        $gg = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $record = ['assesstimefinish' => 100, 'assesstimestart' => 100, 'ratingtime' => 1, 'assessed' => 2, 'scale' => 1];
-        list($course, $forum) = $this->create_course_and_module('forum', $record);
+        list($course, $digestforum) = $this->create_course_and_module('digestforum', $record);
 
         // Forum Discussions/posts/ratings.
         $timestamp = 996699;
@@ -53,7 +53,7 @@ class mod_forum_restore_date_testcase extends restore_date_testcase {
         $record = new stdClass();
         $record->course = $course->id;
         $record->userid = $USER->id;
-        $record->forum = $forum->id;
+        $record->digestforum = $digestforum->id;
         $record->timestart = $record->timeend = $record->timemodified = $timestamp;
         $discussion = $gg->create_discussion($record);
 
@@ -65,13 +65,13 @@ class mod_forum_restore_date_testcase extends restore_date_testcase {
         $post = $gg->create_post($record);
 
         // Time modified is changed internally.
-        $DB->set_field('forum_discussions', 'timemodified', $timestamp);
+        $DB->set_field('digestforum_discussions', 'timemodified', $timestamp);
 
         // Ratings.
         $ratingoptions = new stdClass;
-        $ratingoptions->context = context_module::instance($forum->cmid);
+        $ratingoptions->context = context_module::instance($digestforum->cmid);
         $ratingoptions->ratingarea = 'post';
-        $ratingoptions->component = 'mod_forum';
+        $ratingoptions->component = 'mod_digestforum';
         $ratingoptions->itemid  = $post->id;
         $ratingoptions->scaleid = 2;
         $ratingoptions->userid  = $USER->id;
@@ -81,15 +81,15 @@ class mod_forum_restore_date_testcase extends restore_date_testcase {
 
         // Do backup and restore.
         $newcourseid = $this->backup_and_restore($course);
-        $newforum = $DB->get_record('forum', ['course' => $newcourseid]);
+        $newdigestforum = $DB->get_record('digestforum', ['course' => $newcourseid]);
 
-        $this->assertFieldsNotRolledForward($forum, $newforum, ['timemodified']);
+        $this->assertFieldsNotRolledForward($digestforum, $newdigestforum, ['timemodified']);
         $props = ['assesstimefinish', 'assesstimestart'];
-        $this->assertFieldsRolledForward($forum, $newforum, $props);
+        $this->assertFieldsRolledForward($digestforum, $newdigestforum, $props);
 
-        $newdiscussion = $DB->get_record('forum_discussions', ['forum' => $newforum->id]);
-        $newposts = $DB->get_records('forum_posts', ['discussion' => $newdiscussion->id]);
-        $newcm = $DB->get_record('course_modules', ['course' => $newcourseid, 'instance' => $newforum->id]);
+        $newdiscussion = $DB->get_record('digestforum_discussions', ['digestforum' => $newdigestforum->id]);
+        $newposts = $DB->get_records('digestforum_posts', ['discussion' => $newdiscussion->id]);
+        $newcm = $DB->get_record('course_modules', ['course' => $newcourseid, 'instance' => $newdigestforum->id]);
 
         // Forum discussion time checks.
         $this->assertEquals($timestamp + $diff, $newdiscussion->timestart);

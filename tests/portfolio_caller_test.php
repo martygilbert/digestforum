@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The portfolio forum tests.
+ * The portfolio digestforum tests.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2018 onwards Totara Learning Solutions LTD {@link http://www.totaralms.com/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Brendan Cox <brendan.cox@totaralearning.com>
@@ -26,11 +26,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Class mod_forum_portfolio_caller_testcase
+ * Class mod_digestforum_portfolio_caller_testcase
  *
- * Tests behaviour of the forum_portfolio_caller class.
+ * Tests behaviour of the digestforum_portfolio_caller class.
  */
-class mod_forum_portfolio_caller_testcase extends advanced_testcase {
+class mod_digestforum_portfolio_caller_testcase extends advanced_testcase {
 
     /**
      * Ensure that a file will be loaded in an instance of the caller when supplied valid and
@@ -38,20 +38,20 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
      */
     public function test_file_in_user_post_is_loaded() {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/forum/locallib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/locallib.php');
         $this->resetAfterTest(true);
 
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
-        $context = context_module::instance($forum->cmid);
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $context = context_module::instance($digestforum->cmid);
 
-        /* @var mod_forum_generator $forumgenerator */
-        $forumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
-        $discussion = $forumgenerator->create_discussion(
+        /* @var mod_digestforum_generator $digestforumgenerator */
+        $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+        $discussion = $digestforumgenerator->create_discussion(
             array(
                 'course' => $course->id,
-                'forum' => $forum->id,
+                'digestforum' => $digestforum->id,
                 'userid' => $user->id,
                 'attachment' => 1
             )
@@ -60,7 +60,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         $fs = get_file_storage();
         $dummy = (object) array(
             'contextid' => $context->id,
-            'component' => 'mod_forum',
+            'component' => 'mod_digestforum',
             'filearea' => 'attachment',
             'itemid' => $discussion->firstpost,
             'filepath' => '/',
@@ -68,7 +68,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         );
         $firstpostfile = $fs->create_file_from_string($dummy, 'Content of ' . $dummy->filename);
 
-        $caller = new forum_portfolio_caller(array(
+        $caller = new digestforum_portfolio_caller(array(
             'postid' => $discussion->firstpost,
             'attachment' => $firstpostfile->get_id()
         ));
@@ -83,20 +83,20 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
      */
     public function test_file_not_in_user_post_not_loaded() {
         global $CFG;
-        require_once($CFG->dirroot . '/mod/forum/locallib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/locallib.php');
         $this->resetAfterTest(true);
 
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $forum = $this->getDataGenerator()->create_module('forum', array('course' => $course->id));
-        $context = context_module::instance($forum->cmid);
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $context = context_module::instance($digestforum->cmid);
 
-        /* @var mod_forum_generator $forumgenerator */
-        $forumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
-        $discussion = $forumgenerator->create_discussion(
+        /* @var mod_digestforum_generator $digestforumgenerator */
+        $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+        $discussion = $digestforumgenerator->create_discussion(
             array(
                 'course' => $course->id,
-                'forum' => $forum->id,
+                'digestforum' => $digestforum->id,
                 'userid' => $user->id,
                 'attachment' => 1
             )
@@ -105,7 +105,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         $fs = get_file_storage();
         $dummyone = (object) array(
             'contextid' => $context->id,
-            'component' => 'mod_forum',
+            'component' => 'mod_digestforum',
             'filearea' => 'attachment',
             'itemid' => $discussion->firstpost,
             'filepath' => '/',
@@ -114,7 +114,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         $firstpostfile = $fs->create_file_from_string($dummyone, 'Content of ' . $dummyone->filename);
 
         // Create a second post and add a file there.
-        $secondpost = $forumgenerator->create_post(
+        $secondpost = $digestforumgenerator->create_post(
             array(
                 'discussion' => $discussion->id,
                 'userid' => $user->id,
@@ -123,7 +123,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         );
         $dummytwo = (object) array(
             'contextid' => $context->id,
-            'component' => 'mod_forum',
+            'component' => 'mod_digestforum',
             'filearea' => 'attachment',
             'itemid' => $secondpost->id,
             'filepath' => '/',
@@ -131,7 +131,7 @@ class mod_forum_portfolio_caller_testcase extends advanced_testcase {
         );
         $secondpostfile = $fs->create_file_from_string($dummytwo, 'Content of ' . $dummytwo->filename);
 
-        $caller = new forum_portfolio_caller(array(
+        $caller = new digestforum_portfolio_caller(array(
             'postid' => $discussion->firstpost,
             'attachment' => $secondpostfile->get_id()
         ));

@@ -1,6 +1,6 @@
 /**
- * Structure of a forum post
- * div.forumpost(.read.unread)
+ * Structure of a digestforum post
+ * div.digestforumpost(.read.unread)
  *     div.header.row
  *         div.picture.left
  *         div.topic(.starter)
@@ -20,12 +20,12 @@
  *         div.options
  *             div.commands
  *             div.post-word-count
- *             div.forum-post-rating
+ *             div.digestforum-post-rating
  *             div.link
  *             div.footer
  */
 
-.forumpost {
+.digestforumpost {
     display: block;
     position: relative;
     margin: 0 0 1em 0;
@@ -34,78 +34,78 @@
     max-width: 100%;
 }
 
-.forumpost .row {
+.digestforumpost .row {
     width: 100%;
     position: relative;
 }
 
-.forumpost .row .left {
+.digestforumpost .row .left {
     float: left;
     width: 43px;
     overflow: hidden;
 }
 
-.forumpost .row .left .grouppictures a {
+.digestforumpost .row .left .grouppictures a {
     text-align: center;
     display: block;
     margin: 6px 2px 0 2px;
 }
 
-.forumpost .row .left .grouppicture {
+.digestforumpost .row .left .grouppicture {
     width: 20px;
     height: 20px;
 }
 
-.forumpost .row .topic,
-.forumpost .row .content-mask,
-.forumpost .row .options {
+.digestforumpost .row .topic,
+.digestforumpost .row .content-mask,
+.digestforumpost .row .options {
     margin-left: 43px;
 }
 
-.forumpost .picture img {
+.digestforumpost .picture img {
     margin: 4px;
 }
 
-.forumpost .options .commands,
-.forumpost .content .attachments,
-.forumpost .options .footer,
-.forumpost .options .link {
+.digestforumpost .options .commands,
+.digestforumpost .content .attachments,
+.digestforumpost .options .footer,
+.digestforumpost .options .link {
     text-align: right;
 }
 
-.forumpost .options .forum-post-rating {
+.digestforumpost .options .digestforum-post-rating {
     float: left;
 }
 
-.forumpost .content .posting {
+.digestforumpost .content .posting {
     overflow: auto;
     max-width: 100%;
 }
 
-.forumpost .content .attachedimages img {
+.digestforumpost .content .attachedimages img {
     max-width: 100%;
 }
 
-.forumpost .post-word-count {
+.digestforumpost .post-word-count {
     font-size: .85em;
     font-style: italic;
 }
 
-.forumpost .shortenedpost .post-word-count {
+.digestforumpost .shortenedpost .post-word-count {
     display: inline;
     padding: 0 .3em;
 }
 
-.path-mod-forum .forumolddiscuss,
-#page-mod-forum-search .c0 {
+.path-mod-digestforum .digestforumolddiscuss,
+#page-mod-digestforum-search .c0 {
     text-align: right;
 }
 
-.path-mod-forum .indent {
+.path-mod-digestforum .indent {
     margin-left: 3%;
 }
 
-.path-mod-forum .forumheaderlist {
+.path-mod-digestforum .digestforumheaderlist {
     width: 100%;
     border-width: 1px;
     border-style: solid;
@@ -113,103 +113,103 @@
     margin-top: 10px;
 }
 
-.path-mod-forum .forumheaderlist td {
+.path-mod-digestforum .digestforumheaderlist td {
     border-width: 1px 0 0 1px;
     border-style: solid;
 }
 
-.path-mod-forum .forumheaderlist th.header.replies .iconsmall {
+.path-mod-digestforum .digestforumheaderlist th.header.replies .iconsmall {
     margin: 0 .3em;
 }
 
-.path-mod-forum .forumheaderlist .discussion .starter {
+.path-mod-digestforum .digestforumheaderlist .discussion .starter {
     vertical-align: middle;
 }
 
-.path-mod-forum .forumheaderlist .discussion .pinned img {
+.path-mod-digestforum .digestforumheaderlist .discussion .pinned img {
     padding: 5px;
 }
 
-.path-mod-forum .forumheaderlist .discussion .lastpost {
+.path-mod-digestforum .digestforumheaderlist .discussion .lastpost {
     white-space: nowrap;
     text-align: right;
 }
 
-.path-mod-forum .forumheaderlist .replies {
+.path-mod-digestforum .digestforumheaderlist .replies {
     white-space: nowrap;
 }
 
-.path-mod-forum .forumheaderlist thead .discussionsubscription {
+.path-mod-digestforum .digestforumheaderlist thead .discussionsubscription {
     text-align: center;
 }
 
 /** Styles for subscribers.php */
-#page-mod-forum-subscribers .subscriberdiv,
-#page-mod-forum-subscribers .subscribertable {
+#page-mod-digestforum-subscribers .subscriberdiv,
+#page-mod-digestforum-subscribers .subscribertable {
     width: 100%;
     vertical-align: top;
 }
 
-#page-mod-forum-subscribers .subscribertable tr td {
+#page-mod-digestforum-subscribers .subscribertable tr td {
     vertical-align: top;
 }
 
-#page-mod-forum-subscribers .subscribertable tr td.actions {
+#page-mod-digestforum-subscribers .subscribertable tr td.actions {
     width: 16%;
     padding-top: 3em;
 }
 
-#page-mod-forum-subscribers .subscribertable tr td.actions .actionbutton {
+#page-mod-digestforum-subscribers .subscribertable tr td.actions .actionbutton {
     margin: 0.3em 0;
     padding: 0.5em 0;
     width: 100%;
 }
 
-#page-mod-forum-subscribers .subscribertable tr td.existing,
-#page-mod-forum-subscribers .subscribertable tr td.potential {
+#page-mod-digestforum-subscribers .subscribertable tr td.existing,
+#page-mod-digestforum-subscribers .subscribertable tr td.potential {
     width: 42%;
 }
 
 /** Styles for discuss.php **/
-#page-mod-forum-discuss .discussioncontrols {
+#page-mod-digestforum-discuss .discussioncontrols {
     width: 100%;
     margin: 5px;
 }
 
-#page-mod-forum-discuss .discussioncontrols .controlscontainer {
+#page-mod-digestforum-discuss .discussioncontrols .controlscontainer {
     width: 100%;
     float: right;
 }
 
-#page-mod-forum-discuss .discussioncontrols .discussioncontrol {
+#page-mod-digestforum-discuss .discussioncontrols .discussioncontrol {
     float: left;
 }
 
-#page-mod-forum-discuss .discussioncontrol.exporttoportfolio {
+#page-mod-digestforum-discuss .discussioncontrol.exporttoportfolio {
     text-align: left;
 }
 
-#page-mod-forum-discuss .discussioncontrol.displaymode {
+#page-mod-digestforum-discuss .discussioncontrol.displaymode {
     padding-right: 10px;
 }
 
-#page-mod-forum-discuss .discussioncontrol.movediscussion {
+#page-mod-digestforum-discuss .discussioncontrol.movediscussion {
     padding-right: 10px;
 }
 
 /** Styles for view.php **/
-#page-mod-forum-view .forumaddnew {
+#page-mod-digestforum-view .digestforumaddnew {
     margin-bottom: 20px;
 }
 
-#page-mod-forum-view .groupmenu {
+#page-mod-digestforum-view .groupmenu {
     float: left;
     text-align: left;
     white-space: nowrap;
 }
 
-#page-mod-forum-index .subscription,
-#page-mod-forum-view .subscription {
+#page-mod-digestforum-index .subscription,
+#page-mod-digestforum-view .subscription {
     float: right;
     text-align: right;
     white-space: nowrap;
@@ -217,16 +217,16 @@
 }
 
 /** Styles for search.php */
-#page-mod-forum-search .introcontent {
+#page-mod-digestforum-search .introcontent {
     padding: 15px;
     font-weight: bold;
 }
 
-.path-mod-forum span.unread a:first-child {
+.path-mod-digestforum span.unread a:first-child {
     padding-right: 10px;
 }
 
-.path-mod-forum span.unread img {
+.path-mod-digestforum span.unread img {
     margin-left: 5px;
 }
 
@@ -237,18 +237,18 @@
 
 /* Forumpost unread
 -------------------------*/
-.forumpost.unread .row.header,
+.digestforumpost.unread .row.header,
 .path-course-view .unread,
 span.unread {
     background-color: #ffd;
 }
 
-.forumpost.unread .row.header {
+.digestforumpost.unread .row.header {
     border-bottom: 1px solid #ddd;
 }
 
 /* Forumpost hash anchor target */
-.path-mod-forum :target > .forumpost:before {
+.path-mod-digestforum :target > .digestforumpost:before {
     display: block;
     content: '';
     width: 4px;
@@ -260,16 +260,16 @@ span.unread {
 }
 
 /* Discussion navigation */
-.path-mod-forum .discussion-nav {
+.path-mod-digestforum .discussion-nav {
     margin: .5em 0;
 }
 
-.path-mod-forum .discussion-nav ul {
+.path-mod-digestforum .discussion-nav ul {
     margin: 0;
     list-style: none;
 }
 
-.path-mod-forum .discussion-nav .prev-discussion:before {
+.path-mod-digestforum .discussion-nav .prev-discussion:before {
     /*rtl:raw:
     content: ' ► ';
     */
@@ -277,7 +277,7 @@ span.unread {
     content: ' ◄ ';
 }
 
-.path-mod-forum .discussion-nav .next-discussion:after {
+.path-mod-digestforum .discussion-nav .next-discussion:after {
     /*rtl:raw:
     content: ' ◄ ';
     */
@@ -285,45 +285,45 @@ span.unread {
     content: ' ► ';
 }
 
-.path-mod-forum .discussion-nav .next-discussion {
+.path-mod-digestforum .discussion-nav .next-discussion {
     float: right;
 }
 
-.path-mod-forum .discussion-nav .prev-discussion {
+.path-mod-digestforum .discussion-nav .prev-discussion {
     float: left;
 }
 
-.path-mod-forum .preload-subscribe {
-    background: url([[pix:mod_forum|t/subscribed]]) no-repeat -9999px -9999px;
+.path-mod-digestforum .preload-subscribe {
+    background: url([[pix:mod_digestforum|t/subscribed]]) no-repeat -9999px -9999px;
 }
 
-.path-mod-forum .preload-unsubscribe {
-    background: url([[pix:mod_forum|t/unsubscribed]]) no-repeat -9999px -9999px;
+.path-mod-digestforum .preload-unsubscribe {
+    background: url([[pix:mod_digestforum|t/unsubscribed]]) no-repeat -9999px -9999px;
 }
 
-.path-mod-forum .discussionsubscription {
+.path-mod-digestforum .discussionsubscription {
     margin-top: -10px;
     text-align: right;
     margin-bottom: 10px;
 }
 
-.path-mod-forum .discussionsubscription > a > img {
+.path-mod-digestforum .discussionsubscription > a > img {
     width: 12px;
     padding: 0 4px;
 }
 
-#page-mod-forum-view img.timedpost {
+#page-mod-digestforum-view img.timedpost {
     margin-right: 5px;
 }
 
-.path-mod-forum article .nav .nav-link:first-of-type {
+.path-mod-digestforum article .nav .nav-link:first-of-type {
     margin-left: auto;
 }
-.path-mod-forum.dir-rtl article .nav .nav-link:first-of-type {
+.path-mod-digestforum.dir-rtl article .nav .nav-link:first-of-type {
     margin-left: 0;
     margin-right: auto;
 }
 
-.path-mod-forum article .nav .nav-link + .nav-link {
+.path-mod-digestforum article .nav .nav-link + .nav-link {
     border-left: 1px solid #ddd;
 }

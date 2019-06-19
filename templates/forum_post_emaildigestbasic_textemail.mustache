@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_forum/forum_post_emaildigestbasic_textemail
+    @template mod_digestforum/digestforum_post_emaildigestbasic_textemail
 
-    Template which defines a forum post for sending in a single-post text email.
+    Template which defines a digestforum post for sending in a single-post text email.
 
     Classes required for JS:
     * none
@@ -33,7 +33,7 @@
 }}
 
 {{ discussionlink }}
-{{{ subject }}} {{# str }} bynameondate, forum, {
+{{{ subject }}} {{# str }} bynameondate, digestforum, {
         "name": {{# quote }}{{{ authorfullname }}}{{/ quote }},
         "date": {{# quote }}{{ postdate }}{{/ quote }}
     } {{/ str }}

@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Social breadth indicator - forum.
+ * Social breadth indicator - digestforum.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\analytics\indicator;
+namespace mod_digestforum\analytics\indicator;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Social breadth indicator - forum.
+ * Social breadth indicator - digestforum.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +43,7 @@ class social_breadth extends activity_base {
      * @return \lang_string
      */
     public static function get_name() : \lang_string {
-        return new \lang_string('indicator:socialbreadth', 'mod_forum');
+        return new \lang_string('indicator:socialbreadth', 'mod_digestforum');
     }
 
     public function get_indicator_type() {

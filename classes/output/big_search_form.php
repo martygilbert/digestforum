@@ -17,12 +17,12 @@
 /**
  * Big search form.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\output;
+namespace mod_digestforum\output;
 defined('MOODLE_INTERNAL') || die();
 
 use html_writer;
@@ -35,7 +35,7 @@ use templatable;
 /**
  * Big search form class.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -44,7 +44,7 @@ class big_search_form implements renderable, templatable {
     public $course;
     public $datefrom;
     public $dateto;
-    public $forumoptions;
+    public $digestforumoptions;
     public $fullwords;
     public $notwords;
     public $phrase;
@@ -67,15 +67,15 @@ class big_search_form implements renderable, templatable {
         $this->course = $course;
         $this->tags = [];
         $this->showfullwords = $DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres';
-        $this->actionurl = new moodle_url('/mod/forum/search.php');
+        $this->actionurl = new moodle_url('/mod/digestforum/search.php');
 
-        $forumoptions = ['' => get_string('allforums', 'forum')] + forum_menu_list($course);
-        $this->forumoptions = array_map(function($option) use ($forumoptions) {
+        $digestforumoptions = ['' => get_string('alldigestforums', 'digestforum')] + digestforum_menu_list($course);
+        $this->digestforumoptions = array_map(function($option) use ($digestforumoptions) {
             return [
                 'value' => $option,
-                'name' => $forumoptions[$option]
+                'name' => $digestforumoptions[$option]
             ];
-        }, array_keys($forumoptions));
+        }, array_keys($digestforumoptions));
     }
 
     /**
@@ -162,10 +162,10 @@ class big_search_form implements renderable, templatable {
     /**
      * Forum ID setter search criteria.
      *
-     * @param int $forumid The forum ID.
+     * @param int $digestforumid The digestforum ID.
      */
-    public function set_forumid($forumid) {
-        $this->forumid = $forumid;
+    public function set_digestforumid($digestforumid) {
+        $this->digestforumid = $digestforumid;
     }
 
     public function export_for_template(renderer_base $output) {
@@ -184,17 +184,17 @@ class big_search_form implements renderable, templatable {
         $data->showfullwords = $this->showfullwords;
         $data->actionurl = $this->actionurl->out(false);
 
-        $tagtypestoshow = \core_tag_area::get_showstandard('mod_forum', 'forum_posts');
+        $tagtypestoshow = \core_tag_area::get_showstandard('mod_digestforum', 'digestforum_posts');
         $showstandard = ($tagtypestoshow != \core_tag_tag::HIDE_STANDARD);
         $typenewtags = ($tagtypestoshow != \core_tag_tag::STANDARD_ONLY);
 
         $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = array('#tags', $typenewtags, '',
                               get_string('entertags', 'tag'), false, $showstandard, get_string('noselection', 'form')));
 
-        $data->tagsenabled = \core_tag_tag::is_enabled('mod_forum', 'forum_posts');
+        $data->tagsenabled = \core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts');
         $namefield = empty($CFG->keeptagnamecase) ? 'name' : 'rawname';
         $tags = $DB->get_records('tag',
-            array('isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_forum', 'forum_posts')),
+            array('isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_digestforum', 'digestforum_posts')),
             $namefield, 'rawname,' . $namefield . ' as fieldname');
         $data->tags = [];
         foreach ($tags as $tag) {
@@ -226,16 +226,16 @@ class big_search_form implements renderable, templatable {
                             . html_writer::select_time('hours', 'tohour', $dateto)
                             . html_writer::select_time('minutes', 'tominute', $dateto);
 
-        if ($this->forumid && !empty($this->forumoptions)) {
-            foreach ($this->forumoptions as $index => $option) {
-                if ($option['value'] == $this->forumid) {
-                    $this->forumoptions[$index]['selected'] = true;
+        if ($this->digestforumid && !empty($this->digestforumoptions)) {
+            foreach ($this->digestforumoptions as $index => $option) {
+                if ($option['value'] == $this->digestforumid) {
+                    $this->digestforumoptions[$index]['selected'] = true;
                 } else {
-                    $this->forumoptions[$index]['selected'] = false;
+                    $this->digestforumoptions[$index]['selected'] = false;
                 }
             }
         }
-        $data->forumoptions = $this->forumoptions;
+        $data->digestforumoptions = $this->digestforumoptions;
 
         return $data;
     }

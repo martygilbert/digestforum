@@ -16,7 +16,7 @@
 
 /**
  * This file keeps track of upgrades to
- * the forum module
+ * the digestforum module
  *
  * Sometimes, changes between versions involve
  * alterations to database structures and other
@@ -35,22 +35,22 @@
  * Please do not forget to use upgrade_set_timeout()
  * before any action that may take longer time to finish.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2003 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_forum_upgrade($oldversion) {
+function xmldb_digestforum_upgrade($oldversion) {
     global $CFG, $DB;
 
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
     if ($oldversion < 2016091200) {
 
-        // Define field lockdiscussionafter to be added to forum.
-        $table = new xmldb_table('forum');
+        // Define field lockdiscussionafter to be added to digestforum.
+        $table = new xmldb_table('digestforum');
         $field = new xmldb_field('lockdiscussionafter', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
 
         // Conditionally launch add field lockdiscussionafter.
@@ -59,7 +59,7 @@ function xmldb_forum_upgrade($oldversion) {
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2016091200, 'forum');
+        upgrade_mod_savepoint(true, 2016091200, 'digestforum');
     }
 
     // Automatically generated Moodle v3.2.0 release upgrade line.
@@ -70,32 +70,32 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2017092200) {
 
-        // Remove duplicate entries from forum_subscriptions.
-        // Find records with multiple userid/forum combinations and find the highest ID.
+        // Remove duplicate entries from digestforum_subscriptions.
+        // Find records with multiple userid/digestforum combinations and find the highest ID.
         // Later we will remove all those entries.
         $sql = "
-            SELECT MIN(id) as minid, userid, forum
-            FROM {forum_subscriptions}
-            GROUP BY userid, forum
+            SELECT MIN(id) as minid, userid, digestforum
+            FROM {digestforum_subscriptions}
+            GROUP BY userid, digestforum
             HAVING COUNT(id) > 1";
 
         if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
             foreach ($duplicatedrows as $row) {
-                $DB->delete_records_select('forum_subscriptions',
-                    'userid = :userid AND forum = :forum AND id <> :minid', (array)$row);
+                $DB->delete_records_select('digestforum_subscriptions',
+                    'userid = :userid AND digestforum = :digestforum AND id <> :minid', (array)$row);
             }
         }
         $duplicatedrows->close();
 
-        // Define key useridforum (primary) to be added to forum_subscriptions.
-        $table = new xmldb_table('forum_subscriptions');
-        $key = new xmldb_key('useridforum', XMLDB_KEY_UNIQUE, array('userid', 'forum'));
+        // Define key useriddigestforum (primary) to be added to digestforum_subscriptions.
+        $table = new xmldb_table('digestforum_subscriptions');
+        $key = new xmldb_key('useriddigestforum', XMLDB_KEY_UNIQUE, array('userid', 'digestforum'));
 
-        // Launch add key useridforum.
+        // Launch add key useriddigestforum.
         $dbman->add_key($table, $key);
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2017092200, 'forum');
+        upgrade_mod_savepoint(true, 2017092200, 'digestforum');
     }
 
     // Automatically generated Moodle v3.4.0 release upgrade line.
@@ -103,8 +103,8 @@ function xmldb_forum_upgrade($oldversion) {
 
     if ($oldversion < 2018032900) {
 
-        // Define field deleted to be added to forum_posts.
-        $table = new xmldb_table('forum_posts');
+        // Define field deleted to be added to digestforum_posts.
+        $table = new xmldb_table('digestforum_posts');
         $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'mailnow');
 
         // Conditionally launch add field deleted.
@@ -113,7 +113,7 @@ function xmldb_forum_upgrade($oldversion) {
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2018032900, 'forum');
+        upgrade_mod_savepoint(true, 2018032900, 'digestforum');
     }
 
     // Automatically generated Moodle v3.5.0 release upgrade line.

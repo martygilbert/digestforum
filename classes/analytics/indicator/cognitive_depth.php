@@ -15,21 +15,21 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Cognitive depth indicator - forum.
+ * Cognitive depth indicator - digestforum.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\analytics\indicator;
+namespace mod_digestforum\analytics\indicator;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Cognitive depth indicator - forum.
+ * Cognitive depth indicator - digestforum.
  *
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2017 David Monllao {@link http://www.davidmonllao.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -43,7 +43,7 @@ class cognitive_depth extends activity_base {
      * @return \lang_string
      */
     public static function get_name() : \lang_string {
-        return new \lang_string('indicator:cognitivedepth', 'mod_forum');
+        return new \lang_string('indicator:cognitivedepth', 'mod_digestforum');
     }
 
     public function get_indicator_type() {
@@ -69,7 +69,7 @@ class cognitive_depth extends activity_base {
      * @return string[]
      */
     protected function feedback_replied_events() {
-        return array('\mod_forum\event\assessable_uploaded');
+        return array('\mod_digestforum\event\assessable_uploaded');
     }
 
 }

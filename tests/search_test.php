@@ -17,7 +17,7 @@
 /**
  * Forum search unit tests.
  *
- * @package     mod_forum
+ * @package     mod_digestforum
  * @category    test
  * @copyright   2015 David Monllao {@link http://www.davidmonllao.com}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,29 +27,29 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 require_once($CFG->dirroot . '/search/tests/fixtures/testable_core_search.php');
-require_once($CFG->dirroot . '/mod/forum/tests/generator/lib.php');
-require_once($CFG->dirroot . '/mod/forum/lib.php');
+require_once($CFG->dirroot . '/mod/digestforum/tests/generator/lib.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
 /**
- * Provides the unit tests for forum search.
+ * Provides the unit tests for digestforum search.
  *
- * @package     mod_forum
+ * @package     mod_digestforum
  * @category    test
  * @copyright   2015 David Monllao {@link http://www.davidmonllao.com}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_forum_search_testcase extends advanced_testcase {
+class mod_digestforum_search_testcase extends advanced_testcase {
 
     /**
      * @var string Area id
      */
-    protected $forumpostareaid = null;
+    protected $digestforumpostareaid = null;
 
     public function setUp() {
         $this->resetAfterTest(true);
         set_config('enableglobalsearch', true);
 
-        $this->forumpostareaid = \core_search\manager::generate_areaid('mod_forum', 'post');
+        $this->digestforumpostareaid = \core_search\manager::generate_areaid('mod_digestforum', 'post');
 
         // Set \core_search::instance to the mock_search_engine as we don't require the search engine to be working to test this.
         $search = testable_core_search::instance();
@@ -62,7 +62,7 @@ class mod_forum_search_testcase extends advanced_testcase {
      */
     public function test_search_enabled() {
 
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
         list($componentname, $varname) = $searcharea->get_config_var_name();
 
         // Enabled by default once global search is enabled.
@@ -76,7 +76,7 @@ class mod_forum_search_testcase extends advanced_testcase {
     }
 
     /**
-     * Indexing mod forum contents.
+     * Indexing mod digestforum contents.
      *
      * @return void
      */
@@ -84,8 +84,8 @@ class mod_forum_search_testcase extends advanced_testcase {
         global $DB;
 
         // Returns the instance as long as the area is supported.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
-        $this->assertInstanceOf('\mod_forum\search\post', $searcharea);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
+        $this->assertInstanceOf('\mod_digestforum\search\post', $searcharea);
 
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
@@ -100,15 +100,15 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->course = $course1->id;
 
         // Available for both student and teacher.
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
         // Create discussion1.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum1->id;
+        $record->digestforum = $digestforum1->id;
         $record->message = 'discussion';
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Create post1 in discussion1.
         $record = new stdClass();
@@ -116,7 +116,7 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->parent = $discussion1->firstpost;
         $record->userid = $user2->id;
         $record->message = 'post2';
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         // All records.
         $recordset = $searcharea->get_recordset_by_timestamp(0);
@@ -145,20 +145,20 @@ class mod_forum_search_testcase extends advanced_testcase {
         $this->assertFalse($recordset->valid());
         $recordset->close();
 
-        // Context test: create another forum with 1 post.
-        $forum2 = self::getDataGenerator()->create_module('forum', ['course' => $course1->id]);
+        // Context test: create another digestforum with 1 post.
+        $digestforum2 = self::getDataGenerator()->create_module('digestforum', ['course' => $course1->id]);
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum2->id;
+        $record->digestforum = $digestforum2->id;
         $record->message = 'discussion';
-        self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        // Test indexing with each forum then combined course context.
-        $rs = $searcharea->get_document_recordset(0, context_module::instance($forum1->cmid));
+        // Test indexing with each digestforum then combined course context.
+        $rs = $searcharea->get_document_recordset(0, context_module::instance($digestforum1->cmid));
         $this->assertEquals(2, iterator_count($rs));
         $rs->close();
-        $rs = $searcharea->get_document_recordset(0, context_module::instance($forum2->cmid));
+        $rs = $searcharea->get_document_recordset(0, context_module::instance($digestforum2->cmid));
         $this->assertEquals(1, iterator_count($rs));
         $rs->close();
         $rs = $searcharea->get_document_recordset(0, context_course::instance($course1->id));
@@ -175,8 +175,8 @@ class mod_forum_search_testcase extends advanced_testcase {
         global $DB;
 
         // Returns the instance as long as the area is supported.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
-        $this->assertInstanceOf('\mod_forum\search\post', $searcharea);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
+        $this->assertInstanceOf('\mod_digestforum\search\post', $searcharea);
 
         $user = self::getDataGenerator()->create_user();
         $course1 = self::getDataGenerator()->create_course();
@@ -184,20 +184,20 @@ class mod_forum_search_testcase extends advanced_testcase {
 
         $record = new stdClass();
         $record->course = $course1->id;
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
         // Teacher only.
-        $forum2 = self::getDataGenerator()->create_module('forum', $record);
-        set_coursemodule_visible($forum2->cmid, 0);
+        $digestforum2 = self::getDataGenerator()->create_module('digestforum', $record);
+        set_coursemodule_visible($digestforum2->cmid, 0);
 
         // Create discussion1.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user->id;
-        $record->forum = $forum1->id;
+        $record->digestforum = $digestforum1->id;
         $record->message = 'discussion';
         $record->groupid = 0;
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Create post1 in discussion1.
         $record = new stdClass();
@@ -207,17 +207,17 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->subject = 'subject1';
         $record->message = 'post1';
         $record->groupid = -1;
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $post1 = $DB->get_record('forum_posts', array('id' => $discussion1reply1->id));
-        $post1->forumid = $forum1->id;
-        $post1->courseid = $forum1->course;
+        $post1 = $DB->get_record('digestforum_posts', array('id' => $discussion1reply1->id));
+        $post1->digestforumid = $digestforum1->id;
+        $post1->courseid = $digestforum1->course;
         $post1->groupid = -1;
 
         $doc = $searcharea->get_document($post1);
         $this->assertInstanceOf('\core_search\document', $doc);
         $this->assertEquals($discussion1reply1->id, $doc->get('itemid'));
-        $this->assertEquals($this->forumpostareaid . '-' . $discussion1reply1->id, $doc->get('id'));
+        $this->assertEquals($this->digestforumpostareaid . '-' . $discussion1reply1->id, $doc->get('id'));
         $this->assertEquals($course1->id, $doc->get('courseid'));
         $this->assertEquals($user->id, $doc->get('userid'));
         $this->assertEquals($discussion1reply1->subject, $doc->get('title'));
@@ -225,13 +225,13 @@ class mod_forum_search_testcase extends advanced_testcase {
     }
 
     /**
-     * Group support for forum posts.
+     * Group support for digestforum posts.
      */
     public function test_posts_group_support() {
         // Get the search area and test generators.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
         $generator = $this->getDataGenerator();
-        $forumgenerator = $generator->get_plugin_generator('mod_forum');
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
 
         // Create a course, a user, and two groups.
         $course = $generator->create_course();
@@ -240,22 +240,22 @@ class mod_forum_search_testcase extends advanced_testcase {
         $group1 = $generator->create_group(['courseid' => $course->id]);
         $group2 = $generator->create_group(['courseid' => $course->id]);
 
-        // Separate groups forum.
-        $forum = self::getDataGenerator()->create_module('forum', ['course' => $course->id,
+        // Separate groups digestforum.
+        $digestforum = self::getDataGenerator()->create_module('digestforum', ['course' => $course->id,
                 'groupmode' => SEPARATEGROUPS]);
 
         // Create discussion with each group and one for all groups. One has a post in.
-        $discussion1 = $forumgenerator->create_discussion(['course' => $course->id,
-                'userid' => $user->id, 'forum' => $forum->id, 'message' => 'd1',
+        $discussion1 = $digestforumgenerator->create_discussion(['course' => $course->id,
+                'userid' => $user->id, 'digestforum' => $digestforum->id, 'message' => 'd1',
                 'groupid' => $group1->id]);
-        $forumgenerator->create_discussion(['course' => $course->id,
-                'userid' => $user->id, 'forum' => $forum->id, 'message' => 'd2',
+        $digestforumgenerator->create_discussion(['course' => $course->id,
+                'userid' => $user->id, 'digestforum' => $digestforum->id, 'message' => 'd2',
                 'groupid' => $group2->id]);
-        $forumgenerator->create_discussion(['course' => $course->id,
-                'userid' => $user->id, 'forum' => $forum->id, 'message' => 'd3']);
+        $digestforumgenerator->create_discussion(['course' => $course->id,
+                'userid' => $user->id, 'digestforum' => $digestforum->id, 'message' => 'd3']);
 
         // Create a reply in discussion1.
-        $forumgenerator->create_post(['discussion' => $discussion1->id, 'parent' => $discussion1->firstpost,
+        $digestforumgenerator->create_post(['discussion' => $discussion1->id, 'parent' => $discussion1->firstpost,
                 'userid' => $user->id, 'message' => 'p1']);
 
         // Do the indexing of all 4 posts.
@@ -282,12 +282,12 @@ class mod_forum_search_testcase extends advanced_testcase {
 
         // While we're here, also test that the search area requests restriction by group.
         $modinfo = get_fast_modinfo($course);
-        $this->assertTrue($searcharea->restrict_cm_access_by_group($modinfo->get_cm($forum->cmid)));
+        $this->assertTrue($searcharea->restrict_cm_access_by_group($modinfo->get_cm($digestforum->cmid)));
 
         // In visible groups mode, it won't request restriction by group.
-        set_coursemodule_groupmode($forum->cmid, VISIBLEGROUPS);
+        set_coursemodule_groupmode($digestforum->cmid, VISIBLEGROUPS);
         $modinfo = get_fast_modinfo($course);
-        $this->assertFalse($searcharea->restrict_cm_access_by_group($modinfo->get_cm($forum->cmid)));
+        $this->assertFalse($searcharea->restrict_cm_access_by_group($modinfo->get_cm($digestforum->cmid)));
     }
 
     /**
@@ -299,7 +299,7 @@ class mod_forum_search_testcase extends advanced_testcase {
         global $DB;
 
         // Returns the instance as long as the area is supported.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
 
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
@@ -314,19 +314,19 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->course = $course1->id;
 
         // Available for both student and teacher.
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
         // Teacher only.
-        $forum2 = self::getDataGenerator()->create_module('forum', $record);
-        set_coursemodule_visible($forum2->cmid, 0);
+        $digestforum2 = self::getDataGenerator()->create_module('digestforum', $record);
+        set_coursemodule_visible($digestforum2->cmid, 0);
 
         // Create discussion1.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum1->id;
+        $record->digestforum = $digestforum1->id;
         $record->message = 'discussion';
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Create post1 in discussion1.
         $record = new stdClass();
@@ -334,15 +334,15 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->parent = $discussion1->firstpost;
         $record->userid = $user2->id;
         $record->message = 'post1';
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         // Create discussion2 only visible to teacher.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum2->id;
+        $record->digestforum = $digestforum2->id;
         $record->message = 'discussion';
-        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Create post2 in discussion2.
         $record = new stdClass();
@@ -350,7 +350,7 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->parent = $discussion2->firstpost;
         $record->userid = $user1->id;
         $record->message = 'post2';
-        $discussion2reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion2reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $this->setUser($user2);
         $this->assertEquals(\core_search\manager::ACCESS_GRANTED, $searcharea->check_access($discussion1reply1->id));
@@ -368,8 +368,8 @@ class mod_forum_search_testcase extends advanced_testcase {
         $fs = get_file_storage();
 
         // Returns the instance as long as the area is supported.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
-        $this->assertInstanceOf('\mod_forum\search\post', $searcharea);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
+        $this->assertInstanceOf('\mod_digestforum\search\post', $searcharea);
 
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
@@ -382,22 +382,22 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record = new stdClass();
         $record->course = $course1->id;
 
-        $forum1 = self::getDataGenerator()->create_module('forum', $record);
+        $digestforum1 = self::getDataGenerator()->create_module('digestforum', $record);
 
         // Create discussion1.
         $record = new stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
-        $record->forum = $forum1->id;
+        $record->digestforum = $digestforum1->id;
         $record->message = 'discussion';
         $record->attachemt = 1;
-        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_discussion($record);
+        $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Attach 2 file to the discussion post.
-        $post = $DB->get_record('forum_posts', array('discussion' => $discussion1->id));
+        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion1->id));
         $filerecord = array(
-            'contextid' => context_module::instance($forum1->cmid)->id,
-            'component' => 'mod_forum',
+            'contextid' => context_module::instance($digestforum1->cmid)->id,
+            'component' => 'mod_digestforum',
             'filearea'  => 'attachment',
             'itemid'    => $post->id,
             'filepath'  => '/',
@@ -414,7 +414,7 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->userid = $user2->id;
         $record->message = 'post2';
         $record->attachemt = 1;
-        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $filerecord['itemid'] = $discussion1reply1->id;
         $filerecord['filename'] = 'myfile3';
@@ -426,10 +426,10 @@ class mod_forum_search_testcase extends advanced_testcase {
         $record->parent = $discussion1->firstpost;
         $record->userid = $user2->id;
         $record->message = 'post3';
-        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_forum')->create_post($record);
+        $discussion1reply2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         // Now get all the posts and see if they have the right files attached.
-        $searcharea = \core_search\manager::get_search_area($this->forumpostareaid);
+        $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
         $recordset = $searcharea->get_recordset_by_timestamp(0);
         $nrecords = 0;
         foreach ($recordset as $record) {
@@ -461,7 +461,7 @@ class mod_forum_search_testcase extends advanced_testcase {
     }
 
     /**
-     * Tests that reindexing works in order starting from the forum with most recent discussion.
+     * Tests that reindexing works in order starting from the digestforum with most recent discussion.
      */
     public function test_posts_get_contexts_to_reindex() {
         global $DB;
@@ -474,46 +474,46 @@ class mod_forum_search_testcase extends advanced_testcase {
 
         $time = time() - 1000;
 
-        // Create 3 forums (two in course 1, one in course 2 - doesn't make a difference).
-        $forum1 = $generator->create_module('forum', ['course' => $course1->id]);
-        $forum2 = $generator->create_module('forum', ['course' => $course1->id]);
-        $forum3 = $generator->create_module('forum', ['course' => $course2->id]);
-        $forum4 = $generator->create_module('forum', ['course' => $course2->id]);
+        // Create 3 digestforums (two in course 1, one in course 2 - doesn't make a difference).
+        $digestforum1 = $generator->create_module('digestforum', ['course' => $course1->id]);
+        $digestforum2 = $generator->create_module('digestforum', ['course' => $course1->id]);
+        $digestforum3 = $generator->create_module('digestforum', ['course' => $course2->id]);
+        $digestforum4 = $generator->create_module('digestforum', ['course' => $course2->id]);
 
         // Hack added time for the course_modules entries. These should not be used (they would
         // be used by the base class implementation). We are setting this so that the order would
         // be 4, 3, 2, 1 if this ordering were used (newest first).
-        $DB->set_field('course_modules', 'added', $time + 100, ['id' => $forum1->cmid]);
-        $DB->set_field('course_modules', 'added', $time + 110, ['id' => $forum2->cmid]);
-        $DB->set_field('course_modules', 'added', $time + 120, ['id' => $forum3->cmid]);
-        $DB->set_field('course_modules', 'added', $time + 130, ['id' => $forum4->cmid]);
+        $DB->set_field('course_modules', 'added', $time + 100, ['id' => $digestforum1->cmid]);
+        $DB->set_field('course_modules', 'added', $time + 110, ['id' => $digestforum2->cmid]);
+        $DB->set_field('course_modules', 'added', $time + 120, ['id' => $digestforum3->cmid]);
+        $DB->set_field('course_modules', 'added', $time + 130, ['id' => $digestforum4->cmid]);
 
-        $forumgenerator = $generator->get_plugin_generator('mod_forum');
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
 
-        // Create one discussion in forums 1 and 3, three in forum 2, and none in forum 4.
-        $forumgenerator->create_discussion(['course' => $course1->id,
-                'forum' => $forum1->id, 'userid' => $adminuser->id, 'timemodified' => $time + 20]);
+        // Create one discussion in digestforums 1 and 3, three in digestforum 2, and none in digestforum 4.
+        $digestforumgenerator->create_discussion(['course' => $course1->id,
+                'digestforum' => $digestforum1->id, 'userid' => $adminuser->id, 'timemodified' => $time + 20]);
 
-        $forumgenerator->create_discussion(['course' => $course1->id,
-                'forum' => $forum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 10]);
-        $forumgenerator->create_discussion(['course' => $course1->id,
-                'forum' => $forum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 30]);
-        $forumgenerator->create_discussion(['course' => $course1->id,
-                'forum' => $forum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 11]);
+        $digestforumgenerator->create_discussion(['course' => $course1->id,
+                'digestforum' => $digestforum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 10]);
+        $digestforumgenerator->create_discussion(['course' => $course1->id,
+                'digestforum' => $digestforum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 30]);
+        $digestforumgenerator->create_discussion(['course' => $course1->id,
+                'digestforum' => $digestforum2->id, 'userid' => $adminuser->id, 'timemodified' => $time + 11]);
 
-        $forumgenerator->create_discussion(['course' => $course2->id,
-                'forum' => $forum3->id, 'userid' => $adminuser->id, 'timemodified' => $time + 25]);
+        $digestforumgenerator->create_discussion(['course' => $course2->id,
+                'digestforum' => $digestforum3->id, 'userid' => $adminuser->id, 'timemodified' => $time + 25]);
 
         // Get the contexts in reindex order.
-        $area = \core_search\manager::get_search_area($this->forumpostareaid);
+        $area = \core_search\manager::get_search_area($this->digestforumpostareaid);
         $contexts = iterator_to_array($area->get_contexts_to_reindex(), false);
 
         // We expect them in order of newest discussion. Forum 4 is not included at all (which is
         // correct because it has no content).
         $expected = [
-            \context_module::instance($forum2->cmid),
-            \context_module::instance($forum3->cmid),
-            \context_module::instance($forum1->cmid)
+            \context_module::instance($digestforum2->cmid),
+            \context_module::instance($digestforum3->cmid),
+            \context_module::instance($digestforum1->cmid)
         ];
         $this->assertEquals($expected, $contexts);
     }

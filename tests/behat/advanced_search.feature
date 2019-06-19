@@ -1,6 +1,6 @@
-@mod @mod_forum
-Feature: The forum search allows users to perform advanced searches for forum posts
-  In order to perform an advanced search for a forum post
+@mod @mod_digestforum
+Feature: The digestforum search allows users to perform advanced searches for digestforum posts
+  In order to perform an advanced search for a digestforum post
   As a teacher
   I can use the search feature
 
@@ -28,11 +28,11 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I expand all fieldsets
     And I set the field "id_newsitems" to "1"
     And I press "Save and display"
-    And I add a new topic to "Announcements" forum with:
+    And I add a new topic to "Announcements" digestforum with:
       | Subject | My subject |
       | Message | My message |
     And I am on "Course 1" course homepage
-    And I add a new topic to "Announcements" forum with:
+    And I add a new topic to "Announcements" digestforum with:
       | Subject | Your subjective|
       | Message | Your long message |
     And I log out
@@ -41,10 +41,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "words" to "subject"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should see "My subject"
     And I should see "Your subjective"
 
@@ -52,11 +52,11 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "words" to "My"
     And I set the field "notwords" to "subjective"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should see "My subject"
     And I should not see "Your subjective"
 
@@ -67,10 +67,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "fullwords" to "subject"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should see "My subject"
     And I should not see "Your subjective"
 
@@ -78,27 +78,27 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "subject" to "subjective"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should not see "My message"
     And I should see "Your subjective"
 
   Scenario: Perform an advanced search matching the author
     Given I log in as "teacher2"
     And I am on "Course 1" course homepage
-    And I add a new topic to "Announcements" forum with:
+    And I add a new topic to "Announcements" digestforum with:
       | Subject | My Subjects |
       | Message | My message |
     And I log out
     When I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "user" to "TWO"
-    And I press "Search forums"
+    And I press "Search digestforums"
     Then I should see "Teacher TWO"
     And I should not see "Teacher ONE"
 
@@ -106,10 +106,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     Given I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "subject" to "your subjective"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should not see "My message"
     And I should see "Your subjective"
 
@@ -127,10 +127,10 @@ Feature: The forum search allows users to perform advanced searches for forum po
     And I log in as "student1"
     And I am on "Course 1" course homepage
     And I follow "Announcements"
-    And I press "Search forums"
+    And I press "Search digestforums"
     And I should see "Advanced search"
     And I set the field "Is tagged with" to "SearchedTag"
     And I click on "[data-value='SearchedTag']" "css_element"
-    When I press "Search forums"
+    When I press "Search digestforums"
     Then I should see "My subject"
     And I should not see "Your subjective"

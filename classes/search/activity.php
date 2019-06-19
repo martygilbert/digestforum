@@ -17,19 +17,19 @@
 /**
  * Forum activities search area
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\search;
+namespace mod_digestforum\search;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
  * Forum activities search area.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

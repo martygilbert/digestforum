@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template mod_forum/forum_post_email_textemail
+    @template mod_digestforum/digestforum_post_email_textemail
 
-    Template which defines a forum post for sending in a single-post text email.
+    Template which defines a digestforum post for sending in a single-post text email.
 
     Classes required for JS:
     * none
@@ -27,7 +27,7 @@
 
     Context variables required for this template:
     * coursename
-    * forumname
+    * digestforumname
     * showdiscussionname
     * discussionname
     * permalink
@@ -38,14 +38,14 @@
     * attachments
     * canreply
     * replylink
-    * unsubscribeforumlink
+    * unsubscribedigestforumlink
     * unsubscribediscussionlink
-    * forumindexlink
+    * digestforumindexlink
 }}
-{{{ coursename }}} -> {{# str }} forums, forum {{/ str }} -> {{{ forumname }}}{{# showdiscussionname }} -> {{{ discussionname }}} {{/ showdiscussionname }}
+{{{ coursename }}} -> {{# str }} digestforums, digestforum {{/ str }} -> {{{ digestforumname }}}{{# showdiscussionname }} -> {{{ discussionname }}} {{/ showdiscussionname }}
 {{ permalink }}
 {{{ subject }}}
-{{# str }} bynameondate, forum, {
+{{# str }} bynameondate, digestforum, {
         "name": {{# quote }}{{{ authorfullname }}}{{/ quote }},
         "date": {{# quote}}{{ postdate }}{{/ quote }}
     } {{/ str }}
@@ -55,15 +55,15 @@
 {{{ attachments }}}
 ---------------------------------------------------------------------
 {{# canreply }}
-{{# str }} postmailinfolink, forum, {
+{{# str }} postmailinfolink, digestforum, {
         "coursename": {{# quote }}{{{ coursename }}}{{/ quote }},
         "replylink": {{# quote }}{{ replylink }}{{/ quote }}
     } {{/ str }}
 {{/ canreply }}
-{{# unsubscribeforumlink }}
-{{# str }} unsubscribelink, forum, {{{ unsubscribeforumlink }}} {{/ str }}
-{{/ unsubscribeforumlink }}
+{{# unsubscribedigestforumlink }}
+{{# str }} unsubscribelink, digestforum, {{{ unsubscribedigestforumlink }}} {{/ str }}
+{{/ unsubscribedigestforumlink }}
 {{# unsubscribediscussionlink }}
-{{# str }} unsubscribediscussionlink, forum, {{{ unsubscribediscussionlink }}} {{/ str }}
+{{# str }} unsubscribediscussionlink, digestforum, {{{ unsubscribediscussionlink }}} {{/ str }}
 {{/ unsubscribediscussionlink }}
-{{# str }} digestmailpostlink, forum, {{{ forumindexlink }}} {{/ str }}
+{{# str }} digestmailpostlink, digestforum, {{{ digestforumindexlink }}} {{/ str }}

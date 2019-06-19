@@ -15,29 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * The mod_forum post deleted event.
+ * The mod_digestforum post deleted event.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\event;
+namespace mod_digestforum\event;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * The mod_forum post deleted event class.
+ * The mod_digestforum post deleted event class.
  *
  * @property-read array $other {
  *      Extra information about the event.
  *
  *      - int discussionid: The discussion id the post is part of.
- *      - int forumid: The forum id the post is part of.
- *      - string forumtype: The type of forum the post is part of.
+ *      - int digestforumid: The digestforum id the post is part of.
+ *      - string digestforumtype: The type of digestforum the post is part of.
  * }
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @since      Moodle 2.7
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -51,7 +51,7 @@ class post_deleted extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'd';
         $this->data['edulevel'] = self::LEVEL_OTHER;
-        $this->data['objecttable'] = 'forum_posts';
+        $this->data['objecttable'] = 'digestforum_posts';
     }
 
     /**
@@ -61,7 +61,7 @@ class post_deleted extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' has deleted the post with id '$this->objectid' in the discussion with " .
-            "id '{$this->other['discussionid']}' in the forum with course module id '$this->contextinstanceid'.";
+            "id '{$this->other['discussionid']}' in the digestforum with course module id '$this->contextinstanceid'.";
     }
 
     /**
@@ -70,7 +70,7 @@ class post_deleted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('eventpostdeleted', 'mod_forum');
+        return get_string('eventpostdeleted', 'mod_digestforum');
     }
 
     /**
@@ -79,13 +79,13 @@ class post_deleted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        if ($this->other['forumtype'] == 'single') {
-            // Single discussion forums are an exception. We show
-            // the forum itself since it only has one discussion
+        if ($this->other['digestforumtype'] == 'single') {
+            // Single discussion digestforums are an exception. We show
+            // the digestforum itself since it only has one discussion
             // thread.
-            $url = new \moodle_url('/mod/forum/view.php', array('f' => $this->other['forumid']));
+            $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
         } else {
-            $url = new \moodle_url('/mod/forum/discuss.php', array('d' => $this->other['discussionid']));
+            $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->other['discussionid']));
         }
         return $url;
     }
@@ -96,10 +96,10 @@ class post_deleted extends \core\event\base {
      * @return array|null
      */
     protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/forum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/forum/'));
+        // The legacy log table expects a relative path to /mod/digestforum/.
+        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
 
-        return array($this->courseid, 'forum', 'delete post', $logurl, $this->objectid, $this->contextinstanceid);
+        return array($this->courseid, 'digestforum', 'delete post', $logurl, $this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -115,12 +115,12 @@ class post_deleted extends \core\event\base {
             throw new \coding_exception('The \'discussionid\' value must be set in other.');
         }
 
-        if (!isset($this->other['forumid'])) {
-            throw new \coding_exception('The \'forumid\' value must be set in other.');
+        if (!isset($this->other['digestforumid'])) {
+            throw new \coding_exception('The \'digestforumid\' value must be set in other.');
         }
 
-        if (!isset($this->other['forumtype'])) {
-            throw new \coding_exception('The \'forumtype\' value must be set in other.');
+        if (!isset($this->other['digestforumtype'])) {
+            throw new \coding_exception('The \'digestforumtype\' value must be set in other.');
         }
 
         if ($this->contextlevel != CONTEXT_MODULE) {
@@ -129,13 +129,13 @@ class post_deleted extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'forum_posts', 'restore' => 'forum_post');
+        return array('db' => 'digestforum_posts', 'restore' => 'digestforum_post');
     }
 
     public static function get_other_mapping() {
         $othermapped = array();
-        $othermapped['forumid'] = array('db' => 'forum', 'restore' => 'forum');
-        $othermapped['discussionid'] = array('db' => 'forum_discussions', 'restore' => 'forum_discussion');
+        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped['discussionid'] = array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
 
         return $othermapped;
     }

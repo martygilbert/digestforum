@@ -1,8 +1,8 @@
-@mod @mod_forum
-Feature: Students can edit or delete their forum posts within a set time limit
-  In order to refine forum posts
+@mod @mod_digestforum
+Feature: Students can edit or delete their digestforum posts within a set time limit
+  In order to refine digestforum posts
   As a user
-  I need to edit or delete my forum posts within a certain period of time after posting
+  I need to edit or delete my digestforum posts within a certain period of time after posting
 
   Background:
     Given the following "users" exist:
@@ -16,14 +16,14 @@ Feature: Students can edit or delete their forum posts within a set time limit
       | student1 | C1 | student |
     And the following "activities" exist:
       | activity   | name                   | intro                   | course  | idnumber  |
-      | forum      | Test forum name        | Test forum description  | C1      | forum     |
+      | digestforum      | Test digestforum name        | Test digestforum description  | C1      | digestforum     |
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I add a new discussion to "Test forum name" forum with:
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Forum post subject |
       | Message | This is the body |
 
-  Scenario: Edit forum post
+  Scenario: Edit digestforum post
     Given I follow "Forum post subject"
     And I follow "Edit"
     When I set the following fields to these values:
@@ -34,7 +34,7 @@ Feature: Students can edit or delete their forum posts within a set time limit
     Then I should see "Edited post subject"
     And I should see "Edited post body"
 
-  Scenario: Delete forum post
+  Scenario: Delete digestforum post
     Given I follow "Forum post subject"
     When I follow "Delete"
     And I press "Continue"
@@ -52,7 +52,7 @@ Feature: Students can edit or delete their forum posts within a set time limit
     And I log out
     And I log in as "student1"
     And I am on "Course 1" course homepage
-    And I should see "New forum posts:" in the "Recent activity" "block"
+    And I should see "New digestforum posts:" in the "Recent activity" "block"
     And I should see "Forum post subject" in the "Recent activity" "block"
     When I wait "61" seconds
     And I follow "Forum post subject"

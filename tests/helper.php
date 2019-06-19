@@ -17,7 +17,7 @@
 /**
  * Helper functions used by several tests.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -56,26 +56,26 @@ trait helper {
     }
 
     /**
-     * Create a new discussion and post within the specified forum, as the
+     * Create a new discussion and post within the specified digestforum, as the
      * specified author.
      *
-     * @param stdClass $forum The forum to post in
+     * @param stdClass $digestforum The digestforum to post in
      * @param stdClass $author The author to post as
      * @return array An array containing the discussion object, and the post object
      */
-    protected function helper_post_to_forum($forum, $author) {
+    protected function helper_post_to_digestforum($digestforum, $author) {
         global $DB;
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        // Create a discussion in the forum, and then add a post to that discussion.
+        // Create a discussion in the digestforum, and then add a post to that discussion.
         $record = new stdClass();
-        $record->course = $forum->course;
+        $record->course = $digestforum->course;
         $record->userid = $author->id;
-        $record->forum = $forum->id;
+        $record->digestforum = $digestforum->id;
         $discussion = $generator->create_discussion($record);
 
         // Retrieve the post which was created by create_discussion.
-        $post = $DB->get_record('forum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
 
         return array($discussion, $post);
     }
@@ -90,7 +90,7 @@ trait helper {
         global $DB;
 
         // Update the post to have a created in the past.
-        $DB->set_field('forum_posts', 'created', $post->created + $factor, array('id' => $post->id));
+        $DB->set_field('digestforum_posts', 'created', $post->created + $factor, array('id' => $post->id));
     }
 
     /**
@@ -103,32 +103,32 @@ trait helper {
     protected function helper_update_subscription_time($user, $discussion, $factor) {
         global $DB;
 
-        $sub = $DB->get_record('forum_discussion_subs', array('userid' => $user->id, 'discussion' => $discussion->id));
+        $sub = $DB->get_record('digestforum_discussion_subs', array('userid' => $user->id, 'discussion' => $discussion->id));
 
         // Update the subscription to have a preference in the past.
-        $DB->set_field('forum_discussion_subs', 'preference', $sub->preference + $factor, array('id' => $sub->id));
+        $DB->set_field('digestforum_discussion_subs', 'preference', $sub->preference + $factor, array('id' => $sub->id));
     }
 
     /**
      * Create a new post within an existing discussion, as the specified author.
      *
-     * @param stdClass $forum The forum to post in
+     * @param stdClass $digestforum The digestforum to post in
      * @param stdClass $discussion The discussion to post in
      * @param stdClass $author The author to post as
-     * @return stdClass The forum post
+     * @return stdClass The digestforum post
      */
-    protected function helper_post_to_discussion($forum, $discussion, $author) {
+    protected function helper_post_to_discussion($digestforum, $discussion, $author) {
         global $DB;
 
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
         // Add a post to the discussion.
         $record = new stdClass();
-        $record->course = $forum->course;
-        $strre = get_string('re', 'forum');
+        $record->course = $digestforum->course;
+        $strre = get_string('re', 'digestforum');
         $record->subject = $strre . ' ' . $discussion->subject;
         $record->userid = $author->id;
-        $record->forum = $forum->id;
+        $record->digestforum = $digestforum->id;
         $record->discussion = $discussion->id;
         $record->mailnow = 1;
 
@@ -142,15 +142,15 @@ trait helper {
      *
      * @param stdClass $parent The post being replied to
      * @param stdClass $author The author to post as
-     * @return stdClass The forum post
+     * @return stdClass The digestforum post
      */
     protected function helper_reply_to_post($parent, $author) {
         global $DB;
 
-        $generator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
         // Add a post to the discussion.
-        $strre = get_string('re', 'forum');
+        $strre = get_string('re', 'digestforum');
         $record = (object) [
             'discussion' => $parent->discussion,
             'parent' => $parent->id,

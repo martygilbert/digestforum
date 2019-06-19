@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package   mod_forum
+ * @package   mod_digestforum
  * @copyright 2014 Andrew Robert Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * @deprecated since Moodle 1.1 - please do not use this function any more.
  */
-function forum_count_unrated_posts() {
+function digestforum_count_unrated_posts() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -37,14 +37,14 @@ function forum_count_unrated_posts() {
 /**
  * @deprecated since Moodle 1.5 - please do not use this function any more.
  */
-function forum_tp_count_discussion_read_records() {
+function digestforum_tp_count_discussion_read_records() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 1.5 - please do not use this function any more.
  */
-function forum_get_user_discussions() {
+function digestforum_get_user_discussions() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -54,14 +54,14 @@ function forum_get_user_discussions() {
 /**
  * @deprecated since Moodle 1.6 - please do not use this function any more.
  */
-function forum_tp_count_forum_posts() {
+function digestforum_tp_count_digestforum_posts() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 1.6 - please do not use this function any more.
  */
-function forum_tp_count_forum_read_records() {
+function digestforum_tp_count_digestforum_read_records() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -71,7 +71,7 @@ function forum_tp_count_forum_read_records() {
 /**
  * @deprecated since Moodle 1.7 - please do not use this function any more.
  */
-function forum_get_open_modes() {
+function digestforum_get_open_modes() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -81,14 +81,14 @@ function forum_get_open_modes() {
 /**
  * @deprecated since Moodle 1.9 MDL-13303 - please do not use this function any more.
  */
-function forum_get_child_posts() {
+function digestforum_get_child_posts() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 1.9 MDL-13303 - please do not use this function any more.
  */
-function forum_get_discussion_posts() {
+function digestforum_get_discussion_posts() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -98,42 +98,42 @@ function forum_get_discussion_posts() {
 /**
  * @deprecated since Moodle 2.0 MDL-21657 - please do not use this function any more.
  */
-function forum_get_ratings() {
+function digestforum_get_ratings() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 2.0 MDL-14632 - please do not use this function any more.
  */
-function forum_get_tracking_link() {
+function digestforum_get_tracking_link() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 2.0 MDL-14113 - please do not use this function any more.
  */
-function forum_tp_count_discussion_unread_posts() {
+function digestforum_tp_count_discussion_unread_posts() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 2.0 MDL-23479 - please do not use this function any more.
  */
-function forum_convert_to_roles() {
+function digestforum_convert_to_roles() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 2.0 MDL-14113 - please do not use this function any more.
  */
-function forum_tp_get_read_records() {
+function digestforum_tp_get_read_records() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
  * @deprecated since Moodle 2.0 MDL-14113 - please do not use this function any more.
  */
-function forum_tp_get_discussion_read_records() {
+function digestforum_tp_get_discussion_read_records() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -142,7 +142,7 @@ function forum_tp_get_discussion_read_records() {
 /**
  * @deprecated since Moodle 2.3 MDL-33166 - please do not use this function any more.
  */
-function forum_user_enrolled() {
+function digestforum_user_enrolled() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -150,9 +150,9 @@ function forum_user_enrolled() {
 // Deprecated in 2.4.
 
 /**
- * @deprecated since Moodle 2.4 use forum_user_can_see_post() instead
+ * @deprecated since Moodle 2.4 use digestforum_user_can_see_post() instead
  */
-function forum_user_can_view_post() {
+function digestforum_user_can_view_post() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
@@ -160,103 +160,103 @@ function forum_user_can_view_post() {
 // Deprecated in 2.6.
 
 /**
- * FORUM_TRACKING_ON - deprecated alias for FORUM_TRACKING_FORCED.
+ * DFORUM_TRACKING_ON - deprecated alias for DFORUM_TRACKING_FORCED.
  * @deprecated since 2.6
  */
-define('FORUM_TRACKING_ON', 2);
+define('DFORUM_TRACKING_ON', 2);
 
 /**
  * @deprecated since Moodle 2.6
  * @see shorten_text()
  */
-function forum_shorten_post($message) {
+function digestforum_shorten_post($message) {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. '
-        . 'Please use shorten_text($message, $CFG->forum_shortpost) instead.');
+        . 'Please use shorten_text($message, $CFG->digestforum_shortpost) instead.');
 }
 
 // Deprecated in 2.8.
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::is_subscribed() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::is_subscribed() instead
  */
-function forum_is_subscribed() {
+function digestforum_is_subscribed() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more.');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::subscribe_user() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::subscribe_user() instead
  */
-function forum_subscribe() {
+function digestforum_subscribe() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::subscribe_user() instead');
+        . \mod_digestforum\subscriptions::class . '::subscribe_user() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::unsubscribe_user() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::unsubscribe_user() instead
  */
-function forum_unsubscribe() {
+function digestforum_unsubscribe() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::unsubscribe_user() instead');
+        . \mod_digestforum\subscriptions::class . '::unsubscribe_user() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::fetch_subscribed_users() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::fetch_subscribed_users() instead
   */
-function forum_subscribed_users() {
+function digestforum_subscribed_users() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::fetch_subscribed_users() instead');
+        . \mod_digestforum\subscriptions::class . '::fetch_subscribed_users() instead');
 }
 
 /**
- * Determine whether the forum is force subscribed.
+ * Determine whether the digestforum is force subscribed.
  *
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::is_forcesubscribed() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::is_forcesubscribed() instead
  */
-function forum_is_forcesubscribed($forum) {
+function digestforum_is_forcesubscribed($digestforum) {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::is_forcesubscribed() instead');
+        . \mod_digestforum\subscriptions::class . '::is_forcesubscribed() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::set_subscription_mode() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::set_subscription_mode() instead
  */
-function forum_forcesubscribe($forumid, $value = 1) {
+function digestforum_forcesubscribe($digestforumid, $value = 1) {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::set_subscription_mode() instead');
+        . \mod_digestforum\subscriptions::class . '::set_subscription_mode() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::get_subscription_mode() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::get_subscription_mode() instead
  */
-function forum_get_forcesubscribed($forum) {
+function digestforum_get_forcesubscribed($digestforum) {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::set_subscription_mode() instead');
+        . \mod_digestforum\subscriptions::class . '::set_subscription_mode() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::is_subscribed in combination wtih
- * \mod_forum\subscriptions::fill_subscription_cache_for_course instead.
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::is_subscribed in combination wtih
+ * \mod_digestforum\subscriptions::fill_subscription_cache_for_course instead.
  */
-function forum_get_subscribed_forums() {
+function digestforum_get_subscribed_digestforums() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::is_subscribed(), and '
-        . \mod_forum\subscriptions::class . '::fill_subscription_cache_for_course() instead');
+        . \mod_digestforum\subscriptions::class . '::is_subscribed(), and '
+        . \mod_digestforum\subscriptions::class . '::fill_subscription_cache_for_course() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::get_unsubscribable_forums() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::get_unsubscribable_digestforums() instead
  */
-function forum_get_optional_subscribed_forums() {
+function digestforum_get_optional_subscribed_digestforums() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::get_unsubscribable_forums() instead');
+        . \mod_digestforum\subscriptions::class . '::get_unsubscribable_digestforums() instead');
 }
 
 /**
- * @deprecated since Moodle 2.8 use \mod_forum\subscriptions::get_potential_subscribers() instead
+ * @deprecated since Moodle 2.8 use \mod_digestforum\subscriptions::get_potential_subscribers() instead
  */
-function forum_get_potential_subscribers() {
+function digestforum_get_potential_subscribers() {
     throw new coding_exception(__FUNCTION__ . '() can not be used any more. Please use '
-        . \mod_forum\subscriptions::class . '::get_potential_subscribers() instead');
+        . \mod_digestforum\subscriptions::class . '::get_potential_subscribers() instead');
 }
 
 /**
@@ -265,7 +265,7 @@ function forum_get_potential_subscribers() {
  * @uses CONTEXT_MODULE
  * @param object $course
  * @param object $cm
- * @param object $forum
+ * @param object $digestforum
  * @param object $discussion
  * @param object $post
  * @param object $userfrom
@@ -273,31 +273,31 @@ function forum_get_potential_subscribers() {
  * @param boolean $bare
  * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
  * @return string The email body in plain text format.
- * @deprecated since Moodle 3.0 use \mod_forum\output\forum_post_email instead
+ * @deprecated since Moodle 3.0 use \mod_digestforum\output\digestforum_post_email instead
  */
-function forum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $bare = false, $replyaddress = null) {
+function digestforum_make_mail_text($course, $cm, $digestforum, $discussion, $post, $userfrom, $userto, $bare = false, $replyaddress = null) {
     global $PAGE;
-    $renderable = new \mod_forum\output\forum_post_email(
+    $renderable = new \mod_digestforum\output\digestforum_post_email(
         $course,
         $cm,
-        $forum,
+        $digestforum,
         $discussion,
         $post,
         $userfrom,
         $userto,
-        forum_user_can_post($forum, $discussion, $userto, $cm, $course)
+        digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course)
         );
 
     $modcontext = context_module::instance($cm->id);
     $renderable->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
 
     if ($bare) {
-        $renderer = $PAGE->get_renderer('mod_forum', 'emaildigestfull', 'textemail');
+        $renderer = $PAGE->get_renderer('mod_digestforum', 'emaildigestfull', 'textemail');
     } else {
-        $renderer = $PAGE->get_renderer('mod_forum', 'email', 'textemail');
+        $renderer = $PAGE->get_renderer('mod_digestforum', 'email', 'textemail');
     }
 
-    debugging("forum_make_mail_text() has been deprecated, please use the \mod_forum\output\forum_post_email renderable instead.",
+    debugging("digestforum_make_mail_text() has been deprecated, please use the \mod_digestforum\output\digestforum_post_email renderable instead.",
             DEBUG_DEVELOPER);
 
     return $renderer->render($renderable);
@@ -308,24 +308,24 @@ function forum_make_mail_text($course, $cm, $forum, $discussion, $post, $userfro
  *
  * @param object $course
  * @param object $cm
- * @param object $forum
+ * @param object $digestforum
  * @param object $discussion
  * @param object $post
  * @param object $userfrom
  * @param object $userto
  * @param string $replyaddress The inbound address that a user can reply to the generated e-mail with. [Since 2.8].
  * @return string The email text in HTML format
- * @deprecated since Moodle 3.0 use \mod_forum\output\forum_post_email instead
+ * @deprecated since Moodle 3.0 use \mod_digestforum\output\digestforum_post_email instead
  */
-function forum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfrom, $userto, $replyaddress = null) {
-    return forum_make_mail_post($course,
+function digestforum_make_mail_html($course, $cm, $digestforum, $discussion, $post, $userfrom, $userto, $replyaddress = null) {
+    return digestforum_make_mail_post($course,
         $cm,
-        $forum,
+        $digestforum,
         $discussion,
         $post,
         $userfrom,
         $userto,
-        forum_user_can_post($forum, $discussion, $userto, $cm, $course)
+        digestforum_user_can_post($digestforum, $discussion, $userto, $cm, $course)
     );
 }
 
@@ -335,7 +335,7 @@ function forum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfro
  *
  * @param object $course
  * @param object $cm
- * @param object $forum
+ * @param object $digestforum
  * @param object $discussion
  * @param object $post
  * @param object $userfrom
@@ -346,15 +346,15 @@ function forum_make_mail_html($course, $cm, $forum, $discussion, $post, $userfro
  * @param bool $rate
  * @param string $footer
  * @return string
- * @deprecated since Moodle 3.0 use \mod_forum\output\forum_post_email instead
+ * @deprecated since Moodle 3.0 use \mod_digestforum\output\digestforum_post_email instead
  */
-function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfrom, $userto,
+function digestforum_make_mail_post($course, $cm, $digestforum, $discussion, $post, $userfrom, $userto,
                               $ownpost=false, $reply=false, $link=false, $rate=false, $footer="") {
     global $PAGE;
-    $renderable = new \mod_forum\output\forum_post_email(
+    $renderable = new \mod_digestforum\output\digestforum_post_email(
         $course,
         $cm,
-        $forum,
+        $digestforum,
         $discussion,
         $post,
         $userfrom,
@@ -364,10 +364,10 @@ function forum_make_mail_post($course, $cm, $forum, $discussion, $post, $userfro
     $modcontext = context_module::instance($cm->id);
     $renderable->viewfullnames = has_capability('moodle/site:viewfullnames', $modcontext, $userto->id);
 
-    // Assume that this is being used as a standard forum email.
-    $renderer = $PAGE->get_renderer('mod_forum', 'email', 'htmlemail');
+    // Assume that this is being used as a standard digestforum email.
+    $renderer = $PAGE->get_renderer('mod_digestforum', 'email', 'htmlemail');
 
-    debugging("forum_make_mail_post() has been deprecated, please use the \mod_forum\output\forum_post_email renderable instead.",
+    debugging("digestforum_make_mail_post() has been deprecated, please use the \mod_digestforum\output\digestforum_post_email renderable instead.",
             DEBUG_DEVELOPER);
 
     return $renderer->render($renderable);

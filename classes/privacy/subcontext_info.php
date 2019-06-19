@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mod_forum.
+ * Privacy Subsystem implementation for mod_digestforum.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\privacy;
+namespace mod_digestforum\privacy;
 
 use \core_privacy\request\approved_contextlist;
 use \core_privacy\request\writer;
@@ -57,7 +57,7 @@ trait subcontext_info {
 
         $discussionname = implode('-', $parts);
 
-        $pathparts[] = get_string('discussions', 'mod_forum');
+        $pathparts[] = get_string('discussions', 'mod_digestforum');
         $pathparts[] = $discussionname;
 
         return $pathparts;
@@ -81,7 +81,7 @@ trait subcontext_info {
     }
 
     /**
-     * Get the parent subcontext for the supplied forum, discussion, and post combination.
+     * Get the parent subcontext for the supplied digestforum, discussion, and post combination.
      *
      * @param   \stdClass   $post The post.
      * @return  array
@@ -90,7 +90,7 @@ trait subcontext_info {
         global $DB;
 
         $subcontext = [];
-        if ($parent = $DB->get_record('forum_posts', ['id' => $post->parent], 'id, created, subject')) {
+        if ($parent = $DB->get_record('digestforum_posts', ['id' => $post->parent], 'id, created, subject')) {
             $subcontext = array_merge($subcontext, static::get_post_area($parent));
         }
         $subcontext = array_merge($subcontext, static::get_post_area($post));
@@ -99,20 +99,20 @@ trait subcontext_info {
     }
 
     /**
-     * Get the subcontext for the supplied forum, discussion, and post combination.
+     * Get the subcontext for the supplied digestforum, discussion, and post combination.
      *
-     * @param   \stdClass   $forum The forum.
+     * @param   \stdClass   $digestforum The digestforum.
      * @param   \stdClass   $discussion The discussion
      * @param   \stdClass   $post The post.
      * @return  array
      */
-    protected static function get_subcontext($forum, $discussion = null, $post = null) {
+    protected static function get_subcontext($digestforum, $discussion = null, $post = null) {
         $subcontext = [];
         if (null !== $discussion) {
             $subcontext += self::get_discussion_area($discussion);
 
             if (null !== $post) {
-                $subcontext[] = get_string('posts', 'mod_forum');
+                $subcontext[] = get_string('posts', 'mod_digestforum');
                 $subcontext = array_merge($subcontext, static::get_post_area_for_parent($post));
             }
         }

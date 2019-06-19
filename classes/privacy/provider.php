@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy Subsystem implementation for mod_forum.
+ * Privacy Subsystem implementation for mod_digestforum.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\privacy;
+namespace mod_digestforum\privacy;
 
 use \core_privacy\local\request\userlist;
 use \core_privacy\local\request\approved_contextlist;
@@ -36,7 +36,7 @@ use \core_privacy\local\request\transform;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Implementation of the privacy subsystem plugin provider for the forum activity module.
+ * Implementation of the privacy subsystem plugin provider for the digestforum activity module.
  *
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -64,71 +64,71 @@ class provider implements
      * @return  collection     A listing of user data stored through this system.
      */
     public static function get_metadata(collection $items) : collection {
-        // The 'forum' table does not store any specific user data.
-        $items->add_database_table('forum_digests', [
-            'forum' => 'privacy:metadata:forum_digests:forum',
-            'userid' => 'privacy:metadata:forum_digests:userid',
-            'maildigest' => 'privacy:metadata:forum_digests:maildigest',
-        ], 'privacy:metadata:forum_digests');
+        // The 'digestforum' table does not store any specific user data.
+        $items->add_database_table('digestforum_digests', [
+            'digestforum' => 'privacy:metadata:digestforum_digests:digestforum',
+            'userid' => 'privacy:metadata:digestforum_digests:userid',
+            'maildigest' => 'privacy:metadata:digestforum_digests:maildigest',
+        ], 'privacy:metadata:digestforum_digests');
 
-        // The 'forum_discussions' table stores the metadata about each forum discussion.
-        $items->add_database_table('forum_discussions', [
-            'name' => 'privacy:metadata:forum_discussions:name',
-            'userid' => 'privacy:metadata:forum_discussions:userid',
-            'assessed' => 'privacy:metadata:forum_discussions:assessed',
-            'timemodified' => 'privacy:metadata:forum_discussions:timemodified',
-            'usermodified' => 'privacy:metadata:forum_discussions:usermodified',
-        ], 'privacy:metadata:forum_discussions');
+        // The 'digestforum_discussions' table stores the metadata about each digestforum discussion.
+        $items->add_database_table('digestforum_discussions', [
+            'name' => 'privacy:metadata:digestforum_discussions:name',
+            'userid' => 'privacy:metadata:digestforum_discussions:userid',
+            'assessed' => 'privacy:metadata:digestforum_discussions:assessed',
+            'timemodified' => 'privacy:metadata:digestforum_discussions:timemodified',
+            'usermodified' => 'privacy:metadata:digestforum_discussions:usermodified',
+        ], 'privacy:metadata:digestforum_discussions');
 
-        // The 'forum_discussion_subs' table stores information about which discussions a user is subscribed to.
-        $items->add_database_table('forum_discussion_subs', [
-            'discussionid' => 'privacy:metadata:forum_discussion_subs:discussionid',
-            'preference' => 'privacy:metadata:forum_discussion_subs:preference',
-            'userid' => 'privacy:metadata:forum_discussion_subs:userid',
-        ], 'privacy:metadata:forum_discussion_subs');
+        // The 'digestforum_discussion_subs' table stores information about which discussions a user is subscribed to.
+        $items->add_database_table('digestforum_discussion_subs', [
+            'discussionid' => 'privacy:metadata:digestforum_discussion_subs:discussionid',
+            'preference' => 'privacy:metadata:digestforum_discussion_subs:preference',
+            'userid' => 'privacy:metadata:digestforum_discussion_subs:userid',
+        ], 'privacy:metadata:digestforum_discussion_subs');
 
-        // The 'forum_posts' table stores the metadata about each forum discussion.
-        $items->add_database_table('forum_posts', [
-            'discussion' => 'privacy:metadata:forum_posts:discussion',
-            'parent' => 'privacy:metadata:forum_posts:parent',
-            'created' => 'privacy:metadata:forum_posts:created',
-            'modified' => 'privacy:metadata:forum_posts:modified',
-            'subject' => 'privacy:metadata:forum_posts:subject',
-            'message' => 'privacy:metadata:forum_posts:message',
-            'userid' => 'privacy:metadata:forum_posts:userid',
-        ], 'privacy:metadata:forum_posts');
+        // The 'digestforum_posts' table stores the metadata about each digestforum discussion.
+        $items->add_database_table('digestforum_posts', [
+            'discussion' => 'privacy:metadata:digestforum_posts:discussion',
+            'parent' => 'privacy:metadata:digestforum_posts:parent',
+            'created' => 'privacy:metadata:digestforum_posts:created',
+            'modified' => 'privacy:metadata:digestforum_posts:modified',
+            'subject' => 'privacy:metadata:digestforum_posts:subject',
+            'message' => 'privacy:metadata:digestforum_posts:message',
+            'userid' => 'privacy:metadata:digestforum_posts:userid',
+        ], 'privacy:metadata:digestforum_posts');
 
-        // The 'forum_queue' table contains user data, but it is only a temporary cache of other data.
+        // The 'digestforum_queue' table contains user data, but it is only a temporary cache of other data.
         // We should not need to export it as it does not allow profiling of a user.
 
-        // The 'forum_read' table stores data about which forum posts have been read by each user.
-        $items->add_database_table('forum_read', [
-            'userid' => 'privacy:metadata:forum_read:userid',
-            'discussionid' => 'privacy:metadata:forum_read:discussionid',
-            'postid' => 'privacy:metadata:forum_read:postid',
-            'firstread' => 'privacy:metadata:forum_read:firstread',
-            'lastread' => 'privacy:metadata:forum_read:lastread',
-        ], 'privacy:metadata:forum_read');
+        // The 'digestforum_read' table stores data about which digestforum posts have been read by each user.
+        $items->add_database_table('digestforum_read', [
+            'userid' => 'privacy:metadata:digestforum_read:userid',
+            'discussionid' => 'privacy:metadata:digestforum_read:discussionid',
+            'postid' => 'privacy:metadata:digestforum_read:postid',
+            'firstread' => 'privacy:metadata:digestforum_read:firstread',
+            'lastread' => 'privacy:metadata:digestforum_read:lastread',
+        ], 'privacy:metadata:digestforum_read');
 
-        // The 'forum_subscriptions' table stores information about which forums a user is subscribed to.
-        $items->add_database_table('forum_subscriptions', [
-            'userid' => 'privacy:metadata:forum_subscriptions:userid',
-            'forum' => 'privacy:metadata:forum_subscriptions:forum',
-        ], 'privacy:metadata:forum_subscriptions');
+        // The 'digestforum_subscriptions' table stores information about which digestforums a user is subscribed to.
+        $items->add_database_table('digestforum_subscriptions', [
+            'userid' => 'privacy:metadata:digestforum_subscriptions:userid',
+            'digestforum' => 'privacy:metadata:digestforum_subscriptions:digestforum',
+        ], 'privacy:metadata:digestforum_subscriptions');
 
-        // The 'forum_subscriptions' table stores information about which forums a user is subscribed to.
-        $items->add_database_table('forum_track_prefs', [
-            'userid' => 'privacy:metadata:forum_track_prefs:userid',
-            'forumid' => 'privacy:metadata:forum_track_prefs:forumid',
-        ], 'privacy:metadata:forum_track_prefs');
+        // The 'digestforum_subscriptions' table stores information about which digestforums a user is subscribed to.
+        $items->add_database_table('digestforum_track_prefs', [
+            'userid' => 'privacy:metadata:digestforum_track_prefs:userid',
+            'digestforumid' => 'privacy:metadata:digestforum_track_prefs:digestforumid',
+        ], 'privacy:metadata:digestforum_track_prefs');
 
-        // The 'forum_queue' table stores temporary data that is not exported/deleted.
-        $items->add_database_table('forum_queue', [
-            'userid' => 'privacy:metadata:forum_queue:userid',
-            'discussionid' => 'privacy:metadata:forum_queue:discussionid',
-            'postid' => 'privacy:metadata:forum_queue:postid',
-            'timemodified' => 'privacy:metadata:forum_queue:timemodified'
-        ], 'privacy:metadata:forum_queue');
+        // The 'digestforum_queue' table stores temporary data that is not exported/deleted.
+        $items->add_database_table('digestforum_queue', [
+            'userid' => 'privacy:metadata:digestforum_queue:userid',
+            'discussionid' => 'privacy:metadata:digestforum_queue:discussionid',
+            'postid' => 'privacy:metadata:digestforum_queue:postid',
+            'timemodified' => 'privacy:metadata:digestforum_queue:timemodified'
+        ], 'privacy:metadata:digestforum_queue');
 
         // Forum posts can be tagged and rated.
         $items->link_subsystem('core_tag', 'privacy:metadata:core_tag');
@@ -146,7 +146,7 @@ class provider implements
     /**
      * Get the list of contexts that contain user information for the specified user.
      *
-     * In the case of forum, that is any forum where the user has made any post, rated any content, or has any preferences.
+     * In the case of digestforum, that is any digestforum where the user has made any post, rated any content, or has any preferences.
      *
      * @param   int         $userid     The user to search.
      * @return  contextlist $contextlist  The contextlist containing the list of contexts used in this plugin.
@@ -155,7 +155,7 @@ class provider implements
         $contextlist = new \core_privacy\local\request\contextlist();
 
         $params = [
-            'modname'       => 'forum',
+            'modname'       => 'digestforum',
             'contextlevel'  => CONTEXT_MODULE,
             'userid'        => $userid,
         ];
@@ -165,8 +165,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
                  WHERE d.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -176,9 +176,9 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
-                  JOIN {forum_posts} p ON p.discussion = d.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                  JOIN {digestforum_posts} p ON p.discussion = d.id
                  WHERE p.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -188,8 +188,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_digests} dig ON dig.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_digests} dig ON dig.digestforum = f.id
                  WHERE dig.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -199,8 +199,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_subscriptions} sub ON sub.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_subscriptions} sub ON sub.digestforum = f.id
                  WHERE sub.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -210,8 +210,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussion_subs} dsub ON dsub.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussion_subs} dsub ON dsub.digestforum = f.id
                  WHERE dsub.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -221,8 +221,8 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_track_prefs} pref ON pref.forumid = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_track_prefs} pref ON pref.digestforumid = f.id
                  WHERE pref.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
@@ -232,21 +232,21 @@ class provider implements
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_read} hasread ON hasread.forumid = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_read} hasread ON hasread.digestforumid = f.id
                  WHERE hasread.userid = :userid
         ";
         $contextlist->add_from_sql($sql, $params);
 
         // Rating authors.
-        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid, true);
+        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_digestforum', 'post', 'p.id', $userid, true);
         $sql = "SELECT c.id
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modname
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
-                  JOIN {forum_posts} p ON p.discussion = d.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                  JOIN {digestforum_posts} p ON p.discussion = d.id
                   {$ratingsql->join}
                  WHERE {$ratingsql->userwhere}
         ";
@@ -270,15 +270,15 @@ class provider implements
 
         $params = [
             'instanceid'    => $context->instanceid,
-            'modulename'    => 'forum',
+            'modulename'    => 'digestforum',
         ];
 
         // Discussion authors.
         $sql = "SELECT d.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -286,9 +286,9 @@ class provider implements
         $sql = "SELECT p.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
-                  JOIN {forum_posts} p ON d.id = p.discussion
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                  JOIN {digestforum_posts} p ON d.id = p.discussion
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -296,18 +296,18 @@ class provider implements
         $sql = "SELECT p.id
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussions} d ON d.forum = f.id
-                  JOIN {forum_posts} p ON d.id = p.discussion
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                  JOIN {digestforum_posts} p ON d.id = p.discussion
                  WHERE cm.id = :instanceid";
-        \core_rating\privacy\provider::get_users_in_context_from_sql($userlist, 'rat', 'mod_forum', 'post', $sql, $params);
+        \core_rating\privacy\provider::get_users_in_context_from_sql($userlist, 'rat', 'mod_digestforum', 'post', $sql, $params);
 
         // Forum Digest settings.
         $sql = "SELECT dig.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_digests} dig ON dig.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_digests} dig ON dig.digestforum = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -315,8 +315,8 @@ class provider implements
         $sql = "SELECT sub.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_subscriptions} sub ON sub.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_subscriptions} sub ON sub.digestforum = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -324,8 +324,8 @@ class provider implements
         $sql = "SELECT dsub.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_discussion_subs} dsub ON dsub.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_discussion_subs} dsub ON dsub.digestforum = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -333,8 +333,8 @@ class provider implements
         $sql = "SELECT hasread.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_read} hasread ON hasread.forumid = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_read} hasread ON hasread.digestforumid = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
 
@@ -342,8 +342,8 @@ class provider implements
         $sql = "SELECT pref.userid
                   FROM {course_modules} cm
                   JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_track_prefs} pref ON pref.forumid = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_track_prefs} pref ON pref.digestforumid = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
     }
@@ -368,7 +368,7 @@ class provider implements
                 $digestdescription = get_string('emaildigestoff');
                 break;
         }
-        writer::export_user_preference('mod_forum', 'maildigest', $user->maildigest, $digestdescription);
+        writer::export_user_preference('mod_digestforum', 'maildigest', $user->maildigest, $digestdescription);
 
         switch ($user->autosubscribe) {
             case 0:
@@ -379,31 +379,31 @@ class provider implements
                 $subscribedescription = get_string('autosubscribeyes');
                 break;
         }
-        writer::export_user_preference('mod_forum', 'autosubscribe', $user->autosubscribe, $subscribedescription);
+        writer::export_user_preference('mod_digestforum', 'autosubscribe', $user->autosubscribe, $subscribedescription);
 
         switch ($user->trackforums) {
             case 0:
-                $trackforumdescription = get_string('trackforumsno');
+                $trackdigestforumdescription = get_string('trackforumsno');
                 break;
             case 1:
             default:
-                $trackforumdescription = get_string('trackforumsyes');
+                $trackdigestforumdescription = get_string('trackforumsyes');
                 break;
         }
-        writer::export_user_preference('mod_forum', 'trackforums', $user->trackforums, $trackforumdescription);
+        writer::export_user_preference('mod_digestforum', 'trackforums', $user->trackforums, $trackdigestforumdescription);
 
         $markasreadonnotification = get_user_preferences('markasreadonnotification', null, $user->id);
         if (null !== $markasreadonnotification) {
             switch ($markasreadonnotification) {
                 case 0:
-                    $markasreadonnotificationdescription = get_string('markasreadonnotificationno', 'mod_forum');
+                    $markasreadonnotificationdescription = get_string('markasreadonnotificationno', 'mod_digestforum');
                     break;
                 case 1:
                 default:
-                    $markasreadonnotificationdescription = get_string('markasreadonnotificationyes', 'mod_forum');
+                    $markasreadonnotificationdescription = get_string('markasreadonnotificationyes', 'mod_digestforum');
                     break;
             }
-            writer::export_user_preference('mod_forum', 'markasreadonnotification', $markasreadonnotification,
+            writer::export_user_preference('mod_digestforum', 'markasreadonnotification', $markasreadonnotification,
                     $markasreadonnotificationdescription);
         }
     }
@@ -426,14 +426,14 @@ class provider implements
         list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
         $params = $contextparams;
 
-        // Digested forums.
+        // Digested digestforums.
         $sql = "SELECT
                     c.id AS contextid,
                     dig.maildigest AS maildigest
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_digests} dig ON dig.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_digests} dig ON dig.digestforum = f.id
                  WHERE (
                     dig.userid = :userid AND
                     c.id {$contextsql}
@@ -448,8 +448,8 @@ class provider implements
                     sub.userid AS subscribed
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_subscriptions} sub ON sub.forum = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_subscriptions} sub ON sub.digestforum = f.id
                  WHERE (
                     sub.userid = :userid AND
                     c.id {$contextsql}
@@ -458,14 +458,14 @@ class provider implements
         $params['userid'] = $userid;
         $subscriptions = $DB->get_records_sql_menu($sql, $params);
 
-        // Tracked forums.
+        // Tracked digestforums.
         $sql = "SELECT
                     c.id AS contextid,
                     pref.userid AS tracked
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid
-                  JOIN {forum} f ON f.id = cm.instance
-                  JOIN {forum_track_prefs} pref ON pref.forumid = f.id
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_track_prefs} pref ON pref.digestforumid = f.id
                  WHERE (
                     pref.userid = :userid AND
                     c.id {$contextsql}
@@ -480,7 +480,7 @@ class provider implements
                     cm.id AS cmid
                   FROM {context} c
                   JOIN {course_modules} cm ON cm.id = c.instanceid
-                  JOIN {forum} f ON f.id = cm.instance
+                  JOIN {digestforum} f ON f.id = cm.instance
                  WHERE (
                     c.id {$contextsql}
                 )
@@ -488,39 +488,39 @@ class provider implements
 
         $params += $contextparams;
 
-        // Keep a mapping of forumid to contextid.
+        // Keep a mapping of digestforumid to contextid.
         $mappings = [];
 
-        $forums = $DB->get_recordset_sql($sql, $params);
-        foreach ($forums as $forum) {
-            $mappings[$forum->id] = $forum->contextid;
+        $digestforums = $DB->get_recordset_sql($sql, $params);
+        foreach ($digestforums as $digestforum) {
+            $mappings[$digestforum->id] = $digestforum->contextid;
 
-            $context = \context::instance_by_id($mappings[$forum->id]);
+            $context = \context::instance_by_id($mappings[$digestforum->id]);
 
-            // Store the main forum data.
+            // Store the main digestforum data.
             $data = request_helper::get_context_data($context, $user);
             writer::with_context($context)
                 ->export_data([], $data);
             request_helper::export_context_files($context, $user);
 
-            // Store relevant metadata about this forum instance.
-            if (isset($digests[$forum->contextid])) {
-                static::export_digest_data($userid, $forum, $digests[$forum->contextid]);
+            // Store relevant metadata about this digestforum instance.
+            if (isset($digests[$digestforum->contextid])) {
+                static::export_digest_data($userid, $digestforum, $digests[$digestforum->contextid]);
             }
-            if (isset($subscriptions[$forum->contextid])) {
-                static::export_subscription_data($userid, $forum, $subscriptions[$forum->contextid]);
+            if (isset($subscriptions[$digestforum->contextid])) {
+                static::export_subscription_data($userid, $digestforum, $subscriptions[$digestforum->contextid]);
             }
-            if (isset($tracked[$forum->contextid])) {
-                static::export_tracking_data($userid, $forum, $tracked[$forum->contextid]);
+            if (isset($tracked[$digestforum->contextid])) {
+                static::export_tracking_data($userid, $digestforum, $tracked[$digestforum->contextid]);
             }
         }
-        $forums->close();
+        $digestforums->close();
 
         if (!empty($mappings)) {
-            // Store all discussion data for this forum.
+            // Store all discussion data for this digestforum.
             static::export_discussion_data($userid, $mappings);
 
-            // Store all post data for this forum.
+            // Store all post data for this digestforum.
             static::export_all_posts($userid, $mappings);
         }
     }
@@ -529,24 +529,24 @@ class provider implements
      * Store all information about all discussions that we have detected this user to have access to.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   array       $mappings A list of mappings from forumid => contextid.
-     * @return  array       Which forums had data written for them.
+     * @param   array       $mappings A list of mappings from digestforumid => contextid.
+     * @return  array       Which digestforums had data written for them.
      */
     protected static function export_discussion_data(int $userid, array $mappings) {
         global $DB;
 
-        // Find all of the discussions, and discussion subscriptions for this forum.
-        list($foruminsql, $forumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        // Find all of the discussions, and discussion subscriptions for this digestforum.
+        list($digestforuminsql, $digestforumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
         $sql = "SELECT
                     d.*,
                     g.name as groupname,
                     dsub.preference
-                  FROM {forum} f
-                  JOIN {forum_discussions} d ON d.forum = f.id
+                  FROM {digestforum} f
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
              LEFT JOIN {groups} g ON g.id = d.groupid
-             LEFT JOIN {forum_discussion_subs} dsub ON dsub.discussion = d.id AND dsub.userid = :dsubuserid
-             LEFT JOIN {forum_posts} p ON p.discussion = d.id
-                 WHERE f.id ${foruminsql}
+             LEFT JOIN {digestforum_discussion_subs} dsub ON dsub.discussion = d.id AND dsub.userid = :dsubuserid
+             LEFT JOIN {digestforum_posts} p ON p.discussion = d.id
+                 WHERE f.id ${digestforuminsql}
                    AND (
                         d.userid    = :discussionuserid OR
                         p.userid    = :postuserid OR
@@ -559,17 +559,17 @@ class provider implements
             'discussionuserid'  => $userid,
             'dsubuserid'        => $userid,
         ];
-        $params += $forumparams;
+        $params += $digestforumparams;
 
-        // Keep track of the forums which have data.
-        $forumswithdata = [];
+        // Keep track of the digestforums which have data.
+        $digestforumswithdata = [];
 
         $discussions = $DB->get_recordset_sql($sql, $params);
         foreach ($discussions as $discussion) {
             // No need to take timestart into account as the user has some involvement already.
             // Ignore discussion timeend as it should not block access to user data.
-            $forumswithdata[$discussion->forum] = true;
-            $context = \context::instance_by_id($mappings[$discussion->forum]);
+            $digestforumswithdata[$discussion->digestforum] = true;
+            $context = \context::instance_by_id($mappings[$discussion->digestforum]);
 
             // Store related metadata for this discussion.
             static::export_discussion_subscription_data($userid, $context, $discussion);
@@ -591,33 +591,33 @@ class provider implements
 
         $discussions->close();
 
-        return $forumswithdata;
+        return $digestforumswithdata;
     }
 
     /**
      * Store all information about all posts that we have detected this user to have access to.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   array       $mappings A list of mappings from forumid => contextid.
-     * @return  array       Which forums had data written for them.
+     * @param   array       $mappings A list of mappings from digestforumid => contextid.
+     * @return  array       Which digestforums had data written for them.
      */
     protected static function export_all_posts(int $userid, array $mappings) {
         global $DB;
 
-        // Find all of the posts, and post subscriptions for this forum.
-        list($foruminsql, $forumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
-        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
+        // Find all of the posts, and post subscriptions for this digestforum.
+        list($digestforuminsql, $digestforumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_digestforum', 'post', 'p.id', $userid);
         $sql = "SELECT
                     p.discussion AS id,
-                    f.id AS forumid,
+                    f.id AS digestforumid,
                     d.name,
                     d.groupid
-                  FROM {forum} f
-                  JOIN {forum_discussions} d ON d.forum = f.id
-                  JOIN {forum_posts} p ON p.discussion = d.id
-             LEFT JOIN {forum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
+                  FROM {digestforum} f
+                  JOIN {digestforum_discussions} d ON d.digestforum = f.id
+                  JOIN {digestforum_posts} p ON p.discussion = d.id
+             LEFT JOIN {digestforum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
             {$ratingsql->join}
-                 WHERE f.id ${foruminsql} AND
+                 WHERE f.id ${digestforuminsql} AND
                 (
                     p.userid = :postuserid OR
                     fr.id IS NOT NULL OR
@@ -630,12 +630,12 @@ class provider implements
             'postuserid'    => $userid,
             'readuserid'    => $userid,
         ];
-        $params += $forumparams;
+        $params += $digestforumparams;
         $params += $ratingsql->params;
 
         $discussions = $DB->get_records_sql($sql, $params);
         foreach ($discussions as $discussion) {
-            $context = \context::instance_by_id($mappings[$discussion->forumid]);
+            $context = \context::instance_by_id($mappings[$discussion->digestforumid]);
             static::export_all_posts_in_discussion($userid, $context, $discussion);
         }
     }
@@ -644,7 +644,7 @@ class provider implements
      * Store all information about all posts that we have detected this user to have access to.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context    $context The instance of the forum context.
+     * @param   \context    $context The instance of the digestforum context.
      * @param   \stdClass   $discussion The discussion whose data is being exported.
      */
     protected static function export_all_posts_in_discussion(int $userid, \context $context, \stdClass $discussion) {
@@ -652,18 +652,18 @@ class provider implements
 
         $discussionid = $discussion->id;
 
-        // Find all of the posts, and post subscriptions for this forum.
-        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_forum', 'post', 'p.id', $userid);
+        // Find all of the posts, and post subscriptions for this digestforum.
+        $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_digestforum', 'post', 'p.id', $userid);
         $sql = "SELECT
                     p.*,
-                    d.forum AS forumid,
+                    d.digestforum AS digestforumid,
                     fr.firstread,
                     fr.lastread,
                     fr.id AS readflag,
                     rat.id AS hasratings
-                    FROM {forum_discussions} d
-                    JOIN {forum_posts} p ON p.discussion = d.id
-               LEFT JOIN {forum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
+                    FROM {digestforum_discussions} d
+                    JOIN {digestforum_posts} p ON p.discussion = d.id
+               LEFT JOIN {digestforum_read} fr ON fr.postid = p.id AND fr.userid = :readuserid
             {$ratingsql->join} AND {$ratingsql->userwhere}
                    WHERE d.id = :discussionid
         ";
@@ -674,7 +674,7 @@ class provider implements
         ];
         $params += $ratingsql->params;
 
-        // Keep track of the forums which have data.
+        // Keep track of the digestforums which have data.
         $structure = (object) [
             'children' => [],
         ];
@@ -706,7 +706,7 @@ class provider implements
         }
 
         $discussionarea = static::get_discussion_area($discussion);
-        $discussionarea[] = get_string('posts', 'mod_forum');
+        $discussionarea[] = get_string('posts', 'mod_digestforum');
         static::export_posts_in_structure($userid, $context, $discussionarea, $structure);
     }
 
@@ -714,7 +714,7 @@ class provider implements
      * Export all posts in the provided structure.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context    $context The instance of the forum context.
+     * @param   \context    $context The instance of the digestforum context.
      * @param   array       $parentarea The subcontext of the parent.
      * @param   \stdClass   $structure The post structure and all of its children
      */
@@ -741,7 +741,7 @@ class provider implements
      * Export all data in the post.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context    $context The instance of the forum context.
+     * @param   \context    $context The instance of the digestforum context.
      * @param   array       $postarea The subcontext of the parent.
      * @param   \stdClass   $post The post structure and all of its children
      */
@@ -757,7 +757,7 @@ class provider implements
         ];
 
         $postdata->message = writer::with_context($context)
-            ->rewrite_pluginfile_urls($postarea, 'mod_forum', 'post', $post->id, $post->message);
+            ->rewrite_pluginfile_urls($postarea, 'mod_digestforum', 'post', $post->id, $post->message);
 
         $postdata->message = format_text($postdata->message, $post->messageformat, (object) [
             'para'    => false,
@@ -770,21 +770,21 @@ class provider implements
             ->export_data($postarea, $postdata)
 
             // Store the associated files.
-            ->export_area_files($postarea, 'mod_forum', 'post', $post->id);
+            ->export_area_files($postarea, 'mod_digestforum', 'post', $post->id);
 
         if ($post->userid == $userid) {
             // Store all ratings against this post as the post belongs to the user. All ratings on it are ratings of their content.
-            \core_rating\privacy\provider::export_area_ratings($userid, $context, $postarea, 'mod_forum', 'post', $post->id, false);
+            \core_rating\privacy\provider::export_area_ratings($userid, $context, $postarea, 'mod_digestforum', 'post', $post->id, false);
 
             // Store all tags against this post as the tag belongs to the user.
-            \core_tag\privacy\provider::export_item_tags($userid, $context, $postarea, 'mod_forum', 'forum_posts', $post->id);
+            \core_tag\privacy\provider::export_item_tags($userid, $context, $postarea, 'mod_digestforum', 'digestforum_posts', $post->id);
 
             // Export all user data stored for this post from the plagiarism API.
             $coursecontext = $context->get_course_context();
             \core_plagiarism\privacy\provider::export_plagiarism_user_data($userid, $context, $postarea, [
                     'cmid' => $context->instanceid,
                     'course' => $coursecontext->instanceid,
-                    'forum' => $post->forumid,
+                    'digestforum' => $post->digestforumid,
                     'discussionid' => $post->discussion,
                     'postid' => $post->id,
                 ]);
@@ -794,7 +794,7 @@ class provider implements
         \core_rating\privacy\provider::export_area_ratings($userid,
                 $context,
                 $postarea,
-                'mod_forum',
+                'mod_digestforum',
                 'post',
                 $post->id,
                 $userid,
@@ -806,32 +806,32 @@ class provider implements
      * Store data about daily digest preferences
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \stdClass   $forum The forum whose data is being exported.
-     * @param   int         $maildigest The mail digest setting for this forum.
+     * @param   \stdClass   $digestforum The digestforum whose data is being exported.
+     * @param   int         $maildigest The mail digest setting for this digestforum.
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_digest_data(int $userid, \stdClass $forum, int $maildigest) {
+    protected static function export_digest_data(int $userid, \stdClass $digestforum, int $maildigest) {
         if (null !== $maildigest) {
-            // The user has a specific maildigest preference for this forum.
+            // The user has a specific maildigest preference for this digestforum.
             $a = (object) [
-                'forum' => format_string($forum->name, true),
+                'digestforum' => format_string($digestforum->name, true),
             ];
 
             switch ($maildigest) {
                 case 0:
-                    $a->type = get_string('emaildigestoffshort', 'mod_forum');
+                    $a->type = get_string('emaildigestoffshort', 'mod_digestforum');
                     break;
                 case 1:
-                    $a->type = get_string('emaildigestcompleteshort', 'mod_forum');
+                    $a->type = get_string('emaildigestcompleteshort', 'mod_digestforum');
                     break;
                 case 2:
-                    $a->type = get_string('emaildigestsubjectsshort', 'mod_forum');
+                    $a->type = get_string('emaildigestsubjectsshort', 'mod_digestforum');
                     break;
             }
 
-            writer::with_context(\context_module::instance($forum->cmid))
+            writer::with_context(\context_module::instance($digestforum->cmid))
                 ->export_metadata([], 'digestpreference', $maildigest,
-                    get_string('privacy:digesttypepreference', 'mod_forum', $a));
+                    get_string('privacy:digesttypepreference', 'mod_digestforum', $a));
 
             return true;
         }
@@ -840,18 +840,18 @@ class provider implements
     }
 
     /**
-     * Store data about whether the user subscribes to forum.
+     * Store data about whether the user subscribes to digestforum.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \stdClass   $forum The forum whose data is being exported.
+     * @param   \stdClass   $digestforum The digestforum whose data is being exported.
      * @param   int         $subscribed if the user is subscribed
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_subscription_data(int $userid, \stdClass $forum, int $subscribed) {
+    protected static function export_subscription_data(int $userid, \stdClass $digestforum, int $subscribed) {
         if (null !== $subscribed) {
-            // The user is subscribed to this forum.
-            writer::with_context(\context_module::instance($forum->cmid))
-                ->export_metadata([], 'subscriptionpreference', 1, get_string('privacy:subscribedtoforum', 'mod_forum'));
+            // The user is subscribed to this digestforum.
+            writer::with_context(\context_module::instance($digestforum->cmid))
+                ->export_metadata([], 'subscriptionpreference', 1, get_string('privacy:subscribedtodigestforum', 'mod_digestforum'));
 
             return true;
         }
@@ -863,7 +863,7 @@ class provider implements
      * Store data about whether the user subscribes to this particular discussion.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context_module $context The instance of the forum context.
+     * @param   \context_module $context The instance of the digestforum context.
      * @param   \stdClass   $discussion The discussion whose data is being exported.
      * @return  bool        Whether any data was stored.
      */
@@ -874,11 +874,11 @@ class provider implements
             $a = (object) [];
 
             switch ($discussion->preference) {
-                case \mod_forum\subscriptions::FORUM_DISCUSSION_UNSUBSCRIBED:
-                    $a->preference = get_string('unsubscribed', 'mod_forum');
+                case \mod_digestforum\subscriptions::DFORUM_DISCUSSION_UNSUBSCRIBED:
+                    $a->preference = get_string('unsubscribed', 'mod_digestforum');
                     break;
                 default:
-                    $a->preference = get_string('subscribed', 'mod_forum');
+                    $a->preference = get_string('subscribed', 'mod_digestforum');
                     break;
             }
 
@@ -887,7 +887,7 @@ class provider implements
                     $area,
                     'subscriptionpreference',
                     $discussion->preference,
-                    get_string('privacy:discussionsubscriptionpreference', 'mod_forum', $a)
+                    get_string('privacy:discussionsubscriptionpreference', 'mod_digestforum', $a)
                 );
 
             return true;
@@ -897,20 +897,20 @@ class provider implements
     }
 
     /**
-     * Store forum read-tracking data about a particular forum.
+     * Store digestforum read-tracking data about a particular digestforum.
      *
-     * This is whether a forum has read-tracking enabled or not.
+     * This is whether a digestforum has read-tracking enabled or not.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \stdClass   $forum The forum whose data is being exported.
+     * @param   \stdClass   $digestforum The digestforum whose data is being exported.
      * @param   int         $tracke if the user is subscribed
      * @return  bool        Whether any data was stored.
      */
-    protected static function export_tracking_data(int $userid, \stdClass $forum, int $tracked) {
+    protected static function export_tracking_data(int $userid, \stdClass $digestforum, int $tracked) {
         if (null !== $tracked) {
-            // The user has a main preference to track all forums, but has opted out of this one.
-            writer::with_context(\context_module::instance($forum->cmid))
-                ->export_metadata([], 'trackreadpreference', 0, get_string('privacy:readtrackingdisabled', 'mod_forum'));
+            // The user has a main preference to track all digestforums, but has opted out of this one.
+            writer::with_context(\context_module::instance($digestforum->cmid))
+                ->export_metadata([], 'trackreadpreference', 0, get_string('privacy:readtrackingdisabled', 'mod_digestforum'));
 
             return true;
         }
@@ -919,10 +919,10 @@ class provider implements
     }
 
     /**
-     * Store read-tracking information about a particular forum post.
+     * Store read-tracking information about a particular digestforum post.
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
-     * @param   \context_module $context The instance of the forum context.
+     * @param   \context_module $context The instance of the digestforum context.
      * @param   array       $postarea The subcontext for this post.
      * @param   \stdClass   $post The post whose data is being exported.
      * @return  bool        Whether any data was stored.
@@ -942,7 +942,7 @@ class provider implements
                         'firstread' => $post->firstread,
                         'lastread' => $post->lastread,
                     ],
-                    get_string('privacy:postwasread', 'mod_forum', $a)
+                    get_string('privacy:postwasread', 'mod_digestforum', $a)
                 );
 
             return true;
@@ -965,47 +965,47 @@ class provider implements
         }
 
         // Get the course module.
-        if (!$cm = get_coursemodule_from_id('forum', $context->instanceid)) {
+        if (!$cm = get_coursemodule_from_id('digestforum', $context->instanceid)) {
             return;
         }
 
-        $forumid = $cm->instance;
+        $digestforumid = $cm->instance;
 
-        $DB->delete_records('forum_track_prefs', ['forumid' => $forumid]);
-        $DB->delete_records('forum_subscriptions', ['forum' => $forumid]);
-        $DB->delete_records('forum_read', ['forumid' => $forumid]);
-        $DB->delete_records('forum_digests', ['forum' => $forumid]);
+        $DB->delete_records('digestforum_track_prefs', ['digestforumid' => $digestforumid]);
+        $DB->delete_records('digestforum_subscriptions', ['digestforum' => $digestforumid]);
+        $DB->delete_records('digestforum_read', ['digestforumid' => $digestforumid]);
+        $DB->delete_records('digestforum_digests', ['digestforum' => $digestforumid]);
 
         // Delete all discussion items.
         $DB->delete_records_select(
-            'forum_queue',
-            "discussionid IN (SELECT id FROM {forum_discussions} WHERE forum = :forum)",
+            'digestforum_queue',
+            "discussionid IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)",
             [
-                'forum' => $forumid,
+                'digestforum' => $digestforumid,
             ]
         );
 
         $DB->delete_records_select(
-            'forum_posts',
-            "discussion IN (SELECT id FROM {forum_discussions} WHERE forum = :forum)",
+            'digestforum_posts',
+            "discussion IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)",
             [
-                'forum' => $forumid,
+                'digestforum' => $digestforumid,
             ]
         );
 
-        $DB->delete_records('forum_discussion_subs', ['forum' => $forumid]);
-        $DB->delete_records('forum_discussions', ['forum' => $forumid]);
+        $DB->delete_records('digestforum_discussion_subs', ['digestforum' => $digestforumid]);
+        $DB->delete_records('digestforum_discussions', ['digestforum' => $digestforumid]);
 
         // Delete all files from the posts.
         $fs = get_file_storage();
-        $fs->delete_area_files($context->id, 'mod_forum', 'post');
-        $fs->delete_area_files($context->id, 'mod_forum', 'attachment');
+        $fs->delete_area_files($context->id, 'mod_digestforum', 'post');
+        $fs->delete_area_files($context->id, 'mod_digestforum', 'attachment');
 
         // Delete all ratings in the context.
-        \core_rating\privacy\provider::delete_ratings($context, 'mod_forum', 'post');
+        \core_rating\privacy\provider::delete_ratings($context, 'mod_digestforum', 'post');
 
         // Delete all Tags.
-        \core_tag\privacy\provider::delete_item_tags($context, 'mod_forum', 'forum_posts');
+        \core_tag\privacy\provider::delete_item_tags($context, 'mod_digestforum', 'digestforum_posts');
     }
 
     /**
@@ -1020,74 +1020,74 @@ class provider implements
         foreach ($contextlist as $context) {
             // Get the course module.
             $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-            $forum = $DB->get_record('forum', ['id' => $cm->instance]);
+            $digestforum = $DB->get_record('digestforum', ['id' => $cm->instance]);
 
-            $DB->delete_records('forum_track_prefs', [
-                'forumid' => $forum->id,
+            $DB->delete_records('digestforum_track_prefs', [
+                'digestforumid' => $digestforum->id,
                 'userid' => $userid,
             ]);
-            $DB->delete_records('forum_subscriptions', [
-                'forum' => $forum->id,
+            $DB->delete_records('digestforum_subscriptions', [
+                'digestforum' => $digestforum->id,
                 'userid' => $userid,
             ]);
-            $DB->delete_records('forum_read', [
-                'forumid' => $forum->id,
+            $DB->delete_records('digestforum_read', [
+                'digestforumid' => $digestforum->id,
                 'userid' => $userid,
             ]);
 
-            $DB->delete_records('forum_digests', [
-                'forum' => $forum->id,
+            $DB->delete_records('digestforum_digests', [
+                'digestforum' => $digestforum->id,
                 'userid' => $userid,
             ]);
 
             // Delete all discussion items.
             $DB->delete_records_select(
-                'forum_queue',
-                "userid = :userid AND discussionid IN (SELECT id FROM {forum_discussions} WHERE forum = :forum)",
+                'digestforum_queue',
+                "userid = :userid AND discussionid IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)",
                 [
                     'userid' => $userid,
-                    'forum' => $forum->id,
+                    'digestforum' => $digestforum->id,
                 ]
             );
 
-            $DB->delete_records('forum_discussion_subs', [
-                'forum' => $forum->id,
+            $DB->delete_records('digestforum_discussion_subs', [
+                'digestforum' => $digestforum->id,
                 'userid' => $userid,
             ]);
 
-            // Do not delete discussion or forum posts.
+            // Do not delete discussion or digestforum posts.
             // Instead update them to reflect that the content has been deleted.
-            $postsql = "userid = :userid AND discussion IN (SELECT id FROM {forum_discussions} WHERE forum = :forum)";
-            $postidsql = "SELECT fp.id FROM {forum_posts} fp WHERE {$postsql}";
+            $postsql = "userid = :userid AND discussion IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)";
+            $postidsql = "SELECT fp.id FROM {digestforum_posts} fp WHERE {$postsql}";
             $postparams = [
-                'forum' => $forum->id,
+                'digestforum' => $digestforum->id,
                 'userid' => $userid,
             ];
 
             // Update the subject.
-            $DB->set_field_select('forum_posts', 'subject', '', $postsql, $postparams);
+            $DB->set_field_select('digestforum_posts', 'subject', '', $postsql, $postparams);
 
             // Update the message and its format.
-            $DB->set_field_select('forum_posts', 'message', '', $postsql, $postparams);
-            $DB->set_field_select('forum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $postparams);
+            $DB->set_field_select('digestforum_posts', 'message', '', $postsql, $postparams);
+            $DB->set_field_select('digestforum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $postparams);
 
             // Mark the post as deleted.
-            $DB->set_field_select('forum_posts', 'deleted', 1, $postsql, $postparams);
+            $DB->set_field_select('digestforum_posts', 'deleted', 1, $postsql, $postparams);
 
             // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
             // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
             // of any post.
-            \core_rating\privacy\provider::delete_ratings_select($context, 'mod_forum', 'post',
+            \core_rating\privacy\provider::delete_ratings_select($context, 'mod_digestforum', 'post',
                     "IN ($postidsql)", $postparams);
 
             // Delete all Tags.
-            \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_forum', 'forum_posts',
+            \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_digestforum', 'digestforum_posts',
                     "IN ($postidsql)", $postparams);
 
             // Delete all files from the posts.
             $fs = get_file_storage();
-            $fs->delete_area_files_select($context->id, 'mod_forum', 'post', "IN ($postidsql)", $postparams);
-            $fs->delete_area_files_select($context->id, 'mod_forum', 'attachment', "IN ($postidsql)", $postparams);
+            $fs->delete_area_files_select($context->id, 'mod_digestforum', 'post', "IN ($postidsql)", $postparams);
+            $fs->delete_area_files_select($context->id, 'mod_digestforum', 'attachment', "IN ($postidsql)", $postparams);
         }
     }
 
@@ -1101,47 +1101,47 @@ class provider implements
 
         $context = $userlist->get_context();
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
-        $forum = $DB->get_record('forum', ['id' => $cm->instance]);
+        $digestforum = $DB->get_record('digestforum', ['id' => $cm->instance]);
 
         list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
-        $params = array_merge(['forumid' => $forum->id], $userinparams);
+        $params = array_merge(['digestforumid' => $digestforum->id], $userinparams);
 
-        $DB->delete_records_select('forum_track_prefs', "forumid = :forumid AND userid {$userinsql}", $params);
-        $DB->delete_records_select('forum_subscriptions', "forum = :forumid AND userid {$userinsql}", $params);
-        $DB->delete_records_select('forum_read', "forumid = :forumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('digestforum_track_prefs', "digestforumid = :digestforumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('digestforum_subscriptions', "digestforum = :digestforumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('digestforum_read', "digestforumid = :digestforumid AND userid {$userinsql}", $params);
         $DB->delete_records_select(
-            'forum_queue',
-            "userid {$userinsql} AND discussionid IN (SELECT id FROM {forum_discussions} WHERE forum = :forumid)",
+            'digestforum_queue',
+            "userid {$userinsql} AND discussionid IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforumid)",
             $params
         );
-        $DB->delete_records_select('forum_discussion_subs', "forum = :forumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('digestforum_discussion_subs', "digestforum = :digestforumid AND userid {$userinsql}", $params);
 
-        // Do not delete discussion or forum posts.
+        // Do not delete discussion or digestforum posts.
         // Instead update them to reflect that the content has been deleted.
-        $postsql = "userid {$userinsql} AND discussion IN (SELECT id FROM {forum_discussions} WHERE forum = :forumid)";
-        $postidsql = "SELECT fp.id FROM {forum_posts} fp WHERE {$postsql}";
+        $postsql = "userid {$userinsql} AND discussion IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforumid)";
+        $postidsql = "SELECT fp.id FROM {digestforum_posts} fp WHERE {$postsql}";
 
         // Update the subject.
-        $DB->set_field_select('forum_posts', 'subject', '', $postsql, $params);
+        $DB->set_field_select('digestforum_posts', 'subject', '', $postsql, $params);
 
         // Update the subject and its format.
-        $DB->set_field_select('forum_posts', 'message', '', $postsql, $params);
-        $DB->set_field_select('forum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $params);
+        $DB->set_field_select('digestforum_posts', 'message', '', $postsql, $params);
+        $DB->set_field_select('digestforum_posts', 'messageformat', FORMAT_PLAIN, $postsql, $params);
 
         // Mark the post as deleted.
-        $DB->set_field_select('forum_posts', 'deleted', 1, $postsql, $params);
+        $DB->set_field_select('digestforum_posts', 'deleted', 1, $postsql, $params);
 
         // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
         // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
         // of any post.
-        \core_rating\privacy\provider::delete_ratings_select($context, 'mod_forum', 'post', "IN ($postidsql)", $params);
+        \core_rating\privacy\provider::delete_ratings_select($context, 'mod_digestforum', 'post', "IN ($postidsql)", $params);
 
         // Delete all Tags.
-        \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_forum', 'forum_posts', "IN ($postidsql)", $params);
+        \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_digestforum', 'digestforum_posts', "IN ($postidsql)", $params);
 
         // Delete all files from the posts.
         $fs = get_file_storage();
-        $fs->delete_area_files_select($context->id, 'mod_forum', 'post', "IN ($postidsql)", $params);
-        $fs->delete_area_files_select($context->id, 'mod_forum', 'attachment', "IN ($postidsql)", $params);
+        $fs->delete_area_files_select($context->id, 'mod_digestforum', 'post', "IN ($postidsql)", $params);
+        $fs->delete_area_files_select($context->id, 'mod_digestforum', 'attachment', "IN ($postidsql)", $params);
     }
 }

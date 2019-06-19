@@ -17,12 +17,12 @@
 /**
  * Forum post renderable.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\output\emaildigestbasic;
+namespace mod_digestforum\output\emaildigestbasic;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -30,19 +30,19 @@ defined('MOODLE_INTERNAL') || die();
  * Forum post renderable.
  *
  * @since      Moodle 3.0
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2015 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class renderer_textemail extends \mod_forum\output\email\renderer_textemail {
+class renderer_textemail extends \mod_digestforum\output\email\renderer_textemail {
 
     /**
      * The template name for this renderer.
      *
      * @return string
      */
-    public function forum_post_template() {
-        return 'forum_post_emaildigestbasic_textemail';
+    public function digestforum_post_template() {
+        return 'digestforum_post_emaildigestbasic_textemail';
     }
 
     /**
@@ -58,7 +58,7 @@ class renderer_textemail extends \mod_forum\output\email\renderer_textemail {
             $post->message,
             'pluginfile.php',
             $context->id,
-            'mod_forum',
+            'mod_digestforum',
             'post',
             $post->id,
             [

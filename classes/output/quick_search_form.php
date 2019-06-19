@@ -17,12 +17,12 @@
 /**
  * Quick search form renderable.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace mod_forum\output;
+namespace mod_digestforum\output;
 defined('MOODLE_INTERNAL') || die();
 
 use help_icon;
@@ -34,7 +34,7 @@ use templatable;
 /**
  * Quick search form renderable class.
  *
- * @package    mod_forum
+ * @package    mod_digestforum
  * @copyright  2016 Frédéric Massart - FMCorz.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -58,7 +58,7 @@ class quick_search_form implements renderable, templatable {
     public function __construct($courseid, $query = '') {
         $this->courseid = $courseid;
         $this->query = $query;
-        $this->actionurl = new moodle_url('/mod/forum/search.php');
+        $this->actionurl = new moodle_url('/mod/digestforum/search.php');
         $this->helpicon = new help_icon('search', 'core');
     }
 

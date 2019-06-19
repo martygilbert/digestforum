@@ -1,6 +1,6 @@
-@mod @mod_forum @core_tag
-Feature: Edited forum posts handle tags correctly
-  In order to get forum posts properly labelled
+@mod @mod_digestforum @core_tag
+Feature: Edited digestforum posts handle tags correctly
+  In order to get digestforum posts properly labelled
   As a user
   I need to introduce the tags while editing
 
@@ -19,9 +19,9 @@ Feature: Edited forum posts handle tags correctly
     And I log in as "teacher1"
     And I am on "Course 1" course homepage with editing mode on
     And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test forum name |
-      | Description | Test forum description |
-    And I add a new discussion to "Test forum name" forum with:
+      | Forum name | Test digestforum name |
+      | Description | Test digestforum description |
+    And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Teacher post subject |
       | Message | Teacher post message |
     And I log out
@@ -30,11 +30,11 @@ Feature: Edited forum posts handle tags correctly
   Scenario: Forum post edition of custom tags works as expected
     Given I log in as "student1"
     And I am on "Course 1" course homepage
-    And I reply "Teacher post subject" post from "Test forum name" forum with:
+    And I reply "Teacher post subject" post from "Test digestforum name" digestforum with:
       | Subject | Student post subject |
       | Message | Student post message |
       | Tags    | Tag1                 |
-    Then I should see "Tag1" in the ".forum-tags" "css_element"
+    Then I should see "Tag1" in the ".digestforum-tags" "css_element"
     And I click on "Edit" "link" in the "//div[@aria-label='Student post subject by Student 1']" "xpath_element"
     Then I should see "Tag1" in the ".form-autocomplete-selection" "css_element"
 
@@ -49,20 +49,20 @@ Feature: Edited forum posts handle tags correctly
     And I log out
     And I log in as "teacher1"
     And I am on "Course 1" course homepage
-    And I follow "Test forum"
+    And I follow "Test digestforum"
     And I click on "Add a new discussion topic" "button"
     And I expand all fieldsets
     And I open the autocomplete suggestions list
     And I should see "OT1" in the ".form-autocomplete-suggestions" "css_element"
     And I should see "OT2" in the ".form-autocomplete-suggestions" "css_element"
     And I should see "OT3" in the ".form-autocomplete-suggestions" "css_element"
-    And I reply "Teacher post subject" post from "Test forum name" forum with:
+    And I reply "Teacher post subject" post from "Test digestforum name" digestforum with:
       | Subject | Student post subject |
       | Message | Student post message |
       | Tags | OT1, OT3 |
-    Then I should see "OT1" in the ".forum-tags" "css_element"
-    And I should see "OT3" in the ".forum-tags" "css_element"
-    And I should not see "OT2" in the ".forum-tags" "css_element"
+    Then I should see "OT1" in the ".digestforum-tags" "css_element"
+    And I should see "OT3" in the ".digestforum-tags" "css_element"
+    And I should not see "OT2" in the ".digestforum-tags" "css_element"
     And I click on "Edit" "link" in the "//div[@aria-label='Student post subject by Teacher 1']" "xpath_element"
     And I should see "OT1" in the ".form-autocomplete-selection" "css_element"
     And I should see "OT3" in the ".form-autocomplete-selection" "css_element"
