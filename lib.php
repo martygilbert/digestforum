@@ -943,9 +943,9 @@ function digestforum_cron() {
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    //if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-	if (true) { //MJG - testing only!
-		$digesttime += 86400; //MJG - testing only!
+    if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
+	//if (true) { //MJG - testing only!
+		//$digesttime += 86400; //MJG - testing only!
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
