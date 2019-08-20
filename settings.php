@@ -95,6 +95,21 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('digestforum_mailtime', get_string('digestforum_mailtime', 'digestforum'),
                        get_string('configdigestforum_mailtime', 'digestforum'), 7, $options));
 
+	// Delay settings - after how many emails, and for how long?
+	$options = array();
+    for ($i = 0; $i <= 600; $i += 10) {
+        $options[$i] = $i;
+    }
+	$settings->add(new admin_setting_configselect('digestforum_maildelay', get_string('digestforum_maildelay', 'digestforum'),
+					get_string('configdigestforum_maildelay', 'digestforum'), 0, $options));
+
+	$options = array();
+    for ($i = 0; $i <= 1000; $i += 50) {
+        $options[$i] = $i;
+    }
+	$settings->add(new admin_setting_configselect('digestforum_maildelaynum', get_string('digestforum_maildelaynum', 'digestforum'),
+					get_string('configdigestforum_maildelaynum', 'digestforum'), 0, $options));
+
     if (empty($CFG->enablerssfeeds)) {
         $options = array(0 => get_string('rssglobaldisabled', 'admin'));
         $str = get_string('configenablerssfeeds', 'digestforum').'<br />'.get_string('configenablerssfeedsdisabled2', 'admin');
