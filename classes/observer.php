@@ -120,6 +120,7 @@ class mod_digestforum_observer {
      * @param \core\event\course_created $event
      * @return void
      */
+	/*
     public static function course_created(\core\event\course_created $event) {
         global $CFG;
 
@@ -131,6 +132,7 @@ class mod_digestforum_observer {
             digestforum_get_course_digestforum($event->objectid, 'news');
         }
     }
+	*/
 
     /**
      * Observer for \core\event\course_updated event.
@@ -138,6 +140,7 @@ class mod_digestforum_observer {
      * @param \core\event\course_updated $event
      * @return void
      */
+	 /*
     public static function course_updated(\core\event\course_updated $event) {
         global $CFG;
 
@@ -149,4 +152,5 @@ class mod_digestforum_observer {
             digestforum_get_course_digestforum($event->objectid, 'news');
         }
     }
+	*/
 }
