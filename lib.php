@@ -1240,6 +1240,17 @@ function digestforum_cron() {
                     mtrace("success.");
                     $usermailcount++;
 
+					if (!empty($CFG->digestforum_maildelaynum) && 
+						!empty($CFG->digestforum_maildelay) &&
+						$CFG->digestforum_maildelaynum > 0 &&
+						$CFG->digestforum_maildelay > 0 &&
+						$CFG->digestforum_maildelaynum % $usermailcount == 0){
+
+						mtrace("Reached $usermailcount emails sent. Sleeping for $CFG->digestforum_maildelay.");
+						sleep($CFG->digestforum_maildelay);
+						
+					}
+
                     // Mark post as read if digestforum_usermarksread is set off
                     if (get_user_preferences('digestforum_markasreadonnotification', 1, $userto->id) == 1) {
                         digestforum_tp_mark_posts_read($userto, $userto->markposts);
