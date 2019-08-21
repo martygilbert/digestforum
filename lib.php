@@ -1244,7 +1244,7 @@ function digestforum_cron() {
 						!empty($CFG->digestforum_maildelay) &&
 						$CFG->digestforum_maildelaynum > 0 &&
 						$CFG->digestforum_maildelay > 0 &&
-						$CFG->digestforum_maildelaynum % $usermailcount == 0){
+						$usermailcount % $CFG->digestforum_maildelaynum == 0){
 
 						mtrace("Reached $usermailcount emails sent. Sleeping for $CFG->digestforum_maildelay.");
 						sleep($CFG->digestforum_maildelay);
