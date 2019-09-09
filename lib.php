@@ -420,8 +420,12 @@ WHERE
  * @param int $usertoid The ID of the user being notified
  * @return string A unique message-id
  */
-function digestforum_get_email_message_id($postid, $usertoid) {
-    return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid));
+function digestforum_get_email_message_id($postid, $usertoid, $date = null) {
+	if (empty($date)){
+		$date = userdate(time(), '%Y%m%d');
+	}
+
+    return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid . 'on' .  $date));
 }
 
 /**
@@ -947,6 +951,9 @@ function digestforum_cron() {
     //if (true) { //MJG - testing only!
         //$digesttime += 86400; //MJG - testing only!
 
+		//MJG get date to add to messageID
+		$todaysdate = userdate(time(), '%Y%m%d');
+
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
         $digestposts_rs = $DB->get_recordset_select('digestforum_queue', "timemodified < ?", array($digesttime));
@@ -1222,7 +1229,7 @@ function digestforum_cron() {
                 //MJG - trying to avoid duplicate Message-IDs. Should only be one msg with
                 //this digestforum->id and userto->id.
                 $digestuserfrom = core_user::get_noreply_user();
-                $msgID = digestforum_get_email_message_id($digestforum->id, $userto->id);
+                $msgID = digestforum_get_email_message_id($digestforum->id, $userto->id, $todaysdate);
 
                 $digestuserfrom->customheaders = array (
                     'Message-ID: '      . $msgID,
