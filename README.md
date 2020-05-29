@@ -1,12 +1,12 @@
 digestdigestforum
 ===========
 
-A fork of the Moodle digestforum code, this digestforum will require that all posts be added to a digest, 
+A fork of the Moodle forum code, this digestforum will require that all posts be added to a digest, 
 regardless of the users' settings.
 
 Modified by Marty Gilbert (martygilbert at gmail)
 
-CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digest-digestforumed it. 
+CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digestforumed it. 
 
 ```
 find . -type f ! -name 'README.md' ! -path './.git/*' -exec sed -i 's/forum/digestforum/g' '{}' \;
