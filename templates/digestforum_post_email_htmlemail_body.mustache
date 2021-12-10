@@ -98,7 +98,7 @@
                     {{{ attachments }}}
                 </div>
             {{/ attachments }}
-            {{{ message }}}
+            {{# shortentext}} {{ longpost }}, {{{ message }}} {{/ shortentext }}
 
             <div class="commands">
                 {{^ firstpost }}
@@ -118,7 +118,7 @@
 
             <div class="link">
                 <a target="_blank" href="{{{ permalink }}}">
-                    {{# str }} postincontext, digestforum {{/ str }}
+                    {{# str }} postinfull, digestforum {{/ str }}
                 </a>
             </div>
         </td>

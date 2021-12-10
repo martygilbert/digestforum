@@ -417,6 +417,7 @@ $string['postbymailsuccess'] = 'Congratulations, your digest forum post with sub
 $string['postbymailsuccess_html'] = 'Congratulations, your <a href="{$a->discussionurl}">digestforum post</a> with subject "{$a->subject}" was successfully posted.';
 $string['postbyuser'] = '{$a->post} by {$a->user}';
 $string['postincontext'] = 'See this post in context';
+$string['postinfull'] = 'Read this full post';
 $string['postmailinfolink'] = 'This is a copy of a message posted in {$a->coursename}.
 
 To reply click on this link: {$a->replylink}';

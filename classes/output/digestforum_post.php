@@ -193,6 +193,7 @@ class digestforum_post implements \renderable, \templatable {
      * @return array Data ready for use in a mustache template
      */
     protected function export_for_template_html(\mod_digestforum_renderer $renderer) {
+	global $CFG;
         return array(
             'id'                            => $this->post->id,
             'coursename'                    => $this->get_coursename(),
@@ -207,7 +208,7 @@ class digestforum_post implements \renderable, \templatable {
             // Format some components according to the renderer.
             'message'                       => $renderer->format_message_text($this->cm, $this->post),
             'attachments'                   => $renderer->format_message_attachments($this->cm, $this->post),
-
+	    'longpost'			    => $CFG->digestforum_longpost,
             'canreply'                      => $this->canreply,
             'permalink'                     => $this->get_permalink(),
             'firstpost'                     => $this->get_is_firstpost(),
