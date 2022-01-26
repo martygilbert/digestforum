@@ -700,3 +700,23 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
             $exclusivemode, $fromctx, $ctx, $rec, $page, $totalpages);
     }
 }
+
+function scale_image_in_html($html, $maxwidth) {
+
+    // MJG - Try to resize images, if global setting checked to a max
+    // width.
+
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html);
+
+    foreach($doc->getElementsByTagName('img') as $img) {
+        $width = $img->getAttribute("width");
+
+        if (!empty($width) && $width > 800) {
+            $img->setAttribute('width', 800);
+            $img->removeAttribute('height');
+            }
+    }
+    $html = $doc->saveHTML();
+    return $html;
+}
