@@ -122,5 +122,27 @@ function xmldb_digestforum_upgrade($oldversion) {
     // Automatically generated Moodle v3.6.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2022101101) {
+        // Define field id to be added to changeme.
+        $table = new xmldb_table('digestforum_');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
+        $table->add_field('mdluserid',  XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
+        $table->add_field('digestforumid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'mdluserid');
+        $table->add_field('digestforumdate', XMLDB_TYPE_CHAR, '25', null, null, null, null, 'digestforumid');
+        $table->add_field('timeviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'digestforumdate');
+
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch add field timeviewed.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Digestforum savepoint reached.
+        upgrade_mod_savepoint(true, 2022101101, 'digestforum');
+    }
+
     return true;
 }
