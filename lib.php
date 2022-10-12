@@ -1221,9 +1221,18 @@ function digestforum_cron() {
                     $posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000" /></p>';
                 }
 
+
+                // MJG - Add a entry with 0 views to the tracker table
+                $trackerentry = new stdClass();
+                $trackerentry->mdluserid       = $userid;
+                $trackerentry->digestforumid   = $digestforum->id;
+                $trackerentry->digestforumdate = $todaysdate;
+
+                $trackerid = $DB->insert_record('digestforum_tracker', $trackerentry);
+
                 // MJG - for tracking attempt
-                $posthtml .= html_writer::empty_tag('img', array('src' => $CFG->wwwroot.'/mod/digestforum/img.php?id='.$digestforum->id.
-                    '&uid='.$userid.'&date='.$todaysdate, "height" => "1px", "width" => "1px",
+                $posthtml .= html_writer::empty_tag('img', array('src' => $CFG->wwwroot.'/mod/digestforum/img.php?id='.$trackerid,
+                    "height" => "1px", "width" => "1px",
                     "alt" => "Click Download pictures to see all of the announcements.",
                     "nosend" => "1"));
 

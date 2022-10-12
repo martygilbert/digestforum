@@ -22,32 +22,38 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/course/lib.php');
-require_once($CFG->dirroot . '/mod/digestforum/lib.php');
+//require_once($CFG->dirroot . '/course/lib.php');
+//require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
-$id     = optional_param('id', 0, PARAM_INT);       // DigestForumId
-$uid    = optional_param('uid', null, PARAM_INT);   // UserID
-$date   = optional_param('date', null, PARAM_TEXT);  // Date
+$id     = required_param('id', PARAM_INT);       // tracker id
 
+error_log('Tracker id: '.$id);
 
-error_log('Message info: '.$id.' - '.$uid.' - '.$date);
 header('Content-type: image/png');
 readfile('pix/blank.png');
 
 global $DB;
 
-$data = new stdClass();
-$data->digestforumid = $id;
-$data->mdluserid = $uid;
-$data->digestforumdate = $date;
-$data->timeviewed = time();
+$entry = $DB->get_record('digestforum_tracker', ['id' => $id]);
 
-$result = $DB->insert_record('digestforum_emailtrack', $data);
+$now = time();
 
-error_log("DB insert result is: " + $result);
+if (!$entry) {
+    error_log("INVALID TRACKER ID $id. Can't track this read.");
+} else {
 
+    $entry->numviews++;
 
+    if ($entry->firstviewed == 0) {
+        $entry->firstviewed = $now;
+    }
 
+    $entry->lastviewed = $now;
 
+    $result = $DB->update_record('digestforum_tracker', $entry);
+
+    error_log("DB insert result is: " + $result);
+
+}
 
 
