@@ -124,16 +124,19 @@ function xmldb_digestforum_upgrade($oldversion) {
 
     if ($oldversion < 2022101101) {
         // Define field id to be added to changeme.
-        $table = new xmldb_table('digestforum_');
+        $table = new xmldb_table('digestforum_tracker');
 
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
         $table->add_field('mdluserid',  XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
         $table->add_field('digestforumid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'mdluserid');
-        $table->add_field('digestforumdate', XMLDB_TYPE_CHAR, '25', null, null, null, null, 'digestforumid');
-        $table->add_field('timeviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'digestforumdate');
+        $table->add_field('digestdate', XMLDB_TYPE_CHAR, '25', null, null, null, null, 'digestforumid');
+        $table->add_field('numviews', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1', 'digestdate');
+        $table->add_field('timeviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'numviews');
 
 
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('digestforumid', XMLDB_KEY_FOREIGN, ['digestforumid'], 'digestforum', ['id']);
+        $table->add_key('mdluserid', XMLDB_KEY_FOREIGN, ['mdluserid'], 'user', ['id']);
 
         // Conditionally launch add field timeviewed.
         if (!$dbman->table_exists($table)) {
