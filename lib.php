@@ -421,9 +421,9 @@ WHERE
  * @return string A unique message-id
  */
 function digestforum_get_email_message_id($postid, $usertoid, $date = null) {
-	if (empty($date)){
-		$date = userdate(time(), '%Y%m%d');
-	}
+    if (empty($date)){
+        $date = userdate(time(), '%Y%m%d');
+    }
 
     return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid . 'on' .  $date));
 }
@@ -947,12 +947,12 @@ function digestforum_cron() {
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
-    if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-    //if (true) { //MJG - testing only!
-        //$digesttime += 86400; //MJG - testing only!
+    //if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
+    if (true) { //MJG - testing only!
+        $digesttime += 86400; //MJG - testing only!
 
-		//MJG get date to add to messageID
-		$todaysdate = userdate(time(), '%Y%m%d');
+        //MJG get date to add to messageID
+        $todaysdate = userdate(time(), '%Y-%m-%d');
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
@@ -1220,6 +1220,21 @@ function digestforum_cron() {
                     //$posthtml .= '<hr size="1" noshade="noshade" /></p>';
                     $posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000" /></p>';
                 }
+
+
+                // MJG - Add a entry with 0 views to the tracker table
+                $trackerentry = new stdClass();
+                $trackerentry->mdluserid       = $userid;
+                $trackerentry->digestforumid   = $digestforum->id;
+                $trackerentry->digestdate = $todaysdate;
+
+                $trackerid = $DB->insert_record('digestforum_tracker', $trackerentry);
+
+                // MJG - for tracking attempt
+                $posthtml .= html_writer::empty_tag('img', array('src' => $CFG->wwwroot.'/mod/digestforum/img.php?id='.$trackerid,
+                    "height" => "1px", "width" => "1px",
+                    "alt" => "Click Download pictures to see all of the announcements.",
+                    "nosend" => "1"));
 
                 if (empty($userto->mailformat) || $userto->mailformat != 1) {
                     // This user DOESN'T want to receive HTML
