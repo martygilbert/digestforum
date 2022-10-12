@@ -130,8 +130,9 @@ function xmldb_digestforum_upgrade($oldversion) {
         $table->add_field('mdluserid',  XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
         $table->add_field('digestforumid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'mdluserid');
         $table->add_field('digestdate', XMLDB_TYPE_CHAR, '25', null, null, null, null, 'digestforumid');
-        $table->add_field('numviews', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1', 'digestdate');
-        $table->add_field('timeviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'numviews');
+        $table->add_field('numviews', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'digestdate');
+        $table->add_field('firstviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'numviews');
+        $table->add_field('lastviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'firstviewed');
 
 
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
