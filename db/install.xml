@@ -192,7 +192,7 @@
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="mdluserid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the user who viewed this email"/>
         <FIELD NAME="digestforumid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the digestforum that sent the email that was viewed."/>
-        <FIELD NAME="digestforumdate" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="A string (yyyy-mm-dd) representing the date this digest forum was emailed."/>
+        <FIELD NAME="digestforumdate" TYPE="char" LENGTH="25" NOTNULL="false" SEQUENCE="false" COMMENT="A string (yyyy-mm-dd) representing the date this digest forum was emailed."/>
         <FIELD NAME="numviews" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of views"/>
         <FIELD NAME="firstviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="epoch time showing what time the email was viewed."/>
         <FIELD NAME="lastviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="epoch time showing what time the email was viewed."/>
