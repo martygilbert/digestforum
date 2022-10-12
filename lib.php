@@ -421,9 +421,9 @@ WHERE
  * @return string A unique message-id
  */
 function digestforum_get_email_message_id($postid, $usertoid, $date = null) {
-	if (empty($date)){
-		$date = userdate(time(), '%Y%m%d');
-	}
+    if (empty($date)){
+        $date = userdate(time(), '%Y%m%d');
+    }
 
     return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid . 'on' .  $date));
 }
@@ -951,8 +951,8 @@ function digestforum_cron() {
     if (true) { //MJG - testing only!
         $digesttime += 86400; //MJG - testing only!
 
-		//MJG get date to add to messageID
-		$todaysdate = userdate(time(), '%Y-%m-%d');
+        //MJG get date to add to messageID
+        $todaysdate = userdate(time(), '%Y-%m-%d');
 
         mtrace('Sending digestforum digests: '.userdate($timenow, '', $sitetimezone));
 
