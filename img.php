@@ -20,40 +20,30 @@
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 require_once(__DIR__ . '/../../config.php');
-//require_once($CFG->dirroot . '/course/lib.php');
-//require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
-$id     = required_param('id', PARAM_INT);       // tracker id
+$id = required_param('id', PARAM_INT);       // tracker id
 
-error_log('Tracker id: '.$id);
-
+// Send the 1x1 transparent png
 header('Content-type: image/png');
 readfile('pix/blank.png');
 
 global $DB;
 
+// Get the existing entry
 $entry = $DB->get_record('digestforum_tracker', ['id' => $id]);
-
-$now = time();
 
 if (!$entry) {
     error_log("INVALID TRACKER ID $id. Can't track this read.");
 } else {
 
+    // The email has been viewed. Update info.
+    $now = time();
     $entry->numviews++;
-
     if ($entry->firstviewed == 0) {
         $entry->firstviewed = $now;
     }
-
     $entry->lastviewed = $now;
 
     $result = $DB->update_record('digestforum_tracker', $entry);
-
-    error_log("DB insert result is: " + $result);
-
 }
-
-
