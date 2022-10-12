@@ -1226,7 +1226,7 @@ function digestforum_cron() {
                 $trackerentry = new stdClass();
                 $trackerentry->mdluserid       = $userid;
                 $trackerentry->digestforumid   = $digestforum->id;
-                $trackerentry->digestforumdate = $todaysdate;
+                $trackerentry->digestdate = $todaysdate;
 
                 $trackerid = $DB->insert_record('digestforum_tracker', $trackerentry);
 
