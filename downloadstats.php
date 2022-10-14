@@ -67,6 +67,7 @@ if (!has_capability('moodle/site:config', $sitecontext, ($USER->id))) {
 
 		foreach ($opened as $value) {
 			$name = preg_replace('/Daily Announcements for /', '', $forum->name);
+			$name = preg_replace('/Daily Announcements Only for /', '', $name);
 			$pctOpened =  100 * ($value->numopened) / ($value->numopened + $value->notopened);
 			echo $value->digestdate.",".
 				$name.",".
