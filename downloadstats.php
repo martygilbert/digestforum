@@ -22,6 +22,8 @@
 
 require_once(__DIR__.'/../../config.php');
 
+$limit = optional_param('limit', 0, PARAM_INT);
+
 $title = 'Download All DigestForum Stats';
 $pagetitle = $title;
 $url = new moodle_url("/mod/digestforum/downloadstats.php");
@@ -60,8 +62,8 @@ if (!has_capability('moodle/site:config', $sitecontext, ($USER->id))) {
 			GROUP BY digestdate
 			ORDER BY digestdate DESC';
 
-		//$opened = $DB->get_records_sql($sql, [$forum->id], 0, 20);
-		$opened = $DB->get_records_sql($sql, [$forum->id]);
+		$opened = $DB->get_records_sql($sql, [$forum->id], 0, $limit);
+		//$opened = $DB->get_records_sql($sql, [$forum->id]);
 
 		foreach ($opened as $value) {
 			$name = preg_replace('/Daily Announcements for /', '', $forum->name);
