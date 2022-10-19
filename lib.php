@@ -1070,7 +1070,7 @@ function digestforum_cron() {
 
                 $posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>'
                     //. '<br /><hr size="1" noshade="noshade" />';
-                    . '<br /><hr style="height: 3px; width: 100%; color:#000; background-color:#000" />';
+                    . '<br><hr style="height: 3px; width: 100%; color:#000; background-color:#000">';
 
                 foreach ($thesediscussions as $discussionid) {
 
@@ -1119,7 +1119,7 @@ function digestforum_cron() {
                     //} else {
                         //$posthtml .= " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a></font></p>";
                     //}
-                    $posthtml .= '<p>';
+                    //$posthtml .= '<p>';
 
                     $postsarray = $discussionposts[$discussionid];
                     sort($postsarray);
@@ -1218,7 +1218,7 @@ function digestforum_cron() {
                     $posthtml .= "\n<div class='mdl-right'><font size=\"1\">" . implode('&nbsp;', $footerlinks) . '</font></div>';
                     */
                     //$posthtml .= '<hr size="1" noshade="noshade" /></p>';
-                    $posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000" /></p>';
+                    $posthtml .= '<hr style="height: 3px; width: 100%; color:#000; background-color:#000">';
                 }
 
 
