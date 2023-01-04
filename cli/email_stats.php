@@ -138,8 +138,7 @@ if ($options['both'] || $options['emailonly']) {
 	if (!$userto) {
     	$userto = $DB->get_record('user', ['username' => $options['both']]);
 		if (!$userto) {
-			echo "Invalid user supplied\n";
-			die;
+			echo "Invalid user supplied\n"; die;
 		}
 	}
 
