@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright  2009 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,10 +27,7 @@ if ($ADMIN->fulltree) {
     require_once($CFG->dirroot.'/mod/digestforum/lib.php');
 
     $settings->add(new admin_setting_configselect('digestforum_displaymode', get_string('displaymode', 'digestforum'),
-                       get_string('configdisplaymode', 'digestforum'), DIGESTFORUM_MODE_NESTED, digestforum_get_layout_modes()));
-
-    $settings->add(new admin_setting_configcheckbox('digestforum_replytouser', get_string('replytouser', 'digestforum'),
-                       get_string('configreplytouser', 'digestforum'), 1));
+                       get_string('configdisplaymode', 'digestforum'), DFORUM_MODE_NESTED, digestforum_get_layout_modes()));
 
     // Less non-HTML characters than this is short
     $settings->add(new admin_setting_configtext('digestforum_shortpost', get_string('shortpost', 'digestforum'),
@@ -38,7 +35,7 @@ if ($ADMIN->fulltree) {
 
     // More non-HTML characters than this is long
     $settings->add(new admin_setting_configtext('digestforum_longpost', get_string('longpost', 'digestforum'),
-                       get_string('configlongpost', 'digestforum'), 450, PARAM_INT));
+                       get_string('configlongpost', 'digestforum'), 600, PARAM_INT));
 
     // Number of discussions on a page
     $settings->add(new admin_setting_configtext('digestforum_manydiscussions', get_string('manydiscussions', 'digestforum'),
@@ -55,11 +52,28 @@ if ($ADMIN->fulltree) {
 
     // Default number of attachments allowed per post in all digestforums
     $settings->add(new admin_setting_configtext('digestforum_maxattachments', get_string('maxattachments', 'digestforum'),
-                       get_string('configmaxattachments', 'digestforum'), 1, PARAM_INT));
+                       get_string('configmaxattachments', 'digestforum'), 9, PARAM_INT));
+
+    // Default Subscription mode setting.
+    $options = digestforum_get_subscriptionmode_options();
+    $settings->add(new admin_setting_configselect('digestforum_subscription', get_string('subscriptionmode', 'digestforum'),
+        get_string('configsubscriptiontype', 'digestforum'), DFORUM_CHOOSESUBSCRIBE, $options));
+
+    // Default Read Tracking setting.
+    $options = array();
+    $options[DFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'digestforum');
+    $options[DFORUM_TRACKING_OFF] = get_string('trackingoff', 'digestforum');
+    $options[DFORUM_TRACKING_FORCED] = get_string('trackingon', 'digestforum');
+    $settings->add(new admin_setting_configselect('digestforum_trackingtype', get_string('trackingtype', 'digestforum'),
+                       get_string('configtrackingtype', 'digestforum'), DFORUM_TRACKING_OPTIONAL, $options));
 
     // Default whether user needs to mark a post as read
     $settings->add(new admin_setting_configcheckbox('digestforum_trackreadposts', get_string('trackdigestforum', 'digestforum'),
                        get_string('configtrackreadposts', 'digestforum'), 1));
+
+    // Default whether user needs to mark a post as read.
+    $settings->add(new admin_setting_configcheckbox('digestforum_allowforcedreadtracking', get_string('forcedreadtracking', 'digestforum'),
+                       get_string('forcedreadtracking_desc', 'digestforum'), 0));
 
     // Default number of days that a post is considered old
     $settings->add(new admin_setting_configtext('digestforum_oldpostdays', get_string('oldpostdays', 'digestforum'),
@@ -92,7 +106,35 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configselect('digestforum_enablerssfeeds', get_string('enablerssfeeds', 'admin'),
                        $str, 0, $options));
 
+    if (!empty($CFG->enablerssfeeds)) {
+        $options = array(
+            0 => get_string('none'),
+            1 => get_string('discussions', 'digestforum'),
+            2 => get_string('posts', 'digestforum')
+        );
+        $settings->add(new admin_setting_configselect('digestforum_rsstype', get_string('rsstypedefault', 'digestforum'),
+                get_string('configrsstypedefault', 'digestforum'), 0, $options));
+
+        $options = array(
+            0  => '0',
+            1  => '1',
+            2  => '2',
+            3  => '3',
+            4  => '4',
+            5  => '5',
+            10 => '10',
+            15 => '15',
+            20 => '20',
+            25 => '25',
+            30 => '30',
+            40 => '40',
+            50 => '50'
+        );
+        $settings->add(new admin_setting_configselect('digestforum_rssarticles', get_string('rssarticles', 'digestforum'),
+                get_string('configrssarticlesdefault', 'digestforum'), 0, $options));
+    }
+
     $settings->add(new admin_setting_configcheckbox('digestforum_enabletimedposts', get_string('timedposts', 'digestforum'),
-                       get_string('configenabletimedposts', 'digestforum'), 0));
+                       get_string('configenabletimedposts', 'digestforum'), 1));
 }
 

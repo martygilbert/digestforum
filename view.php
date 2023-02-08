@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -100,38 +100,35 @@
         rss_add_http_header($context, 'mod_digestforum', $digestforum, $rsstitle);
     }
 
-    // Mark viewed if required
-    $completion = new completion_info($course);
-    $completion->set_module_viewed($cm);
-
 /// Print header.
 
-    $PAGE->set_title(format_string($digestforum->name));
+    $PAGE->set_title($digestforum->name);
     $PAGE->add_body_class('digestforumtype-'.$digestforum->type);
-    $PAGE->set_heading(format_string($course->fullname));
+    $PAGE->set_heading($course->fullname);
 
-    echo $OUTPUT->header();
+    // Some capability checks.
+    $courselink = new moodle_url('/course/view.php', ['id' => $cm->course]);
 
-/// Some capability checks.
     if (empty($cm->visible) and !has_capability('moodle/course:viewhiddenactivities', $context)) {
-        notice(get_string("activityiscurrentlyhidden"));
+        notice(get_string("activityiscurrentlyhidden"), $courselink);
     }
 
     if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
-        notice(get_string('noviewdiscussionspermission', 'digestforum'));
+        notice(get_string('noviewdiscussionspermission', 'digestforum'), $courselink);
+    }
+
+    // Mark viewed and trigger the course_module_viewed event.
+    digestforum_view($digestforum, $course, $cm, $context);
+
+    echo $OUTPUT->header();
+
+    echo $OUTPUT->heading(format_string($digestforum->name), 2);
+    if (!empty($digestforum->intro) && $digestforum->type != 'single' && $digestforum->type != 'teacher') {
+        echo $OUTPUT->box(format_module_intro('digestforum', $digestforum, $cm->id), 'generalbox', 'intro');
     }
 
 /// find out current groups mode
     groups_print_activity_menu($cm, $CFG->wwwroot . '/mod/digestforum/view.php?id=' . $cm->id);
-    $currentgroup = groups_get_activity_group($cm);
-    $groupmode = groups_get_activity_groupmode($cm);
-
-/// Okay, we can show the discussions. Log the digestforum view.
-    if ($cm->id) {
-        add_to_log($course->id, "digestforum", "view digestforum", "view.php?id=$cm->id", "$digestforum->id", $cm->id);
-    } else {
-        add_to_log($course->id, "digestforum", "view digestforum", "view.php?f=$digestforum->id", "$digestforum->id");
-    }
 
     $SESSION->fromdiscussion = qualified_me();   // Return here if we post or set subscription etc
 
@@ -187,9 +184,6 @@
             break;
 
         case 'eachuser':
-            if (!empty($digestforum->intro)) {
-                echo $OUTPUT->box(format_module_intro('digestforum', $digestforum, $cm->id), 'generalbox', 'intro');
-            }
             echo '<p class="mdl-align">';
             if (digestforum_user_can_post_discussion($digestforum, null, -1, $cm)) {
                 print_string("allowsdiscussions", "digestforum");
@@ -213,21 +207,16 @@
             break;
 
         case 'blog':
-            if (!empty($digestforum->intro)) {
-                echo $OUTPUT->box(format_module_intro('digestforum', $digestforum, $cm->id), 'generalbox', 'intro');
-            }
             echo '<br />';
             if (!empty($showall)) {
-                digestforum_print_latest_discussions($course, $digestforum, 0, 'plain', '', -1, -1, -1, 0, $cm);
+                digestforum_print_latest_discussions($course, $digestforum, 0, 'plain', 'd.pinned DESC, p.created DESC', -1, -1, -1, 0, $cm);
             } else {
-                digestforum_print_latest_discussions($course, $digestforum, -1, 'plain', '', -1, -1, $page, $CFG->digestforum_manydiscussions, $cm);
+                digestforum_print_latest_discussions($course, $digestforum, -1, 'plain', 'd.pinned DESC, p.created DESC', -1, -1, $page,
+                    $CFG->digestforum_manydiscussions, $cm);
             }
             break;
 
         default:
-            if (!empty($digestforum->intro)) {
-                echo $OUTPUT->box(format_module_intro('digestforum', $digestforum, $cm->id), 'generalbox', 'intro');
-            }
             echo '<br />';
             if (!empty($showall)) {
                 digestforum_print_latest_discussions($course, $digestforum, 0, 'header', '', -1, -1, -1, 0, $cm);
@@ -239,6 +228,7 @@
             break;
     }
 
+    // Add the subscription toggle JS.
+    $PAGE->requires->yui_module('moodle-mod_digestforum-subscriptiontoggle', 'Y.M.mod_digestforum.subscriptiontoggle.init');
+
     echo $OUTPUT->footer($course);
-
-

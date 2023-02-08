@@ -16,10 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
+ * @package    mod_digestforum
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
@@ -40,8 +40,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         if ($userinfo) {
             $paths[] = new restore_path_element('digestforum_discussion', '/activity/digestforum/discussions/discussion');
             $paths[] = new restore_path_element('digestforum_post', '/activity/digestforum/discussions/discussion/posts/post');
+            $paths[] = new restore_path_element('digestforum_tag', '/activity/digestforum/poststags/tag');
+            $paths[] = new restore_path_element('digestforum_discussion_sub', '/activity/digestforum/discussions/discussion/discussion_subs/discussion_sub');
             $paths[] = new restore_path_element('digestforum_rating', '/activity/digestforum/discussions/discussion/posts/post/ratings/rating');
             $paths[] = new restore_path_element('digestforum_subscription', '/activity/digestforum/subscriptions/subscription');
+            $paths[] = new restore_path_element('digestforum_digest', '/activity/digestforum/digests/digest');
             $paths[] = new restore_path_element('digestforum_read', '/activity/digestforum/readposts/read');
             $paths[] = new restore_path_element('digestforum_track', '/activity/digestforum/trackedprefs/track');
         }
@@ -57,6 +60,8 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $oldid = $data->id;
         $data->course = $this->get_courseid();
 
+        // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
+        // See MDL-9367.
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);
         if ($data->scale < 0) { // scale found, get mapping
@@ -65,6 +70,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
 
         $newitemid = $DB->insert_record('digestforum', $data);
         $this->apply_activity_instance($newitemid);
+
+        // Add current enrolled user subscriptions if necessary.
+        $data->id = $newitemid;
+        $ctx = context_module::instance($this->task->get_moduleid());
+        digestforum_instance_created($ctx, $data);
     }
 
     protected function process_digestforum_discussion($data) {
@@ -75,7 +85,6 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $data->course = $this->get_courseid();
 
         $data->digestforum = $this->get_new_parentid('digestforum');
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
         $data->timestart = $this->apply_date_offset($data->timestart);
         $data->timeend = $this->apply_date_offset($data->timeend);
         $data->userid = $this->get_mappingid('user', $data->userid);
@@ -93,8 +102,6 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $oldid = $data->id;
 
         $data->discussion = $this->get_new_parentid('digestforum_discussion');
-        $data->created = $this->apply_date_offset($data->created);
-        $data->modified = $this->apply_date_offset($data->modified);
         $data->userid = $this->get_mappingid('user', $data->userid);
         // If post has parent, map it (it has been already restored)
         if (!empty($data->parent)) {
@@ -110,6 +117,23 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         }
     }
 
+    protected function process_digestforum_tag($data) {
+        $data = (object)$data;
+
+        if (!core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) { // Tags disabled in server, nothing to process.
+            return;
+        }
+
+        $tag = $data->rawname;
+        if (!$itemid = $this->get_mappingid('digestforum_post', $data->itemid)) {
+            // Some orphaned tag, we could not find the restored post for it - ignore.
+            return;
+        }
+
+        $context = context_module::instance($this->task->get_moduleid());
+        core_tag_tag::add_item_tag('mod_digestforum', 'digestforum_posts', $itemid, $context, $tag);
+    }
+
     protected function process_digestforum_rating($data) {
         global $DB;
 
@@ -123,8 +147,6 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         }
         $data->rating = $data->value;
         $data->userid = $this->get_mappingid('user', $data->userid);
-        $data->timecreated = $this->apply_date_offset($data->timecreated);
-        $data->timemodified = $this->apply_date_offset($data->timemodified);
 
         // We need to check that component and ratingarea are both set here.
         if (empty($data->component)) {
@@ -146,7 +168,41 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $data->digestforum = $this->get_new_parentid('digestforum');
         $data->userid = $this->get_mappingid('user', $data->userid);
 
-        $newitemid = $DB->insert_record('digestforum_subscriptions', $data);
+        // Create only a new subscription if it does not already exist (see MDL-59854).
+        if ($subscription = $DB->get_record('digestforum_subscriptions',
+                array('digestforum' => $data->digestforum, 'userid' => $data->userid))) {
+            $this->set_mapping('digestforum_subscription', $oldid, $subscription->id, true);
+        } else {
+            $newitemid = $DB->insert_record('digestforum_subscriptions', $data);
+            $this->set_mapping('digestforum_subscription', $oldid, $newitemid, true);
+        }
+
+    }
+
+    protected function process_digestforum_discussion_sub($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->discussion = $this->get_new_parentid('digestforum_discussion');
+        $data->digestforum = $this->get_new_parentid('digestforum');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('digestforum_discussion_subs', $data);
+        $this->set_mapping('digestforum_discussion_sub', $oldid, $newitemid, true);
+    }
+
+    protected function process_digestforum_digest($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->digestforum = $this->get_new_parentid('digestforum');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        $newitemid = $DB->insert_record('digestforum_digests', $data);
     }
 
     protected function process_digestforum_read($data) {
@@ -176,10 +232,16 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
     }
 
     protected function after_execute() {
-        global $DB;
-
         // Add digestforum related files, no need to match by itemname (just internally handled context)
         $this->add_related_files('mod_digestforum', 'intro', null);
+
+        // Add post related files, matching by itemname = 'digestforum_post'
+        $this->add_related_files('mod_digestforum', 'post', 'digestforum_post');
+        $this->add_related_files('mod_digestforum', 'attachment', 'digestforum_post');
+    }
+
+    protected function after_restore() {
+        global $DB;
 
         // If the digestforum is of type 'single' and no discussion has been ignited
         // (non-userinfo backup/restore) create the discussion here, using digestforum
@@ -188,7 +250,7 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $digestforumrec = $DB->get_record('digestforum', array('id' => $digestforumid));
         if ($digestforumrec->type == 'single' && !$DB->record_exists('digestforum_discussions', array('digestforum' => $digestforumid))) {
             // Create single discussion/lead post from digestforum data
-            $sd = new stdclass();
+            $sd = new stdClass();
             $sd->course   = $digestforumrec->course;
             $sd->digestforum    = $digestforumrec->id;
             $sd->name     = $digestforumrec->name;
@@ -197,22 +259,18 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
             $sd->messageformat = $digestforumrec->introformat;
             $sd->messagetrust  = true;
             $sd->mailnow  = false;
-            $sdid = digestforum_add_discussion($sd, null, $sillybyrefvar, $this->task->get_userid());
+            $sdid = digestforum_add_discussion($sd, null, null, $this->task->get_userid());
             // Mark the post as mailed
             $DB->set_field ('digestforum_posts','mailed', '1', array('discussion' => $sdid));
             // Copy all the files from mod_foum/intro to mod_digestforum/post
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_digestforum', 'intro');
             foreach ($files as $file) {
-                $newfilerecord = new stdclass();
+                $newfilerecord = new stdClass();
                 $newfilerecord->filearea = 'post';
                 $newfilerecord->itemid   = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $sdid));
                 $fs->create_file_from_storedfile($newfilerecord, $file);
             }
         }
-
-        // Add post related files, matching by itemname = 'digestforum_post'
-        $this->add_related_files('mod_digestforum', 'post', 'digestforum_post');
-        $this->add_related_files('mod_digestforum', 'attachment', 'digestforum_post');
     }
 }

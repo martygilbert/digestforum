@@ -18,7 +18,7 @@
 /**
  * Set tracking option for the digestforum.
  *
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -55,11 +55,12 @@ if (!$cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $cour
 $user = $USER;
 
 require_login($course, false, $cm);
+require_sesskey();
 
 if ($returnpage == 'index.php') {
-    $returnto = digestforum_go_back_to($returnpage.'?id='.$course->id);
+    $returnto = new moodle_url("/mod/digestforum/$returnpage", array('id' => $course->id));
 } else {
-    $returnto = digestforum_go_back_to($returnpage.'?f='.$digestforum->id);
+    $returnto = new moodle_url("/mod/digestforum/$returnpage", array('f' => $digestforum->id));
 }
 
 if (isguestuser()) {   // Guests can't change digestforum
@@ -81,9 +82,7 @@ if ($mark == 'read') {
             print_error('invaliddiscussionid', 'digestforum');
         }
 
-        if (digestforum_tp_mark_discussion_read($user, $d)) {
-            add_to_log($course->id, "discussion", "mark read", "view.php?f=$digestforum->id", $d, $cm->id);
-        }
+        digestforum_tp_mark_discussion_read($user, $d);
     } else {
         // Mark all messages read in current group
         $currentgroup = groups_get_activity_group($cm);
@@ -92,18 +91,15 @@ if ($mark == 'read') {
             // may return 0
             $currentgroup=false;
         }
-        if (digestforum_tp_mark_digestforum_read($user, $digestforum->id,$currentgroup)) {
-            add_to_log($course->id, "digestforum", "mark read", "view.php?f=$digestforum->id", $digestforum->id, $cm->id);
-        }
+        digestforum_tp_mark_digestforum_read($user, $digestforum->id, $currentgroup);
     }
 
 /// FUTURE - Add ability to mark them as unread.
 //    } else { // subscribe
 //        if (digestforum_tp_start_tracking($digestforum->id, $user->id)) {
-//            add_to_log($course->id, "digestforum", "mark unread", "view.php?f=$digestforum->id", $digestforum->id, $cm->id);
 //            redirect($returnto, get_string("nowtracking", "digestforum", $info), 1);
 //        } else {
-//            print_error("Could not start tracking that digestforum", $_SERVER["HTTP_REFERER"]);
+//            print_error("Could not start tracking that digestforum", get_local_referer());
 //        }
 }
 

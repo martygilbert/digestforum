@@ -47,6 +47,11 @@ class mod_digestforum_generator extends testing_module_generator {
     protected $digestforumpostcount = 0;
 
     /**
+     * @var int keep track of how many digestforum subscriptions have been created.
+     */
+    protected $digestforumsubscriptionscount = 0;
+
+    /**
      * To be called from data reset code only,
      * do not use in tests.
      * @return void
@@ -54,38 +59,16 @@ class mod_digestforum_generator extends testing_module_generator {
     public function reset() {
         $this->digestforumdiscussioncount = 0;
         $this->digestforumpostcount = 0;
+        $this->digestforumsubscriptionscount = 0;
 
         parent::reset();
     }
 
-    /**
-     * Create new digestforum module instance
-     * @param array|stdClass $record
-     * @param array $options
-     * @return stdClass activity record with extra cmid field
-     */
     public function create_instance($record = null, array $options = null) {
         global $CFG;
-        require_once("$CFG->dirroot/mod/digestforum/locallib.php");
-
-        $this->instancecount++;
-        $i = $this->instancecount;
-
+        require_once($CFG->dirroot.'/mod/digestforum/lib.php');
         $record = (object)(array)$record;
-        $options = (array)$options;
 
-        if (empty($record->course)) {
-            throw new coding_exception('module generator requires $record->course');
-        }
-        if (!isset($record->name)) {
-            $record->name = get_string('pluginname', 'digestforum').' '.$i;
-        }
-        if (!isset($record->intro)) {
-            $record->intro = 'Test digestforum '.$i;
-        }
-        if (!isset($record->introformat)) {
-            $record->introformat = FORMAT_MOODLE;
-        }
         if (!isset($record->type)) {
             $record->type = 'general';
         }
@@ -96,17 +79,44 @@ class mod_digestforum_generator extends testing_module_generator {
             $record->scale = 0;
         }
         if (!isset($record->forcesubscribe)) {
-            $record->forcesubscribe = FORUM_CHOOSESUBSCRIBE;
-        }
-        if (isset($options['idnumber'])) {
-            $record->cmidnumber = $options['idnumber'];
-        } else {
-            $record->cmidnumber = '';
+            $record->forcesubscribe = DFORUM_CHOOSESUBSCRIBE;
         }
 
-        $record->coursemodule = $this->precreate_course_module($record->course, $options);
-        $id = digestforum_add_instance($record, null);
-        return $this->post_add_instance($id, $record->coursemodule);
+        return parent::create_instance($record, (array)$options);
+    }
+
+    /**
+     * Function to create a dummy subscription.
+     *
+     * @param array|stdClass $record
+     * @return stdClass the subscription object
+     */
+    public function create_subscription($record = null) {
+        global $DB;
+
+        // Increment the digestforum subscription count.
+        $this->digestforumsubscriptionscount++;
+
+        $record = (array)$record;
+
+        if (!isset($record['course'])) {
+            throw new coding_exception('course must be present in phpunit_util::create_subscription() $record');
+        }
+
+        if (!isset($record['digestforum'])) {
+            throw new coding_exception('digestforum must be present in phpunit_util::create_subscription() $record');
+        }
+
+        if (!isset($record['userid'])) {
+            throw new coding_exception('userid must be present in phpunit_util::create_subscription() $record');
+        }
+
+        $record = (object)$record;
+
+        // Add the subscription.
+        $record->id = $DB->insert_record('digestforum_subscriptions', $record);
+
+        return $record;
     }
 
     /**
@@ -175,10 +185,48 @@ class mod_digestforum_generator extends testing_module_generator {
             $record['mailnow'] = "0";
         }
 
+        if (isset($record['timemodified'])) {
+            $timemodified = $record['timemodified'];
+        }
+
+        if (!isset($record['pinned'])) {
+            $record['pinned'] = DFORUM_DISCUSSION_UNPINNED;
+        }
+
+        if (isset($record['mailed'])) {
+            $mailed = $record['mailed'];
+        }
+
         $record = (object) $record;
 
         // Add the discussion.
         $record->id = digestforum_add_discussion($record, null, null, $record->userid);
+
+        $post = $DB->get_record('digestforum_posts', array('discussion' => $record->id));
+
+        if (isset($timemodified) || isset($mailed)) {
+            if (isset($mailed)) {
+                $post->mailed = $mailed;
+            }
+
+            if (isset($timemodified)) {
+                // Enforce the time modified.
+                $record->timemodified = $timemodified;
+                $post->modified = $post->created = $timemodified;
+
+                $DB->update_record('digestforum_discussions', $record);
+            }
+
+            $DB->update_record('digestforum_posts', $post);
+        }
+
+        if (property_exists($record, 'tags')) {
+            $cm = get_coursemodule_from_instance('digestforum', $record->digestforum);
+            $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
+
+            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id,
+                context_module::instance($cm->id), $tags);
+        }
 
         return $record;
     }
@@ -228,14 +276,70 @@ class mod_digestforum_generator extends testing_module_generator {
             $record['modified'] = $time;
         }
 
+        if (!isset($record['mailed'])) {
+            $record['mailed'] = 0;
+        }
+
+        if (!isset($record['messageformat'])) {
+            $record['messageformat'] = 0;
+        }
+
+        if (!isset($record['messagetrust'])) {
+            $record['messagetrust'] = 0;
+        }
+
+        if (!isset($record['attachment'])) {
+            $record['attachment'] = "";
+        }
+
+        if (!isset($record['totalscore'])) {
+            $record['totalscore'] = 0;
+        }
+
+        if (!isset($record['mailnow'])) {
+            $record['mailnow'] = 0;
+        }
+
         $record = (object) $record;
 
         // Add the post.
         $record->id = $DB->insert_record('digestforum_posts', $record);
 
+        if (property_exists($record, 'tags')) {
+            $discussion = $DB->get_record('digestforum_discussions', ['id' => $record->discussion]);
+            $cm = get_coursemodule_from_instance('digestforum', $discussion->digestforum);
+            $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
+
+            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $record->id,
+                context_module::instance($cm->id), $tags);
+        }
+
         // Update the last post.
         digestforum_discussion_update_last_post($record->discussion);
 
         return $record;
+    }
+
+    public function create_content($instance, $record = array()) {
+        global $USER, $DB;
+        $record = (array)$record + array(
+            'digestforum' => $instance->id,
+            'userid' => $USER->id,
+            'course' => $instance->course
+        );
+        if (empty($record['discussion']) && empty($record['parent'])) {
+            // Create discussion.
+            $discussion = $this->create_discussion($record);
+            $post = $DB->get_record('digestforum_posts', array('id' => $discussion->firstpost));
+        } else {
+            // Create post.
+            if (empty($record['parent'])) {
+                $record['parent'] = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $record['discussion']), MUST_EXIST);
+            } else if (empty($record['discussion'])) {
+                $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', array('id' => $record['parent']), MUST_EXIST);
+            }
+            $post = $this->create_post($record);
+        }
+        return $post;
     }
 }

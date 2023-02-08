@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/digestforum/db" VERSION="20130205" COMMENT="XMLDB file for Moodle mod/digestforum"
+<XMLDB PATH="mod/digestforum/db" VERSION="20221011" COMMENT="XMLDB file for Moodle mod/digestforum"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -30,6 +30,7 @@
         <FIELD NAME="completionreplies" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of replies are required to mark this digestforum complete for a user."/>
         <FIELD NAME="completionposts" TYPE="int" LENGTH="9" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Nonzero if a certain number of posts or replies (total) are required to mark this digestforum complete for a user."/>
         <FIELD NAME="displaywordcount" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="lockdiscussionafter" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -52,6 +53,7 @@
         <FIELD NAME="usermodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timestart" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="timeend" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="pinned" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -59,6 +61,7 @@
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
+        <INDEX NAME="course" UNIQUE="false" FIELDS="course"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="digestforum_posts" COMMENT="All posts are stored in this table">
@@ -77,6 +80,7 @@
         <FIELD NAME="attachment" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="totalscore" TYPE="int" LENGTH="4" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="mailnow" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="deleted" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -115,10 +119,25 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="digestforum" TYPE="foreign" FIELDS="digestforum" REFTABLE="digestforum" REFFIELDS="id"/>
+        <KEY NAME="useriddigestforum" TYPE="unique" FIELDS="userid, digestforum" COMMENT="Unique key"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="userid" UNIQUE="false" FIELDS="userid"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="digestforum_digests" COMMENT="Keeps track of user mail delivery preferences for each digestforum">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="digestforum" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="maildigest" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="-1" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="digestforum" TYPE="foreign" FIELDS="digestforum" REFTABLE="digestforum" REFFIELDS="id"/>
+        <KEY NAME="digestforumdigest" TYPE="unique" FIELDS="digestforum, userid, maildigest"/>
+      </KEYS>
     </TABLE>
     <TABLE NAME="digestforum_read" COMMENT="Tracks each users read posts">
       <FIELDS>
@@ -136,7 +155,7 @@
       <INDEXES>
         <INDEX NAME="userid-digestforumid" UNIQUE="false" FIELDS="userid, digestforumid"/>
         <INDEX NAME="userid-discussionid" UNIQUE="false" FIELDS="userid, discussionid"/>
-        <INDEX NAME="userid-postid" UNIQUE="false" FIELDS="userid, postid"/>
+        <INDEX NAME="postid-userid" UNIQUE="false" FIELDS="postid, userid"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="digestforum_track_prefs" COMMENT="Tracks each users untracked digestforums">
@@ -151,6 +170,38 @@
       <INDEXES>
         <INDEX NAME="userid-digestforumid" UNIQUE="false" FIELDS="userid, digestforumid"/>
       </INDEXES>
+    </TABLE>
+    <TABLE NAME="digestforum_discussion_subs" COMMENT="Users may choose to subscribe and unsubscribe from specific discussions.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="digestforum" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="discussion" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="preference" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="1" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="digestforum" TYPE="foreign" FIELDS="digestforum" REFTABLE="digestforum" REFFIELDS="id"/>
+        <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="discussion" TYPE="foreign" FIELDS="discussion" REFTABLE="digestforum_discussions" REFFIELDS="id"/>
+        <KEY NAME="user_discussions" TYPE="unique" FIELDS="userid, discussion" COMMENT="Users may only have one discussion preferences per discussion"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="digestforum_tracker" COMMENT="Attempt to track some of the opened emails.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="mdluserid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the user who viewed this email"/>
+        <FIELD NAME="digestforumid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The id of the digestforum that sent the email that was viewed."/>
+        <FIELD NAME="digestdate" TYPE="char" LENGTH="25" NOTNULL="false" SEQUENCE="false" COMMENT="A string (yyyy-mm-dd) representing the date this digest forum was emailed."/>
+        <FIELD NAME="numviews" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Number of views"/>
+        <FIELD NAME="firstviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="epoch time showing what time the email was viewed."/>
+        <FIELD NAME="lastviewed" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="epoch time showing what time the email was viewed."/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="digestforumid" TYPE="foreign" FIELDS="digestforumid" REFTABLE="digestforum" REFFIELDS="id"/>
+        <KEY NAME="mdluserid" TYPE="foreign" FIELDS="mdluserid" REFTABLE="user" REFFIELDS="id"/>
+      </KEYS>
     </TABLE>
   </TABLES>
 </XMLDB>

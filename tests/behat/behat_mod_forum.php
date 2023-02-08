@@ -27,8 +27,7 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
-use Behat\Behat\Context\Step\Given as Given,
-    Behat\Gherkin\Node\TableNode as TableNode;
+use Behat\Gherkin\Node\TableNode as TableNode;
 /**
  * Forum-related steps definitions.
  *
@@ -40,6 +39,17 @@ use Behat\Behat\Context\Step\Given as Given,
 class behat_mod_digestforum extends behat_base {
 
     /**
+     * Adds a topic to the digestforum specified by it's name. Useful for the Announcements and blog-style digestforums.
+     *
+     * @Given /^I add a new topic to "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
+     * @param string $digestforumname
+     * @param TableNode $table
+     */
+    public function i_add_a_new_topic_to_digestforum_with($digestforumname, TableNode $table) {
+        $this->add_new_discussion($digestforumname, $table, get_string('addanewtopic', 'digestforum'));
+    }
+
+    /**
      * Adds a discussion to the digestforum specified by it's name with the provided table data (usually Subject and Message). The step begins from the digestforum's course page.
      *
      * @Given /^I add a new discussion to "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
@@ -47,34 +57,51 @@ class behat_mod_digestforum extends behat_base {
      * @param TableNode $table
      */
     public function i_add_a_digestforum_discussion_to_digestforum_with($digestforumname, TableNode $table) {
-
-        // Escaping $digestforumname as it has been stripped automatically by the transformer.
-        return array(
-            new Given('I follow "' . $this->escape($digestforumname) . '"'),
-            new Given('I press "Add a new discussion topic"'),
-            new Given('I fill the moodle form with:', $table),
-            new Given('I press "Post to digestforum"'),
-            new Given('I wait "5" seconds')
-        );
+        $this->add_new_discussion($digestforumname, $table, get_string('addanewdiscussion', 'digestforum'));
     }
 
     /**
      * Adds a reply to the specified post of the specified digestforum. The step begins from the digestforum's page or from the digestforum's course page.
      *
      * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
-     * @param mixed $postname The subject of the post
-     * @param mixed $digestforumname The digestforum name
+     * @param string $postname The subject of the post
+     * @param string $digestforumname The digestforum name
      * @param TableNode $table
      */
     public function i_reply_post_from_digestforum_with($postsubject, $digestforumname, TableNode $table) {
 
-        return array(
-            new Given('I follow "' . $this->escape($digestforumname) . '"'),
-            new Given('I follow "' . $this->escape($postsubject) . '"'),
-            new Given('I follow "Reply"'),
-            new Given('I fill the moodle form with:', $table),
-            new Given('I press "Post to digestforum"'),
-            new Given('I wait "5" seconds')
-        );
+        // Navigate to digestforum.
+        $this->execute('behat_general::click_link', $this->escape($digestforumname));
+        $this->execute('behat_general::click_link', $this->escape($postsubject));
+        $this->execute('behat_general::click_link', get_string('reply', 'digestforum'));
+
+        // Fill form and post.
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
+
+        $this->execute('behat_forms::press_button', get_string('posttodigestforum', 'digestforum'));
+        $this->execute('behat_general::i_wait_to_be_redirected');
     }
+
+    /**
+     * Returns the steps list to add a new discussion to a digestforum.
+     *
+     * Abstracts add a new topic and add a new discussion, as depending
+     * on the digestforum type the button string changes.
+     *
+     * @param string $digestforumname
+     * @param TableNode $table
+     * @param string $buttonstr
+     */
+    protected function add_new_discussion($digestforumname, TableNode $table, $buttonstr) {
+
+        // Navigate to digestforum.
+        $this->execute('behat_general::click_link', $this->escape($digestforumname));
+        $this->execute('behat_forms::press_button', $buttonstr);
+
+        // Fill form and post.
+        $this->execute('behat_forms::i_set_the_following_fields_to_these_values', $table);
+        $this->execute('behat_forms::press_button', get_string('posttodigestforum', 'digestforum'));
+        $this->execute('behat_general::i_wait_to_be_redirected');
+    }
+
 }

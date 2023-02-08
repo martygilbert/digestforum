@@ -18,8 +18,7 @@
 /**
  * Provides support for the conversion of moodle1 backup to the moodle2 format
  *
- * @package    mod
- * @subpackage digestforum
+ * @package    mod_digestforum
  * @copyright  2011 Mark Nielsen <mark@moodlerooms.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -44,7 +43,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * For each path returned, the corresponding conversion method must be
      * defined.
      *
-     * Note that the paths /MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM do not
+     * Note that the paths /MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM do not
      * actually exist in the file. The last element with the module name was
      * appended by the moodle1_converter class.
      *
@@ -52,7 +51,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      */
     public function get_paths() {
         return array(
-            new convert_path('digestforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM',
+            new convert_path('digestforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM',
                 array(
                     'renamefields' => array(
                         'format' => 'messageformat',
@@ -70,9 +69,11 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     }
 
     /**
-     * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/FORUM data
+     * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM data
      */
     public function process_digestforum($data) {
+        global $CFG;
+
         // get the course module id and context id
         $instanceid     = $data['id'];
         $cminfo         = $this->get_cminfo($instanceid);
@@ -86,6 +87,12 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
         $this->fileman->filearea = 'intro';
         $this->fileman->itemid   = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
+
+        // Convert the introformat if necessary.
+        if ($CFG->texteditors !== 'textarea') {
+            $data['intro'] = text_to_html($data['intro'], false, false, true);
+            $data['introformat'] = FORMAT_HTML;
+        }
 
         // start writing digestforum.xml
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/digestforum.xml");

@@ -18,11 +18,14 @@
 /**
  * This file adds support to rss feeds generation
  *
- * @package mod_digestforum
+ * @package   mod_digestforum
  * @category rss
  * @copyright 2001 Eloy Lafuente (stronk7) http://contiento.com
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+/* Include the core RSS lib */
+require_once($CFG->libdir.'/rsslib.php');
 
 /**
  * Returns the path to the cached rss feed contents. Creates/updates the cache if necessary.
@@ -68,9 +71,10 @@ function digestforum_rss_get_feed($context, $args) {
         $cachedfilelastmodified = filemtime($cachedfilepath);
     }
     // Used to determine if we need to generate a new RSS feed.
-    $dontrecheckcutoff = time()-60;
-    // If it hasn't been generated we will need to create it, otherwise only update
-    // if there is new stuff to show and it is older than the cut off date set above.
+    $dontrecheckcutoff = time() - 60; // Sixty seconds ago.
+
+    // If it hasn't been generated we need to create it.
+    // Otherwise, if it has been > 60 seconds since we last updated, check for new items.
     if (($cachedfilelastmodified == 0) || (($dontrecheckcutoff > $cachedfilelastmodified) &&
         digestforum_rss_newstuff($digestforum, $cm, $cachedfilelastmodified))) {
         // Need to regenerate the cached version.
@@ -142,7 +146,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
 
     $modcontext = null;
 
-    $now = round(time(), -2);
+    $now = floor(time() / 60) * 60; // DB Cache Friendly.
     $params = array();
 
     $modcontext = context_module::instance($cm->id);
@@ -178,13 +182,14 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
 
     $digestforumsort = "d.timemodified DESC";
     $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $userpicturefields = user_picture::fields('u', null, 'userid');
 
-    $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid, d.timestart, d.timeend,
-                   u.firstname as userfirstname, u.lastname as userlastname, u.email, u.picture, u.imagealt
+    $sql = "SELECT $postdata, d.id as discussionid, d.name as discussionname, d.timemodified, d.usermodified, d.groupid,
+                   d.timestart, d.timeend, $userpicturefields
               FROM {digestforum_discussions} d
                    JOIN {digestforum_posts} p ON p.discussion = d.id
                    JOIN {user} u ON p.userid = u.id
-             WHERE d.digestforum = {$digestforum->id} AND p.parent = 0
+             WHERE d.digestforum = {$digestforum->id} AND p.parent = 0 AND p.deleted <> 1
                    $timelimit $groupselect $newsince
           ORDER BY $digestforumsort";
     return array($sql, $params);
@@ -219,22 +224,26 @@ function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince=0) {
         $newsince = '';
     }
 
+    $usernamefields = get_all_user_name_fields(true, 'u');
     $sql = "SELECT p.id AS postid,
                  d.id AS discussionid,
                  d.name AS discussionname,
+                 d.groupid,
+                 d.timestart,
+                 d.timeend,
                  u.id AS userid,
-                 u.firstname AS userfirstname,
-                 u.lastname AS userlastname,
+                 $usernamefields,
                  p.subject AS postsubject,
                  p.message AS postmessage,
                  p.created AS postcreated,
                  p.messageformat AS postformat,
-                 p.messagetrust AS posttrust
+                 p.messagetrust AS posttrust,
+                 p.parent as postparent
             FROM {digestforum_discussions} d,
                {digestforum_posts} p,
                {user} u
             WHERE d.digestforum = {$digestforum->id} AND
-                p.discussion = d.id AND
+                p.discussion = d.id AND p.deleted <> 1 AND
                 u.id = p.userid $newsince
                 $groupselect
             ORDER BY p.created desc";
@@ -309,18 +318,38 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
     $items = array();
     foreach ($recs as $rec) {
             $item = new stdClass();
-            $user = new stdClass();
 
-            if ($isdiscussion && !digestforum_user_can_see_discussion($digestforum, $rec->discussionid, $context)) {
+            $discussion = new stdClass();
+            $discussion->id = $rec->discussionid;
+            $discussion->groupid = $rec->groupid;
+            $discussion->timestart = $rec->timestart;
+            $discussion->timeend = $rec->timeend;
+
+            $post = null;
+            if (!$isdiscussion) {
+                $post = new stdClass();
+                $post->id = $rec->postid;
+                $post->parent = $rec->postparent;
+                $post->userid = $rec->userid;
+            }
+
+            if ($isdiscussion && !digestforum_user_can_see_discussion($digestforum, $discussion, $context)) {
                 // This is a discussion which the user has no permission to view
                 $item->title = get_string('digestforumsubjecthidden', 'digestforum');
                 $message = get_string('digestforumbodyhidden', 'digestforum');
                 $item->author = get_string('digestforumauthorhidden', 'digestforum');
-            } else if (!$isdiscussion && !digestforum_user_can_see_post($digestforum, $rec->discussionid, $rec->postid, $USER, $cm)) {
-                // This is a post which the user has no permission to view
-                $item->title = get_string('digestforumsubjecthidden', 'digestforum');
-                $message = get_string('digestforumbodyhidden', 'digestforum');
-                $item->author = get_string('digestforumauthorhidden', 'digestforum');
+            } else if (!$isdiscussion && !digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
+                if (digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm, false)) {
+                    // This is a post which the user has no permission to view.
+                    $item->title = get_string('digestforumsubjecthidden', 'digestforum');
+                    $message = get_string('digestforumbodyhidden', 'digestforum');
+                    $item->author = get_string('digestforumauthorhidden', 'digestforum');
+                } else {
+                    // This is a post which has been deleted.
+                    $item->title = get_string('privacy:request:delete:post:subject', 'mod_digestforum');
+                    $message = get_string('privacy:request:delete:post:subject', 'mod_digestforum');
+                    $item->author = get_string('digestforumauthorhidden', 'digestforum');
+                }
             } else {
                 // The user must have permission to view
                 if ($isdiscussion && !empty($rec->discussionname)) {
@@ -331,9 +360,7 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
                     //we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
                     $item->title = format_string($digestforum->name.' '.userdate($rec->postcreated,get_string('strftimedatetimeshort', 'langconfig')));
                 }
-                $user->firstname = $rec->userfirstname;
-                $user->lastname = $rec->userlastname;
-                $item->author = fullname($user);
+                $item->author = fullname($rec);
                 $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
                         'mod_digestforum', 'post', $rec->postid);
                 $formatoptions->trusted = $rec->posttrust;

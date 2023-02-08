@@ -18,10 +18,10 @@
 /**
  * Defines backup_digestforum_activity_task class
  *
- * @package     mod_digestforum
- * @category    backup
- * @copyright   2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package   mod_digestforum
+ * @category  backup
+ * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -60,27 +60,27 @@ class backup_digestforum_activity_task extends backup_activity_task {
 
         // Link to the list of digestforums
         $search="/(".$base."\/mod\/digestforum\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMINDEX*$2@$', $content);
+        $content= preg_replace($search, '$@DFORUMINDEX*$2@$', $content);
 
         // Link to digestforum view by moduleid
         $search="/(".$base."\/mod\/digestforum\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMVIEWBYID*$2@$', $content);
+        $content= preg_replace($search, '$@DFORUMVIEWBYID*$2@$', $content);
 
         // Link to digestforum view by digestforumid
         $search="/(".$base."\/mod\/digestforum\/view.php\?f\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMVIEWBYF*$2@$', $content);
+        $content= preg_replace($search, '$@DFORUMVIEWBYF*$2@$', $content);
 
         // Link to digestforum discussion with parent syntax
-        $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)\&parent\=([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
+        $search = "/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
+        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
         // Link to digestforum discussion with relative syntax
         $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
+        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
 
         // Link to digestforum discussion by discussionid
         $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)/";
-        $content= preg_replace($search, '$@FORUMDISCUSSIONVIEW*$2@$', $content);
+        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEW*$2@$', $content);
 
         return $content;
     }

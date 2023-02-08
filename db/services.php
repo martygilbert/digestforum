@@ -33,15 +33,76 @@ $functions = array(
             no courses are provided then all the digestforum instances the user has access to will be
             returned.',
         'type' => 'read',
-        'capabilities' => 'mod/digestforum:viewdiscussion'
+        'capabilities' => 'mod/digestforum:viewdiscussion',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
     ),
 
-    'mod_digestforum_get_digestforum_discussions' => array(
+    'mod_digestforum_get_digestforum_discussion_posts' => array(
         'classname' => 'mod_digestforum_external',
-        'methodname' => 'get_digestforum_discussions',
+        'methodname' => 'get_digestforum_discussion_posts',
         'classpath' => 'mod/digestforum/externallib.php',
-        'description' => 'Returns a list of digestforum discussions contained within a given set of digestforums.',
+        'description' => 'Returns a list of digestforum posts for a discussion.',
         'type' => 'read',
-        'capabilities' => 'mod/digestforum:viewdiscussion, mod/digestforum:viewqandawithoutposting'
-    )
+        'capabilities' => 'mod/digestforum:viewdiscussion, mod/digestforum:viewqandawithoutposting',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_get_digestforum_discussions_paginated' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'get_digestforum_discussions_paginated',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Returns a list of digestforum discussions optionally sorted and paginated.',
+        'type' => 'read',
+        'capabilities' => 'mod/digestforum:viewdiscussion, mod/digestforum:viewqandawithoutposting',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_view_digestforum' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'view_digestforum',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Trigger the course module viewed event and update the module completion status.',
+        'type' => 'write',
+        'capabilities' => 'mod/digestforum:viewdiscussion',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_view_digestforum_discussion' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'view_digestforum_discussion',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Trigger the digestforum discussion viewed event.',
+        'type' => 'write',
+        'capabilities' => 'mod/digestforum:viewdiscussion',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_add_discussion_post' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'add_discussion_post',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Create new posts into an existing discussion.',
+        'type' => 'write',
+        'capabilities' => 'mod/digestforum:replypost',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_add_discussion' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'add_discussion',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Add a new discussion into an existing digestforum.',
+        'type' => 'write',
+        'capabilities' => 'mod/digestforum:startdiscussion',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
+
+    'mod_digestforum_can_add_discussion' => array(
+        'classname' => 'mod_digestforum_external',
+        'methodname' => 'can_add_discussion',
+        'classpath' => 'mod/digestforum/externallib.php',
+        'description' => 'Check if the current user can add discussions in the given digestforum (and optionally for the given group).',
+        'type' => 'read',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
+    ),
 );

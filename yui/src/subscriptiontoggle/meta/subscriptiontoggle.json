@@ -1,0 +1,8 @@
+{
+    "moodle-mod_digestforum-subscriptiontoggle": {
+        "requires": [
+            "base-base",
+            "io-base"
+        ]
+    }
+}

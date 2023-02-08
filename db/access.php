@@ -28,11 +28,14 @@ $capabilities = array(
 
     'mod/digestforum:addinstance' => array(
         'riskbitmask' => RISK_XSS,
+
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'moodle/course:manageactivities'
     ),
 
     'mod/digestforum:viewdiscussion' => array(
@@ -178,7 +181,7 @@ $capabilities = array(
 
     'mod/digestforum:deleteownpost' => array(
 
-        'captype' => 'read',
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'student' => CAP_ALLOW,
@@ -190,7 +193,7 @@ $capabilities = array(
 
     'mod/digestforum:deleteanypost' => array(
 
-        'captype' => 'read',
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
@@ -201,7 +204,7 @@ $capabilities = array(
 
     'mod/digestforum:splitdiscussions' => array(
 
-        'captype' => 'read',
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
@@ -212,7 +215,18 @@ $capabilities = array(
 
     'mod/digestforum:movediscussions' => array(
 
-        'captype' => 'read',
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
+    'mod/digestforum:pindiscussions' => array(
+
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
@@ -260,7 +274,7 @@ $capabilities = array(
 
         'riskbitmask' => RISK_SPAM,
 
-        'captype' => 'read',
+        'captype' => 'write',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'teacher' => CAP_ALLOW,
@@ -340,6 +354,25 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'frontpage' => CAP_ALLOW
+        )
+    ),
+    'mod/digestforum:canposttomygroups' => array(
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'mod/digestforum:canoverridediscussionlock' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_MODULE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
         )
     ),
 );

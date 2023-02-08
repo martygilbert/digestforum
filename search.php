@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -38,6 +38,7 @@ $phrase  = trim(optional_param('phrase', '', PARAM_NOTAGS));  // Phrase
 $words   = trim(optional_param('words', '', PARAM_NOTAGS));   // Words
 $fullwords = trim(optional_param('fullwords', '', PARAM_NOTAGS)); // Whole words
 $notwords = trim(optional_param('notwords', '', PARAM_NOTAGS));   // Words we don't want
+$tags = optional_param_array('tags', [], PARAM_TEXT);
 
 $timefromrestrict = optional_param('timefromrestrict', 0, PARAM_INT); // Use starting date
 $fromday = optional_param('fromday', 0, PARAM_INT);      // Starting date
@@ -46,7 +47,9 @@ $fromyear = optional_param('fromyear', 0, PARAM_INT);      // Starting date
 $fromhour = optional_param('fromhour', 0, PARAM_INT);      // Starting date
 $fromminute = optional_param('fromminute', 0, PARAM_INT);      // Starting date
 if ($timefromrestrict) {
-    $datefrom = make_timestamp($fromyear, $frommonth, $fromday, $fromhour, $fromminute);
+    $calendartype = \core_calendar\type_factory::get_calendar_instance();
+    $gregorianfrom = $calendartype->convert_to_gregorian($fromyear, $frommonth, $fromday);
+    $datefrom = make_timestamp($gregorianfrom['year'], $gregorianfrom['month'], $gregorianfrom['day'], $fromhour, $fromminute);
 } else {
     $datefrom = optional_param('datefrom', 0, PARAM_INT);      // Starting date
 }
@@ -58,7 +61,9 @@ $toyear = optional_param('toyear', 0, PARAM_INT);      // Ending date
 $tohour = optional_param('tohour', 0, PARAM_INT);      // Ending date
 $tominute = optional_param('tominute', 0, PARAM_INT);      // Ending date
 if ($timetorestrict) {
-    $dateto = make_timestamp($toyear, $tomonth, $today, $tohour, $tominute);
+    $calendartype = \core_calendar\type_factory::get_calendar_instance();
+    $gregorianto = $calendartype->convert_to_gregorian($toyear, $tomonth, $today);
+    $dateto = make_timestamp($gregorianto['year'], $gregorianto['month'], $gregorianto['day'], $tohour, $tominute);
 } else {
     $dateto = optional_param('dateto', 0, PARAM_INT);      // Ending date
 }
@@ -97,6 +102,9 @@ if (empty($search)) {   // Check the other parameters instead
     if (!empty($dateto)) {
         $search .= ' dateto:'.$dateto;
     }
+    if (!empty($tags)) {
+        $search .= ' tags:' . implode(',', $tags);
+    }
     $individualparams = true;
 } else {
     $individualparams = false;
@@ -112,7 +120,13 @@ if (!$course = $DB->get_record('course', array('id'=>$id))) {
 
 require_course_login($course);
 
-add_to_log($course->id, "digestforum", "search", "search.php?id=$course->id&amp;search=".urlencode($search), $search);
+$params = array(
+    'context' => $PAGE->context,
+    'other' => array('searchterm' => $search)
+);
+
+$event = \mod_digestforum\event\course_searched::create($params);
+$event->trigger();
 
 $strdigestforums = get_string("modulenameplural", "digestforum");
 $strsearch = get_string("search", "digestforum");
@@ -146,7 +160,9 @@ if (!$posts = digestforum_search_posts($searchterms, $course->id, $page*$perpage
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading(get_string("noposts", "digestforum"));
+    echo $OUTPUT->heading($strdigestforums, 2);
+    echo $OUTPUT->heading($strsearchresults, 3);
+    echo $OUTPUT->heading(get_string("noposts", "digestforum"), 4);
 
     if (!$individualparams) {
         $words = $search;
@@ -174,22 +190,31 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_button($searchform);
 echo $OUTPUT->header();
 echo '<div class="reportlink">';
-echo '<a href="search.php?id='.$course->id.
-                         '&amp;user='.urlencode($user).
-                         '&amp;userid='.$userid.
-                         '&amp;digestforumid='.$digestforumid.
-                         '&amp;subject='.urlencode($subject).
-                         '&amp;phrase='.urlencode($phrase).
-                         '&amp;words='.urlencode($words).
-                         '&amp;fullwords='.urlencode($fullwords).
-                         '&amp;notwords='.urlencode($notwords).
-                         '&amp;dateto='.$dateto.
-                         '&amp;datefrom='.$datefrom.
-                         '&amp;showform=1'.
-                         '">'.get_string('advancedsearch','digestforum').'...</a>';
+
+$params = [
+    'id'        => $course->id,
+    'user'      => $user,
+    'userid'    => $userid,
+    'digestforumid'   => $digestforumid,
+    'subject'   => $subject,
+    'phrase'    => $phrase,
+    'words'     => $words,
+    'fullwords' => $fullwords,
+    'notwords'  => $notwords,
+    'dateto'    => $dateto,
+    'datefrom'  => $datefrom,
+    'showform'  => 1
+];
+$url    = new moodle_url("/mod/digestforum/search.php", $params);
+foreach ($tags as $tag) {
+    $url .= "&tags[]=$tag";
+}
+echo html_writer::link($url, get_string('advancedsearch', 'digestforum').'...');
+
 echo '</div>';
 
-echo $OUTPUT->heading("$strsearchresults: $totalcount");
+echo $OUTPUT->heading($strdigestforums, 2);
+echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
 $url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
@@ -283,6 +308,11 @@ foreach ($posts as $post) {
     // Prepare a link to the post in context, to be displayed after the digestforum post.
     $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "digestforum")."</a>";
 
+    // Message is now html format.
+    if ($post->messageformat != FORMAT_HTML) {
+        $post->messageformat = FORMAT_HTML;
+    }
+
     // Now pring the post.
     digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false,
             $fulllink, '', -99, false);
@@ -293,137 +323,40 @@ echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 echo $OUTPUT->footer();
 
 
-
-/**
- * @todo Document this function
- */
+ /**
+  * Print a full-sized search form for the specified course.
+  *
+  * @param stdClass $course The Course that will be searched.
+  * @return void The function prints the form.
+  */
 function digestforum_print_big_search_form($course) {
-    global $CFG, $DB, $words, $subject, $phrase, $user, $userid, $fullwords, $notwords, $datefrom, $dateto, $PAGE, $OUTPUT;
+    global $PAGE, $words, $subject, $phrase, $user, $fullwords, $notwords, $datefrom, $dateto, $digestforumid, $tags;
 
-    echo $OUTPUT->box(get_string('searchdigestforumintro', 'digestforum'), 'searchbox boxaligncenter', 'intro');
+    $renderable = new \mod_digestforum\output\big_search_form($course, $user);
+    $renderable->set_words($words);
+    $renderable->set_phrase($phrase);
+    $renderable->set_notwords($notwords);
+    $renderable->set_fullwords($fullwords);
+    $renderable->set_datefrom($datefrom);
+    $renderable->set_dateto($dateto);
+    $renderable->set_subject($subject);
+    $renderable->set_user($user);
+    $renderable->set_digestforumid($digestforumid);
+    $renderable->set_tags($tags);
 
-    echo $OUTPUT->box_start('generalbox boxaligncenter');
-
-    echo html_writer::script('', $CFG->wwwroot.'/mod/digestforum/digestforum.js');
-
-    echo '<form id="searchform" action="search.php" method="get">';
-    echo '<table cellpadding="10" class="searchbox" id="form">';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="words">'.get_string('searchwords', 'digestforum').'</label>';
-    echo '<input type="hidden" value="'.$course->id.'" name="id" alt="" /></td>';
-    echo '<td class="c1"><input type="text" size="35" name="words" id="words"value="'.s($words, true).'" alt="" /></td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="phrase">'.get_string('searchphrase', 'digestforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="phrase" id="phrase" value="'.s($phrase, true).'" alt="" /></td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="notwords">'.get_string('searchnotwords', 'digestforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="notwords" id="notwords" value="'.s($notwords, true).'" alt="" /></td>';
-    echo '</tr>';
-
-    if ($DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres') {
-        echo '<tr>';
-        echo '<td class="c0"><label for="fullwords">'.get_string('searchfullwords', 'digestforum').'</label></td>';
-        echo '<td class="c1"><input type="text" size="35" name="fullwords" id="fullwords" value="'.s($fullwords, true).'" alt="" /></td>';
-        echo '</tr>';
-    }
-
-    echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdatefrom', 'digestforum').'</td>';
-    echo '<td class="c1">';
-    if (empty($datefrom)) {
-        $datefromchecked = '';
-        $datefrom = make_timestamp(2000, 1, 1, 0, 0, 0);
-    }else{
-        $datefromchecked = 'checked="checked"';
-    }
-
-    echo '<input name="timefromrestrict" type="checkbox" value="1" alt="'.get_string('searchdatefrom', 'digestforum').'" onclick="return lockoptions(\'searchform\', \'timefromrestrict\', timefromitems)" '.  $datefromchecked . ' /> ';
-    $selectors = html_writer::select_time('days', 'fromday', $datefrom)
-               . html_writer::select_time('months', 'frommonth', $datefrom)
-               . html_writer::select_time('years', 'fromyear', $datefrom)
-               . html_writer::select_time('hours', 'fromhour', $datefrom)
-               . html_writer::select_time('minutes', 'fromminute', $datefrom);
-    echo $selectors;
-    echo '<input type="hidden" name="hfromday" value="0" />';
-    echo '<input type="hidden" name="hfrommonth" value="0" />';
-    echo '<input type="hidden" name="hfromyear" value="0" />';
-    echo '<input type="hidden" name="hfromhour" value="0" />';
-    echo '<input type="hidden" name="hfromminute" value="0" />';
-
-    echo '</td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0">'.get_string('searchdateto', 'digestforum').'</td>';
-    echo '<td class="c1">';
-    if (empty($dateto)) {
-        $datetochecked = '';
-        $dateto = time()+3600;
-    }else{
-        $datetochecked = 'checked="checked"';
-    }
-
-    echo '<input name="timetorestrict" type="checkbox" value="1" alt="'.get_string('searchdateto', 'digestforum').'" onclick="return lockoptions(\'searchform\', \'timetorestrict\', timetoitems)" ' .$datetochecked. ' /> ';
-    $selectors = html_writer::select_time('days', 'today', $dateto)
-               . html_writer::select_time('months', 'tomonth', $dateto)
-               . html_writer::select_time('years', 'toyear', $dateto)
-               . html_writer::select_time('hours', 'tohour', $dateto)
-               . html_writer::select_time('minutes', 'tominute', $dateto);
-    echo $selectors;
-
-    echo '<input type="hidden" name="htoday" value="0" />';
-    echo '<input type="hidden" name="htomonth" value="0" />';
-    echo '<input type="hidden" name="htoyear" value="0" />';
-    echo '<input type="hidden" name="htohour" value="0" />';
-    echo '<input type="hidden" name="htominute" value="0" />';
-
-    echo '</td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="menudigestforumid">'.get_string('searchwhichdigestforums', 'digestforum').'</label></td>';
-    echo '<td class="c1">';
-    echo html_writer::select(digestforum_menu_list($course), 'digestforumid', '', array(''=>get_string('alldigestforums', 'digestforum')));
-    echo '</td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="subject">'.get_string('searchsubject', 'digestforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="subject" id="subject" value="'.s($subject, true).'" alt="" /></td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="c0"><label for="user">'.get_string('searchuser', 'digestforum').'</label></td>';
-    echo '<td class="c1"><input type="text" size="35" name="user" id="user" value="'.s($user, true).'" alt="" /></td>';
-    echo '</tr>';
-
-    echo '<tr>';
-    echo '<td class="submit" colspan="2" align="center">';
-    echo '<input type="submit" value="'.get_string('searchdigestforums', 'digestforum').'" alt="" /></td>';
-    echo '</tr>';
-
-    echo '</table>';
-    echo '</form>';
-
-    echo html_writer::script(js_writer::function_call('lockoptions_timetoitems'));
-    echo html_writer::script(js_writer::function_call('lockoptions_timefromitems'));
-
-    echo $OUTPUT->box_end();
+    $output = $PAGE->get_renderer('mod_digestforum');
+    echo $output->render($renderable);
 }
 
 /**
  * This function takes each word out of the search string, makes sure they are at least
- * two characters long and returns an array containing every good word.
+ * two characters long and returns an string of the space-separated search
+ * terms.
  *
- * @param string $words String containing space-separated strings to search for
- * @param string $prefix String to prepend to the each token taken out of $words
- * @returns array
- * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter
+ * @param string $words String containing space-separated strings to search for.
+ * @param string $prefix String to prepend to the each token taken out of $words.
+ * @return string The filtered search terms, separated by spaces.
+ * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter.
  */
 function digestforum_clean_search_terms($words, $prefix='') {
     $searchterms = explode(' ', $words);
@@ -437,15 +370,16 @@ function digestforum_clean_search_terms($words, $prefix='') {
     return trim(implode(' ', $searchterms));
 }
 
-/**
- * @todo Document this function
- */
+ /**
+  * Retrieve a list of the digestforums that this user can view.
+  *
+  * @param stdClass $course The Course to use.
+  * @return array A set of formatted digestforum names stored against the digestforum id.
+  */
 function digestforum_menu_list($course)  {
-
     $menu = array();
 
     $modinfo = get_fast_modinfo($course);
-
     if (empty($modinfo->instances['digestforum'])) {
         return $menu;
     }
@@ -463,4 +397,3 @@ function digestforum_menu_list($course)  {
 
     return $menu;
 }
-

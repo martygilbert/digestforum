@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,10 +27,10 @@ require_once("lib.php");
 $confirm = optional_param('confirm', false, PARAM_BOOL);
 
 $PAGE->set_url('/mod/digestforum/unsubscribeall.php');
-$PAGE->set_context(context_user::instance($USER->id));
 
 // Do not autologin guest. Only proper users can have digestforum subscriptions.
 require_login(null, false);
+$PAGE->set_context(context_user::instance($USER->id));
 
 $return = $CFG->wwwroot.'/';
 
@@ -42,16 +42,17 @@ $strunsubscribeall = get_string('unsubscribeall', 'digestforum');
 $PAGE->navbar->add(get_string('modulename', 'digestforum'));
 $PAGE->navbar->add($strunsubscribeall);
 $PAGE->set_title($strunsubscribeall);
-$PAGE->set_heading(format_string($COURSE->fullname));
+$PAGE->set_heading($COURSE->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 
 if (data_submitted() and $confirm and confirm_sesskey()) {
-    $digestforums = digestforum_get_optional_subscribed_digestforums();
+    $digestforums = \mod_digestforum\subscriptions::get_unsubscribable_digestforums();
 
     foreach($digestforums as $digestforum) {
-        digestforum_unsubscribe($USER->id, $digestforum->id);
+        \mod_digestforum\subscriptions::unsubscribe_user($USER->id, $digestforum, context_module::instance($digestforum->cm), true);
     }
+    $DB->delete_records('digestforum_discussion_subs', array('userid' => $USER->id));
     $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
 
     echo $OUTPUT->box(get_string('unsubscribealldone', 'digestforum'));
@@ -60,10 +61,18 @@ if (data_submitted() and $confirm and confirm_sesskey()) {
     die;
 
 } else {
-    $a = count(digestforum_get_optional_subscribed_digestforums());
+    $count = new stdClass();
+    $count->digestforums = count(\mod_digestforum\subscriptions::get_unsubscribable_digestforums());
+    $count->discussions = $DB->count_records('digestforum_discussion_subs', array('userid' => $USER->id));
 
-    if ($a) {
-        $msg = get_string('unsubscribeallconfirm', 'digestforum', $a);
+    if ($count->digestforums || $count->discussions) {
+        if ($count->digestforums && $count->discussions) {
+            $msg = get_string('unsubscribeallconfirm', 'digestforum', $count);
+        } else if ($count->digestforums) {
+            $msg = get_string('unsubscribeallconfirmdigestforums', 'digestforum', $count);
+        } else if ($count->discussions) {
+            $msg = get_string('unsubscribeallconfirmdiscussions', 'digestforum', $count);
+        }
         echo $OUTPUT->confirm($msg, new moodle_url('unsubscribeall.php', array('confirm'=>1)), $return);
         echo $OUTPUT->footer();
         die;

@@ -18,7 +18,7 @@
 /**
  * This file contains a custom renderer class used by the digestforum module.
  *
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,11 +27,44 @@
  * A custom renderer class that extends the plugin_renderer_base and
  * is used by the digestforum module.
  *
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 2009 Sam Hemelryk
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 class mod_digestforum_renderer extends plugin_renderer_base {
+
+    /**
+     * Returns the navigation to the previous and next discussion.
+     *
+     * @param mixed $prev Previous discussion record, or false.
+     * @param mixed $next Next discussion record, or false.
+     * @return string The output.
+     */
+    public function neighbouring_discussion_navigation($prev, $next) {
+        $html = '';
+        if ($prev || $next) {
+            $html .= html_writer::start_tag('div', array('class' => 'discussion-nav clearfix'));
+            $html .= html_writer::start_tag('ul');
+            if ($prev) {
+                $url = new moodle_url('/mod/digestforum/discuss.php', array('d' => $prev->id));
+                $html .= html_writer::start_tag('li', array('class' => 'prev-discussion'));
+                $html .= html_writer::link($url, format_string($prev->name),
+                    array('aria-label' => get_string('prevdiscussiona', 'mod_digestforum', format_string($prev->name))));
+                $html .= html_writer::end_tag('li');
+            }
+            if ($next) {
+                $url = new moodle_url('/mod/digestforum/discuss.php', array('d' => $next->id));
+                $html .= html_writer::start_tag('li', array('class' => 'next-discussion'));
+                $html .= html_writer::link($url, format_string($next->name),
+                    array('aria-label' => get_string('nextdiscussiona', 'mod_digestforum', format_string($next->name))));
+                $html .= html_writer::end_tag('li');
+            }
+            $html .= html_writer::end_tag('ul');
+            $html .= html_writer::end_tag('div');
+        }
+        return $html;
+    }
+
     /**
      * This method is used to generate HTML for a subscriber selection form that
      * uses two user_selector controls
@@ -83,17 +116,29 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      */
     public function subscriber_overview($users, $digestforum , $course) {
         $output = '';
+        $modinfo = get_fast_modinfo($course);
         if (!$users || !is_array($users) || count($users)===0) {
             $output .= $this->output->heading(get_string("nosubscribers", "digestforum"));
+        } else if (!isset($modinfo->instances['digestforum'][$digestforum->id])) {
+            $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
-            $output .= $this->output->heading(get_string("subscribersto","digestforum", "'".format_string($digestforum->name)."'"));
+            $cm = $modinfo->instances['digestforum'][$digestforum->id];
+            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
+            $strparams = new stdclass();
+            $strparams->name = format_string($digestforum->name);
+            $strparams->count = count($users);
+            $output .= $this->output->heading(get_string("subscriberstowithcount", "digestforum", $strparams));
             $table = new html_table();
             $table->cellpadding = 5;
             $table->cellspacing = 5;
             $table->tablealign = 'center';
             $table->data = array();
             foreach ($users as $user) {
-                $table->data[] = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user), $user->email);
+                $info = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user));
+                if ($canviewemail) {
+                    array_push($info, $user->email);
+                }
+                $table->data[] = $info;
             }
             $output .= html_writer::table($table);
         }
@@ -109,11 +154,96 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      */
     public function subscribed_users(user_selector_base $existingusers) {
         $output  = $this->output->box_start('subscriberdiv boxaligncenter');
-        $output .= html_writer::tag('p', get_string('forcessubscribe', 'digestforum'));
+        $output .= html_writer::tag('p', get_string('forcesubscribed', 'digestforum'));
         $output .= $existingusers->display(true);
         $output .= $this->output->box_end();
         return $output;
     }
 
+    /**
+     * Generate the HTML for an icon to be displayed beside the subject of a timed discussion.
+     *
+     * @param object $discussion
+     * @param bool $visiblenow Indicicates that the discussion is currently
+     * visible to all users.
+     * @return string
+     */
+    public function timed_discussion_tooltip($discussion, $visiblenow) {
+        $dates = array();
+        if ($discussion->timestart) {
+            $dates[] = get_string('displaystart', 'mod_digestforum').': '.userdate($discussion->timestart);
+        }
+        if ($discussion->timeend) {
+            $dates[] = get_string('displayend', 'mod_digestforum').': '.userdate($discussion->timeend);
+        }
 
+        $str = $visiblenow ? 'timedvisible' : 'timedhidden';
+        $dates[] = get_string($str, 'mod_digestforum');
+
+        $tooltip = implode("\n", $dates);
+        return $this->pix_icon('i/calendar', $tooltip, 'moodle', array('class' => 'smallicon timedpost'));
+    }
+
+    /**
+     * Display a digestforum post in the relevant context.
+     *
+     * @param \mod_digestforum\output\digestforum_post $post The post to display.
+     * @return string
+     */
+    public function render_digestforum_post_email(\mod_digestforum\output\digestforum_post_email $post) {
+        $data = $post->export_for_template($this, $this->target === RENDERER_TARGET_TEXTEMAIL);
+        return $this->render_from_template('mod_digestforum/' . $this->digestforum_post_template(), $data);
+    }
+
+    /**
+     * The template name for this renderer.
+     *
+     * @return string
+     */
+    public function digestforum_post_template() {
+        return 'digestforum_post';
+    }
+
+    /**
+     * Create the inplace_editable used to select digestforum digest options.
+     *
+     * @param   stdClass    $digestforum  The digestforum to create the editable for.
+     * @param   int         $value  The current value for this user
+     * @return  inplace_editable
+     */
+    public function render_digest_options($digestforum, $value) {
+        $options = digestforum_get_user_digest_options();
+        $editable = new \core\output\inplace_editable(
+            'mod_digestforum',
+            'digestoptions',
+            $digestforum->id,
+            true,
+            $options[$value],
+            $value
+        );
+
+        $editable->set_type_select($options);
+
+        return $editable;
+    }
+
+    /**
+     * Render quick search form.
+     *
+     * @param \mod_digestforum\output\quick_search_form $form The renderable.
+     * @return string
+     */
+    public function render_quick_search_form(\mod_digestforum\output\quick_search_form $form) {
+        return $this->render_from_template('mod_digestforum/quick_search_form', $form->export_for_template($this));
+    }
+
+    /**
+     * Render big search form.
+     *
+     * @param \mod_digestforum\output\big_search_form $form The renderable.
+     * @return string
+     */
+    public function render_big_search_form(\mod_digestforum\output\big_search_form $form) {
+        return $this->render_from_template('mod_digestforum/big_search_form', $form->export_for_template($this));
+    }
 }

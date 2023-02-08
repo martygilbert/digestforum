@@ -16,10 +16,10 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package moodlecore
+ * @package    mod_digestforum
  * @subpackage backup-moodle2
- * @copyright 2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -68,16 +68,16 @@ class restore_digestforum_activity_task extends restore_activity_task {
         $rules = array();
 
         // List of digestforums in course
-        $rules[] = new restore_decode_rule('FORUMINDEX', '/mod/digestforum/index.php?id=$1', 'course');
+        $rules[] = new restore_decode_rule('DFORUMINDEX', '/mod/digestforum/index.php?id=$1', 'course');
         // Forum by cm->id and digestforum->id
-        $rules[] = new restore_decode_rule('FORUMVIEWBYID', '/mod/digestforum/view.php?id=$1', 'course_module');
-        $rules[] = new restore_decode_rule('FORUMVIEWBYF', '/mod/digestforum/view.php?f=$1', 'digestforum');
+        $rules[] = new restore_decode_rule('DFORUMVIEWBYID', '/mod/digestforum/view.php?id=$1', 'course_module');
+        $rules[] = new restore_decode_rule('DFORUMVIEWBYF', '/mod/digestforum/view.php?f=$1', 'digestforum');
         // Link to digestforum discussion
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEW', '/mod/digestforum/discuss.php?d=$1', 'digestforum_discussion');
+        $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEW', '/mod/digestforum/discuss.php?d=$1', 'digestforum_discussion');
         // Link to discussion with parent and with anchor posts
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWPARENT', '/mod/digestforum/discuss.php?d=$1&parent=$2',
+        $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEWPARENT', '/mod/digestforum/discuss.php?d=$1&parent=$2',
                                            array('digestforum_discussion', 'digestforum_post'));
-        $rules[] = new restore_decode_rule('FORUMDISCUSSIONVIEWINSIDE', '/mod/digestforum/discuss.php?d=$1#$2',
+        $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEWINSIDE', '/mod/digestforum/discuss.php?d=$1#$2',
                                            array('digestforum_discussion', 'digestforum_post'));
 
         return $rules;

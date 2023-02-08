@@ -18,7 +18,7 @@
 /**
  * Set tracking option for the digestforum.
  *
- * @package mod-digestforum
+ * @package   mod_digestforum
  * @copyright 2005 mchurch
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -29,11 +29,7 @@ require_once("lib.php");
 $id         = required_param('id',PARAM_INT);                           // The digestforum to subscribe or unsubscribe to
 $returnpage = optional_param('returnpage', 'index.php', PARAM_FILE);    // Page to return to.
 
-$url = new moodle_url('/mod/digestforum/settracking.php', array('id'=>$id));
-if ($returnpage !== 'index.php') {
-    $url->param('returnpage', $returnpage);
-}
-$PAGE->set_url($url);
+require_sesskey();
 
 if (! $digestforum = $DB->get_record("digestforum", array("id" => $id))) {
     print_error('invaliddigestforumid', 'digestforum');
@@ -46,10 +42,9 @@ if (! $course = $DB->get_record("course", array("id" => $digestforum->course))) 
 if (! $cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id)) {
     print_error('invalidcoursemodule');
 }
-
-require_course_login($course, false, $cm);
-
-$returnto = digestforum_go_back_to($returnpage.'?id='.$course->id.'&f='.$digestforum->id);
+require_login($course, false, $cm);
+$returnpageurl = new moodle_url('/mod/digestforum/' . $returnpage, array('id' => $course->id, 'f' => $digestforum->id));
+$returnto = digestforum_go_back_to($returnpageurl);
 
 if (!digestforum_tp_can_track_digestforums($digestforum)) {
     redirect($returnto);
@@ -58,21 +53,28 @@ if (!digestforum_tp_can_track_digestforums($digestforum)) {
 $info = new stdClass();
 $info->name  = fullname($USER);
 $info->digestforum = format_string($digestforum->name);
+
+$eventparams = array(
+    'context' => context_module::instance($cm->id),
+    'relateduserid' => $USER->id,
+    'other' => array('digestforumid' => $digestforum->id),
+);
+
 if (digestforum_tp_is_tracked($digestforum) ) {
     if (digestforum_tp_stop_tracking($digestforum->id)) {
-        add_to_log($course->id, "digestforum", "stop tracking", "view.php?f=$digestforum->id", $digestforum->id, $cm->id);
+        $event = \mod_digestforum\event\readtracking_disabled::create($eventparams);
+        $event->trigger();
         redirect($returnto, get_string("nownottracking", "digestforum", $info), 1);
     } else {
-        print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);
+        print_error('cannottrack', '', get_local_referer(false));
     }
 
 } else { // subscribe
     if (digestforum_tp_start_tracking($digestforum->id)) {
-        add_to_log($course->id, "digestforum", "start tracking", "view.php?f=$digestforum->id", $digestforum->id, $cm->id);
+        $event = \mod_digestforum\event\readtracking_enabled::create($eventparams);
+        $event->trigger();
         redirect($returnto, get_string("nowtracking", "digestforum", $info), 1);
     } else {
-        print_error('cannottrack', '', $_SERVER["HTTP_REFERER"]);
+        print_error('cannottrack', '', get_local_referer(false));
     }
 }
-
-
