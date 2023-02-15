@@ -127,6 +127,7 @@ $string['deletedposts'] = 'Those posts have been deleted';
 $string['deletesure'] = 'Are you sure you want to delete this post?';
 $string['deletesureplural'] = 'Are you sure you want to delete this post and all replies? ({$a} posts)';
 $string['digestmailheader'] = 'This is your daily digest of new posts to \'{$a->digestforumname}\' from {$a->sitename} on {$a->date}';
+$string['digestmailheaderstat'] = 'This month, you have an open rate of {$a->openrate}% on these emails.';
 $string['digestmailpost'] = 'Change your digest forum digest preferences';
 $string['digestmailpostlink'] = 'Change your digest forum digest preferences: {$a}';
 $string['digestmailprefs'] = 'your user profile';
