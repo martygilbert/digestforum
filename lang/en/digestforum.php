@@ -142,6 +142,7 @@ $string['discussion'] = 'Discussion';
 $string['discussionlocked'] = 'This discussion has been locked so you can no longer reply to it.';
 $string['discussionlockingheader'] = 'Discussion locking';
 $string['discussionlockingdisabled'] = 'Do not lock discussions';
+$string['discussionmoved'] = 'This discussion has been moved to \'{$a}\'.';
 $string['discussionmovedpost'] = 'This discussion has been moved to <a href="{$a->discusshref}">here</a> in the digest forum <a href="{$a->digestforumhref}">{$a->digestforumname}</a>';
 $string['discussionname'] = 'Discussion name';
 $string['discussionnownotsubscribed'] = '{$a->name} will NOT be notified of new posts in \'{$a->discussion}\' of \'{$a->digestforum}\'';
