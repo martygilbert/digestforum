@@ -948,8 +948,8 @@ function digestforum_cron() {
     mtrace ('Cleaned old digest records');
 
     if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-    // if (true) { //MJG - testing only!
-        // $digesttime += 86400; //MJG - testing only!
+     // if (true) { // MJG - testing only!
+        // $digesttime += 86400; // MJG - testing only!
 
         // MJG get date to add to messageID.
         $todaysdate = userdate(time(), '%Y-%m-%d');
@@ -1010,8 +1010,9 @@ function digestforum_cron() {
                     }
                 }
                 $userdiscussions[$digestpost->userid][$digestpost->discussionid] = $digestpost->discussionid;
-                $userforums[$digestpost->userid][$discussions[$discussionid]->digestforum][$digestpost->discussionid] =
-                    $digestpost->discussionid; // MJG - one email per forum.
+                // MJG - one email per forum.
+                $userforums[$digestpost->userid][$discussions[$discussionid]->digestforum][$digestpost->discussionid]
+                    = $digestpost->discussionid;
                 $discussionposts[$digestpost->discussionid][$digestpost->postid] = $digestpost->postid;
             }
             $digestposts_rs->close(); // Finished iteration, let's close the resultset.
@@ -1066,13 +1067,20 @@ function digestforum_cron() {
                     $headerdata->openrate = mod_digestforum_get_month_open_rate($userid , $digestforumid, $todaysdate);
 
                     $posttext = get_string('digestmailheader', 'digestforum')."\n\n";
-                    $posthtml = '<p>'.get_string('digestmailheader', 'digestforum', $headerdata).'</p>';
+                    $posthtml = "\n";
+                    $posthtml .= '<h3>'.get_string('digestmailheader', 'digestforum', $headerdata).'</h3>';
+                    $posthtml .= "\n";
 
                     if ($headerdata->openrate >= 0) {
-                        $posthtml .= '<p>'.get_string('digestmailheaderstat', 'digestforum', $headerdata).'</p>';
+                        $posthtml .= "\n";
+                        $posthtml .= '<div class="subject" style="font-weight: bold; font-size: larger">'.
+                            get_string('digestmailheaderstat', 'digestforum', $headerdata).'</div>';
+                        $posthtml .= "\n";
                         $posttext .= get_string('digestmailheaderstat', 'digestforum', $headerdata)."\n\n";
                     }
+                    $posthtml .= "\n";
                     $posthtml .= '<br><hr style="height: 3px; width: 100%; color:#000; background-color:#000">';
+                    $posthtml .= "\n";
 
                     foreach ($thesediscussions as $discussionid) {
 
