@@ -947,9 +947,12 @@ function digestforum_cron() {
     $DB->delete_records_select('digestforum_queue', "timemodified < ?", array($weekago));
     mtrace ('Cleaned old digest records');
 
+    // MJG - Testing only!
+    /*
+    if (true) {
+         $digesttime += 86400;
+    */
     if ($CFG->digestforum_mailtimelast < $digesttime and $timenow > $digesttime) {
-     // if (true) { // MJG - testing only!
-        // $digesttime += 86400; // MJG - testing only!
 
         // MJG get date to add to messageID.
         $todaysdate = userdate(time(), '%Y-%m-%d');
@@ -963,7 +966,7 @@ function digestforum_cron() {
             // We have work to do.
             $usermailcount = 0;
 
-            // caches - reuse the those filled before too.
+            // Caches - reuse the those filled before too.
             $discussionposts = array();
             $userdiscussions = array();
             $userforums = array(); // MJG - one digest per forum.
@@ -8665,31 +8668,44 @@ function mod_digestforum_get_completion_active_rule_descriptions($cm) {
 function mod_digestforum_get_month_open_rate($userid, $forumid, $digestdate = 0) {
     global $DB;
 
-    // Make sure $digestdate is yyyy-mm-dd.
-    $pattern = '/^\d{4}-\d{2}-\d{2}$/';
+    // Make sure $digestdate is yyyy-mm-dd or yyyy-mm-d, because strftime is weird.
+    $pattern = '/^\d{4}-\d{2}-\d{1,2}$/';
     if ($digestdate != 0 && !preg_match($pattern, $digestdate)) {
         $digestdate = 0;
     }
 
-    $sql = 'SELECT
-             COUNT(case when numviews > 0 then 1 end) AS NumOpened,
-             COUNT(case when numviews = 0 then 1 end) AS NotOpened
-              FROM {digestforum_tracker}
-             WHERE digestforumid = :forumid AND mdluserid = :userid';
+    $openedsql = '
+        SELECT COUNT(id)
+          FROM {digestforum_tracker}
+         WHERE digestforumid = :forumid
+           AND numviews > 0
+           AND mdluserid = :userid';
+
+    $notopenedsql = '
+        SELECT COUNT(id)
+          FROM {digestforum_tracker}
+         WHERE digestforumid = :forumid
+           AND numviews = 0
+           AND mdluserid = :userid';
 
     if ($digestdate != 0) {
         // Get for the whole month.
-        $digestdate = substr($digestdate, 0, -2).'%';
-        $sql .= ' AND digestdate like :digestdate';
+        $digestdate = substr($digestdate, 0, strrpos($digestdate, '-') + 1).'%';
+        $likedigestdate = $DB->sql_like('digestdate', ':digestdate');
+
+        $openedsql .= ' AND '.$likedigestdate;
+        $notopenedsql .= ' AND '.$likedigestdate;
     }
 
-    $opened = $DB->get_record_sql($sql, ['forumid' => $forumid,
-        'userid' => $userid, 'digestdate' => $digestdate]);
+    $options = ['forumid' => $forumid, 'userid' => $userid, 'digestdate' => $digestdate];
+
+    $opened     = $DB->count_records_sql($openedsql, $options);
+    $notopened  = $DB->count_records_sql($notopenedsql, $options);
 
     $pctopened = -1;
-    $total = $opened->numopened + $opened->notopened;
-    if ($opened && $total > 0) {
-        $pctopened = 100 * ($opened->numopened) / $total;
+    $total = $opened + $notopened;
+    if ($total > 0) {
+        $pctopened = (100 * $opened) / $total;
     }
 
     return sprintf("%6.2f", $pctopened);
