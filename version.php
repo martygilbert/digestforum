@@ -24,6 +24,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2023022501;       // The current module version (Date: YYYYMMDDXX)
+$plugin->version   = 2023032201;       // The current module version (Date: YYYYMMDDXX)
 $plugin->requires  = 2018112800;       // Requires this Moodle version
 $plugin->component = 'mod_digestforum';      // Full name of the plugin (used for diagnostics).
