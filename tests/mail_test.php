@@ -847,7 +847,7 @@ class mod_digestforum_mail_testcase extends advanced_testcase {
         $this->assertEquals($expectedcount, count($messages));
 
         foreach ($messages as $message) {
-            $this->assertRegExp('/Reply-To: moodlemoodle123\+[^@]*@example.com/', $message->header);
+            $this->assertMatchesRegularExpression('/Reply-To: moodlemoodle123\+[^@]*@example.com/', $message->header);
         }
     }
 

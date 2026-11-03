@@ -19,7 +19,7 @@ YUI.add('moodle-mod_digestforum-subscriptiontoggle', function (Y, NAME) {
  * A utility to check whether the connection to the Moodle server is still
  * active.
  *
- * @module     moodle-core-subscriptiontoggle
+ * @module     moodle-mod_digestforum-subscriptiontoggle
  * @package    mod_digestforum
  * @copyright  2014 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -83,6 +83,7 @@ Y.extend(SubscriptionToggle, Y.Base, {
         }
 
         if (!responseObject.icon) {
+            Y.log('No icon received. Skipping the current value replacement', 'warn', LOGNAME);
             return;
         }
 

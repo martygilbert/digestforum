@@ -393,7 +393,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
 
         // Enrol the user in the digestforum.
         // If a subscription was added, we get the record ID.
-        $this->assertInternalType('int', \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
+        $this->assertIsInt(\mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
 
         // If we already have a subscription when subscribing the user, we get a boolean (true).
         $this->assertTrue(\mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
@@ -652,7 +652,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
 
         // And should have reset the discussion cache value.
         $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $author->id);
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray($result);
         $this->assertFalse(isset($result[$discussion->id]));
     }
 
@@ -1081,7 +1081,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // the cache and not perform additional queries.
         foreach ($users as $user) {
             $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $user->id);
-            $this->assertInternalType('array', $result);
+            $this->assertIsArray($result);
         }
         $finalcount = $DB->perf_get_reads();
         $this->assertEquals(0, $finalcount - $postfillcount);
@@ -1139,7 +1139,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // the cache and not perform additional queries.
         foreach ($users as $user) {
             $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $user->id);
-            $this->assertInternalType('array', $result);
+            $this->assertIsArray($result);
         }
         $finalcount = $DB->perf_get_reads();
         $this->assertNotEquals($finalcount, $startcount);
