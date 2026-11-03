@@ -322,6 +322,7 @@ function digestforum_delete_instance($id) {
     $DB->delete_records('digestforum_digests', array('digestforum' => $digestforum->id));
     $DB->delete_records('digestforum_subscriptions', array('digestforum'=>$digestforum->id));
     $DB->delete_records('digestforum_discussion_subs', array('digestforum' => $digestforum->id));
+    $DB->delete_records('digestforum_tracker', array('digestforumid' => $digestforum->id));
 
     if ($discussions = $DB->get_records('digestforum_discussions', array('digestforum'=>$digestforum->id))) {
         foreach ($discussions as $discussion) {
@@ -373,7 +374,6 @@ function digestforum_supports($feature) {
         FEATURE_ADVANCED_GRADING => true,
         FEATURE_MOD_PURPOSE => MOD_PURPOSE_COLLABORATION,
         FEATURE_MOD_OTHERPURPOSE => MOD_PURPOSE_COMMUNICATION,
-        FEATURE_CAN_UNINSTALL => false,
         default => null,
     };
 }

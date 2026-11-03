@@ -89,17 +89,17 @@ $header =
 </tr>';
 $csvdata = 'User,Forum,Num Opened,Not Opened,Pct Opened'."\n";
 
-$digestdigestforums = $DB->get_records('digestdigestforum', null, '', 'id, name');
+$digestforums = $DB->get_records('digestforum', null, '', 'id, name');
 
 
 $count = 0;
-foreach ($digestdigestforums as $digestforum) {
+foreach ($digestforums as $forum) {
     $sql = 
-        'SELECT mdluserid, digestdigestforumid,
+        'SELECT mdluserid, digestforumid,
         COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
         COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-            FROM {digestdigestforum_tracker} 
-    	WHERE digestdigestforumid = ? AND (digestdate like \'2023-02-%\' OR
+            FROM {digestforum_tracker} 
+    	WHERE digestforumid = ? AND (digestdate like \'2023-02-%\' OR
 		digestdate=\'2023-01-09\' OR 
 		digestdate like \'2023-01-1%\' OR
 		digestdate like \'2023-01-3%\' OR
@@ -107,14 +107,14 @@ foreach ($digestdigestforums as $digestforum) {
         GROUP BY mdluserid';
 
 	/*
-    WHERE digestdigestforumid = ?
+    WHERE digestforumid = ?
         GROUP BY mdluserid';
 	*/
 
-    $opened = $DB->get_records_sql($sql, [$digestforum->id]);
-    //$opened = $DB->get_records_sql($sql, [$digestforum->id]);
+    $opened = $DB->get_records_sql($sql, [$forum->id]);
+    //$opened = $DB->get_records_sql($sql, [$forum->id]);
 
-    $name = preg_replace('/Daily Announcements for /', '', $digestforum->name);
+    $name = preg_replace('/Daily Announcements for /', '', $forum->name);
     $name = preg_replace('/Daily Announcements Only for /', '', $name);
 
     $thistable = 
