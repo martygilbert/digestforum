@@ -1,0 +1,55 @@
+@mod @mod_digestforum @javascript
+Feature: View discussion while grading in a digestforum
+  In order to grade efficiently
+  As a teacher
+  I want to be able to see the full discussion the student was taking part in.
+
+  Background:
+    # Student 1 needs to be created first or they will not be the first user on the grading screen.
+    Given the following "users" exist:
+      | username | firstname | lastname | email                 |
+      | student1 | Student   | 1        | student.1@example.com |
+      | student2 | Student   | 2        | student.2@example.com |
+      | teacher  | Teacher   | Tom      | teacher@example.com   |
+    And the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 1 | C1        | 0        |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | student1 | C1     | student        |
+      | student2 | C1     | student        |
+      | teacher  | C1     | editingteacher |
+    And the following "activity" exists:
+      | activity    | digestforum                      |
+      | name        | Gradable digestforum             |
+      | course      | C1                         |
+      | idnumber    | digestforum1                     |
+      | grade_digestforum | 100                        |
+      | scale       | 100                        |
+    # If there is more than one pots for Student 1 the test will not be able to select the
+    # correct View discussion link, as there is no selector for thier container.
+    And the following digestforum discussions exist in course "Course 1":
+      | digestforum          | user     | name     | message                          |
+      | Gradable digestforum | student1 | My topic | This is the thing I posted about |
+    And the following digestforum replies exist in course "Course 1":
+      | digestforum          | user     | discussion | message    |
+      | Gradable digestforum | student2 | My topic   | I disagree |
+
+  Scenario: Viewing a discussion
+    Given I am on the "Gradable digestforum" "digestforum activity" page logged in as teacher
+    And I press "Grade users"
+    When I press "View discussion"
+    Then I should see "I disagree" in the "My topic" "dialogue"
+    And I click on "Cancel" "button" in the "My topic" "dialogue"
+    And I should not see "I disagree"
+
+  Scenario: Viewing a discussion while grading is fullscreen
+    Given I am on the "Gradable digestforum" "digestforum activity" page logged in as teacher
+    And I press "Grade users"
+    # Uses the aria-label for the menu in in the grading interface.
+    And I press "Actions for the grader interface"
+    And I press "Toggle full screen"
+    When I press "View discussion"
+    Then I should see "I disagree" in the "My topic" "dialogue"
+    And I click on "Cancel" "button" in the "My topic" "dialogue"
+    And I should not see "I disagree"

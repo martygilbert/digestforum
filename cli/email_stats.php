@@ -77,24 +77,24 @@ $header =
     <th style="text-align: right">Pct Opened</th>
 </tr>';
 
-$digestforums = $DB->get_records('digestforum', null, '', 'id, name');
+$digestdigestforums = $DB->get_records('digestdigestforum', null, '', 'id, name');
 
 
 $count = 0;
-foreach ($digestforums as $forum) {
+foreach ($digestdigestforums as $digestforum) {
     $sql = 
-        'SELECT digestdate, digestforumid,
+        'SELECT digestdate, digestdigestforumid,
         COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
         COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-            FROM {digestforum_tracker} 
-    WHERE digestforumid = ?
+            FROM {digestdigestforum_tracker} 
+    WHERE digestdigestforumid = ?
         GROUP BY digestdate
         ORDER BY digestdate DESC';
 
-    $opened = $DB->get_records_sql($sql, [$forum->id], 0, 7);
-    //$opened = $DB->get_records_sql($sql, [$forum->id]);
+    $opened = $DB->get_records_sql($sql, [$digestforum->id], 0, 7);
+    //$opened = $DB->get_records_sql($sql, [$digestforum->id]);
 
-    $name = preg_replace('/Daily Announcements for /', '', $forum->name);
+    $name = preg_replace('/Daily Announcements for /', '', $digestforum->name);
     $name = preg_replace('/Daily Announcements Only for /', '', $name);
 
     $thistable = 
