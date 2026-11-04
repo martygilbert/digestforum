@@ -465,7 +465,7 @@ class send_user_notifications extends \core\task\adhoc_task {
             // Headers to make emails easier to track.
             'List-Id: "' . $cleandigestforumname . '" ' . generate_email_messageid('moodledigestforum' . $digestforum->id),
             'List-Help: ' . $viewurl->out(),
-            'Message-ID: ' . digestforum_get_email_message_id($post->id, $this->recipient->id),
+            'Message-ID: ' . digestforum_get_email_message_id($digestforum->id, $this->recipient->id),
             'X-Course-Id: ' . $course->id,
             'X-Course-Name: '. format_string($course->fullname, true),
 

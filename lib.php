@@ -388,6 +388,9 @@ function digestforum_supports($feature) {
  * @return string A unique message-id
  */
 function digestforum_get_email_message_id($postid, $usertoid) {
+    if (empty($date)) {
+        $date = userdate(time(), '%Y%m%d');
+    }
     return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid));
 }
 
@@ -6019,6 +6022,9 @@ function digestforum_set_user_maildigest($digestforum, $maildigest, $user = null
  * @return int The calculated maildigest setting for this user and digestforum.
  */
 function digestforum_get_user_maildigest_bulk($digests, $user, $digestforumid) {
+    // Hack this to force email digest.
+    return 1;
+    /*
     if (isset($digests[$digestforumid]) && isset($digests[$digestforumid][$user->id])) {
         $maildigest = $digests[$digestforumid][$user->id];
         if ($maildigest === -1) {
@@ -6028,6 +6034,7 @@ function digestforum_get_user_maildigest_bulk($digests, $user, $digestforumid) {
         $maildigest = $user->maildigest;
     }
     return $maildigest;
+    */
 }
 
 /**
@@ -6052,7 +6059,7 @@ function digestforum_get_user_digest_options($user = null) {
     // We need to add the default digest option at the end - it relies on
     // the contents of the existing values.
     $digestoptions['-1'] = get_string('emaildigestdefault', 'mod_digestforum',
-            $digestoptions[$user->maildigest]);
+            $digestoptions['1']); // Force all users to get a digest.
 
     // Resort the options to be in a sensible order.
     ksort($digestoptions);
@@ -6944,4 +6951,58 @@ function mod_digestforum_extend_navigation_user(
         }
         $usernode->add_node($digestforumtab, $addbefore->key);
     }
+}
+
+/**
+ * Returns a user's open rate for a specific digestforum for this month
+ *
+ * @param int $userid mdluserid of the user in question
+ * @param int $forumid instance id of the digestforum
+ * @param string $digestdate, in the format of 'yyyy-mm-dd'. if omitted, then all time
+ * @return double percentage open rate, or -1 if not enough data
+ */
+function mod_digestforum_get_month_open_rate($userid, $forumid, $digestdate = 0) {
+    global $DB;
+
+    // Make sure $digestdate is yyyy-mm-dd or yyyy-mm-d, because strftime is weird.
+    $pattern = '/^\d{4}-\d{2}-\d{1,2}$/';
+    if ($digestdate != 0 && !preg_match($pattern, $digestdate)) {
+        $digestdate = 0;
+    }
+
+    $openedsql = '
+        SELECT COUNT(id)
+          FROM {digestforum_tracker}
+         WHERE digestforumid = :forumid
+           AND numviews > 0
+           AND mdluserid = :userid';
+
+    $notopenedsql = '
+        SELECT COUNT(id)
+          FROM {digestforum_tracker}
+         WHERE digestforumid = :forumid
+           AND numviews = 0
+           AND mdluserid = :userid';
+
+    if ($digestdate != 0) {
+        // Get for the whole month.
+        $digestdate = substr($digestdate, 0, strrpos($digestdate, '-') + 1).'%';
+        $likedigestdate = $DB->sql_like('digestdate', ':digestdate');
+
+        $openedsql .= ' AND '.$likedigestdate;
+        $notopenedsql .= ' AND '.$likedigestdate;
+    }
+
+    $options = ['forumid' => $forumid, 'userid' => $userid, 'digestdate' => $digestdate];
+
+    $opened     = $DB->count_records_sql($openedsql, $options);
+    $notopened  = $DB->count_records_sql($notopenedsql, $options);
+
+    $pctopened = -1;
+    $total = $opened + $notopened;
+    if ($total > 0) {
+        $pctopened = (100 * $opened) / $total;
+    }
+
+    return sprintf("%6.2f", $pctopened);
 }
