@@ -78,48 +78,39 @@
         "unsubscribediscussionlink": "https://example.com/mod/discussion/subscribe.php?id=2&d=2"
     }
 }}
-<table border="0" cellpadding="3" cellspacing="0" class="digestforumpost">
+<table border="0" cellpadding="0" cellspacing="0" width="100%" class="digestforumpost"
+        style="width: 100%; border: 1px solid #dee2e6; border-collapse: separate; border-radius: 4px; margin: 0 0 12px 0;">
     <tr class="header">
-        <td width="35" valign="top" class="picture left">
-            {{{ authorpicture }}}
-        </td>
-        <td class="topic {{# firstpost }}starter{{/ firstpost }}">
-            <div class="subject" style="font-weight: bold; font-size: larger">
-                {{{ subject }}}
-            </div>
-            <div class="author">
+        <td class="topic {{# firstpost }}starter{{/ firstpost }}"
+                style="padding: 10px 12px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; border-radius: 4px 4px 0 0;">
+            <div class="author" style="font-size: 13px; color: #6a737b;">
                 {{# str }} bynameondate, digestforum, {
-                        "name": {{# quote }}<a target='_blank' href='{{{ authorlink }}}'>{{ authorfullname }}</a>{{/ quote }},
+                        "name": {{# quote }}<a target='_blank' href='{{{ authorlink }}}' style='color: #0f6cbf;'>{{ authorfullname }}</a>{{/ quote }},
                         "date": {{# quote }}{{ postdate }}{{/ quote }}
                     } {{/ str }}
             </div>
             {{# isprivatereply }}
-            <div class="privatereplyinfo">
+            <div class="privatereplyinfo" style="font-size: 13px; font-style: italic; color: #6a737b; margin-top: 2px;">
                 {{# str }} postisprivatereply, digestforum {{/ str }}
             </div>
             {{/ isprivatereply }}
         </td>
     </tr>
     <tr>
-        <td class="left side" valign="top">
-            {{# grouppicture }}
-                {{{ grouppicture }}}
-            {{/ grouppicture }}
-            {{^ grouppicture }}
-                &nbsp;
-            {{/ grouppicture }}
-        </td>
-        <td class="content">
+        <td class="content"
+                style="padding: 12px; font-size: 15px; line-height: 1.5; color: #1d2125; word-wrap: break-word; overflow-wrap: anywhere;">
             {{# attachments }}
-                <div class="attachments">
+                <div class="attachments" style="margin-bottom: 8px;">
                     {{{ attachments }}}
                 </div>
             {{/ attachments }}
-            {{{ message }}}
+            <div class="digestforum-message">
+                {{{ message }}}
+            </div>
 
-            <div class="commands">
+            <div class="commands" style="font-size: 13px; margin-top: 12px;">
                 {{^ firstpost }}
-                    <a target="_blank" href="{{{ parentpostlink }}}">
+                    <a target="_blank" href="{{{ parentpostlink }}}" style="color: #0f6cbf;">
                         {{# str }} parent, digestforum {{/ str }}
                     </a>
                     {{# canreply }}
@@ -130,15 +121,15 @@
                 {{/ firstpost }}
                 {{# canreply }}
                     {{^ isprivatereply }}
-                    <a target="_blank" href="{{{ replylink }}}">
+                    <a target="_blank" href="{{{ replylink }}}" style="color: #0f6cbf;">
                         {{# str }} reply, digestforum {{/ str }}
                     </a>
                     {{/ isprivatereply }}
                 {{/ canreply }}
             </div>
 
-            <div class="link">
-                <a target="_blank" href="{{{ permalink }}}">
+            <div class="link" style="font-size: 13px; margin-top: 4px;">
+                <a target="_blank" href="{{{ permalink }}}" style="color: #0f6cbf;">
                     {{# str }} postincontext, digestforum {{/ str }}
                 </a>
             </div>

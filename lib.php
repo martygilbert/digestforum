@@ -385,13 +385,14 @@ function digestforum_supports($feature) {
  *
  * @param int $postid The ID of the digestforum post we are notifying the user about
  * @param int $usertoid The ID of the user being notified
+ * @param string|null $date The digest date, so that each day's digest gets its own message-id. Defaults to today.
  * @return string A unique message-id
  */
-function digestforum_get_email_message_id($postid, $usertoid) {
+function digestforum_get_email_message_id($postid, $usertoid, $date = null) {
     if (empty($date)) {
         $date = userdate(time(), '%Y%m%d');
     }
-    return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid));
+    return generate_email_messageid(hash('sha256', $postid . 'to' . $usertoid . 'on' . $date));
 }
 
 /**
@@ -6959,7 +6960,7 @@ function mod_digestforum_extend_navigation_user(
  * @param int $userid mdluserid of the user in question
  * @param int $forumid instance id of the digestforum
  * @param string $digestdate, in the format of 'yyyy-mm-dd'. if omitted, then all time
- * @return double percentage open rate, or -1 if not enough data
+ * @return int percentage open rate, rounded to a whole number, or -1 if not enough data
  */
 function mod_digestforum_get_month_open_rate($userid, $forumid, $digestdate = 0) {
     global $DB;
@@ -7004,5 +7005,50 @@ function mod_digestforum_get_month_open_rate($userid, $forumid, $digestdate = 0)
         $pctopened = (100 * $opened) / $total;
     }
 
-    return sprintf("%6.2f", $pctopened);
+    return (int) round($pctopened);
+}
+
+/**
+ * Record that a digest email has been opened, as reported by its tracking image.
+ *
+ * An open only counts towards the open rate if it happens within a week of the digest date, but the first and
+ * last viewed times are always updated.
+ *
+ * @param int $trackerid id of the digestforum_tracker record
+ * @param int|null $now the time of the view. Defaults to now.
+ * @return bool whether a tracker record was found
+ */
+function mod_digestforum_record_digest_view($trackerid, $now = null) {
+    global $DB;
+
+    $entry = $DB->get_record('digestforum_tracker', ['id' => $trackerid]);
+    if (!$entry) {
+        return false;
+    }
+
+    if ($now === null) {
+        $now = time();
+    }
+
+    // Parse the digestdate, which is yyyy-mm-dd or yyyy-mm-d, to see if this view counts.
+    $year = substr($entry->digestdate, 0, 4);
+    $mon = substr($entry->digestdate, 5, 2);
+    $day = substr($entry->digestdate, 8);
+
+    $origdate = new DateTime();
+    $origdate->setTimestamp($now);
+    $origdate->setDate($year, $mon, $day);
+
+    // Only count it as an open if it's been within a week.
+    if (($now - (7 * DAYSECS)) < $origdate->getTimestamp()) {
+        $entry->numviews++;
+    }
+
+    // The email has been viewed. Update info.
+    if ($entry->firstviewed == 0) {
+        $entry->firstviewed = $now;
+    }
+    $entry->lastviewed = $now;
+
+    return $DB->update_record('digestforum_tracker', $entry);
 }

@@ -157,10 +157,54 @@ class send_user_digests extends \core\task\adhoc_task {
             return;
         }
 
-        // Add the message headers.
-        $this->add_message_header();
-
+        // Each digestforum gets its own digest email.
+        $discussionsbyforum = [];
         foreach ($this->discussions as $discussion) {
+            $discussionsbyforum[$discussion->digestforum][$discussion->id] = $discussion;
+        }
+
+        $digestcount = 0;
+        foreach ($discussionsbyforum as $digestforumid => $discussions) {
+            if ($this->send_digestforum_digest($this->digestforums[$digestforumid], $discussions)) {
+                $digestcount++;
+            }
+        }
+
+        // Empty the queue, even if a send failed. Retrying would re-send the digests that did succeed.
+        $this->empty_queue($this->recipient->id, $starttime);
+
+        // We have finished all digest emails, update $CFG->digestforum_mailtimelast.
+        set_config('digestforum_mailtimelast', $starttime);
+
+        $this->log_finish("Sent {$digestcount} digest(s).");
+    }
+
+    /**
+     * Compose and send the digest email for a single digestforum.
+     *
+     * @param   \stdClass   $digestforum The digestforum being digested
+     * @param   \stdClass[] $discussions The discussions in this digestforum with queued posts
+     * @return  bool Whether a digest was sent
+     */
+    protected function send_digestforum_digest($digestforum, array $discussions): bool {
+        global $CFG, $DB;
+
+        // Reset the per-message state.
+        $this->postsubject = '';
+        $this->notificationtext = '';
+        $this->notificationhtml = '';
+        $this->sentcount = 0;
+        $this->markpostsasread = [];
+
+        // Date strings use the recipient's timezone, as the cron sets them up as the current user.
+        $digestdate = userdate(time(), '%Y-%m-%d');
+
+        $this->log_start("Composing digest for digestforum {$digestforum->id}", 1);
+
+        // Add the message headers.
+        $this->add_message_header($digestforum, $digestdate);
+
+        foreach ($discussions as $discussion) {
             // Raise the time limit for each discussion.
             \core_php_time_limit::raise(120);
 
@@ -245,26 +289,39 @@ class send_user_digests extends \core\task\adhoc_task {
             }
         }
 
-        if ($this->sentcount) {
-            // This digest has at least one post and should therefore be sent.
-            if ($this->send_mail()) {
-                $this->log_finish("Digest sent with {$this->sentcount} messages.");
-                if (get_user_preferences('digestforum_markasreadonnotification', 1, $this->recipient->id) == 1) {
-                    digestforum_tp_mark_posts_read($this->recipient, $this->markpostsasread);
-                }
-            } else {
-                $this->log_finish("Issue sending digest. Skipping.");
-                throw new \moodle_exception("Issue sending digest. Skipping.");
-            }
-        } else {
-            $this->log_finish("No messages found to send.");
+        if (!$this->sentcount) {
+            $this->log_finish("No messages found to send.", 1);
+            return false;
         }
 
-        // Empty the queue only if successful.
-        $this->empty_queue($this->recipient->id, $starttime);
+        // Record the digest in the tracker, and add the tracking image so that opens can be counted.
+        $trackerid = $DB->insert_record('digestforum_tracker', (object) [
+            'mdluserid' => $this->recipient->id,
+            'digestforumid' => $digestforum->id,
+            'digestdate' => $digestdate,
+        ]);
+        if ($this->allowhtml) {
+            $this->notificationhtml .= html_writer::empty_tag('img', [
+                'src' => (new \moodle_url('/mod/digestforum/img.php', ['id' => $trackerid]))->out(false),
+                'height' => '1',
+                'width' => '1',
+                'alt' => '',
+            ]);
+            $this->notificationhtml = $this->wrap_html($this->notificationhtml);
+        }
 
-        // We have finishied all digest emails, update $CFG->digestmailtimelast.
-        set_config('digestmailtimelast', $starttime);
+        $messageid = digestforum_get_email_message_id($digestforum->id, $this->recipient->id, $digestdate);
+        if (!$this->send_mail($messageid)) {
+            $DB->delete_records('digestforum_tracker', ['id' => $trackerid]);
+            $this->log_finish("Issue sending digest for digestforum {$digestforum->id}. Not trying again.", 1);
+            return false;
+        }
+
+        $this->log_finish("Digest sent with {$this->sentcount} messages.", 1);
+        if (get_user_preferences('digestforum_markasreadonnotification', 1, $this->recipient->id) == 1) {
+            digestforum_tp_mark_posts_read($this->recipient, $this->markpostsasread);
+        }
+        return true;
     }
 
     /**
@@ -390,35 +447,57 @@ class send_user_digests extends \core\task\adhoc_task {
     /**
      * Add the header to this message.
      */
-    protected function add_message_header() {
+    protected function add_message_header($digestforum, $digestdate) {
         $site = get_site();
 
-        // Set the subject of the message.
-        $this->postsubject = get_string('digestmailsubject', 'digestforum', format_string($site->shortname, true));
-
-        // And the content of the header in body.
         $headerdata = (object) [
             'sitename' => format_string($site->fullname, true),
-            'userprefs' => (new \moodle_url('/user/digestforum.php', [
-                    'id' => $this->recipient->id,
-                    'course' => $site->id,
-                ]))->out(false),
-            ];
+            'digestforumname' => format_string($digestforum->name, true),
+            'date' => userdate(time(), '%a %b %e, %Y'),
+            'openrate' => mod_digestforum_get_month_open_rate($this->recipient->id, $digestforum->id, $digestdate),
+        ];
 
-        $this->notificationtext .= get_string('digestmailheader', 'digestforum', $headerdata) . "\n";
+        // Set the subject of the message.
+        $this->postsubject = get_string('digestmailsubject', 'digestforum', $headerdata);
+
+        $this->notificationtext .= get_string('digestmailheader', 'digestforum', $headerdata) . "\n\n";
+        if ($headerdata->openrate >= 0) {
+            $this->notificationtext .= get_string('digestmailheaderstat', 'digestforum', $headerdata) . "\n\n";
+        }
 
         if ($this->allowhtml) {
-            $headerdata->userprefs = html_writer::link($headerdata->userprefs, get_string('digestmailprefs', 'digestforum'), [
-                    'target' => '_blank',
+            $this->notificationhtml .= html_writer::tag('h3', get_string('digestmailheader', 'digestforum', $headerdata), [
+                    'style' => 'font-size: 20px; line-height: 1.3; margin: 0 0 4px 0; color: #1d2125;',
                 ]);
-
-            $this->notificationhtml .= html_writer::tag('p', get_string('digestmailheader', 'digestforum', $headerdata));
-            $this->notificationhtml .= html_writer::empty_tag('br');
-            $this->notificationhtml .= html_writer::empty_tag('hr', [
-                    'size' => 1,
-                    'noshade' => 'noshade',
+            if ($headerdata->openrate >= 0) {
+                $this->notificationhtml .= html_writer::div(get_string('digestmailheaderstat', 'digestforum', $headerdata),
+                        'openrate', ['style' => 'font-size: 13px; color: #6a737b;']);
+            }
+            $this->notificationhtml .= html_writer::div('', '', [
+                    'style' => 'border-top: 3px solid #1d2125; margin: 12px 0 8px 0;',
                 ]);
         }
+    }
+
+    /**
+     * Wrap the HTML body in a centred, fixed-width container, with the base font and image sizing.
+     *
+     * Most email clients ignore stylesheets, so styling is inline. The only exception is the image rule,
+     * which has to reach the images inside the post messages.
+     *
+     * @param   string  $html The composed body
+     * @return  string
+     */
+    protected function wrap_html(string $html): string {
+        $style = html_writer::tag('style',
+                '.digestforum-digest img { max-width: 100% !important; height: auto !important; } ' .
+                '.digestforum-digest table { max-width: 100% !important; }');
+
+        return $style . html_writer::div($html, 'digestforum-digest', [
+                'style' => 'max-width: 600px; margin: 0 auto; padding: 16px; ' .
+                    'font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, Helvetica, Arial, sans-serif; ' .
+                    'font-size: 15px; line-height: 1.5; color: #1d2125;',
+            ]);
     }
 
     /**
@@ -429,41 +508,25 @@ class send_user_digests extends \core\task\adhoc_task {
      * @param   \stdClass   $course The course that the digestforum belongs to
      */
     protected function add_discussion_header($discussion, $digestforum, $course) {
-        global $CFG;
-
-        $shortname = format_string($course->shortname, true, [
-                'context' => \context_course::instance($course->id),
-            ]);
-
-        $strdigestforums = get_string('digestforums', 'digestforum');
-
-        $this->discussiontext .= "\n=====================================================================\n\n";
-        $this->discussiontext .= "$shortname -> $strdigestforums -> " . format_string($digestforum->name, true);
-        if ($discussion->name != $digestforum->name) {
-            $this->discussiontext  .= " -> " . format_string($discussion->name, true);
-        }
-        $this->discussiontext .= "\n";
-        $this->discussiontext .= new \moodle_url('/mod/digestforum/discuss.php', [
+        // The email is for a single digestforum, so only the discussion needs naming.
+        $discussionname = format_string($discussion->name, true);
+        $discussionurl = new \moodle_url('/mod/digestforum/discuss.php', [
                 'd' => $discussion->id,
             ]);
-        $this->discussiontext .= "\n";
+
+        $this->discussiontext .= "\n=====================================================================\n\n";
+        $this->discussiontext .= " -> {$discussionname}\n";
+        $this->discussiontext .= $discussionurl->out(false) . "\n";
 
         if ($this->allowhtml) {
-            $this->discussionhtml .= "<p><font face=\"sans-serif\">".
-                "<a target=\"_blank\" href=\"$CFG->wwwroot/course/view.php?id=$course->id\">$shortname</a> -> ".
-                "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/index.php?id=$course->id\">$strdigestforums</a> -> ".
-                "<a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/view.php?f=$digestforum->id\">" .
-                        format_string($digestforum->name, true)."</a>";
-            if ($discussion->name == $digestforum->name) {
-                $this->discussionhtml .= "</font></p>";
-            } else {
-                $this->discussionhtml .=
-                        " -> <a target=\"_blank\" href=\"$CFG->wwwroot/mod/digestforum/discuss.php?d=$discussion->id\">" .
-                        format_string($discussion->name, true)."</a></font></p>";
-            }
-            $this->discussionhtml .= '<p>';
+            $this->discussionhtml .= html_writer::tag('h4', html_writer::link($discussionurl, $discussionname, [
+                    'target' => '_blank',
+                    'style' => 'color: #0f6cbf; text-decoration: none;',
+                ]), [
+                    'style' => 'font-size: 18px; line-height: 1.3; margin: 20px 0 10px 0;',
+                ]);
+            $this->discussionhtml .= '<div>';
         }
-
     }
 
     /**
@@ -522,25 +585,12 @@ class send_user_digests extends \core\task\adhoc_task {
      * @param   \stdClass   $discussion The discussion to add the footer for
      */
     protected function add_discussion_footer($discussion) {
-        global $CFG;
-
+        // Everyone is subscribed and receives the digest, so there are no subscription or preference links.
         if ($this->allowhtml) {
-            $footerlinks = [];
-
-            $digestforum = $this->digestforums[$discussion->digestforum];
-            if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
-                // This digestforum is force subscribed. The user cannot unsubscribe.
-                $footerlinks[] = get_string("everyoneissubscribed", "digestforum");
-            } else {
-                $footerlinks[] = "<a href=\"$CFG->wwwroot/mod/digestforum/subscribe.php?id=$digestforum->id\">" .
-                    get_string("unsubscribe", "digestforum") . "</a>";
-            }
-            $footerlinks[] = "<a href='{$CFG->wwwroot}/mod/digestforum/index.php?id={$digestforum->course}'>" .
-                    get_string("digestmailpost", "digestforum") . '</a>';
-
-            $this->discussionhtml .= "\n<div class='mdl-right'><font size=\"1\">" .
-                    implode('&nbsp;', $footerlinks) . '</font></div>';
-            $this->discussionhtml .= '<hr size="1" noshade="noshade" /></p>';
+            $this->discussionhtml .= '</div>';
+            $this->discussionhtml .= html_writer::div('', '', [
+                    'style' => 'border-top: 1px solid #dee2e6; margin: 8px 0;',
+                ]);
         }
     }
 
@@ -552,34 +602,24 @@ class send_user_digests extends \core\task\adhoc_task {
      * @return  int
      */
     protected function get_maildigest($digestforumid) {
-        $maildigest = -1;
-
-        if (isset($this->digestforumdigesttypes[$digestforumid])) {
-            $maildigest = $this->digestforumdigesttypes[$digestforumid];
-        }
-
-        if ($maildigest === -1 && !empty($this->recipient->maildigest)) {
-            $maildigest = $this->recipient->maildigest;
-        }
-
-        if ($maildigest === -1) {
-            // There is no maildigest type right now.
-            $maildigest = 1;
-        }
-
-        return $maildigest;
+        // Everyone receives the complete digest, regardless of their preferences.
+        return 1;
     }
 
     /**
      * Send the composed message to the user.
+     *
+     * @param   string  $messageid The Message-ID header for this digest
+     * @return  bool
      */
-    protected function send_mail() {
+    protected function send_mail(string $messageid) {
         // Headers to help prevent auto-responders.
         $userfrom = \core_user::get_noreply_user();
         $userfrom->customheaders = array(
             "Precedence: Bulk",
             'X-Auto-Response-Suppress: All',
             'Auto-Submitted: auto-generated',
+            'Message-ID: ' . $messageid,
         );
 
         $eventdata = new \core\message\message();

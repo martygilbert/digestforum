@@ -26,18 +26,12 @@
     * none
 
     Context variables required for this template:
-    * discussionlink
-    * subject
-    * permalink
     * authorfullname
     * postdate
     * message
     * attachments
-    * digestforumindexlink
 }}
 
-{{ discussionlink }}
-{{{ subject }}} ({{{ permalink }}})
 {{# str }} bynameondate, digestforum, {
         "name": {{# quote }}{{{ authorfullname }}}{{/ quote }},
         "date": {{# quote }}{{ postdate }}{{/ quote }}
@@ -48,4 +42,3 @@
 {{{ attachments }}}
 {{/ attachments }}
 ---------------------------------------------------------------------
-{{# str }} digestmailpostlink, digestforum, {{{ digestforumindexlink }}} {{/ str }}

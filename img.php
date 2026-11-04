@@ -26,36 +26,8 @@ $id = required_param('id', PARAM_INT);
 
 // Send the 1x1 transparent png.
 header('Content-type: image/png');
-readfile('pix/blank.png');
+readfile(__DIR__ . '/pix/blank.png');
 
-global $DB;
+require_once(__DIR__ . '/lib.php');
 
-// Get the existing entry.
-$entry = $DB->get_record('digestforum_tracker', ['id' => $id]);
-
-if ($entry) {
-
-    // Parse the digestdate, which is yyyy-mm-dd or yyyy-mm-d to see if this view counts.
-    $year = substr($entry->digestdate, 0, 4);
-    $mon = substr($entry->digestdate, 5, 2);
-    $day = substr($entry->digestdate, 8);
-    
-    $origdate = new DateTime();
-    $origdate->setDate($year, $mon, $day);
-    $now = time();
-
-    // Only count it as an open if it's been within a week.
-    $valid = (($now - (7 * 86400)) < $origdate->getTimestamp());
-    if ($valid) {
-        $entry->numviews++;
-    }
-
-    // The email has been viewed. Update info.
-    if ($entry->firstviewed == 0) {
-        $entry->firstviewed = $now;
-    }
-    $entry->lastviewed = $now;
-
-    $result = $DB->update_record('digestforum_tracker', $entry);
-}
-
+mod_digestforum_record_digest_view($id);

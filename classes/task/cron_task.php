@@ -345,13 +345,14 @@ class cron_task extends \core\task\scheduled_task {
             if (!empty($digestpostdata)) {
                 // Insert all of the records for the digest.
                 $DB->insert_records('digestforum_queue', $digestpostdata);
+                $mailhour = $CFG->digestforum_mailtime ?? 7;
                 $servermidnight = usergetmidnight($timenow, $sitetimezone);
-                $digesttime = $servermidnight + ($CFG->digestmailtime * 3600);
+                $digesttime = $servermidnight + ($mailhour * 3600);
 
                 if ($digesttime < $timenow) {
                     // Digest time is in the past. Get a new time for tomorrow.
                     $servermidnight = usergetmidnight($timenow + DAYSECS, $sitetimezone);
-                    $digesttime = $servermidnight + ($CFG->digestmailtime * 3600);
+                    $digesttime = $servermidnight + ($mailhour * 3600);
                 }
 
                 $task = new \mod_digestforum\task\send_user_digests();
