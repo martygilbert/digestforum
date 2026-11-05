@@ -43,7 +43,7 @@ class discussion {
      * @return stdClass[]
      */
     public function to_legacy_objects(array $discussions): array {
-        return array_map(function(discussion_entity $discussion) {
+        return array_map(function (discussion_entity $discussion) {
             return (object) [
                 'id' => $discussion->get_id(),
                 'course' => $discussion->get_course_id(),
@@ -58,7 +58,7 @@ class discussion {
                 'timestart' => $discussion->get_time_start(),
                 'timeend' => $discussion->get_time_end(),
                 'pinned' => $discussion->is_pinned(),
-                'timelocked' => $discussion->get_locked()
+                'timelocked' => $discussion->get_locked(),
             ];
         }, $discussions);
     }

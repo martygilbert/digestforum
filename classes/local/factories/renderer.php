@@ -142,7 +142,7 @@ class renderer {
             $this->entityfactory->get_exported_posts_sorter(),
             $baseurl,
             $notifications,
-            function($discussion, $user, $digestforum) {
+            function ($discussion, $user, $digestforum) {
                 $exportbuilder = $this->builderfactory->get_exported_discussion_builder();
                 return $exportbuilder->build(
                     $user,
@@ -198,16 +198,16 @@ class renderer {
             // Post process the exported posts for our template. This function will add the "replies"
             // and "hasreplies" properties to the exported posts. It will also sort them into the
             // reply tree structure if the display mode requires it.
-            function($exportedposts, $digestforums, $discussions) use ($displaymode, $readonly, $exportedpostssorter) {
+            function ($exportedposts, $digestforums, $discussions) use ($displaymode, $readonly, $exportedpostssorter) {
                 $digestforum = array_shift($digestforums);
                 $seenfirstunread = false;
                 $postcount = count($exportedposts);
-                $discussionsbyid = array_reduce($discussions, function($carry, $discussion) {
+                $discussionsbyid = array_reduce($discussions, function ($carry, $discussion) {
                     $carry[$discussion->get_id()] = $discussion;
                     return $carry;
                 }, []);
                 $exportedposts = array_map(
-                    function($exportedpost) use ($digestforum, $discussionsbyid, $readonly, $seenfirstunread, $displaymode) {
+                    function ($exportedpost) use ($digestforum, $discussionsbyid, $readonly, $seenfirstunread, $displaymode) {
                         $discussion = $discussionsbyid[$exportedpost->discussionid] ?? null;
                         if ($digestforum->get_type() == 'single' && !$exportedpost->hasparent) {
                             // Remove the author from any posts that don't have a parent.
@@ -249,8 +249,8 @@ class renderer {
                     $displaymode === DFORUM_MODE_NESTED_V2
                 ) {
                     $sortedposts = $exportedpostssorter->sort_into_children($exportedposts);
-                    $sortintoreplies = function($nestedposts) use (&$sortintoreplies) {
-                        return array_map(function($postdata) use (&$sortintoreplies) {
+                    $sortintoreplies = function ($nestedposts) use (&$sortintoreplies) {
+                        return array_map(function ($postdata) use (&$sortintoreplies) {
                             [$post, $replies] = $postdata;
                             $totalreplycount = 0;
 
@@ -261,7 +261,7 @@ class renderer {
                                 $sortedreplies = $sortintoreplies($replies);
                                 // Set the parent author name on the replies. This is used for screen
                                 // readers to help them identify the structure of the discussion.
-                                $sortedreplies = array_map(function($reply) use ($post) {
+                                $sortedreplies = array_map(function ($reply) use ($post) {
                                     if (isset($post->author)) {
                                         $reply->parentauthorname = $post->author->fullname;
                                     } else {
@@ -272,7 +272,7 @@ class renderer {
                                     return $reply;
                                 }, $sortedreplies);
 
-                                $totalreplycount = array_reduce($sortedreplies, function($carry, $reply) {
+                                $totalreplycount = array_reduce($sortedreplies, function ($carry, $reply) {
                                     return $carry + 1 + $reply->totalreplycount;
                                 }, $totalreplycount);
 
@@ -321,11 +321,11 @@ class renderer {
             'mod_digestforum/digestforum_search_results',
             // Post process the exported posts to add the highlighting of the search terms to the post
             // and also the additional context links in the subject.
-            function($exportedposts, $digestforumsbyid, $discussionsbyid) use ($searchterms, $urlfactory) {
+            function ($exportedposts, $digestforumsbyid, $discussionsbyid) use ($searchterms, $urlfactory) {
                 $highlightwords = implode(' ', $searchterms);
 
                 return array_map(
-                    function($exportedpost) use (
+                    function ($exportedpost) use (
                         $digestforumsbyid,
                         $discussionsbyid,
                         $searchterms,
@@ -394,9 +394,9 @@ class renderer {
             $this->rendererbase,
             $this->builderfactory->get_exported_posts_builder(),
             'mod_digestforum/digestforum_posts_with_context_links',
-            function($exportedposts, $digestforumsbyid, $discussionsbyid) use ($urlfactory, $addlinkstocontext) {
+            function ($exportedposts, $digestforumsbyid, $discussionsbyid) use ($urlfactory, $addlinkstocontext) {
 
-                return array_map(function($exportedpost) use ($digestforumsbyid, $discussionsbyid, $addlinkstocontext, $urlfactory) {
+                return array_map(function ($exportedpost) use ($digestforumsbyid, $discussionsbyid, $addlinkstocontext, $urlfactory) {
                     $discussion = $discussionsbyid[$exportedpost->discussionid];
                     $digestforum = $digestforumsbyid[$discussion->get_digestforum_id()];
                     $courserecord = $digestforum->get_course_record();
@@ -460,7 +460,7 @@ class renderer {
             digestforum_gradeitem::load_from_digestforum_entity($digestforum),
             $template,
             $notifications,
-            function($discussions, $user, $digestforum) {
+            function ($discussions, $user, $digestforum) {
 
                 $exporteddiscussionsummarybuilder = $this->builderfactory->get_exported_discussion_summaries_builder();
                 return $exporteddiscussionsummarybuilder->build(
@@ -500,7 +500,7 @@ class renderer {
             digestforum_gradeitem::load_from_digestforum_entity($digestforum),
             $template,
             $notifications,
-            function($discussions, $user, $digestforum) use ($capabilitymanager) {
+            function ($discussions, $user, $digestforum) use ($capabilitymanager) {
                 $exportedpostsbuilder = $this->builderfactory->get_exported_posts_builder();
                 $discussionentries = [];
                 $postentries = [];
@@ -520,23 +520,23 @@ class renderer {
                 $postvault = $this->vaultfactory->get_post_vault();
                 $canseeanyprivatereply = $capabilitymanager->can_view_any_private_reply($user);
                 $discussionrepliescount = $postvault->get_reply_count_for_discussion_ids(
-                        $user,
-                        $discussionentriesids,
-                        $canseeanyprivatereply
-                    );
+                    $user,
+                    $discussionentriesids,
+                    $canseeanyprivatereply
+                );
                 $digestforumdatamapper = $this->legacydatamapperfactory->get_digestforum_data_mapper();
                 $digestforumrecord = $digestforumdatamapper->to_legacy_object($digestforum);
                 if (digestforum_tp_is_tracked($digestforumrecord, $user)) {
                     $discussionunreadscount = $postvault->get_unread_count_for_discussion_ids(
-                            $user,
-                            $discussionentriesids,
-                            $canseeanyprivatereply
+                        $user,
+                        $discussionentriesids,
+                        $canseeanyprivatereply
                     );
                 } else {
                     $discussionunreadscount = [];
                 }
 
-                array_walk($exportedposts['posts'], function($post) use ($discussionrepliescount, $discussionunreadscount) {
+                array_walk($exportedposts['posts'], function ($post) use ($discussionrepliescount, $discussionunreadscount) {
                     $post->discussionrepliescount = $discussionrepliescount[$post->discussionid] ?? 0;
                     $post->discussionunreadscount = $discussionunreadscount[$post->discussionid] ?? 0;
                     // TODO: Find a better solution due to language differences when defining the singular and plural form.
@@ -609,7 +609,7 @@ class renderer {
 
         $cmid = $digestforum->get_course_module_record()->id;
         $baseurl = $this->urlfactory->get_digestforum_view_url_from_course_module_id($cmid);
-        $notifications = array();
+        $notifications = [];
 
         if ($hasmultiplediscussions) {
             $notifications[] = (new notification(get_string('warnformorepost', 'digestforum')))

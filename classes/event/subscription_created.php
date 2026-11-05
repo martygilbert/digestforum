@@ -77,7 +77,7 @@ class subscription_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $this->other['digestforumid']));
+        return new \moodle_url('/mod/digestforum/subscribers.php', ['id' => $this->other['digestforumid']]);
     }
 
     /**
@@ -103,12 +103,12 @@ class subscription_created extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_subscriptions', 'restore' => 'digestforum_subscription');
+        return ['db' => 'digestforum_subscriptions', 'restore' => 'digestforum_subscription'];
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

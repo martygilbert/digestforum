@@ -27,7 +27,6 @@ use mod_digestforum\local\exporters\discussion as discussion_exporter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class exporters_discussion_test extends \advanced_testcase {
-
     /** @var \mod_digestforum\local\builders\exported_posts */
     private $builder;
 
@@ -97,7 +96,7 @@ final class exporters_discussion_test extends \advanced_testcase {
             'digestforum' => $digestforum,
             'user' => $user,
             'groupsbyid' => [$group->id => $group],
-            'latestpostid' => 7
+            'latestpostid' => 7,
         ]);
 
         $exporteddiscussion = $exporter->export($renderer);

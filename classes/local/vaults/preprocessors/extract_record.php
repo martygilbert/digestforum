@@ -60,7 +60,7 @@ class extract_record {
      * @return stdClass[] The extracted records
      */
     public function execute(array $records): array {
-        return array_map(function($record) {
+        return array_map(function ($record) {
             return $this->table->extract_from_result($record);
         }, $records);
     }

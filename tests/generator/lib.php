@@ -62,7 +62,7 @@ class mod_digestforum_generator extends testing_module_generator {
 
     public function create_instance($record = null, ?array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/lib.php');
         $record = (object)(array)$record;
 
         if (!isset($record->type)) {
@@ -211,7 +211,7 @@ class mod_digestforum_generator extends testing_module_generator {
         // Add the discussion.
         $record->id = digestforum_add_discussion($record, null, null, $record->userid);
 
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $record->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $record->id]);
 
         if (isset($timemodified) || isset($mailed)) {
             if (isset($mailed)) {
@@ -233,8 +233,13 @@ class mod_digestforum_generator extends testing_module_generator {
             $cm = get_coursemodule_from_instance('digestforum', $record->digestforum);
             $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
 
-            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id,
-                context_module::instance($cm->id), $tags);
+            core_tag_tag::set_item_tags(
+                'mod_digestforum',
+                'digestforum_posts',
+                $post->id,
+                context_module::instance($cm->id),
+                $tags
+            );
         }
 
         return $record;
@@ -336,8 +341,13 @@ class mod_digestforum_generator extends testing_module_generator {
             $cm = get_coursemodule_from_instance('digestforum', $discussion->digestforum);
             $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
 
-            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $record->id,
-                context_module::instance($cm->id), $tags);
+            core_tag_tag::set_item_tags(
+                'mod_digestforum',
+                'digestforum_posts',
+                $record->id,
+                context_module::instance($cm->id),
+                $tags
+            );
         }
 
         // Update the last post.
@@ -346,23 +356,23 @@ class mod_digestforum_generator extends testing_module_generator {
         return $record;
     }
 
-    public function create_content($instance, $record = array()) {
+    public function create_content($instance, $record = []) {
         global $USER, $DB;
-        $record = (array)$record + array(
+        $record = (array)$record + [
             'digestforum' => $instance->id,
             'userid' => $USER->id,
-            'course' => $instance->course
-        );
+            'course' => $instance->course,
+        ];
         if (empty($record['discussion']) && empty($record['parent'])) {
             // Create discussion.
             $discussion = $this->create_discussion($record);
-            $post = $DB->get_record('digestforum_posts', array('id' => $discussion->firstpost));
+            $post = $DB->get_record('digestforum_posts', ['id' => $discussion->firstpost]);
         } else {
             // Create post.
             if (empty($record['parent'])) {
-                $record['parent'] = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $record['discussion']), MUST_EXIST);
+                $record['parent'] = $DB->get_field('digestforum_discussions', 'firstpost', ['id' => $record['discussion']], MUST_EXIST);
             } else if (empty($record['discussion'])) {
-                $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', array('id' => $record['parent']), MUST_EXIST);
+                $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', ['id' => $record['parent']], MUST_EXIST);
             }
             $post = $this->create_post($record);
         }

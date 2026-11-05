@@ -70,7 +70,7 @@ class post_attachment {
      * @return array Post attachments indexed by post id
      */
     private function get_area_attachments_for_posts(context $context, array $posts, string $area) {
-        $itemids = array_map(function($post) {
+        $itemids = array_map(function ($post) {
             return $post->get_id();
         }, $posts);
 
@@ -83,12 +83,12 @@ class post_attachment {
             self::INCLUDE_DIRECTORIES
         );
 
-        $filesbyid = array_reduce($posts, function($carry, $post) {
+        $filesbyid = array_reduce($posts, function ($carry, $post) {
             $carry[$post->get_id()] = [];
             return $carry;
         }, []);
 
-        return array_reduce($files, function($carry, $file) {
+        return array_reduce($files, function ($carry, $file) {
             $itemid = $file->get_itemid();
             $carry[$itemid] = array_merge($carry[$itemid], [$file]);
             return $carry;
@@ -116,5 +116,4 @@ class post_attachment {
     public function get_inline_attachments_for_posts(context $context, array $posts) {
         return $this->get_area_attachments_for_posts($context, $posts, 'post');
     }
-
 }

@@ -77,7 +77,7 @@ class discussion_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
+        return new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->objectid]);
     }
 
     /**
@@ -98,12 +98,12 @@ class discussion_created extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -184,34 +183,34 @@ $PAGE->set_secondary_active_tab("coursehome");
 
 if (empty($search)) {   // Check the other parameters instead
     if (!empty($words)) {
-        $search .= ' '.$words;
+        $search .= ' ' . $words;
     }
     if (!empty($userid)) {
-        $search .= ' userid:'.$userid;
+        $search .= ' userid:' . $userid;
     }
     if (!empty($digestforumid)) {
-        $search .= ' digestforumid:'.$digestforumid;
+        $search .= ' digestforumid:' . $digestforumid;
     }
     if (!empty($user)) {
-        $search .= ' '.digestforum_clean_search_terms($user, 'user:');
+        $search .= ' ' . digestforum_clean_search_terms($user, 'user:');
     }
     if (!empty($subject)) {
-        $search .= ' '.digestforum_clean_search_terms($subject, 'subject:');
+        $search .= ' ' . digestforum_clean_search_terms($subject, 'subject:');
     }
     if (!empty($fullwords)) {
-        $search .= ' '.digestforum_clean_search_terms($fullwords, '+');
+        $search .= ' ' . digestforum_clean_search_terms($fullwords, '+');
     }
     if (!empty($notwords)) {
-        $search .= ' '.digestforum_clean_search_terms($notwords, '-');
+        $search .= ' ' . digestforum_clean_search_terms($notwords, '-');
     }
     if (!empty($phrase)) {
-        $search .= ' "'.$phrase.'"';
+        $search .= ' "' . $phrase . '"';
     }
     if (!empty($datefrom)) {
-        $search .= ' datefrom:'.$datefrom;
+        $search .= ' datefrom:' . $datefrom;
     }
     if (!empty($dateto)) {
-        $search .= ' dateto:'.$dateto;
+        $search .= ' dateto:' . $dateto;
     }
     if (!empty($tags)) {
         $search .= ' tags:' . implode(',', $tags);
@@ -228,16 +227,16 @@ if ($search) {
     $search = digestforum_clean_search_terms($search);
 }
 
-if (!$course = $DB->get_record('course', array('id'=>$id))) {
+if (!$course = $DB->get_record('course', ['id' => $id])) {
     throw new \moodle_exception('invalidcourseid');
 }
 
 require_course_login($course);
 
-$params = array(
+$params = [
     'context' => $PAGE->context,
-    'other' => array('searchterm' => $search)
-);
+    'other' => ['searchterm' => $search],
+];
 
 $event = \mod_digestforum\event\course_searched::create($params);
 $event->trigger();
@@ -248,10 +247,9 @@ $strsearchresults = get_string("searchresults", "digestforum");
 $strpage = get_string("page");
 
 if (!$search || $showform) {
-
-    $url = new moodle_url('/mod/digestforum/index.php', array('id' => $course->id));
+    $url = new moodle_url('/mod/digestforum/index.php', ['id' => $course->id]);
     $PAGE->navbar->add($strdigestforums, $url);
-    $url = new moodle_url('/mod/digestforum/search.php', array('id' => $course->id));
+    $url = new moodle_url('/mod/digestforum/search.php', ['id' => $course->id]);
     $PAGE->navbar->add(get_string('advancedsearch', 'digestforum'), $url);
 
     $PAGE->set_title($strsearch);
@@ -270,9 +268,9 @@ $searchterms = explode(' ', $searchterms);
 
 $searchform = digestforum_search_form($course, $search);
 
-$PAGE->navbar->add($strsearch, new moodle_url('/mod/digestforum/search.php', array('id'=>$course->id)));
+$PAGE->navbar->add($strsearch, new moodle_url('/mod/digestforum/search.php', ['id' => $course->id]));
 $PAGE->navbar->add($strsearchresults);
-if (!$posts = digestforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
+if (!$posts = digestforum_search_posts($searchterms, $course->id, $page * $perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
@@ -294,10 +292,10 @@ if (!$posts = digestforum_search_posts($searchterms, $course->id, $page*$perpage
     exit;
 }
 
-//including this here to prevent it being included if there are no search results
-require_once($CFG->dirroot.'/rating/lib.php');
+// including this here to prevent it being included if there are no search results
+require_once($CFG->dirroot . '/rating/lib.php');
 
-//set up the ratings information that will be the same for all posts
+// set up the ratings information that will be the same for all posts
 $ratingoptions = new stdClass();
 $ratingoptions->component = 'mod_digestforum';
 $ratingoptions->ratingarea = 'post';
@@ -324,13 +322,13 @@ $params = [
     'dateto'    => $dateto,
     'datefrom'  => $datefrom,
     'showform'  => 1,
-    'starredonly' => $starredonly
+    'starredonly' => $starredonly,
 ];
 $url    = new moodle_url("/mod/digestforum/search.php", $params);
 foreach ($tags as $tag) {
     $url .= "&tags[]=$tag";
 }
-echo html_writer::link($url, get_string('advancedsearch', 'digestforum').'...');
+echo html_writer::link($url, get_string('advancedsearch', 'digestforum') . '...');
 
 echo '</div>';
 
@@ -338,20 +336,20 @@ echo $OUTPUT->heading($strdigestforums, 2);
 
 echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
-$url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
+$url = new moodle_url('search.php', ['search' => $search, 'id' => $course->id, 'perpage' => $perpage]);
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
-//added to implement highlighting of search terms found only in HTML markup
-//fiedorow - 9/2/2005
-$strippedsearch = str_replace('user:','',$search);
-$strippedsearch = str_replace('subject:','',$strippedsearch);
-$strippedsearch = str_replace('&quot;','',$strippedsearch);
+// added to implement highlighting of search terms found only in HTML markup
+// fiedorow - 9/2/2005
+$strippedsearch = str_replace('user:', '', $search);
+$strippedsearch = str_replace('subject:', '', $strippedsearch);
+$strippedsearch = str_replace('&quot;', '', $strippedsearch);
 $searchterms = explode(' ', $strippedsearch);    // Search for words independently
 foreach ($searchterms as $key => $searchterm) {
-    if (preg_match('/^\-/',$searchterm)) {
+    if (preg_match('/^\-/', $searchterm)) {
         unset($searchterms[$key]);
     } else {
-        $searchterms[$key] = preg_replace('/^\+/','',$searchterm);
+        $searchterms[$key] = preg_replace('/^\+/', '', $searchterm);
     }
 }
 $strippedsearch = implode(' ', $searchterms);    // Rebuild the string
@@ -363,35 +361,34 @@ $legacydatamapperfactory = mod_digestforum\local\container::get_legacy_data_mapp
 $digestforumdatamapper = $legacydatamapperfactory->get_digestforum_data_mapper();
 
 $discussionvault = $vaultfactory->get_discussion_vault();
-$discussionids = array_keys(array_reduce($posts, function($carry, $post) {
+$discussionids = array_keys(array_reduce($posts, function ($carry, $post) {
     $carry[$post->discussion] = true;
     return $carry;
 }, []));
 $discussions = $discussionvault->get_from_ids($discussionids);
-$discussionsbyid = array_reduce($discussions, function($carry, $discussion) {
+$discussionsbyid = array_reduce($discussions, function ($carry, $discussion) {
     $carry[$discussion->get_id()] = $discussion;
     return $carry;
 }, []);
 
 $digestforumvault = $vaultfactory->get_digestforum_vault();
-$digestforumids = array_keys(array_reduce($discussions, function($carry, $discussion) {
+$digestforumids = array_keys(array_reduce($discussions, function ($carry, $discussion) {
     $carry[$discussion->get_digestforum_id()] = true;
     return $carry;
 }, []));
 $digestforums = $digestforumvault->get_from_ids($digestforumids);
-$digestforumsbyid = array_reduce($digestforums, function($carry, $digestforum) {
+$digestforumsbyid = array_reduce($digestforums, function ($carry, $digestforum) {
     $carry[$digestforum->get_id()] = $digestforum;
     return $carry;
 }, []);
 
-$postids = array_map(function($post) {
+$postids = array_map(function ($post) {
     return $post->id;
 }, $posts);
 
 $poststorender = [];
 
 foreach ($posts as $post) {
-
     // Replace the simple subject with the three items digestforum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
     if (!isset($discussionsbyid[$post->discussion])) {
@@ -470,13 +467,13 @@ function digestforum_print_big_search_form($course) {
  * @return string The filtered search terms, separated by spaces.
  * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter.
  */
-function digestforum_clean_search_terms($words, $prefix='') {
+function digestforum_clean_search_terms($words, $prefix = '') {
     $searchterms = explode(' ', $words);
     foreach ($searchterms as $key => $searchterm) {
         if (strlen($searchterm) < 2) {
             unset($searchterms[$key]);
         } else if ($prefix) {
-            $searchterms[$key] = $prefix.$searchterm;
+            $searchterms[$key] = $prefix . $searchterm;
         }
     }
     return trim(implode(' ', $searchterms));
@@ -488,8 +485,8 @@ function digestforum_clean_search_terms($words, $prefix='') {
   * @param stdClass $course The Course to use.
   * @return array A set of formatted digestforum names stored against the digestforum id.
   */
-function digestforum_menu_list($course)  {
-    $menu = array();
+function digestforum_menu_list($course) {
+    $menu = [];
 
     $modinfo = get_fast_modinfo($course);
     if (empty($modinfo->instances['digestforum'])) {

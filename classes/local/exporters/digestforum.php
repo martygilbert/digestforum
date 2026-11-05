@@ -80,7 +80,7 @@ class digestforum extends exporter {
                     'create' => ['type' => PARAM_BOOL],
                     'subscribe' => ['type' => PARAM_BOOL],
                     'grade' => ['type' => PARAM_BOOL],
-                ]
+                ],
             ],
             'urls' => [
                 'type' => [
@@ -123,7 +123,7 @@ class digestforum extends exporter {
             'name' => $this->digestforum->get_name(),
             'state' => [
                 'groupmode' => $this->digestforum->get_effective_group_mode(),
-                'gradingenabled' => $this->digestforum->is_grading_enabled()
+                'gradingenabled' => $this->digestforum->is_grading_enabled(),
             ],
             'userstate' => [
                 'tracked' => (int) digestforum_tp_is_tracked($this->get_digestforum_record(), $this->related['user']),
@@ -143,30 +143,66 @@ class digestforum extends exporter {
                 'create' => $urlfactory->get_discussion_create_url($this->digestforum)->out(false),
                 'markasread' => $urlfactory->get_mark_all_discussions_as_read_url($this->digestforum)->out(false),
                 'view' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum)->out(false),
-                'sortrepliesasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_REPLIES_ASC)->out(false),
-                'sortrepliesdesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_REPLIES_DESC)->out(false),
-                'sortlastpostasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_LASTPOST_ASC)->out(false),
-                'sortlastpostdesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_LASTPOST_DESC)->out(false),
-                'sortcreatedasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_CREATED_ASC)->out(false),
-                'sortcreateddesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_CREATED_DESC)->out(false),
-                'sortdiscussionasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_DISCUSSION_ASC)->out(false),
-                'sortdiscussiondesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_DISCUSSION_DESC)->out(false),
-                'sortstarterasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_STARTER_ASC)->out(false),
-                'sortstarterdesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_STARTER_DESC)->out(false),
-                'sortgroupasc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_GROUP_ASC)->out(false),
-                'sortgroupdesc' => $urlfactory->get_digestforum_view_url_from_digestforum($this->digestforum, null,
-                    $discussionvault::SORTORDER_GROUP_DESC)->out(false),
+                'sortrepliesasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_REPLIES_ASC
+                )->out(false),
+                'sortrepliesdesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_REPLIES_DESC
+                )->out(false),
+                'sortlastpostasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_LASTPOST_ASC
+                )->out(false),
+                'sortlastpostdesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_LASTPOST_DESC
+                )->out(false),
+                'sortcreatedasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_CREATED_ASC
+                )->out(false),
+                'sortcreateddesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_CREATED_DESC
+                )->out(false),
+                'sortdiscussionasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_DISCUSSION_ASC
+                )->out(false),
+                'sortdiscussiondesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_DISCUSSION_DESC
+                )->out(false),
+                'sortstarterasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_STARTER_ASC
+                )->out(false),
+                'sortstarterdesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_STARTER_DESC
+                )->out(false),
+                'sortgroupasc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_GROUP_ASC
+                )->out(false),
+                'sortgroupdesc' => $urlfactory->get_digestforum_view_url_from_digestforum(
+                    $this->digestforum,
+                    null,
+                    $discussionvault::SORTORDER_GROUP_DESC
+                )->out(false),
             ],
         ];
     }
@@ -183,7 +219,7 @@ class digestforum extends exporter {
             'urlfactory' => 'mod_digestforum\local\factories\url',
             'user' => 'stdClass',
             'currentgroup' => 'int?',
-            'vaultfactory' => 'mod_digestforum\local\factories\vault'
+            'vaultfactory' => 'mod_digestforum\local\factories\vault',
         ];
     }
 

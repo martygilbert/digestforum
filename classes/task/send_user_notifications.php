@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_user_notifications extends \core\task\adhoc_task {
-
     // Use the logging trait to get some nice, juicy, logging.
     use \core\task\logging_trait;
 
@@ -190,8 +189,8 @@ class send_user_notifications extends \core\task\adhoc_task {
             if (!empty($this->recipient->email)) {
                 throw new \moodle_exception('Error sending posts.');
             } else {
-                mtrace("Failed to send emails for the user with ID ".
-                    $this->recipient->id ." due to an empty email address. Skipping re-queuing of the task.");
+                mtrace("Failed to send emails for the user with ID " .
+                    $this->recipient->id . " due to an empty email address. Skipping re-queuing of the task.");
             }
         } else if ($errorcount > 0) {
             // Requeue failed messages as a new task.
@@ -219,7 +218,7 @@ class send_user_notifications extends \core\task\adhoc_task {
             return;
         }
 
-        list($in, $params) = $DB->get_in_or_equal(array_values($postids));
+        [$in, $params] = $DB->get_in_or_equal(array_values($postids));
         $sql = "SELECT p.*, f.id AS digestforum, f.course
                   FROM {digestforum_posts} p
             INNER JOIN {digestforum_discussions} d ON d.id = p.discussion
@@ -250,7 +249,7 @@ class send_user_notifications extends \core\task\adhoc_task {
         }
 
         // Fetch all discussions.
-        list($in, $params) = $DB->get_in_or_equal(array_values($discussionids));
+        [$in, $params] = $DB->get_in_or_equal(array_values($discussionids));
         $this->discussions = $DB->get_records_select('digestforum_discussions', "id {$in}", $params);
         foreach ($this->discussions as $discussion) {
             if (empty($this->digestforumdiscussions[$discussion->digestforum])) {
@@ -260,7 +259,7 @@ class send_user_notifications extends \core\task\adhoc_task {
         }
 
         // Fetch all digestforums.
-        list($in, $params) = $DB->get_in_or_equal(array_values($digestforumids));
+        [$in, $params] = $DB->get_in_or_equal(array_values($digestforumids));
         $this->digestforums = $DB->get_records_select('digestforum', "id {$in}", $params);
         foreach ($this->digestforums as $digestforum) {
             if (empty($this->coursedigestforums[$digestforum->course])) {
@@ -270,11 +269,11 @@ class send_user_notifications extends \core\task\adhoc_task {
         }
 
         // Fetch all courses.
-        list($in, $params) = $DB->get_in_or_equal(array_values($courseids));
+        [$in, $params] = $DB->get_in_or_equal(array_values($courseids));
         $this->courses = $DB->get_records_select('course', "id $in", $params);
 
         // Fetch all authors.
-        list($in, $params) = $DB->get_in_or_equal(array_values($userids));
+        [$in, $params] = $DB->get_in_or_equal(array_values($userids));
         $users = $DB->get_recordset_select('user', "id $in", $params);
         foreach ($users as $user) {
             $this->minimise_user_record($user);
@@ -366,7 +365,7 @@ class send_user_notifications extends \core\task\adhoc_task {
                     ],
                     'fullmessagehtml' => [
                         'footer' => \html_writer::tag('p', get_string('replytopostbyemail', 'mod_digestforum')),
-                    ]
+                    ],
                 ]);
         }
 
@@ -467,7 +466,7 @@ class send_user_notifications extends \core\task\adhoc_task {
             'List-Help: ' . $viewurl->out(),
             'Message-ID: ' . digestforum_get_email_message_id($digestforum->id, $this->recipient->id),
             'X-Course-Id: ' . $course->id,
-            'X-Course-Name: '. format_string($course->fullname, true),
+            'X-Course-Name: ' . format_string($course->fullname, true),
 
             // Headers to help prevent auto-responders.
             'Precedence: Bulk',

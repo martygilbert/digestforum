@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,15 +22,15 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$messageproviders = array (
+$messageproviders = [
     // Ordinary single digestforum posts. Never sent: every post goes out in the daily digest instead.
-    'posts' => array(
+    'posts' => [
         'defaults' => [
             'popup' => MESSAGE_DISALLOWED,
             'email' => MESSAGE_DISALLOWED,
             'airnotifier' => MESSAGE_DISALLOWED,
         ],
-    ),
+    ],
 
     // Forum digest messages. These are only ever sent by email, and users cannot change that.
     'digests' => [
@@ -41,4 +40,4 @@ $messageproviders = array (
             'airnotifier' => MESSAGE_DISALLOWED,
         ],
     ],
-);
+];

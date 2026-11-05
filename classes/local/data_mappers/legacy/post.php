@@ -43,7 +43,7 @@ class post {
      * @return stdClass[]
      */
     public function to_legacy_objects(array $posts): array {
-        return array_map(function(post_entity $post) {
+        return array_map(function (post_entity $post) {
             return (object) [
                 'id' => $post->get_id(),
                 'discussion' => $post->get_discussion_id(),

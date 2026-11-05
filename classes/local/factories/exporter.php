@@ -73,8 +73,12 @@ class exporter {
      * @param url_factory $urlfactory The factory to create urls
      * @param vault_factory $vaultfactory The vault factory
      */
-    public function __construct(legacy_data_mapper_factory $legacydatamapperfactory, manager_factory $managerfactory,
-            url_factory $urlfactory, vault_factory $vaultfactory) {
+    public function __construct(
+        legacy_data_mapper_factory $legacydatamapperfactory,
+        manager_factory $managerfactory,
+        url_factory $urlfactory,
+        vault_factory $vaultfactory
+    ) {
         $this->legacydatamapperfactory = $legacydatamapperfactory;
         $this->managerfactory = $managerfactory;
         $this->urlfactory = $urlfactory;
@@ -138,7 +142,7 @@ class exporter {
             'legacydatamapperfactory' => $this->legacydatamapperfactory,
             'latestpostid' => null,
             'groupsbyid' => $groupsbyid,
-            'favouriteids' => $favouriteids
+            'favouriteids' => $favouriteids,
         ]);
     }
 
@@ -195,7 +199,7 @@ class exporter {
                 'urlfactory' => $this->urlfactory,
                 'user' => $user,
                 'favouriteids' => $favourites,
-                'latestauthors' => $latestauthors
+                'latestauthors' => $latestauthors,
             ]
         );
     }
@@ -258,7 +262,7 @@ class exporter {
                 'user' => $user,
                 'context' => $digestforum->get_context(),
                 'readreceiptcollection' => $readreceiptcollection,
-                'includehtml' => $includehtml
+                'includehtml' => $includehtml,
             ],
             $inlineattachmentsbypostid
         );

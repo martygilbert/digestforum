@@ -100,7 +100,7 @@ class discussion_summaries extends exporter {
         return [
             'summaries' => [
                 'type' => discussion_summary::read_properties_definition(),
-                'multiple' => true
+                'multiple' => true,
             ],
             'state' => [
                 'type' => [
@@ -129,16 +129,16 @@ class discussion_summaries extends exporter {
             $latestauthor = $latestauthors[$discussionid] ?? null;
             $related['latestauthor'] = $latestauthor;
             $exporter = new discussion_summary(
-                    $discussion,
-                    $this->groupsbyid,
-                    $this->groupsbyauthorid,
-                    $replycount,
-                    $unreadcount,
-                    $latestpostid,
-                    $this->postauthorcontextids[$discussion->get_first_post_author()->get_id()],
-                    $this->postauthorcontextids[$latestauthor->get_id()],
-                    $related
-                );
+                $discussion,
+                $this->groupsbyid,
+                $this->groupsbyauthorid,
+                $replycount,
+                $unreadcount,
+                $latestpostid,
+                $this->postauthorcontextids[$discussion->get_first_post_author()->get_id()],
+                $this->postauthorcontextids[$latestauthor->get_id()],
+                $related
+            );
             $exporteddiscussions[] = $exporter->export($output);
         }
 
@@ -164,7 +164,7 @@ class discussion_summaries extends exporter {
             'urlfactory' => 'mod_digestforum\local\factories\url',
             'user' => 'stdClass',
             'favouriteids' => 'int[]?',
-            'latestauthors' => 'mod_digestforum\local\entities\author[]?'
+            'latestauthors' => 'mod_digestforum\local\entities\author[]?',
         ];
     }
 }

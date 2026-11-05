@@ -85,7 +85,7 @@ class legacy_data_mapper {
      * @return author_data_mapper|discussion_data_mapper|digestforum_data_mapper|post_data_mapper
      */
     public function get_legacy_data_mapper_for_vault($entity) {
-        switch($entity) {
+        switch ($entity) {
             case 'digestforum':
                 return $this->get_digestforum_data_mapper();
             case 'discussion':

@@ -38,7 +38,6 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class reply_handler extends \core\message\inbound\handler {
-
     /**
      * Return a description for the current handler.
      *
@@ -70,22 +69,22 @@ class reply_handler extends \core\message\inbound\handler {
         global $CFG, $DB, $USER;
 
         // Load the post being replied to.
-        $post = $DB->get_record('digestforum_posts', array('id' => $record->datavalue));
+        $post = $DB->get_record('digestforum_posts', ['id' => $record->datavalue]);
         if (!$post) {
             mtrace("--> Unable to find a post matching with id {$record->datavalue}");
             return false;
         }
 
         // Load the discussion that this post is in.
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion));
+        $discussion = $DB->get_record('digestforum_discussions', ['id' => $post->discussion]);
         if (!$post) {
             mtrace("--> Unable to find the discussion for post {$record->datavalue}");
             return false;
         }
 
         // Load the other required data.
-        $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum));
-        $course = $DB->get_record('course', array('id' => $digestforum->course));
+        $digestforum = $DB->get_record('digestforum', ['id' => $discussion->digestforum]);
+        $course = $DB->get_record('course', ['id' => $digestforum->course]);
         $cm = get_fast_modinfo($course->id)->instances['digestforum'][$digestforum->id];
         $modcontext = \context_module::instance($cm->id);
         $usercontext = \context_user::instance($USER->id);
@@ -157,7 +156,7 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->itemid       = file_get_unused_draft_itemid();
         $addpost->deleted      = 0;
 
-        list ($message, $format) = self::remove_quoted_text($messagedata);
+         [$message, $format] = self::remove_quoted_text($messagedata);
         $addpost->message = $message;
         $addpost->messageformat = $format;
 
@@ -235,15 +234,15 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->id = digestforum_add_new_post($addpost, true);
 
         // Log the new post creation.
-        $params = array(
+        $params = [
             'context' => $modcontext,
             'objectid' => $addpost->id,
-            'other' => array(
+            'other' => [
                 'discussionid'  => $discussion->id,
                 'digestforumid'       => $digestforum->id,
                 'digestforumtype'     => $digestforum->type,
-            )
-        );
+            ],
+        ];
         $event = \mod_digestforum\event\post_created::create($params);
         $event->add_record_snapshot('digestforum_posts', $addpost);
         $event->add_record_snapshot('digestforum_discussions', $discussion);
@@ -308,7 +307,7 @@ class reply_handler extends \core\message\inbound\handler {
     public function get_success_message(\stdClass $messagedata, $handlerresult) {
         $a = new \stdClass();
         $a->subject = $handlerresult->subject;
-        $discussionurl = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $handlerresult->discussion));
+        $discussionurl = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $handlerresult->discussion]);
         $discussionurl->set_anchor('p' . $handlerresult->id);
         $a->discussionurl = $discussionurl->out();
 

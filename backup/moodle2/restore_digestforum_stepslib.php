@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -30,10 +29,9 @@
  * Structure step to restore one digestforum activity
  */
 class restore_digestforum_activity_structure_step extends restore_activity_structure_step {
-
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('digestforum', '/activity/digestforum');
@@ -123,7 +121,7 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
 
         // If !post->parent, it's the 1st post. Set it in discussion
         if (empty($data->parent)) {
-            $DB->set_field('digestforum_discussions', 'firstpost', $newitemid, array('id' => $data->discussion));
+            $DB->set_field('digestforum_discussions', 'firstpost', $newitemid, ['id' => $data->discussion]);
         }
     }
 
@@ -179,14 +177,17 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         // Create only a new subscription if it does not already exist (see MDL-59854).
-        if ($subscription = $DB->get_record('digestforum_subscriptions',
-                array('digestforum' => $data->digestforum, 'userid' => $data->userid))) {
+        if (
+            $subscription = $DB->get_record(
+                'digestforum_subscriptions',
+                ['digestforum' => $data->digestforum, 'userid' => $data->userid]
+            )
+        ) {
             $this->set_mapping('digestforum_subscription', $oldid, $subscription->id, true);
         } else {
             $newitemid = $DB->insert_record('digestforum_subscriptions', $data);
             $this->set_mapping('digestforum_subscription', $oldid, $newitemid, true);
         }
-
     }
 
     protected function process_digestforum_discussion_sub($data) {
@@ -278,8 +279,8 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         // (non-userinfo backup/restore) create the discussion here, using digestforum
         // information as base for the initial post.
         $digestforumid = $this->task->get_activityid();
-        $digestforumrec = $DB->get_record('digestforum', array('id' => $digestforumid));
-        if ($digestforumrec->type == 'single' && !$DB->record_exists('digestforum_discussions', array('digestforum' => $digestforumid))) {
+        $digestforumrec = $DB->get_record('digestforum', ['id' => $digestforumid]);
+        if ($digestforumrec->type == 'single' && !$DB->record_exists('digestforum_discussions', ['digestforum' => $digestforumid])) {
             // Create single discussion/lead post from digestforum data
             $sd = new stdClass();
             $sd->course   = $digestforumrec->course;
@@ -292,14 +293,14 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
             $sd->mailnow  = false;
             $sdid = digestforum_add_discussion($sd, null, null, $this->task->get_userid());
             // Mark the post as mailed
-            $DB->set_field ('digestforum_posts','mailed', '1', array('discussion' => $sdid));
+            $DB->set_field('digestforum_posts', 'mailed', '1', ['discussion' => $sdid]);
             // Copy all the files from mod_foum/intro to mod_digestforum/post
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_digestforum', 'intro');
             foreach ($files as $file) {
                 $newfilerecord = new stdClass();
                 $newfilerecord->filearea = 'post';
-                $newfilerecord->itemid   = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $sdid));
+                $newfilerecord->itemid   = $DB->get_field('digestforum_discussions', 'firstpost', ['id' => $sdid]);
                 $fs->create_file_from_storedfile($newfilerecord, $file);
             }
         }

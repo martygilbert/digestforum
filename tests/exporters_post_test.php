@@ -92,7 +92,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachment' => 0,
             'totalscore' => 0,
             'mailnow' => 1,
-            'deleted' => 0
+            'deleted' => 0,
         ]);
 
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, ['foo', 'bar']);
@@ -152,7 +152,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachments' => [$attachment],
             'tags' => $tags,
             'rating' => null,
-            'includehtml' => true
+            'includehtml' => true,
         ]);
 
         $exportedpost = $exporter->export($renderer);
@@ -208,11 +208,11 @@ final class exporters_post_test extends \advanced_testcase {
             ],
             'Test timed post future' => [
                 true,
-                1000
+                1000,
             ],
             'Test timed post past' => [
                 true,
-                -1000
+                -1000,
             ],
         ];
     }
@@ -237,7 +237,7 @@ final class exporters_post_test extends \advanced_testcase {
         $discussion = $digestforumgenerator->create_discussion((object) [
             'course' => $digestforum->course,
             'userid' => $user->id,
-            'digestforum' => $digestforum->id
+            'digestforum' => $digestforum->id,
         ]);
         $now = time();
         $post = $digestforumgenerator->create_post((object) [
@@ -252,7 +252,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachment' => 0,
             'totalscore' => 0,
             'mailnow' => 1,
-            'deleted' => 1
+            'deleted' => 1,
         ]);
 
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, ['foo', 'bar']);
@@ -308,7 +308,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachments' => [$attachment],
             'tags' => $tags,
             'rating' => null,
-            'includehtml' => true
+            'includehtml' => true,
         ]);
 
         $exportedpost = $exporter->export($renderer);
@@ -346,7 +346,7 @@ final class exporters_post_test extends \advanced_testcase {
         $discussion = $digestforumgenerator->create_discussion((object) [
             'course' => $digestforum->course,
             'userid' => $user->id,
-            'digestforum' => $digestforum->id
+            'digestforum' => $digestforum->id,
         ]);
         $now = time();
         $post = $digestforumgenerator->create_post((object) [
@@ -361,7 +361,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachment' => 0,
             'totalscore' => 0,
             'mailnow' => 1,
-            'deleted' => 0
+            'deleted' => 0,
         ]);
 
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, ['foo', 'bar']);
@@ -417,7 +417,7 @@ final class exporters_post_test extends \advanced_testcase {
             'attachments' => [$attachment],
             'tags' => $tags,
             'rating' => null,
-            'includehtml' => true
+            'includehtml' => true,
         ]);
 
         $exportedpost = $exporter->export($renderer);
@@ -528,8 +528,12 @@ class test_capability_manager extends capability_manager {
      * @param bool $hasreplies
      * @return bool
      */
-    public function can_delete_post(\stdClass $user, discussion_entity $discussion, post_entity $post,
-                                    bool $hasreplies = false): bool {
+    public function can_delete_post(
+        \stdClass $user,
+        discussion_entity $discussion,
+        post_entity $post,
+        bool $hasreplies = false
+    ): bool {
         return $this->delete;
     }
 

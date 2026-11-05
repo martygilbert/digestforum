@@ -30,90 +30,90 @@ final class output_email_test extends \advanced_testcase {
      * Data provider for the postdate function tests.
      */
     public static function postdate_provider(): array {
-        return array(
-            'Timed discussions disabled, timestart unset' => array(
-                'globalconfig'      => array(
+        return [
+            'Timed discussions disabled, timestart unset' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 0,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
-                ),
+                ],
+                'discussionconfig'  => [
+                ],
                 'expectation'       => 1000,
-            ),
-            'Timed discussions disabled, timestart set and newer' => array(
-                'globalconfig'      => array(
+            ],
+            'Timed discussions disabled, timestart set and newer' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 0,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
+                ],
+                'discussionconfig'  => [
                     'timestart' => 2000,
-                ),
+                ],
                 'expectation'       => 1000,
-            ),
-            'Timed discussions disabled, timestart set but older' => array(
-                'globalconfig'      => array(
+            ],
+            'Timed discussions disabled, timestart set but older' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 0,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
+                ],
+                'discussionconfig'  => [
                     'timestart' => 500,
-                ),
+                ],
                 'expectation'       => 1000,
-            ),
-            'Timed discussions enabled, timestart unset' => array(
-                'globalconfig'      => array(
+            ],
+            'Timed discussions enabled, timestart unset' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 1,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
-                ),
+                ],
+                'discussionconfig'  => [
+                ],
                 'expectation'       => 1000,
-            ),
-            'Timed discussions enabled, timestart set and newer' => array(
-                'globalconfig'      => array(
+            ],
+            'Timed discussions enabled, timestart set and newer' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 1,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
+                ],
+                'discussionconfig'  => [
                     'timestart' => 2000,
-                ),
+                ],
                 'expectation'       => 2000,
-            ),
-            'Timed discussions enabled, timestart set but older' => array(
-                'globalconfig'      => array(
+            ],
+            'Timed discussions enabled, timestart set but older' => [
+                'globalconfig'      => [
                     'digestforum_enabletimedposts' => 1,
-                ),
-                'digestforumconfig'       => array(
-                ),
-                'postconfig'        => array(
+                ],
+                'digestforumconfig'       => [
+                ],
+                'postconfig'        => [
                     'modified'  => 1000,
-                ),
-                'discussionconfig'  => array(
+                ],
+                'discussionconfig'  => [
                     'timestart' => 500,
-                ),
+                ],
                 'expectation'       => 1000,
-            ),
-        );
+            ],
+        ];
     }
 
     /**
@@ -139,22 +139,23 @@ final class output_email_test extends \advanced_testcase {
         // Create the fixture.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) ['course' => $course->id]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
 
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a new discussion.
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion(
-            (object) array_merge($discussionconfig, array(
+            (object) array_merge($discussionconfig, [
                 'course'    => $course->id,
                 'digestforum'     => $digestforum->id,
                 'userid'    => $user->id,
-            )));
+            ])
+        );
 
         // Apply the discussion configuration.
         // Some settings are ignored by the generator and must be set manually.
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $discussion->id));
+        $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
         foreach ($discussionconfig as $key => $value) {
             $discussion->$key = $value;
         }
@@ -162,7 +163,7 @@ final class output_email_test extends \advanced_testcase {
 
         // Apply the post configuration.
         // Some settings are ignored by the generator and must be set manually.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         foreach ($postconfig as $key => $value) {
             $post->$key = $value;
         }
@@ -170,15 +171,15 @@ final class output_email_test extends \advanced_testcase {
 
         // Create the renderable.
         $renderable = new digestforum_post_email(
-                $course,
-                $cm,
-                $digestforum,
-                $discussion,
-                $post,
-                $user,
-                $user,
-                true
-            );
+            $course,
+            $cm,
+            $digestforum,
+            $discussion,
+            $post,
+            $user,
+            $user,
+            true
+        );
 
         // Check the postdate matches our expectations.
         $this->assertEquals(userdate($expectation, "", \core_date::get_user_timezone($user)), $renderable->get_postdate());

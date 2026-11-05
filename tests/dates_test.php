@@ -38,7 +38,6 @@ use core\activity_dates;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class dates_test extends advanced_testcase {
-
     /**
      * Data provider for get_dates_for_module().
      * @return array[]
@@ -50,17 +49,17 @@ final class dates_test extends advanced_testcase {
 
         return [
             'without any dates' => [
-                null, []
+                null, [],
             ],
             'future due date' => [
                 $after, [
                     ['label' => 'Due:', 'timestamp' => $after, 'dataid' => 'duedate'],
-                ]
+                ],
             ],
             'due date is past' => [
                 $before, [
                     ['label' => 'Due:', 'timestamp' => $before, 'dataid' => 'duedate'],
-                ]
+                ],
             ],
         ];
     }

@@ -471,8 +471,12 @@ class capability {
      * @return bool
      * @throws moodle_exception
      */
-    public function validate_delete_post(stdClass $user, discussion_entity $discussion, post_entity $post,
-            bool $hasreplies = false): void {
+    public function validate_delete_post(
+        stdClass $user,
+        discussion_entity $discussion,
+        post_entity $post,
+        bool $hasreplies = false
+    ): void {
         global $CFG;
 
         $digestforum = $this->get_digestforum();
@@ -487,9 +491,10 @@ class capability {
         $ineditingtime = $post->get_age() < $CFG->maxeditingtime;
         $mailnow = $post->should_mail_now();
 
-        if (!($ownpost && $ineditingtime && has_capability('mod/digestforum:deleteownpost', $context, $user) && !$mailnow ||
-                has_capability('mod/digestforum:deleteanypost', $context, $user))) {
-
+        if (
+            !($ownpost && $ineditingtime && has_capability('mod/digestforum:deleteownpost', $context, $user) && !$mailnow ||
+                has_capability('mod/digestforum:deleteanypost', $context, $user))
+        ) {
             throw new moodle_exception('cannotdeletepost', 'digestforum');
         }
 
@@ -512,8 +517,12 @@ class capability {
      * @param bool $hasreplies Whether the post has replies
      * @return bool
      */
-    public function can_delete_post(stdClass $user, discussion_entity $discussion, post_entity $post,
-            bool $hasreplies = false): bool {
+    public function can_delete_post(
+        stdClass $user,
+        discussion_entity $discussion,
+        post_entity $post,
+        bool $hasreplies = false
+    ): bool {
 
         try {
             $this->validate_delete_post($user, $discussion, $post, $hasreplies);

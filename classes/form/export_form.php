@@ -26,8 +26,8 @@ namespace mod_digestforum\form;
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
-require_once($CFG->libdir.'/formslib.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
+require_once($CFG->libdir . '/formslib.php');
 
 /**
  * Export discussion form.
@@ -37,7 +37,6 @@ require_once($CFG->libdir.'/formslib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL Juv3 or later
  */
 class export_form extends \moodleform {
-
     /**
      * Define the form - called by parent constructor
      */
@@ -55,7 +54,7 @@ class export_form extends \moodleform {
             'noselectionstring' => get_string('allusers', 'mod_digestforum'),
             'data-contextid' => $digestforum->get_context()->id,
             'courseid' => $digestforum->get_course_id(),
-                'valuehtmlcallback' => function($value) {
+                'valuehtmlcallback' => function ($value) {
                     global $OUTPUT;
 
                     $userfieldsapi = \core_user\fields::for_name();
@@ -66,13 +65,13 @@ class export_form extends \moodleform {
                         'fullname' => fullname($user),
                     ];
                     return $OUTPUT->render_from_template('mod_digestforum/form-user-selector-suggestion', $useroptiondata);
-                }
+                },
         ];
         $mform->addElement('autocomplete', 'useridsselected', get_string('users'), [], $options);
 
         $vaultfactory = \mod_digestforum\local\container::get_vault_factory();
         $discussionvault = $vaultfactory->get_discussion_vault();
-        $discussions = array_map(function($discussion) {
+        $discussions = array_map(function ($discussion) {
             return $discussion->get_name();
         }, $discussionvault->get_all_discussions_in_digestforum($digestforum));
         $options = [
@@ -82,10 +81,18 @@ class export_form extends \moodleform {
         $mform->addElement('autocomplete', 'discussionids', get_string('discussions', 'mod_digestforum'), $discussions, $options);
 
         // Date fields.
-        $mform->addElement('date_time_selector', 'from', get_string('postsfrom', 'mod_digestforum'),
-                ['optional' => true]);
-        $mform->addElement('date_time_selector', 'to', get_string('poststo', 'mod_digestforum'),
-                ['optional' => true]);
+        $mform->addElement(
+            'date_time_selector',
+            'from',
+            get_string('postsfrom', 'mod_digestforum'),
+            ['optional' => true]
+        );
+        $mform->addElement(
+            'date_time_selector',
+            'to',
+            get_string('poststo', 'mod_digestforum'),
+            ['optional' => true]
+        );
 
         // Export formats.
         $formats = \core_plugin_manager::instance()->get_plugins_of_type('dataformat');

@@ -126,11 +126,11 @@ class exported_discussion_summaries {
         $replycounts = $postvault->get_reply_count_for_discussion_ids($user, $discussionids, $canseeanyprivatereply);
         $latestposts = $postvault->get_latest_posts_for_discussion_ids($user, $discussionids, $canseeanyprivatereply);
         $latestauthors = $this->get_latest_posts_authors($latestposts);
-        $latestpostsids = array_map(function($post) {
+        $latestpostsids = array_map(function ($post) {
             return $post->get_id();
         }, $latestposts);
 
-        $postauthorids = array_unique(array_reduce($discussions, function($carry, $summary) use ($latestposts){
+        $postauthorids = array_unique(array_reduce($discussions, function ($carry, $summary) use ($latestposts) {
             $firstpostauthorid = $summary->get_first_post_author()->get_id();
             $discussion = $summary->get_discussion();
             $lastpostauthorid = $latestposts[$discussion->get_id()]->get_author_id();
@@ -164,17 +164,19 @@ class exported_discussion_summaries {
         $exportedposts = (array) $summaryexporter->export($this->renderer);
         $firstposts = $postvault->get_first_post_for_discussion_ids($discussionids);
 
-        array_walk($exportedposts['summaries'], function($summary) use ($firstposts, $latestposts) {
+        array_walk($exportedposts['summaries'], function ($summary) use ($firstposts, $latestposts) {
             $summary->discussion->times['created'] = (int) $firstposts[$summary->discussion->firstpostid]->get_time_created();
             $summary->discussion->times['modified'] = (int) $latestposts[$summary->discussion->id]->get_time_created();
         });
 
         // Pass the current, preferred sort order for the discussions list.
         $discussionlistvault = $this->vaultfactory->get_discussions_in_digestforum_vault();
-        $sortorder = get_user_preferences('digestforum_discussionlistsortorder',
-            $discussionlistvault::SORTORDER_LASTPOST_DESC);
+        $sortorder = get_user_preferences(
+            'digestforum_discussionlistsortorder',
+            $discussionlistvault::SORTORDER_LASTPOST_DESC
+        );
 
-        $sortoptions = array(
+        $sortoptions = [
             'islastpostdesc' => $sortorder == $discussionlistvault::SORTORDER_LASTPOST_DESC,
             'islastpostasc' => $sortorder == $discussionlistvault::SORTORDER_LASTPOST_ASC,
             'isrepliesdesc' => $sortorder == $discussionlistvault::SORTORDER_REPLIES_DESC,
@@ -187,7 +189,7 @@ class exported_discussion_summaries {
             'isstarterasc' => $sortorder == $discussionlistvault::SORTORDER_STARTER_ASC,
             'isgroupdesc' => $sortorder == $discussionlistvault::SORTORDER_GROUP_DESC,
             'isgroupasc' => $sortorder == $discussionlistvault::SORTORDER_GROUP_ASC,
-        );
+        ];
 
         $exportedposts['state']['sortorder'] = $sortoptions;
 
@@ -224,7 +226,7 @@ class exported_discussion_summaries {
     private function get_latest_posts_authors($latestposts) {
         $authors = $this->vaultfactory->get_author_vault()->get_authors_for_posts($latestposts);
 
-        $mappedauthors = array_reduce($latestposts, function($carry, $item) use ($authors) {
+        $mappedauthors = array_reduce($latestposts, function ($carry, $item) use ($authors) {
             $carry[$item->get_discussion_id()] = $authors[$item->get_author_id()];
 
             return $carry;
@@ -254,14 +256,18 @@ class exported_discussion_summaries {
     private function get_author_groups_from_posts(array $posts, $digestforum): array {
         $course = $digestforum->get_course_record();
         $coursemodule = $digestforum->get_course_module_record();
-        $authorids = array_reduce($posts, function($carry, $post) {
+        $authorids = array_reduce($posts, function ($carry, $post) {
             $carry[$post->get_author_id()] = true;
             return $carry;
         }, []);
-        $authorgroups = groups_get_all_groups($course->id, array_keys($authorids), $coursemodule->groupingid,
-                'g.*, gm.id, gm.groupid, gm.userid');
+        $authorgroups = groups_get_all_groups(
+            $course->id,
+            array_keys($authorids),
+            $coursemodule->groupingid,
+            'g.*, gm.id, gm.groupid, gm.userid'
+        );
 
-        $authorgroups = array_reduce($authorgroups, function($carry, $group) {
+        $authorgroups = array_reduce($authorgroups, function ($carry, $group) {
             // Clean up data returned from groups_get_all_groups.
             $userid = $group->userid;
             $groupid = $group->groupid;

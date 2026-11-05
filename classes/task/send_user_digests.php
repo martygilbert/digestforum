@@ -37,7 +37,6 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_user_digests extends \core\task\adhoc_task {
-
     // Use the logging trait to get some nice, juicy, logging.
     use \core\task\logging_trait;
 
@@ -241,7 +240,13 @@ class send_user_digests extends \core\task\adhoc_task {
             // Fetch additional values relating to this digestforum.
             if (!isset($this->canpostto[$discussion->id])) {
                 $this->canpostto[$discussion->id] = digestforum_user_can_post(
-                        $digestforum, $discussion, $this->recipient, $cm, $course, $modcontext);
+                    $digestforum,
+                    $discussion,
+                    $this->recipient,
+                    $cm,
+                    $course,
+                    $modcontext
+                );
             }
 
             if (!isset($this->viewfullnames[$digestforum->id])) {
@@ -372,16 +377,16 @@ class send_user_digests extends \core\task\adhoc_task {
             return;
         }
 
-        list($in, $params) = $DB->get_in_or_equal($discussionids);
+        [$in, $params] = $DB->get_in_or_equal($discussionids);
         $this->discussions = $DB->get_records_select('digestforum_discussions', "id {$in}", $params);
 
-        list($in, $params) = $DB->get_in_or_equal($digestforumids);
+        [$in, $params] = $DB->get_in_or_equal($digestforumids);
         $this->digestforums = $DB->get_records_select('digestforum', "id {$in}", $params);
 
-        list($in, $params) = $DB->get_in_or_equal($courseids);
+        [$in, $params] = $DB->get_in_or_equal($courseids);
         $this->courses = $DB->get_records_select('course', "id $in", $params);
 
-        list($in, $params) = $DB->get_in_or_equal($userids);
+        [$in, $params] = $DB->get_in_or_equal($userids);
         $this->users = $DB->get_records_select('user', "id $in", $params);
 
         $this->fill_digest_cache();
@@ -470,8 +475,11 @@ class send_user_digests extends \core\task\adhoc_task {
                     'style' => 'font-size: 20px; line-height: 1.3; margin: 0 0 4px 0; color: #1d2125;',
                 ]);
             if ($headerdata->openrate >= 0) {
-                $this->notificationhtml .= html_writer::div(get_string('digestmailheaderstat', 'digestforum', $headerdata),
-                        'openrate', ['style' => 'font-size: 13px; color: #6a737b;']);
+                $this->notificationhtml .= html_writer::div(
+                    get_string('digestmailheaderstat', 'digestforum', $headerdata),
+                    'openrate',
+                    ['style' => 'font-size: 13px; color: #6a737b;']
+                );
             }
             $this->notificationhtml .= html_writer::div('', '', [
                     'style' => 'border-top: 3px solid #1d2125; margin: 12px 0 8px 0;',
@@ -489,9 +497,11 @@ class send_user_digests extends \core\task\adhoc_task {
      * @return  string
      */
     protected function wrap_html(string $html): string {
-        $style = html_writer::tag('style',
-                '.digestforum-digest img { max-width: 100% !important; height: auto !important; } ' .
-                '.digestforum-digest table { max-width: 100% !important; }');
+        $style = html_writer::tag(
+            'style',
+            '.digestforum-digest img { max-width: 100% !important; height: auto !important; } ' .
+            '.digestforum-digest table { max-width: 100% !important; }'
+        );
 
         return $style . html_writer::div($html, 'digestforum-digest', [
                 'style' => 'max-width: 600px; margin: 0 auto; padding: 16px; ' .
@@ -576,7 +586,6 @@ class send_user_digests extends \core\task\adhoc_task {
             // Create an array of postid's for this user to mark as read.
             $this->markpostsasread[] = $post->id;
         }
-
     }
 
     /**
@@ -615,12 +624,12 @@ class send_user_digests extends \core\task\adhoc_task {
     protected function send_mail(string $messageid) {
         // Headers to help prevent auto-responders.
         $userfrom = \core_user::get_noreply_user();
-        $userfrom->customheaders = array(
+        $userfrom->customheaders = [
             "Precedence: Bulk",
             'X-Auto-Response-Suppress: All',
             'Auto-Submitted: auto-generated',
             'Message-ID: ' . $messageid,
-        );
+        ];
 
         $eventdata = new \core\message\message();
         $eventdata->courseid = SITEID;

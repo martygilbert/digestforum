@@ -111,13 +111,13 @@ final class mail_group_test extends \advanced_testcase {
         // - author, enrolled in group A; and
         // - recipient, enrolled in group B; and
         // - other, enrolled in the course, but no groups.
-        list($author, $recipient, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $recipient, $otheruser] = $this->helper_create_users($course, 3);
 
         // Create one teacher, not in any group and no accessallgroups capability.
-        list($teacher) = $this->helper_create_users($course, 1, 'teacher');
+        [$teacher] = $this->helper_create_users($course, 1, 'teacher');
 
         // Create one editing teacher, not in any group but with accessallgroups capability.
-        list($editingteacher) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editingteacher] = $this->helper_create_users($course, 1, 'editingteacher');
 
         $groupa = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
@@ -131,7 +131,7 @@ final class mail_group_test extends \advanced_testcase {
         ]);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author, [
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author, [
             'groupid' => $groupa->id,
         ]);
 
@@ -190,13 +190,13 @@ final class mail_group_test extends \advanced_testcase {
         // - author, enrolled in group A; and
         // - recipient, enrolled in group B; and
         // - other, enrolled in the course, but no groups.
-        list($author, $recipient, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $recipient, $otheruser] = $this->helper_create_users($course, 3);
 
         // Create one teacher, not in any group and no accessallgroups capability.
-        list($teacher) = $this->helper_create_users($course, 1, 'teacher');
+        [$teacher] = $this->helper_create_users($course, 1, 'teacher');
 
         // Create one editing teacher, not in any group but with accessallgroups capability.
-        list($editingteacher) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editingteacher] = $this->helper_create_users($course, 1, 'editingteacher');
 
         $groupa = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $groupb = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
@@ -210,7 +210,7 @@ final class mail_group_test extends \advanced_testcase {
         ]);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author, [
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author, [
             'groupid' => $groupa->id,
         ]);
 

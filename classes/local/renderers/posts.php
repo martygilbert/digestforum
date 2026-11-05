@@ -82,11 +82,11 @@ class posts {
         array $posts
     ): string {
         // Format the digestforums and discussion to make them more easily accessed later.
-        $digestforums = array_reduce($digestforums, function($carry, $digestforum) {
+        $digestforums = array_reduce($digestforums, function ($carry, $digestforum) {
             $carry[$digestforum->get_id()] = $digestforum;
             return $carry;
         }, []);
-        $discussions = array_reduce($discussions, function($carry, $discussion) {
+        $discussions = array_reduce($discussions, function ($carry, $discussion) {
             $carry[$discussion->get_id()] = $discussion;
             return $carry;
         }, []);

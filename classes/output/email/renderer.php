@@ -37,7 +37,6 @@ require_once(__DIR__ . '/../../../renderer.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \mod_digestforum_renderer {
-
     /**
      * The template name for this renderer.
      *
@@ -65,7 +64,8 @@ class renderer extends \mod_digestforum_renderer {
             $post->id,
             [
                 'includetoken' => true,
-            ]);
+            ]
+        );
         $options = new \stdClass();
         $options->para = true;
         $options->context = $context;

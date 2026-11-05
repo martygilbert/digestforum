@@ -83,11 +83,11 @@ class post_created extends \core\event\base {
             // Single discussion digestforums are an exception. We show
             // the digestforum itself since it only has one discussion
             // thread.
-            $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
+            $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $this->other['digestforumid']]);
         } else {
-            $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->other['discussionid']));
+            $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->other['discussionid']]);
         }
-        $url->set_anchor('p'.$this->objectid);
+        $url->set_anchor('p' . $this->objectid);
         return $url;
     }
 
@@ -118,13 +118,13 @@ class post_created extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_posts', 'restore' => 'digestforum_post');
+        return ['db' => 'digestforum_posts', 'restore' => 'digestforum_post'];
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
-        $othermapped['discussionid'] = array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
+        $othermapped['discussionid'] = ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
 
         return $othermapped;
     }

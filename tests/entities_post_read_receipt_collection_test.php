@@ -77,16 +77,16 @@ final class entities_post_read_receipt_collection_test extends \advanced_testcas
         $collection = new collection_entity([
             (object) [
                 'postid' => 1,
-                'userid' => $user->id + 1
+                'userid' => $user->id + 1,
             ],
             (object) [
                 'postid' => 1,
-                'userid' => $user->id
+                'userid' => $user->id,
             ],
             (object) [
                 'postid' => 4,
-                'userid' => $user->id + 1
-            ]
+                'userid' => $user->id + 1,
+            ],
         ]);
 
         $this->assertEquals(true, $collection->has_user_read_post($user, $post));

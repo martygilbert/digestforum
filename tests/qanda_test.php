@@ -113,13 +113,13 @@ final class qanda_test extends \advanced_testcase {
         // - author, enrolled in group A; and
         // - recipient, enrolled in group B; and
         // - other, enrolled in the course, but no groups.
-        list($author, $recipient, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $recipient, $otheruser] = $this->helper_create_users($course, 3);
 
         // Create one editing teacher, not in any group but with accessallgroups capability.
-        list($editingteacher) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editingteacher] = $this->helper_create_users($course, 1, 'editingteacher');
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $editingteacher);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $editingteacher);
         $reply = $this->helper_reply_to_post($post, $author);
         $otherreply = $this->helper_reply_to_post($post, $recipient);
         $DB->execute("UPDATE {digestforum_posts} SET modified = modified - 1");

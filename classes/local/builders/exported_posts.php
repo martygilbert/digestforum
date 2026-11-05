@@ -128,11 +128,11 @@ class exported_posts {
         bool $includeinlineattachments = false
     ): array {
         // Format the digestforums and discussion to make them more easily accessed later.
-        $digestforums = array_reduce($digestforums, function($carry, $digestforum) {
+        $digestforums = array_reduce($digestforums, function ($carry, $digestforum) {
             $carry[$digestforum->get_id()] = $digestforum;
             return $carry;
         }, []);
-        $discussions = array_reduce($discussions, function($carry, $discussion) {
+        $discussions = array_reduce($discussions, function ($carry, $discussion) {
             $carry[$discussion->get_id()] = $discussion;
             return $carry;
         }, []);
@@ -165,7 +165,7 @@ class exported_posts {
 
             // Exclude posts the user cannot see, such as certain posts in Q and A digestforums.
             $capabilitymanager = $this->managerfactory->get_capability_manager($digestforum);
-            $groupedposts = array_filter($groupedposts, function($post) use ($capabilitymanager, $user, $discussion) {
+            $groupedposts = array_filter($groupedposts, function ($post) use ($capabilitymanager, $user, $discussion) {
                 return $capabilitymanager->can_view_post($user, $discussion, $post);
             });
 
@@ -226,7 +226,7 @@ class exported_posts {
      * @return array List of grouped posts. Each group has a discussion, digestforum, and posts.
      */
     private function group_posts_by_discussion(array $digestforums, array $discussions, array $posts): array {
-        return array_reduce($posts, function($carry, $post) use ($digestforums, $discussions) {
+        return array_reduce($posts, function ($carry, $post) use ($digestforums, $discussions) {
             $discussionid = $post->get_discussion_id();
             if (!isset($discussions[$discussionid])) {
                 throw new moodle_exception('Unable to find discussion with id ' . $discussionid);
@@ -245,7 +245,7 @@ class exported_posts {
                 $carry[$discussionid] = [
                     'digestforum' => $digestforums[$digestforumid],
                     'discussion' => $discussions[$discussionid],
-                    'posts' => [$post]
+                    'posts' => [$post],
                 ];
             }
 
@@ -287,14 +287,14 @@ class exported_posts {
     private function get_inline_attachments_for_posts(array $groupedposts): array {
         $inlineattachmentsbypostid = [];
         $postattachmentvault = $this->vaultfactory->get_post_attachment_vault();
-        $postsbydigestforum = array_reduce($groupedposts, function($carry, $grouping) {
+        $postsbydigestforum = array_reduce($groupedposts, function ($carry, $grouping) {
             ['digestforum' => $digestforum, 'posts' => $posts] = $grouping;
 
             $digestforumid = $digestforum->get_id();
             if (!isset($carry[$digestforumid])) {
                 $carry[$digestforumid] = [
                     'digestforum' => $digestforum,
-                    'posts' => []
+                    'posts' => [],
                 ];
             }
 
@@ -325,14 +325,14 @@ class exported_posts {
     private function get_attachments_for_posts(array $groupedposts): array {
         $attachmentsbypostid = [];
         $postattachmentvault = $this->vaultfactory->get_post_attachment_vault();
-        $postsbydigestforum = array_reduce($groupedposts, function($carry, $grouping) {
+        $postsbydigestforum = array_reduce($groupedposts, function ($carry, $grouping) {
             ['digestforum' => $digestforum, 'posts' => $posts] = $grouping;
 
             $digestforumid = $digestforum->get_id();
             if (!isset($carry[$digestforumid])) {
                 $carry[$digestforumid] = [
                     'digestforum' => $digestforum,
-                    'posts' => []
+                    'posts' => [],
                 ];
             }
 
@@ -378,11 +378,11 @@ class exported_posts {
                 $coursemodule = $digestforum->get_course_module_record();
                 $authoridsbycourseid[$courseid] = [
                     'groupingid' => $coursemodule->groupingid,
-                    'authorids' => []
+                    'authorids' => [],
                 ];
             }
 
-            $authorids = array_map(function($post) {
+            $authorids = array_map(function ($post) {
                 return $post->get_author_id();
             }, $posts);
 
@@ -433,7 +433,7 @@ class exported_posts {
      * @return array Sets of tags indexed by post id.
      */
     private function get_tags_from_posts(array $posts): array {
-        $postids = array_map(function($post) {
+        $postids = array_map(function ($post) {
             return $post->get_id();
         }, $posts);
         return core_tag_tag::get_items_tags('mod_digestforum', 'digestforum_posts', $postids);
@@ -450,14 +450,14 @@ class exported_posts {
     private function get_ratings_from_posts(stdClass $user, array $groupedposts) {
         $ratingsbypostid = [];
         $postsdatamapper = $this->legacydatamapperfactory->get_post_data_mapper();
-        $postsbydigestforum = array_reduce($groupedposts, function($carry, $grouping) {
+        $postsbydigestforum = array_reduce($groupedposts, function ($carry, $grouping) {
             ['digestforum' => $digestforum, 'posts' => $posts] = $grouping;
 
             $digestforumid = $digestforum->get_id();
             if (!isset($carry[$digestforumid])) {
                 $carry[$digestforumid] = [
                     'digestforum' => $digestforum,
-                    'posts' => []
+                    'posts' => [],
                 ];
             }
 
@@ -482,7 +482,7 @@ class exported_posts {
                 'scaleid' => $digestforum->get_scale(),
                 'userid' => $user->id,
                 'assesstimestart' => $digestforum->get_assess_time_start(),
-                'assesstimefinish' => $digestforum->get_assess_time_finish()
+                'assesstimefinish' => $digestforum->get_assess_time_finish(),
             ];
 
             $rm = $this->ratingmanager;

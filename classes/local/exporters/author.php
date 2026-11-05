@@ -83,13 +83,13 @@ class author extends exporter {
                 'type' => PARAM_INT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'fullname' => [
                 'type' => PARAM_TEXT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'initials' => [
                 'type' => PARAM_NOTAGS,
@@ -101,7 +101,7 @@ class author extends exporter {
                 'type' => PARAM_BOOL,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'groups' => [
                 'multiple' => true,
@@ -115,11 +115,11 @@ class author extends exporter {
                                 'type' => PARAM_URL,
                                 'optional' => true,
                                 'default' => null,
-                                'null' => NULL_ALLOWED
-                            ]
-                        ]
-                    ]
-                ]
+                                'null' => NULL_ALLOWED,
+                            ],
+                        ],
+                    ],
+                ],
             ],
             'urls' => [
                 'type' => [
@@ -128,17 +128,17 @@ class author extends exporter {
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'profileimage' => [
                         'description' => 'The URL for the use profile image',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -165,11 +165,11 @@ class author extends exporter {
                     'groups' => [],
                     'urls' => [
                         'profile' => ($urlfactory->get_author_profile_url($author, $digestforum->get_course_id()))->out(false),
-                        'profileimage' => ($urlfactory->get_author_profile_image_url($author, $authorcontextid))->out(false)
-                    ]
+                        'profileimage' => ($urlfactory->get_author_profile_image_url($author, $authorcontextid))->out(false),
+                    ],
                 ];
             } else {
-                $groups = array_map(function($group) use ($urlfactory, $context, $output) {
+                $groups = array_map(function ($group) use ($urlfactory, $context, $output) {
                     $groupurl = null;
                     $imageurl = get_group_picture_url($group, $group->courseid, true);
 
@@ -182,9 +182,9 @@ class author extends exporter {
                         'name' => clean_string(format_string($group->name, true, ['context' => $context])),
                         'urls' => [
                             'image' => $imageurl ? $imageurl->out(false) : null,
-                            'group' => $groupurl ? $groupurl->out(false) : null
+                            'group' => $groupurl ? $groupurl->out(false) : null,
 
-                        ]
+                        ],
                     ];
                 }, $this->authorgroups);
 
@@ -196,8 +196,8 @@ class author extends exporter {
                     'groups' => $groups,
                     'urls' => [
                         'profile' => ($urlfactory->get_author_profile_url($author, $digestforum->get_course_id()))->out(false),
-                        'profileimage' => ($urlfactory->get_author_profile_image_url($author, $authorcontextid))->out(false)
-                    ]
+                        'profileimage' => ($urlfactory->get_author_profile_image_url($author, $authorcontextid))->out(false),
+                    ],
                 ];
             }
         } else {
@@ -210,8 +210,8 @@ class author extends exporter {
                 'groups' => [],
                 'urls' => [
                     'profile' => null,
-                    'profileimage' => null
-                ]
+                    'profileimage' => null,
+                ],
             ];
         }
     }

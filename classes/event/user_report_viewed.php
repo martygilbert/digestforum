@@ -41,7 +41,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user_report_viewed extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,8 +77,8 @@ class user_report_viewed extends \core\event\base {
      */
     public function get_url() {
 
-        $url = new \moodle_url('/mod/digestforum/user.php', array('id' => $this->relateduserid,
-            'mode' => $this->other['reportmode']));
+        $url = new \moodle_url('/mod/digestforum/user.php', ['id' => $this->relateduserid,
+            'mode' => $this->other['reportmode']]);
 
         if ($this->courseid != SITEID) {
             $url->param('course', $this->courseid);
@@ -103,8 +102,7 @@ class user_report_viewed extends \core\event\base {
             throw new \coding_exception('The \'reportmode\' value must be set in other.');
         }
 
-        switch ($this->contextlevel)
-        {
+        switch ($this->contextlevel) {
             case CONTEXT_COURSE:
             case CONTEXT_SYSTEM:
             case CONTEXT_USER:
@@ -120,4 +118,3 @@ class user_report_viewed extends \core\event\base {
         return false;
     }
 }
-

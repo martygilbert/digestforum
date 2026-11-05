@@ -34,7 +34,6 @@ require_once($CFG->dirroot . '/repository/lib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_digestforum_post_form extends moodleform {
-
     /**
      * Returns the options array to use in filemanager for digestforum attachments
      *
@@ -44,13 +43,13 @@ class mod_digestforum_post_form extends moodleform {
     public static function attachment_options($digestforum) {
         global $COURSE, $PAGE, $CFG;
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes, $digestforum->maxbytes);
-        return array(
+        return [
             'subdirs' => 0,
             'maxbytes' => $maxbytes,
             'maxfiles' => $digestforum->maxattachments,
             'accepted_types' => '*',
-            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK
-        );
+            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK,
+        ];
     }
 
     /**
@@ -64,13 +63,13 @@ class mod_digestforum_post_form extends moodleform {
         global $COURSE, $PAGE, $CFG;
         // TODO: add max files and max size support
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
-        return array(
+        return [
             'maxfiles' => EDITOR_UNLIMITED_FILES,
             'maxbytes' => $maxbytes,
-            'trusttext'=> true,
-            'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
-            'subdirs' => file_area_contains_subdirs($context, 'mod_digestforum', 'post', $postid)
-        );
+            'trusttext' => true,
+            'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
+            'subdirs' => file_area_contains_subdirs($context, 'mod_digestforum', 'post', $postid),
+        ];
     }
 
     /**
@@ -127,21 +126,24 @@ class mod_digestforum_post_form extends moodleform {
                 $mform->freeze('discussionsubscribe');
                 $mform->setDefaults('discussionsubscribe', 0);
                 $mform->addHelpButton('discussionsubscribe', 'forcesubscribed', 'digestforum');
-
             } else if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !$manageactivities) {
                 $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
                 $mform->freeze('discussionsubscribe');
                 $mform->setDefaults('discussionsubscribe', 0);
                 $mform->addHelpButton('discussionsubscribe', 'disallowsubscription', 'digestforum');
-
             } else {
                 $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
                 $mform->addHelpButton('discussionsubscribe', 'discussionsubscription', 'digestforum');
             }
 
             if (digestforum_can_create_attachment($digestforum, $modcontext)) {
-                $mform->addElement('filemanager', 'attachments', get_string('attachment', 'digestforum'), null,
-                    self::attachment_options($digestforum));
+                $mform->addElement(
+                    'filemanager',
+                    'attachments',
+                    get_string('attachment', 'digestforum'),
+                    null,
+                    self::attachment_options($digestforum)
+                );
                 $mform->addHelpButton('attachments', 'attachment', 'digestforum');
             }
 
@@ -150,7 +152,8 @@ class mod_digestforum_post_form extends moodleform {
                 $mform->addHelpButton('pinned', 'discussionpinned', 'digestforum');
             }
 
-            if (empty($post->id) && ($manageactivities ||
+            if (
+                empty($post->id) && ($manageactivities ||
                     ($digestforum->type == 'qanda' && has_capability('mod/digestforum:canmailnow', $modcontext)))
             ) {
                 $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'digestforum'));
@@ -169,35 +172,48 @@ class mod_digestforum_post_form extends moodleform {
 
             $this->add_group_elements_if_applicable($mform);
 
-            if (!empty($CFG->digestforum_enabletimedposts) && !$post->parent &&
-                has_capability('mod/digestforum:viewhiddentimedposts', $coursecontext)) {
+            if (
+                !empty($CFG->digestforum_enabletimedposts) && !$post->parent &&
+                has_capability('mod/digestforum:viewhiddentimedposts', $coursecontext)
+            ) {
                 $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'digestforum'));
 
-                $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'digestforum'),
-                    array('optional' => true));
+                $mform->addElement(
+                    'date_time_selector',
+                    'timestart',
+                    get_string('displaystart', 'digestforum'),
+                    ['optional' => true]
+                );
                 $mform->addHelpButton('timestart', 'displaystart', 'digestforum');
 
-                $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'digestforum'),
-                    array('optional' => true));
+                $mform->addElement(
+                    'date_time_selector',
+                    'timeend',
+                    get_string('displayend', 'digestforum'),
+                    ['optional' => true]
+                );
                 $mform->addHelpButton('timeend', 'displayend', 'digestforum');
-
             } else {
                 $mform->addElement('hidden', 'timestart');
                 $mform->setType('timestart', PARAM_INT);
                 $mform->addElement('hidden', 'timeend');
                 $mform->setType('timeend', PARAM_INT);
-                $mform->setConstants(array('timestart' => 0, 'timeend' => 0));
+                $mform->setConstants(['timestart' => 0, 'timeend' => 0]);
             }
 
             if (core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
                 $mform->addElement('header', 'tagshdr', get_string('tags', 'tag'));
 
-                $mform->addElement('tags', 'tags', get_string('tags'),
-                    array('itemtype' => 'digestforum_posts', 'component' => 'mod_digestforum'));
+                $mform->addElement(
+                    'tags',
+                    'tags',
+                    get_string('tags'),
+                    ['itemtype' => 'digestforum_posts', 'component' => 'mod_digestforum']
+                );
             }
         }
 
-        //-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         // buttons
         if (isset($post->edit)) { // hack alert
             $submitstring = get_string('savechanges');
@@ -213,16 +229,25 @@ class mod_digestforum_post_form extends moodleform {
             $mform->addElement('hidden', 'discussionsubscribe');
             $mform->setType('discussionsubscribe', PARAM_INT);
 
-            $buttonarray = array();
+            $buttonarray = [];
             $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitstring);
-            $buttonarray[] = &$mform->createElement('button', 'cancelbtn',
+            $buttonarray[] = &$mform->createElement(
+                'button',
+                'cancelbtn',
                 get_string('cancel', 'core'),
                 // Additional attribs to handle collapsible div.
-                ['data-bs-toggle' => 'collapse', 'data-bs-target' => "#collapseAddForm"]);
-            $buttonarray[] = &$mform->createElement('submit', 'advancedadddiscussion',
-                get_string('showadvancededitor'), null, null, ['customclassoverride' => 'btn-link']);
+                ['data-bs-toggle' => 'collapse', 'data-bs-target' => "#collapseAddForm"]
+            );
+            $buttonarray[] = &$mform->createElement(
+                'submit',
+                'advancedadddiscussion',
+                get_string('showadvancededitor'),
+                null,
+                null,
+                ['customclassoverride' => 'btn-link']
+            );
 
-            $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+            $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
             $mform->closeHeaderBefore('buttonar');
         } else {
             $this->add_action_buttons(true, $submitstring);
@@ -259,7 +284,7 @@ class mod_digestforum_post_form extends moodleform {
      */
     function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (($data['timeend']!=0) && ($data['timestart']!=0) && $data['timeend'] <= $data['timestart']) {
+        if (($data['timeend'] != 0) && ($data['timestart'] != 0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'digestforum');
         }
         if (empty($data['message']['text'])) {

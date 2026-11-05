@@ -71,14 +71,22 @@ class subscription_actionbar implements renderable, templatable {
 
         $sesskey = sesskey();
         $modeset = \mod_digestforum\subscriptions::get_subscription_mode($this->digestforum);
-        $optionallink = new moodle_url('/mod/digestforum/subscribe.php',
-            ['id' => $this->id, 'mode' => DFORUM_CHOOSESUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]);
-        $forcedlink = new moodle_url('/mod/digestforum/subscribe.php',
-            ['id' => $this->id, 'mode' => DFORUM_FORCESUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]);
-        $autolink = new moodle_url('/mod/digestforum/subscribe.php',
-            ['id' => $this->id, 'mode' => DFORUM_INITIALSUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]);
-        $disabledlink = new moodle_url('/mod/digestforum/subscribe.php',
-            ['id' => $this->id, 'mode' => DFORUM_DISALLOWSUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]);
+        $optionallink = new moodle_url(
+            '/mod/digestforum/subscribe.php',
+            ['id' => $this->id, 'mode' => DFORUM_CHOOSESUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]
+        );
+        $forcedlink = new moodle_url(
+            '/mod/digestforum/subscribe.php',
+            ['id' => $this->id, 'mode' => DFORUM_FORCESUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]
+        );
+        $autolink = new moodle_url(
+            '/mod/digestforum/subscribe.php',
+            ['id' => $this->id, 'mode' => DFORUM_INITIALSUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]
+        );
+        $disabledlink = new moodle_url(
+            '/mod/digestforum/subscribe.php',
+            ['id' => $this->id, 'mode' => DFORUM_DISALLOWSUBSCRIBE, 'sesskey' => $sesskey, 'edit' => $this->edit]
+        );
 
         $menu = [
             $optionallink->out(false) => get_string('subscriptionoptional', 'digestforum'),
@@ -104,7 +112,7 @@ class subscription_actionbar implements renderable, templatable {
                 throw new \moodle_exception(get_string('invalidforcesubscribe', 'digestforum'));
         }
 
-        $menu = array_filter($menu, function($key) use ($set) {
+        $menu = array_filter($menu, function ($key) use ($set) {
             if ($key !== $set) {
                 return true;
             }

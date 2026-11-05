@@ -31,7 +31,6 @@ use mod_digestforum\local\exporters\digestforum as digestforum_exporter;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class exporters_digestforum_test extends \advanced_testcase {
-
     #[\Override]
     public function setUp(): void {
         parent::setUp();
@@ -75,7 +74,7 @@ final class exporters_digestforum_test extends \advanced_testcase {
             'capabilitymanager' => (\mod_digestforum\local\container::get_manager_factory())->get_capability_manager($digestforum),
             'user' => $user,
             'currentgroup' => null,
-            'vaultfactory' => \mod_digestforum\local\container::get_vault_factory()
+            'vaultfactory' => \mod_digestforum\local\container::get_vault_factory(),
         ]);
 
         $exporteddigestforum = $exporter->export($renderer);

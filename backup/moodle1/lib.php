@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -29,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
  * Forum conversion handler
  */
 class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
-
     /** @var moodle1_file_manager */
     protected $fileman = null;
 
@@ -50,22 +48,24 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * @return array of {@link convert_path} instances
      */
     public function get_paths() {
-        return array(
-            new convert_path('digestforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM',
-                array(
-                    'renamefields' => array(
+        return [
+            new convert_path(
+                'digestforum',
+                '/MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM',
+                [
+                    'renamefields' => [
                         'format' => 'messageformat',
-                    ),
-                    'newfields' => array(
+                    ],
+                    'newfields' => [
                         'completiondiscussions' => 0,
                         'completionreplies' => 0,
                         'completionpost' => 0,
                         'maxattachments' => 1,
                         'introformat' => 0,
-                    ),
-                )
+                    ],
+                ]
             ),
-        );
+        ];
     }
 
     /**
@@ -96,9 +96,9 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
 
         // start writing digestforum.xml
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/digestforum.xml");
-        $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
-            'modulename' => 'digestforum', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('digestforum', array('id' => $instanceid));
+        $this->xmlwriter->begin_tag('activity', ['id' => $instanceid, 'moduleid' => $this->moduleid,
+            'modulename' => 'digestforum', 'contextid' => $contextid]);
+        $this->xmlwriter->begin_tag('digestforum', ['id' => $instanceid]);
 
         foreach ($data as $field => $value) {
             if ($field <> 'id') {
@@ -126,7 +126,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {
-            $this->write_xml('file', array('id' => $fileid));
+            $this->write_xml('file', ['id' => $fileid]);
         }
         $this->xmlwriter->end_tag('fileref');
         $this->xmlwriter->end_tag('inforef');

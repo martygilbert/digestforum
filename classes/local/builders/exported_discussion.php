@@ -114,7 +114,11 @@ class exported_discussion {
 
         $groupsbyid = $this->get_groups_available_in_digestforum($digestforum);
         $discussionexporter = $this->exporterfactory->get_discussion_exporter(
-            $user, $digestforum, $discussion, $groupsbyid, $favouriteids
+            $user,
+            $digestforum,
+            $discussion,
+            $groupsbyid,
+            $favouriteids
         );
 
         return (array) $discussionexporter->export($this->renderer);
@@ -150,6 +154,4 @@ class exported_discussion {
         $ufservice = \core_favourites\service_factory::get_service_for_user_context($usercontext);
         return $ufservice->favourite_exists('mod_digestforum', 'discussions', $discussion->get_id(), $digestforumcontext);
     }
-
-
 }

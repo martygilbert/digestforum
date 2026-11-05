@@ -195,7 +195,7 @@ class discussion {
         $posts = array_merge([$firstpost], array_values($replies));
 
         if ($this->postprocessfortemplate !== null) {
-            $exporteddiscussion = ($this->postprocessfortemplate) ($this->discussion, $user, $this->digestforum);
+            $exporteddiscussion = ($this->postprocessfortemplate)($this->discussion, $user, $this->digestforum);
         } else {
             $exporteddiscussion = $this->get_exported_discussion($user);
         }
@@ -238,7 +238,7 @@ class discussion {
             $exporteddiscussion['loggedinuser'] = [
                 'firstname' => $loggedinuser->get_first_name(),
                 'fullname' => $loggedinuser->get_full_name(),
-                'profileimageurl' => ($urlfactory->get_author_profile_image_url($loggedinuser, null))->out(false)
+                'profileimageurl' => ($urlfactory->get_author_profile_image_url($loggedinuser, null))->out(false),
             ];
         }
 
@@ -246,7 +246,7 @@ class discussion {
         $cmrecord = $this->digestforum->get_course_module_record();
         if (($warningobj = digestforum_check_throttling($this->digestforumrecord, $cmrecord)) && $warningobj->canpost) {
             $throttlewarnnotification = (new notification(
-                    get_string($warningobj->errorcode, $warningobj->module, $warningobj->additional)
+                get_string($warningobj->errorcode, $warningobj->module, $warningobj->additional)
             ))->set_show_closebutton();
             $exporteddiscussion['throttlingwarningmsg'] = $throttlewarnnotification->get_message();
         }
@@ -331,8 +331,12 @@ class discussion {
             // Check digestforum types and eliminate simple discussions.
             $digestforumcheck = $DB->get_records('digestforum', ['course' => $courseid], '', 'id, type');
             foreach ($modinfo->instances['digestforum'] as $digestforumcm) {
-                if (!$digestforumcm->uservisible || !has_capability('mod/digestforum:startdiscussion',
-                    context_module::instance($digestforumcm->id))) {
+                if (
+                    !$digestforumcm->uservisible || !has_capability(
+                        'mod/digestforum:startdiscussion',
+                        context_module::instance($digestforumcm->id)
+                    )
+                ) {
                     continue;
                 }
                 $section = $digestforumcm->sectionnum;
@@ -344,7 +348,7 @@ class discussion {
                 $digestforumtypecheck = $digestforumcheck[$digestforumcm->instance]->type !== 'single';
 
                 if ($digestforumidcompare and $digestforumtypecheck) {
-                    $url = "/mod/digestforum/discuss.php?d={$discussion->get_id()}&move=$digestforumcm->instance&sesskey=".sesskey();
+                    $url = "/mod/digestforum/discuss.php?d={$discussion->get_id()}&move=$digestforumcm->instance&sesskey=" . sesskey();
                     $digestforummenu[$section][$sectionname][$url] = format_string($digestforumcm->name);
                 }
             }
@@ -356,9 +360,13 @@ class discussion {
                     // Move discussion selector will be rendered on the settings drawer. We won't output the button in this mode.
                     $movebutton = null;
                 }
-                $select = new url_select($digestforummenu, '',
-                        ['/mod/digestforum/discuss.php?d=' . $discussion->get_id() => get_string("movethisdiscussionto", "digestforum")],
-                        'digestforummenu', $movebutton);
+                $select = new url_select(
+                    $digestforummenu,
+                    '',
+                    ['/mod/digestforum/discuss.php?d=' . $discussion->get_id() => get_string("movethisdiscussionto", "digestforum")],
+                    'digestforummenu',
+                    $movebutton
+                );
                 $select->set_label(get_string('movethisdiscussionlabel', 'mod_digestforum'), [
                     'class' => 'visually-hidden',
                 ]);
@@ -403,8 +411,8 @@ class discussion {
 
         if ($digestforum->is_cutoff_date_reached()) {
             $notifications[] = (new notification(
-                    get_string('cutoffdatereached', 'digestforum'),
-                    notification::NOTIFY_INFO
+                get_string('cutoffdatereached', 'digestforum'),
+                notification::NOTIFY_INFO
             ))->set_show_closebutton();
         } else if ($digestforum->get_type() != 'single') {
             // Due date is already shown at the top of the page for single simple discussion digestforums.
@@ -426,8 +434,8 @@ class discussion {
                 get_string('discussionlocked', 'digestforum'),
                 notification::NOTIFY_INFO
             ))
-            ->set_extra_classes(['discussionlocked'])
-            ->set_show_closebutton();
+                ->set_extra_classes(['discussionlocked'])
+                ->set_show_closebutton();
         }
 
         if ($digestforum->get_type() == 'qanda') {
@@ -442,14 +450,13 @@ class discussion {
             $notifications[] = (new notification(
                 get_string('thisdigestforumisthrottled', 'digestforum', [
                     'blockafter' => $digestforum->get_block_after(),
-                    'blockperiod' => get_string('secondstotime' . $digestforum->get_block_period())
+                    'blockperiod' => get_string('secondstotime' . $digestforum->get_block_period()),
                 ]),
                 notification::NOTIFY_INFO
             ))->set_show_closebutton();
-
         }
 
-        return array_map(function($notification) {
+        return array_map(function ($notification) {
             return $notification->export_for_template($this->renderer);
         }, $notifications);
     }

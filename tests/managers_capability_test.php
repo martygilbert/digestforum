@@ -237,12 +237,12 @@ final class managers_capability_test extends \advanced_testcase {
 
         // Test if cut off date is reached.
         $now = time();
-        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400 , 'blockafter' => 5, 'blockperiod' => 86400]);
+        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400, 'blockafter' => 5, 'blockperiod' => 86400]);
         $capabilitymanager = $this->managerfactory->get_capability_manager($digestforum);
         $this->prevent_capability('mod/digestforum:postwithoutthrottling');
         $this->assertTrue($capabilitymanager->can_create_discussions($user));
 
-        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400 , 'blockafter' => 1, 'blockperiod' => 86400]);
+        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400, 'blockafter' => 1, 'blockperiod' => 86400]);
         $capabilitymanager = $this->managerfactory->get_capability_manager($digestforum);
         $this->prevent_capability('mod/digestforum:postwithoutthrottling');
         $this->assertFalse($capabilitymanager->can_create_discussions($user));
@@ -604,13 +604,13 @@ final class managers_capability_test extends \advanced_testcase {
         $this->assertTrue($capabilitymanager->can_post_in_discussion($user, $discussion));
 
         $now = time();
-        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400 , 'blockafter' => 5, 'blockperiod' => 86400]);
+        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400, 'blockafter' => 5, 'blockperiod' => 86400]);
         $capabilitymanager = $this->managerfactory->get_capability_manager($digestforum);
         $this->prevent_capability('mod/digestforum:postwithoutthrottling');
         $this->give_capability('mod/digestforum:replypost');
         $this->assertTrue($capabilitymanager->can_post_in_discussion($user, $discussion));
 
-        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400 , 'blockafter' => 1, 'blockperiod' => 86400]);
+        $digestforum = $this->create_digestforum(['cutoffdate' => $now + 86400, 'blockafter' => 1, 'blockperiod' => 86400]);
         $capabilitymanager = $this->managerfactory->get_capability_manager($digestforum);
         $this->prevent_capability('mod/digestforum:postwithoutthrottling');
         $this->assertFalse($capabilitymanager->can_post_in_discussion($user, $discussion));
@@ -1253,9 +1253,9 @@ final class managers_capability_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         // Add a discussion.
@@ -1267,7 +1267,7 @@ final class managers_capability_test extends \advanced_testcase {
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add rating.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         $post->totalscore = 80;
         $DB->update_record('digestforum_posts', $post);
 
@@ -1295,9 +1295,9 @@ final class managers_capability_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         // Add a discussion.
@@ -1308,7 +1308,7 @@ final class managers_capability_test extends \advanced_testcase {
         $record->created =
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         // Add a post.
         $record = new \stdClass();
         $record->course = $course->id;
@@ -1331,9 +1331,12 @@ final class managers_capability_test extends \advanced_testcase {
         $this->setUser($user);
         // Get reply count.
         $replycount = $postvault->get_reply_count_for_post_id_in_discussion_id(
-            $user, $postentity->get_id(), $discussionentity->get_id(), true);
+            $user,
+            $postentity->get_id(),
+            $discussionentity->get_id(),
+            true
+        );
         $this->expectExceptionMessage(get_string('couldnotdeletereplies', 'digestforum'));
         $capabilitymanager->validate_delete_post($user, $discussionentity, $postentity, $replycount);
     }
-
 }

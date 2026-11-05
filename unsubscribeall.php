@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,7 +31,7 @@ $PAGE->set_url('/mod/digestforum/unsubscribeall.php');
 require_login(null, false);
 $PAGE->set_context(context_user::instance($USER->id));
 
-$return = $CFG->wwwroot.'/';
+$return = $CFG->wwwroot . '/';
 
 if (isguestuser()) {
     redirect($return);
@@ -49,21 +48,20 @@ echo $OUTPUT->heading($strunsubscribeall);
 if (data_submitted() and $confirm and confirm_sesskey()) {
     $digestforums = \mod_digestforum\subscriptions::get_unsubscribable_digestforums();
 
-    foreach($digestforums as $digestforum) {
+    foreach ($digestforums as $digestforum) {
         \mod_digestforum\subscriptions::unsubscribe_user($USER->id, $digestforum, context_module::instance($digestforum->cm), true);
     }
-    $DB->delete_records('digestforum_discussion_subs', array('userid' => $USER->id));
-    $DB->set_field('user', 'autosubscribe', 0, array('id'=>$USER->id));
+    $DB->delete_records('digestforum_discussion_subs', ['userid' => $USER->id]);
+    $DB->set_field('user', 'autosubscribe', 0, ['id' => $USER->id]);
 
     echo $OUTPUT->box(get_string('unsubscribealldone', 'digestforum'));
     echo $OUTPUT->continue_button($return);
     echo $OUTPUT->footer();
     die;
-
 } else {
     $count = new stdClass();
     $count->digestforums = count(\mod_digestforum\subscriptions::get_unsubscribable_digestforums());
-    $count->discussions = $DB->count_records('digestforum_discussion_subs', array('userid' => $USER->id));
+    $count->discussions = $DB->count_records('digestforum_discussion_subs', ['userid' => $USER->id]);
 
     if ($count->digestforums || $count->discussions) {
         if ($count->digestforums && $count->discussions) {
@@ -73,10 +71,9 @@ if (data_submitted() and $confirm and confirm_sesskey()) {
         } else if ($count->discussions) {
             $msg = get_string('unsubscribeallconfirmdiscussions', 'digestforum', $count);
         }
-        echo $OUTPUT->confirm($msg, new moodle_url('unsubscribeall.php', array('confirm'=>1)), $return);
+        echo $OUTPUT->confirm($msg, new moodle_url('unsubscribeall.php', ['confirm' => 1]), $return);
         echo $OUTPUT->footer();
         die;
-
     } else {
         echo $OUTPUT->box(get_string('unsubscribeallempty', 'digestforum'));
         echo $OUTPUT->continue_button($return);

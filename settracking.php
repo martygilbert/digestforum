@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,16 +25,16 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$id         = required_param('id',PARAM_INT);                           // The digestforum to subscribe or unsubscribe to
+$id         = required_param('id', PARAM_INT);                           // The digestforum to subscribe or unsubscribe to
 $returnpage = optional_param('returnpage', 'index.php', PARAM_FILE);    // Page to return to.
 
 require_sesskey();
 
-if (! $digestforum = $DB->get_record("digestforum", array("id" => $id))) {
+if (! $digestforum = $DB->get_record("digestforum", ["id" => $id])) {
     throw new \moodle_exception('invaliddigestforumid', 'digestforum');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $digestforum->course))) {
+if (! $course = $DB->get_record("course", ["id" => $digestforum->course])) {
     throw new \moodle_exception('invalidcoursemodule');
 }
 
@@ -43,7 +42,7 @@ if (! $cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $cou
     throw new \moodle_exception('invalidcoursemodule');
 }
 require_login($course, false, $cm);
-$returnpageurl = new moodle_url('/mod/digestforum/' . $returnpage, array('id' => $course->id, 'f' => $digestforum->id));
+$returnpageurl = new moodle_url('/mod/digestforum/' . $returnpage, ['id' => $course->id, 'f' => $digestforum->id]);
 $returnto = digestforum_go_back_to($returnpageurl);
 
 if (!digestforum_tp_can_track_digestforums($digestforum)) {
@@ -54,13 +53,13 @@ $info = new stdClass();
 $info->name  = fullname($USER);
 $info->digestforum = format_string($digestforum->name);
 
-$eventparams = array(
+$eventparams = [
     'context' => context_module::instance($cm->id),
     'relateduserid' => $USER->id,
-    'other' => array('digestforumid' => $digestforum->id),
-);
+    'other' => ['digestforumid' => $digestforum->id],
+];
 
-if (digestforum_tp_is_tracked($digestforum) ) {
+if (digestforum_tp_is_tracked($digestforum)) {
     if (digestforum_tp_stop_tracking($digestforum->id)) {
         $event = \mod_digestforum\event\readtracking_disabled::create($eventparams);
         $event->trigger();
@@ -68,7 +67,6 @@ if (digestforum_tp_is_tracked($digestforum) ) {
     } else {
         throw new \moodle_exception('cannottrack', '', get_local_referer(false));
     }
-
 } else { // subscribe
     if (digestforum_tp_start_tracking($digestforum->id)) {
         $event = \mod_digestforum\event\readtracking_enabled::create($eventparams);

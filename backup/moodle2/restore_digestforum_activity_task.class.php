@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,7 +30,6 @@ require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/restore_digestforu
  * complete restore of the activity
  */
 class restore_digestforum_activity_task extends restore_activity_task {
-
     /**
      * Define (add) particular settings this activity can have
      */
@@ -52,10 +50,10 @@ class restore_digestforum_activity_task extends restore_activity_task {
      * processed by the link decoder
      */
     public static function define_decode_contents() {
-        $contents = array();
+        $contents = [];
 
-        $contents[] = new restore_decode_content('digestforum', array('intro'), 'digestforum');
-        $contents[] = new restore_decode_content('digestforum_posts', array('message'), 'digestforum_post');
+        $contents[] = new restore_decode_content('digestforum', ['intro'], 'digestforum');
+        $contents[] = new restore_decode_content('digestforum_posts', ['message'], 'digestforum_post');
 
         return $contents;
     }
@@ -65,7 +63,7 @@ class restore_digestforum_activity_task extends restore_activity_task {
      * to the activity to be executed by the link decoder
      */
     public static function define_decode_rules() {
-        $rules = array();
+        $rules = [];
 
         // List of digestforums in course
         $rules[] = new restore_decode_rule('DFORUMINDEX', '/mod/digestforum/index.php?id=$1', 'course');
@@ -75,10 +73,16 @@ class restore_digestforum_activity_task extends restore_activity_task {
         // Link to digestforum discussion
         $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEW', '/mod/digestforum/discuss.php?d=$1', 'digestforum_discussion');
         // Link to discussion with parent and with anchor posts
-        $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEWPARENT', '/mod/digestforum/discuss.php?d=$1&parent=$2',
-                                           array('digestforum_discussion', 'digestforum_post'));
-        $rules[] = new restore_decode_rule('DFORUMDISCUSSIONVIEWINSIDE', '/mod/digestforum/discuss.php?d=$1#$2',
-                                           array('digestforum_discussion', 'digestforum_post'));
+        $rules[] = new restore_decode_rule(
+            'DFORUMDISCUSSIONVIEWPARENT',
+            '/mod/digestforum/discuss.php?d=$1&parent=$2',
+            ['digestforum_discussion', 'digestforum_post']
+        );
+        $rules[] = new restore_decode_rule(
+            'DFORUMDISCUSSIONVIEWINSIDE',
+            '/mod/digestforum/discuss.php?d=$1#$2',
+            ['digestforum_discussion', 'digestforum_post']
+        );
 
         return $rules;
     }
@@ -90,7 +94,7 @@ class restore_digestforum_activity_task extends restore_activity_task {
      * of {@link restore_log_rule} objects
      */
     public static function define_restore_log_rules() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_log_rule('digestforum', 'add', 'view.php?id={course_module}', '{digestforum}');
         $rules[] = new restore_log_rule('digestforum', 'update', 'view.php?id={course_module}', '{digestforum}');
@@ -107,8 +111,14 @@ class restore_digestforum_activity_task extends restore_activity_task {
         $rules[] = new restore_log_rule('digestforum', 'add discussion', 'discuss.php?d={digestforum_discussion}', '{digestforum_discussion}');
         $rules[] = new restore_log_rule('digestforum', 'view discussion', 'discuss.php?d={digestforum_discussion}', '{digestforum_discussion}');
         $rules[] = new restore_log_rule('digestforum', 'move discussion', 'discuss.php?d={digestforum_discussion}', '{digestforum_discussion}');
-        $rules[] = new restore_log_rule('digestforum', 'delete discussi', 'view.php?id={course_module}', '{digestforum}',
-                                        null, 'delete discussion');
+        $rules[] = new restore_log_rule(
+            'digestforum',
+            'delete discussi',
+            'view.php?id={course_module}',
+            '{digestforum}',
+            null,
+            'delete discussion'
+        );
         $rules[] = new restore_log_rule('digestforum', 'delete discussion', 'view.php?id={course_module}', '{digestforum}');
         $rules[] = new restore_log_rule('digestforum', 'add post', 'discuss.php?d={digestforum_discussion}&parent={digestforum_post}', '{digestforum_post}');
         $rules[] = new restore_log_rule('digestforum', 'update post', 'discuss.php?d={digestforum_discussion}#p{digestforum_post}&parent={digestforum_post}', '{digestforum_post}');
@@ -130,7 +140,7 @@ class restore_digestforum_activity_task extends restore_activity_task {
      * activity level. All them are rules not linked to any module instance (cmid = 0)
      */
     public static function define_restore_log_rules_for_course() {
-        $rules = array();
+        $rules = [];
 
         $rules[] = new restore_log_rule('digestforum', 'view digestforums', 'index.php?id={course}', null);
         $rules[] = new restore_log_rule('digestforum', 'subscribeall', 'index.php?id={course}', '{course}');

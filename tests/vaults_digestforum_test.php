@@ -97,7 +97,7 @@ final class vaults_digestforum_test extends \advanced_testcase {
         $this->assertEquals([], $entities);
 
         $entities = array_values($vault->get_from_course_module_ids([$coursemodule1->id, $coursemodule2->id]));
-        usort($entities, function($a, $b) {
+        usort($entities, function ($a, $b) {
             return $a->get_id() <=> $b->get_id();
         });
         $this->assertCount(2, $entities);
@@ -105,7 +105,7 @@ final class vaults_digestforum_test extends \advanced_testcase {
         $this->assertEquals($digestforum2->id, $entities[1]->get_id());
 
         $entities = array_values($vault->get_from_course_module_ids([$coursemodule1->id]));
-        usort($entities, function($a, $b) {
+        usort($entities, function ($a, $b) {
             return $a->get_id() <=> $b->get_id();
         });
         $this->assertCount(1, $entities);

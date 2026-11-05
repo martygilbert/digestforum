@@ -36,7 +36,6 @@ require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/backup_digestforum
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class backup_digestforum_activity_task_test extends \advanced_testcase {
-
     /**
      * Test the encoding of digestforum content links.
      *

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,11 +25,11 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$id    = required_param('id',PARAM_INT);           // digestforum
-$group = optional_param('group',0,PARAM_INT);      // change of group
-$edit  = optional_param('edit',-1,PARAM_BOOL);     // Turn editing on and off
+$id    = required_param('id', PARAM_INT);           // digestforum
+$group = optional_param('group', 0, PARAM_INT);      // change of group
+$edit  = optional_param('edit', -1, PARAM_BOOL);     // Turn editing on and off
 
-$url = new moodle_url('/mod/digestforum/subscribers.php', array('id'=>$id));
+$url = new moodle_url('/mod/digestforum/subscribers.php', ['id' => $id]);
 if ($group !== 0) {
     $url->param('group', $group);
 }
@@ -43,8 +42,8 @@ if ($edit === 1) {
 
 $PAGE->set_url($url);
 
-$digestforum = $DB->get_record('digestforum', array('id'=>$id), '*', MUST_EXIST);
-$course = $DB->get_record('course', array('id'=>$digestforum->course), '*', MUST_EXIST);
+$digestforum = $DB->get_record('digestforum', ['id' => $id], '*', MUST_EXIST);
+$course = $DB->get_record('course', ['id' => $digestforum->course], '*', MUST_EXIST);
 if (! $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id)) {
     $cm->id = 0;
 }
@@ -58,16 +57,16 @@ if (!has_capability('mod/digestforum:viewsubscribers', $context)) {
 
 unset($SESSION->fromdiscussion);
 
-$params = array(
+$params = [
     'context' => $context,
-    'other' => array('digestforumid' => $digestforum->id),
-);
+    'other' => ['digestforumid' => $digestforum->id],
+];
 $event = \mod_digestforum\event\subscribers_viewed::create($params);
 $event->trigger();
 
 $digestforumoutput = $PAGE->get_renderer('mod_digestforum');
 $currentgroup = groups_get_activity_group($cm);
-$options = array('digestforumid'=>$digestforum->id, 'currentgroup'=>$currentgroup, 'context'=>$context);
+$options = ['digestforumid' => $digestforum->id, 'currentgroup' => $currentgroup, 'context' => $context];
 $existingselector = new mod_digestforum_existing_subscriber_selector('existingsubscribers', $options);
 $subscriberselector = new mod_digestforum_potential_subscriber_selector('potentialsubscribers', $options);
 $subscriberselector->set_existing_subscribers($existingselector->find_users(''));
@@ -148,7 +147,7 @@ function mod_digestforum_filter_hidden_users(stdClass $cm, context_module $conte
         return $users;
     } else {
         // Filter for users that can view hidden activities.
-        $filteredusers = array();
+        $filteredusers = [];
         $hiddenviewers = get_users_by_capability($context, 'moodle/course:viewhiddenactivities');
         foreach ($hiddenviewers as $hiddenviewer) {
             if (array_key_exists($hiddenviewer->id, $users)) {

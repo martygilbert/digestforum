@@ -43,7 +43,6 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class search_test extends \advanced_testcase {
-
     /**
      * @var string Area id
      */
@@ -68,7 +67,7 @@ final class search_test extends \advanced_testcase {
     public function test_search_enabled(): void {
 
         $searcharea = \core_search\manager::get_search_area($this->digestforumpostareaid);
-        list($componentname, $varname) = $searcharea->get_config_var_name();
+        [$componentname, $varname] = $searcharea->get_config_var_name();
 
         // Enabled by default once global search is enabled.
         $this->assertTrue($searcharea->is_enabled());
@@ -214,7 +213,7 @@ final class search_test extends \advanced_testcase {
         $record->groupid = -1;
         $discussion1reply1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $post1 = $DB->get_record('digestforum_posts', array('id' => $discussion1reply1->id));
+        $post1 = $DB->get_record('digestforum_posts', ['id' => $discussion1reply1->id]);
         $post1->digestforumid = $digestforum1->id;
         $post1->courseid = $digestforum1->course;
         $post1->groupid = -1;
@@ -399,15 +398,15 @@ final class search_test extends \advanced_testcase {
         $discussion1 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Attach 2 file to the discussion post.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion1->id));
-        $filerecord = array(
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $discussion1->id]);
+        $filerecord = [
             'contextid' => \context_module::instance($digestforum1->cmid)->id,
             'component' => 'mod_digestforum',
             'filearea'  => 'attachment',
             'itemid'    => $post->id,
             'filepath'  => '/',
-            'filename'  => 'myfile1'
-        );
+            'filename'  => 'myfile1',
+        ];
         $file1 = $fs->create_file_from_string($filerecord, 'Some contents 1');
         $filerecord['filename'] = 'myfile2';
         $file2 = $fs->create_file_from_string($filerecord, 'Some contents 2');
@@ -518,7 +517,7 @@ final class search_test extends \advanced_testcase {
         $expected = [
             \context_module::instance($digestforum2->cmid),
             \context_module::instance($digestforum3->cmid),
-            \context_module::instance($digestforum1->cmid)
+            \context_module::instance($digestforum1->cmid),
         ];
         $this->assertEquals($expected, $contexts);
     }

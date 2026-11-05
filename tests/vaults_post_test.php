@@ -222,7 +222,7 @@ final class vaults_post_test extends \advanced_testcase {
         // ----> Otherpost reply private reply (teacher 1).
         [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $student);
         $postprivatereply = $this->helper_reply_to_post($post, $teacher, [
-            'privatereplyto' => $student->id
+            'privatereplyto' => $student->id,
         ]);
         [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $teacher);
         $otherpostprivatereply = $this->helper_reply_to_post($otherpost, $otherteacher, [
@@ -230,7 +230,7 @@ final class vaults_post_test extends \advanced_testcase {
         ]);
         $otherpostreply = $this->helper_reply_to_post($otherpost, $student);
         $otherpostreplyprivatereply = $this->helper_reply_to_post($otherpostreply, $teacher, [
-            'privatereplyto' => $student->id
+            'privatereplyto' => $student->id,
         ]);
 
         // Teacher 1. Request all posts from the vault, telling the vault that the teacher CAN see private replies made by anyone.
@@ -312,7 +312,7 @@ final class vaults_post_test extends \advanced_testcase {
             'userid' => $user->id,
             'mailnow' => 1,
             'subject' => 'Some subject',
-            'created' => $post1->created
+            'created' => $post1->created,
         ]);
         $post3 = $this->helper_reply_to_post($post1, $user);
         $post4 = $this->helper_reply_to_post($post2, $user);
@@ -540,7 +540,7 @@ final class vaults_post_test extends \advanced_testcase {
         $counts = $this->vault->get_reply_count_for_discussion_ids($user, [
             $discussion1->id,
             $discussion2->id,
-            $discussion3->id
+            $discussion3->id,
         ], false);
         $this->assertCount(2, $counts);
         $this->assertEquals(3, $counts[$discussion1->id]);
@@ -550,7 +550,7 @@ final class vaults_post_test extends \advanced_testcase {
             $discussion1->id,
             $discussion2->id,
             $discussion3->id,
-            $discussion3->id + 1000
+            $discussion3->id + 1000,
         ], false);
         $this->assertCount(2, $counts);
         $this->assertEquals(3, $counts[$discussion1->id]);
@@ -595,14 +595,22 @@ final class vaults_post_test extends \advanced_testcase {
         $pcaa = $this->helper_reply_to_post($pca, $otherstudent);
         $pcaaa = $this->helper_reply_to_post($pcaa, $teacher, ['privatereplyto' => $otherstudent->id]);
 
-        $this->assertEquals([$discussion->id => 6],
-            $this->vault->get_reply_count_for_discussion_ids($student, [$discussion->id], false));
-        $this->assertEquals([$discussion->id => 7],
-            $this->vault->get_reply_count_for_discussion_ids($otherstudent, [$discussion->id], false));
-        $this->assertEquals([$discussion->id => 8],
-            $this->vault->get_reply_count_for_discussion_ids($teacher, [$discussion->id], true));
-        $this->assertEquals([$discussion->id => 8],
-            $this->vault->get_reply_count_for_discussion_ids($otherteacher, [$discussion->id], true));
+        $this->assertEquals(
+            [$discussion->id => 6],
+            $this->vault->get_reply_count_for_discussion_ids($student, [$discussion->id], false)
+        );
+        $this->assertEquals(
+            [$discussion->id => 7],
+            $this->vault->get_reply_count_for_discussion_ids($otherstudent, [$discussion->id], false)
+        );
+        $this->assertEquals(
+            [$discussion->id => 8],
+            $this->vault->get_reply_count_for_discussion_ids($teacher, [$discussion->id], true)
+        );
+        $this->assertEquals(
+            [$discussion->id => 8],
+            $this->vault->get_reply_count_for_discussion_ids($otherteacher, [$discussion->id], true)
+        );
     }
 
     /**
@@ -623,14 +631,22 @@ final class vaults_post_test extends \advanced_testcase {
         $post6 = $this->helper_reply_to_post($post5, $user);
         [$discussion3, $post7] = $this->helper_post_to_digestforum($digestforum, $user);
 
-        $this->assertEquals(3,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post1->id, $discussion1->id, false));
-        $this->assertEquals(1,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post5->id, $discussion2->id, false));
-        $this->assertEquals(0,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post7->id, $discussion3->id, false));
-        $this->assertEquals(0,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post7->id + 1000, $discussion3->id, false));
+        $this->assertEquals(
+            3,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post1->id, $discussion1->id, false)
+        );
+        $this->assertEquals(
+            1,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post5->id, $discussion2->id, false)
+        );
+        $this->assertEquals(
+            0,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post7->id, $discussion3->id, false)
+        );
+        $this->assertEquals(
+            0,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($user, $post7->id + 1000, $discussion3->id, false)
+        );
     }
 
     /**
@@ -671,14 +687,22 @@ final class vaults_post_test extends \advanced_testcase {
         $pcaa = $this->helper_reply_to_post($pca, $otherstudent);
         $pcaaa = $this->helper_reply_to_post($pcaa, $teacher, ['privatereplyto' => $otherstudent->id]);
 
-        $this->assertEquals(6,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($student, $p->id, $discussion->id, false));
-        $this->assertEquals(7,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($otherstudent, $p->id, $discussion->id, false));
-        $this->assertEquals(8,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($teacher, $p->id, $discussion->id, true));
-        $this->assertEquals(8,
-            $this->vault->get_reply_count_for_post_id_in_discussion_id($otherteacher, $p->id, $discussion->id, true));
+        $this->assertEquals(
+            6,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($student, $p->id, $discussion->id, false)
+        );
+        $this->assertEquals(
+            7,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($otherstudent, $p->id, $discussion->id, false)
+        );
+        $this->assertEquals(
+            8,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($teacher, $p->id, $discussion->id, true)
+        );
+        $this->assertEquals(
+            8,
+            $this->vault->get_reply_count_for_post_id_in_discussion_id($otherteacher, $p->id, $discussion->id, true)
+        );
     }
 
     /**
@@ -708,7 +732,7 @@ final class vaults_post_test extends \advanced_testcase {
             'mailnow' => 1,
             'subject' => 'old post',
             // Two days ago which makes it an "old post".
-            'modified' => time() - 172800
+            'modified' => time() - 172800,
         ]);
 
         digestforum_tp_add_read_record($user->id, $post1->id);
@@ -727,7 +751,7 @@ final class vaults_post_test extends \advanced_testcase {
         $counts = $this->vault->get_unread_count_for_discussion_ids($user, [
             $discussion1->id,
             $discussion2->id,
-            $discussion2->id + 1000
+            $discussion2->id + 1000,
         ], false);
         $this->assertCount(2, $counts);
         $this->assertEquals(2, $counts[$discussion1->id]);
@@ -782,22 +806,31 @@ final class vaults_post_test extends \advanced_testcase {
         $this->assertCount(1, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
 
-        $ids = $this->vault->get_latest_posts_for_discussion_ids($user,
-            [$discussion1->id, $discussion2->id], false);
+        $ids = $this->vault->get_latest_posts_for_discussion_ids(
+            $user,
+            [$discussion1->id, $discussion2->id],
+            false
+        );
         $this->assertCount(2, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
         $this->assertEquals($post8->id, $ids[$discussion2->id]->get_id());
 
-        $ids = $this->vault->get_latest_posts_for_discussion_ids($user,
-            [$discussion1->id, $discussion2->id, $discussion3->id], false);
+        $ids = $this->vault->get_latest_posts_for_discussion_ids(
+            $user,
+            [$discussion1->id, $discussion2->id, $discussion3->id],
+            false
+        );
         $this->assertCount(3, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
         $this->assertEquals($post8->id, $ids[$discussion2->id]->get_id());
         $this->assertEquals($post10->id, $ids[$discussion3->id]->get_id());
 
         // Checks the user who doesn't have access to the private reply.
-        $ids = $this->vault->get_latest_posts_for_discussion_ids($user2,
-            [$discussion1->id, $discussion2->id, $discussion3->id], false);
+        $ids = $this->vault->get_latest_posts_for_discussion_ids(
+            $user2,
+            [$discussion1->id, $discussion2->id, $discussion3->id],
+            false
+        );
         $this->assertCount(3, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
         $this->assertEquals($post8->id, $ids[$discussion2->id]->get_id());
@@ -808,7 +841,7 @@ final class vaults_post_test extends \advanced_testcase {
             $discussion1->id,
             $discussion2->id,
             $discussion3->id,
-            $discussion3->id + 1000
+            $discussion3->id + 1000,
         ], false);
         $this->assertCount(3, $ids);
         $this->assertEquals($post4->id, $ids[$discussion1->id]->get_id());
@@ -870,7 +903,7 @@ final class vaults_post_test extends \advanced_testcase {
             $discussion1->id,
             $discussion2->id,
             $discussion3->id,
-            $discussion3->id + 1000
+            $discussion3->id + 1000,
         ]);
         $this->assertCount(3, $firstposts);
         $this->assertEquals($post1->id, $firstposts[$post1->id]->get_id());
@@ -911,10 +944,12 @@ final class vaults_post_test extends \advanced_testcase {
         $discussionids = [$discussion1->id, $discussion2->id];
 
         $userids = [$user->id];
-        $entities = array_values($this->vault->get_from_filters($user,
+        $entities = array_values($this->vault->get_from_filters(
+            $user,
             ['discussionids' => $discussionids, 'userids' => $userids],
             true,
-            'id ASC'));
+            'id ASC'
+        ));
 
         $this->assertCount(4, $entities);
         $this->assertEquals($post1->id, $entities[0]->get_id());
@@ -922,8 +957,11 @@ final class vaults_post_test extends \advanced_testcase {
         $this->assertEquals($post3->id, $entities[2]->get_id());
         $this->assertEquals($post4->id, $entities[3]->get_id());
 
-        $entities = $this->vault->get_from_filters($user, ['discussionids' => $discussion1->id, 'userids' => $userids],
-                false);
+        $entities = $this->vault->get_from_filters(
+            $user,
+            ['discussionids' => $discussion1->id, 'userids' => $userids],
+            false
+        );
         $this->assertCount(3, $entities);
         $this->assertArrayHasKey($post1->id, $entities);
         $this->assertArrayHasKey($post2->id, $entities);
@@ -931,8 +969,11 @@ final class vaults_post_test extends \advanced_testcase {
 
         $discussionids = [$discussion1->id, $discussion2->id];
         $userids = [$user->id, $user2->id];
-        $entities = $this->vault->get_from_filters($user, ['discussionids' => $discussionids, 'userids' => $userids],
-                false);
+        $entities = $this->vault->get_from_filters(
+            $user,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            false
+        );
         $this->assertCount(4, $entities);
         $this->assertArrayHasKey($post1->id, $entities);
         $this->assertArrayHasKey($post2->id, $entities);
@@ -940,16 +981,24 @@ final class vaults_post_test extends \advanced_testcase {
         $this->assertArrayHasKey($post4->id, $entities);
 
         // Test ordering by id descending.
-        $entities = $this->vault->get_from_filters($user, ['discussionids' => $discussionids, 'userids' => $user->id],
-                false, 'id DESC');
+        $entities = $this->vault->get_from_filters(
+            $user,
+            ['discussionids' => $discussionids, 'userids' => $user->id],
+            false,
+            'id DESC'
+        );
         $this->assertEquals($post4->id, array_values($entities)[0]->get_id());
         $this->assertEquals($post3->id, array_values($entities)[1]->get_id());
         $this->assertEquals($post2->id, array_values($entities)[2]->get_id());
         $this->assertEquals($post1->id, array_values($entities)[3]->get_id());
 
         // Test ordering by id ascending.
-        $entities = $this->vault->get_from_filters($user, ['discussionids' => $discussionids, 'userids' => $user->id],
-            false, 'id ASC');
+        $entities = $this->vault->get_from_filters(
+            $user,
+            ['discussionids' => $discussionids, 'userids' => $user->id],
+            false,
+            'id ASC'
+        );
         $this->assertEquals($post1->id, array_values($entities)[0]->get_id());
         $this->assertEquals($post2->id, array_values($entities)[1]->get_id());
         $this->assertEquals($post3->id, array_values($entities)[2]->get_id());
@@ -1025,7 +1074,7 @@ final class vaults_post_test extends \advanced_testcase {
         // ----> Otherpost reply private reply (teacher 1).
         [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $student);
         $postprivatereply = $this->helper_reply_to_post($post, $teacher, [
-            'privatereplyto' => $student->id
+            'privatereplyto' => $student->id,
         ]);
         [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $teacher);
         $otherpostprivatereply = $this->helper_reply_to_post($otherpost, $otherteacher, [
@@ -1033,15 +1082,18 @@ final class vaults_post_test extends \advanced_testcase {
         ]);
         $otherpostreply = $this->helper_reply_to_post($otherpost, $student);
         $otherpostreplyprivatereply = $this->helper_reply_to_post($otherpostreply, $teacher, [
-            'privatereplyto' => $student->id
+            'privatereplyto' => $student->id,
         ]);
 
         $userids = [$otherstudent->id, $teacher->id, $otherteacher->id];
         $discussionids = [$discussion->id, $otherdiscussion->id];
 
         // Teacher 1. Request all posts from the vault, telling the vault that the teacher CAN see private replies made by anyone.
-        $entities = $this->vault->get_from_filters($teacher, ['discussionids' => $discussionids, 'userids' => $userids],
-            true);
+        $entities = $this->vault->get_from_filters(
+            $teacher,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            true
+        );
         $this->assertCount(4, $entities);
         $this->assertArrayHasKey($postprivatereply->id, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
@@ -1050,8 +1102,11 @@ final class vaults_post_test extends \advanced_testcase {
 
         // Student 1. Request all posts from the vault, telling the vault that the student CAN'T see private replies made by anyone.
         // Teacher2's private reply to otherpost is omitted.
-        $entities = $this->vault->get_from_filters($student, ['discussionids' => $discussionids, 'userids' => $userids],
-                false);
+        $entities = $this->vault->get_from_filters(
+            $student,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            false
+        );
         $this->assertCount(3, $entities);
         $this->assertArrayHasKey($postprivatereply->id, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
@@ -1059,8 +1114,11 @@ final class vaults_post_test extends \advanced_testcase {
 
         // Student 1. Request all posts from the vault, telling the vault that student CAN see all private replies made.
         // The private reply made by teacher 2 to otherpost is now included.
-        $entities = $this->vault->get_from_filters($student, ['discussionids' => $discussionids, 'userids' => $userids],
-                true);
+        $entities = $this->vault->get_from_filters(
+            $student,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            true
+        );
         $this->assertCount(4, $entities);
         $this->assertArrayHasKey($postprivatereply->id, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
@@ -1068,8 +1126,11 @@ final class vaults_post_test extends \advanced_testcase {
         $this->assertArrayHasKey($otherpostreplyprivatereply->id, $entities);
 
         // Teacher 2. Request all posts from the vault, telling the vault that teacher2 CAN see all private replies made.
-        $entities = $this->vault->get_from_filters($otherteacher,
-                ['discussionids' => $discussionids, 'userids' => $userids], true);
+        $entities = $this->vault->get_from_filters(
+            $otherteacher,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            true
+        );
         $this->assertCount(4, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
         $this->assertArrayHasKey($otherpostprivatereply->id, $entities);
@@ -1077,18 +1138,23 @@ final class vaults_post_test extends \advanced_testcase {
 
         // Teacher 2. Request all posts from the vault, telling the vault that teacher2 CANNOT see all private replies made.
         // The private replies not relating to teacher 2 directly are omitted.
-        $entities = $this->vault->get_from_filters($otherteacher,
-                ['discussionids' => $discussionids, 'userids' => $userids], false);
+        $entities = $this->vault->get_from_filters(
+            $otherteacher,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            false
+        );
         $this->assertCount(2, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
         $this->assertArrayHasKey($otherpostprivatereply->id, $entities);
 
         // Student 2. Request all posts from the vault, telling the vault that student2 CAN'T see all private replies made.
         // All private replies are omitted, as none relate to student2.
-        $entities = $this->vault->get_from_filters($otherstudent,
-                ['discussionids' => $discussionids, 'userids' => $userids], false);
+        $entities = $this->vault->get_from_filters(
+            $otherstudent,
+            ['discussionids' => $discussionids, 'userids' => $userids],
+            false
+        );
         $this->assertCount(1, $entities);
         $this->assertArrayHasKey($otherpost->id, $entities);
-
     }
 }

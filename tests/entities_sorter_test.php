@@ -32,10 +32,10 @@ final class entities_sorter_test extends \advanced_testcase {
     public function test_entity_sort_into_children(): void {
         $this->resetAfterTest();
         $sorter = new sorter_entity(
-            function($entity) {
+            function ($entity) {
                 return $entity['id'];
             },
-            function($entity) {
+            function ($entity) {
                 return $entity['parent'];
             }
         );
@@ -62,10 +62,10 @@ final class entities_sorter_test extends \advanced_testcase {
     public function test_entity_flatten_children(): void {
         $this->resetAfterTest();
         $sorter = new sorter_entity(
-            function($entity) {
+            function ($entity) {
                 return $entity['id'];
             },
-            function($entity) {
+            function ($entity) {
                 return $entity['parent'];
             }
         );
@@ -76,7 +76,7 @@ final class entities_sorter_test extends \advanced_testcase {
         $d = ['id' => 4, 'parent' => 3];
 
         $sorted = [
-            [$a, [[$b, [[$d, []]]], [$c, []]]]
+            [$a, [[$b, [[$d, []]]], [$c, []]]],
         ];
 
         $expected = [$a, $b, $d, $c];

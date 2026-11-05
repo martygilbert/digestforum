@@ -24,9 +24,9 @@
 
 namespace mod_digestforum\privacy;
 
-use \core_privacy\request\approved_contextlist;
-use \core_privacy\request\writer;
-use \core_privacy\metadata\item_collection;
+use core_privacy\request\approved_contextlist;
+use core_privacy\request\writer;
+use core_privacy\metadata\item_collection;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -43,7 +43,7 @@ trait subcontext_info {
      * @param   \stdClass   $discussion The discussion
      * @return  array
      */
-    protected static function get_discussion_area(\stdClass $discussion): Array {
+    protected static function get_discussion_area(\stdClass $discussion): array {
         $pathparts = [];
         if (!empty($discussion->groupname)) {
             $pathparts[] = get_string('groups');
@@ -69,7 +69,7 @@ trait subcontext_info {
      * @param   \stdClass   $post The post.
      * @return  array
      */
-    protected static function get_post_area(\stdClass $post): Array {
+    protected static function get_post_area(\stdClass $post): array {
         $parts = [
             $post->created,
             $post->subject,
@@ -118,6 +118,5 @@ trait subcontext_info {
         }
 
         return $subcontext;
-
     }
 }

@@ -73,20 +73,20 @@ final class builders_exported_posts_test extends \advanced_testcase {
 
         return [
             // Forums.
-            array_map(function($digestforum) use ($entityfactory, $DB) {
+            array_map(function ($digestforum) use ($entityfactory, $DB) {
                 $course = $DB->get_record('course', ['id' => $digestforum->course]);
                 $coursemodule = get_coursemodule_from_instance('digestforum', $digestforum->id);
                 $context = \context_module::instance($coursemodule->id);
                 return $entityfactory->get_digestforum_from_stdClass($digestforum, $context, $coursemodule, $course);
             }, $digestforums),
             // Discussions.
-            array_map(function($discussion) use ($entityfactory) {
+            array_map(function ($discussion) use ($entityfactory) {
                 return $entityfactory->get_discussion_from_stdClass($discussion);
             }, $discussions),
             // Posts.
-            array_map(function($post) use ($entityfactory) {
+            array_map(function ($post) use ($entityfactory) {
                 return $entityfactory->get_post_from_stdClass($post);
-            }, $posts)
+            }, $posts),
         ];
     }
 
@@ -174,10 +174,10 @@ final class builders_exported_posts_test extends \advanced_testcase {
 
         $exportedposts = $this->builder->build($user1, $digestforums, $discussions, $posts);
 
-        $expectedpostids = array_map(function($post) {
+        $expectedpostids = array_map(function ($post) {
             return $post->get_id();
         }, $posts);
-        $actualpostids = array_map(function($exportedpost) {
+        $actualpostids = array_map(function ($exportedpost) {
             return (int) $exportedpost->id;
         }, $exportedposts);
 
@@ -219,7 +219,7 @@ final class builders_exported_posts_test extends \advanced_testcase {
         // We didn't include any posts from user 3 so we shouldn't see the authors
         // that match that user.
         $expectedids = [$user1->id, $user2->id];
-        $actualids = array_unique(array_map(function($exportedpost) {
+        $actualids = array_unique(array_map(function ($exportedpost) {
             return (int) $exportedpost->author->id;
         }, $exportedposts));
 
@@ -290,7 +290,7 @@ final class builders_exported_posts_test extends \advanced_testcase {
         $exportedposts = $this->builder->build($user1, $digestforums, $discussions, $posts);
 
         $expected = ['example1.jpg', 'example2.jpg'];
-        $actual = array_reduce($exportedposts, function($carry, $exportedpost) {
+        $actual = array_reduce($exportedposts, function ($carry, $exportedpost) {
             if (!empty($exportedpost->attachments)) {
                 foreach ($exportedpost->attachments as $attachment) {
                     $carry[] = $attachment->filename;
@@ -357,14 +357,14 @@ final class builders_exported_posts_test extends \advanced_testcase {
         $expected = [
             $user1->id => [$group1->id, $group2->id],
             $user2->id => [$group1->id],
-            $user3->id => []
+            $user3->id => [],
         ];
-        $actual = array_reduce($exportedposts, function($carry, $exportedpost) {
+        $actual = array_reduce($exportedposts, function ($carry, $exportedpost) {
             $author = $exportedpost->author;
             $authorid = $author->id;
 
             if (!isset($carry[$authorid])) {
-                $carry[$authorid] = array_map(function($group) {
+                $carry[$authorid] = array_map(function ($group) {
                     return $group['id'];
                 }, $author->groups);
             }
@@ -421,11 +421,11 @@ final class builders_exported_posts_test extends \advanced_testcase {
         $expected = [
             $post1->id => ['foo', 'bar'],
             $post4->id => ['foo', 'baz'],
-            $post7->id => ['bip']
+            $post7->id => ['bip'],
         ];
-        $actual = array_reduce($exportedposts, function($carry, $exportedpost) {
+        $actual = array_reduce($exportedposts, function ($carry, $exportedpost) {
             if (!empty($exportedpost->tags)) {
-                $carry[$exportedpost->id] = array_map(function($tag) {
+                $carry[$exportedpost->id] = array_map(function ($tag) {
                     return $tag['displayname'];
                 }, $exportedpost->tags);
             }
@@ -490,9 +490,9 @@ final class builders_exported_posts_test extends \advanced_testcase {
             $post5->id => null,
             $post6->id => null,
             $post7->id => null,
-            $post8->id => null
+            $post8->id => null,
         ];
-        $actual = array_reduce($exportedposts, function($carry, $exportedpost) {
+        $actual = array_reduce($exportedposts, function ($carry, $exportedpost) {
             $carry[$exportedpost->id] = $exportedpost->unread;
             return $carry;
         }, []);
@@ -511,9 +511,9 @@ final class builders_exported_posts_test extends \advanced_testcase {
             $post5->id => null,
             $post6->id => null,
             $post7->id => null,
-            $post8->id => null
+            $post8->id => null,
         ];
-        $actual = array_reduce($exportedposts, function($carry, $exportedpost) {
+        $actual = array_reduce($exportedposts, function ($carry, $exportedpost) {
             $carry[$exportedpost->id] = $exportedpost->unread;
             return $carry;
         }, []);

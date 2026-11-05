@@ -31,7 +31,6 @@ use core_courseformat\output\local\overview\overviewaction;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class overview extends \core_courseformat\activityoverviewbase {
-
     /** @var \stdClass|null $digestforum The digestforum instance. */
     private ?\stdClass $digestforum;
 
@@ -117,7 +116,7 @@ class overview extends \core_courseformat\activityoverviewbase {
 
         $totaldiscussions = digestforum_count_discussions($this->digestforum, $this->cm, $this->course);
         $discussionposts = digestforum_count_discussion_replies($this->digestforum->id);
-        $totalreplies = array_reduce($discussionposts, function($sum, $post) {
+        $totalreplies = array_reduce($discussionposts, function ($sum, $post) {
             return $sum + $post->replies; // Add 1 to count the discussion post too.
         }, 0); // The '0' is the initial value of $sum.
         $totalreplies += $totaldiscussions; // Add the discussions to the replies count.

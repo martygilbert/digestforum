@@ -78,10 +78,10 @@ class discussion_subscription_deleted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribe.php', array(
+        return new \moodle_url('/mod/digestforum/subscribe.php', [
             'id' => $this->other['digestforumid'],
             'd' => $this->other['discussion'],
-        ));
+        ]);
     }
 
     /**
@@ -111,13 +111,13 @@ class discussion_subscription_deleted extends \core\event\base {
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussion_subs', 'restore' => 'digestforum_discussion_sub');
+        return ['db' => 'digestforum_discussion_subs', 'restore' => 'digestforum_discussion_sub'];
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
-        $othermapped['discussion'] = array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
+        $othermapped['discussion'] = ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
 
         return $othermapped;
     }

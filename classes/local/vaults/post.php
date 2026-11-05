@@ -92,7 +92,7 @@ class post extends db_table_vault {
     protected function from_db_records(array $results) {
         $entityfactory = $this->get_entity_factory();
 
-        return array_map(function(array $result) use ($entityfactory) {
+        return array_map(function (array $result) use ($entityfactory) {
             ['record' => $record] = $result;
             return $entityfactory->get_post_from_stdclass($record);
         }, $results);
@@ -154,10 +154,10 @@ class post extends db_table_vault {
      * @return post_entity[]
      */
     public function get_from_filters(
-            stdClass $user,
-            array $filters,
-            bool $canseeprivatereplies,
-            string $orderby = ''
+        stdClass $user,
+        array $filters,
+        bool $canseeprivatereplies,
+        string $orderby = ''
     ): array {
         if (count($filters) == 0) {
             return [];
@@ -168,16 +168,20 @@ class post extends db_table_vault {
 
         // Filter by discussion ids.
         if (!empty($filters['discussionids'])) {
-            list($indiscussionssql, $indiscussionsparams) = $this->get_db()->get_in_or_equal($filters['discussionids'],
-                SQL_PARAMS_NAMED);
+            [$indiscussionssql, $indiscussionsparams] = $this->get_db()->get_in_or_equal(
+                $filters['discussionids'],
+                SQL_PARAMS_NAMED
+            );
             $wheresql[] = "{$alias}.discussion {$indiscussionssql}";
             $params += $indiscussionsparams;
         }
 
         // Filter by user ids.
         if (!empty($filters['userids'])) {
-            list($inuserssql, $inusersparams) = $this->get_db()->get_in_or_equal($filters['userids'],
-                SQL_PARAMS_NAMED);
+            [$inuserssql, $inusersparams] = $this->get_db()->get_in_or_equal(
+                $filters['userids'],
+                SQL_PARAMS_NAMED
+            );
             $wheresql[] = "{$alias}.userid {$inuserssql}";
             $params += $inusersparams;
         }
@@ -277,7 +281,7 @@ class post extends db_table_vault {
             return $replies;
         }
 
-        $getreplypostids = function($candidates) use (&$getreplypostids) {
+        $getreplypostids = function ($candidates) use (&$getreplypostids) {
             $ids = [];
 
             foreach ($candidates as $candidate) {
@@ -293,7 +297,7 @@ class post extends db_table_vault {
         // Now go back and filter the original result set down to just the posts that
         // we've flagged as in the reply tree. We need to filter the original set of values
         // so that we can maintain the requested sort order.
-        return array_values(array_filter($posts, function($post) use ($replypostids) {
+        return array_values(array_filter($posts, function ($post) use ($replypostids) {
             return in_array($post->get_id(), $replypostids);
         }));
     }
@@ -311,7 +315,7 @@ class post extends db_table_vault {
             return [];
         }
 
-        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
 
         [
             'where' => $privatewhere,
@@ -336,7 +340,11 @@ class post extends db_table_vault {
      * @return  int         The number of replies for each discussion returned in an associative array
      */
     public function get_reply_count_for_post_id_in_discussion_id(
-            stdClass $user, int $postid, int $discussionid, bool $canseeprivatereplies): int {
+        stdClass $user,
+        int $postid,
+        int $discussionid,
+        bool $canseeprivatereplies
+    ): int {
         [
             'where' => $privatewhere,
             'params' => $privateparams,
@@ -400,7 +408,7 @@ class post extends db_table_vault {
         ] = $this->get_private_reply_sql($user, $canseeprivatereplies);
 
         $alias = $this->get_table_alias();
-        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
         $sql = "SELECT p.discussion, COUNT(p.id) FROM {" . self::TABLE . "} p
              LEFT JOIN {digestforum_read} r ON r.postid = p.id AND r.userid = :userid
                  WHERE p.discussion {$insql} AND p.modified > :cutofftime AND r.id IS NULL {$privatewhere}
@@ -425,13 +433,16 @@ class post extends db_table_vault {
      * @throws \dml_exception
      */
     public function get_latest_posts_for_discussion_ids(
-        stdClass $user, array $discussionids, bool $canseeprivatereplies): array {
+        stdClass $user,
+        array $discussionids,
+        bool $canseeprivatereplies
+    ): array {
 
         if (empty($discussionids)) {
             return [];
         }
 
-        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
 
         [
             'where' => $privatewhere,
@@ -461,7 +472,7 @@ class post extends db_table_vault {
         $records = $this->get_db()->get_records_sql($sql, array_merge($params, $privateparams, $privateparams2));
         $entities = $this->transform_db_records_to_entities($records);
 
-        return array_reduce($entities, function($carry, $entity) {
+        return array_reduce($entities, function ($carry, $entity) {
             $carry[$entity->get_discussion_id()] = $entity;
             return $carry;
         }, []);
@@ -502,7 +513,7 @@ class post extends db_table_vault {
             return [];
         }
 
-        list($insql, $params) = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($discussionids, SQL_PARAMS_NAMED);
 
         $sql = "
             SELECT posts.*
@@ -553,7 +564,7 @@ class post extends db_table_vault {
         $sql = $this->generate_get_records_sql($wheresql, $orderbysql);
         $records = $this->get_db()->get_records_sql($sql, array_merge([
             'authorid' => $userid,
-            'discussionid' => $discussionid
+            'discussionid' => $discussionid,
         ], $privateparams));
 
         return $this->transform_db_records_to_entities($records);

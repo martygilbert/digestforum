@@ -183,7 +183,6 @@ switch ($digestforum->get_type()) {
     case 'single':
         $digestforumgradeitem = digestforum_gradeitem::load_from_digestforum_entity($digestforum);
         if ($capabilitymanager->can_grade($USER)) {
-
             if ($digestforumgradeitem->is_grading_enabled()) {
                 $groupid = groups_get_activity_group($cm, true) ?: null;
                 $gradeobj = (object) [
@@ -221,20 +220,24 @@ switch ($digestforum->get_type()) {
         $discussion = $discussionvault->get_last_discussion_in_digestforum($digestforum);
         $discussioncount = $discussionvault->get_count_discussions_in_digestforum($digestforum);
         $hasmultiplediscussions = $discussioncount > 1;
-        $discussionsrenderer = $rendererfactory->get_single_discussion_list_renderer($digestforum, $discussion,
-            $hasmultiplediscussions, $displaymode);
+        $discussionsrenderer = $rendererfactory->get_single_discussion_list_renderer(
+            $digestforum,
+            $discussion,
+            $hasmultiplediscussions,
+            $displaymode
+        );
         $post = $postvault->get_from_id($discussion->get_first_post_id());
         $orderpostsby = $displaymode == DFORUM_MODE_FLATNEWEST ? 'created DESC' : 'created ASC';
         $replies = $postvault->get_replies_to_post(
-                $USER,
-                $post,
-                $capabilitymanager->can_view_any_private_reply($USER),
-                $orderpostsby
-            );
+            $USER,
+            $post,
+            $capabilitymanager->can_view_any_private_reply($USER),
+            $orderpostsby
+        );
         echo $discussionsrenderer->render($USER, $post, $replies);
 
         if (!$CFG->digestforum_usermarksread && digestforum_tp_is_tracked($digestforumrecord, $USER)) {
-            $postids = array_map(function($post) {
+            $postids = array_map(function ($post) {
                 return $post->get_id();
             }, array_merge([$post], array_values($replies)));
             digestforum_tp_mark_posts_read($USER, $postids);
@@ -243,12 +246,20 @@ switch ($digestforum->get_type()) {
     case 'blog':
         $discussionsrenderer = $rendererfactory->get_blog_discussion_list_renderer($digestforum);
         // Blog digestforums always show discussions newest first.
-        echo $discussionsrenderer->render($USER, $cm, $groupid, $discussionlistvault::SORTORDER_CREATED_DESC,
-            $pageno, $pagesize, null, false);
+        echo $discussionsrenderer->render(
+            $USER,
+            $cm,
+            $groupid,
+            $discussionlistvault::SORTORDER_CREATED_DESC,
+            $pageno,
+            $pagesize,
+            null,
+            false
+        );
 
         if (!$CFG->digestforum_usermarksread && digestforum_tp_is_tracked($digestforumrecord, $USER)) {
             $discussions = mod_digestforum_get_discussion_summaries($digestforum, $USER, $groupid, null, $pageno, $pagesize);
-            $firstpostids = array_map(function($discussion) {
+            $firstpostids = array_map(function ($discussion) {
                 return $discussion->get_first_post()->get_id();
             }, array_values($discussions));
             digestforum_tp_mark_posts_read($USER, $firstpostids);

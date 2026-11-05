@@ -75,7 +75,7 @@ class author extends db_table_vault {
     protected function from_db_records(array $results) {
         $entityfactory = $this->get_entity_factory();
 
-        return array_map(function(array $result) use ($entityfactory) {
+        return array_map(function (array $result) use ($entityfactory) {
             [
                 'record' => $record,
             ] = $result;
@@ -92,7 +92,7 @@ class author extends db_table_vault {
      * @return author_entity[]
      */
     public function get_authors_for_posts(array $posts): array {
-        $authorids = array_reduce($posts, function($carry, $post) {
+        $authorids = array_reduce($posts, function ($carry, $post) {
             $carry[$post->get_author_id()] = true;
             return $carry;
         }, []);
@@ -112,7 +112,7 @@ class author extends db_table_vault {
         [$insql, $params] = $db->get_in_or_equal($authorids);
         $sql = "SELECT instanceid, id FROM {context} WHERE contextlevel = ? AND instanceid {$insql}";
         $records = $db->get_records_sql($sql, array_merge([CONTEXT_USER], $params));
-        return array_reduce($authorids, function($carry, $id) use ($records) {
+        return array_reduce($authorids, function ($carry, $id) use ($records) {
             $carry[$id] = isset($records[$id]) ? (int) $records[$id]->id : null;
             return $carry;
         }, []);

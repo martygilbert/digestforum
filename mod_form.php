@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,24 +21,23 @@
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+    die('Direct access to this script is forbidden.');    // It must be included from a Moodle page
 }
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 use core_grades\component_gradeitems;
 
 class mod_digestforum_mod_form extends moodleform_mod {
-
     function definition() {
         global $CFG, $COURSE, $DB;
 
         $mform    =& $this->_form;
 
-//-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('digestforumname', 'digestforum'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('digestforumname', 'digestforum'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
@@ -64,11 +62,11 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addElement('header', 'availability', get_string('availability', 'digestforum'));
 
         $name = get_string('duedate', 'digestforum');
-        $mform->addElement('date_time_selector', 'duedate', $name, array('optional' => true));
+        $mform->addElement('date_time_selector', 'duedate', $name, ['optional' => true]);
         $mform->addHelpButton('duedate', 'duedate', 'digestforum');
 
         $name = get_string('cutoffdate', 'digestforum');
-        $mform->addElement('date_time_selector', 'cutoffdate', $name, array('optional' => true));
+        $mform->addElement('date_time_selector', 'cutoffdate', $name, ['optional' => true]);
         $mform->addHelpButton('cutoffdate', 'cutoffdate', 'digestforum');
 
         // Attachments and word count.
@@ -80,7 +78,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'digestforum');
         $mform->setDefault('maxbytes', $CFG->digestforum_maxbytes);
 
-        $choices = array(
+        $choices = [
             0 => 0,
             1 => 1,
             2 => 2,
@@ -94,8 +92,8 @@ class mod_digestforum_mod_form extends moodleform_mod {
             10 => 10,
             20 => 20,
             50 => 50,
-            100 => 100
-        );
+            100 => 100,
+        ];
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'digestforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'digestforum');
         $mform->setDefault('maxattachments', $CFG->digestforum_maxattachments);
@@ -117,7 +115,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         }
         $mform->setDefault('forcesubscribe', $defaultdigestforumsubscription);
 
-        $options = array();
+        $options = [];
         $options[DFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'digestforum');
         $options[DFORUM_TRACKING_OFF] = get_string('trackingoff', 'digestforum');
         if ($CFG->digestforum_allowforcedreadtracking) {
@@ -132,9 +130,9 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->setDefault('trackingtype', $default);
 
         if ($CFG->enablerssfeeds && isset($CFG->digestforum_enablerssfeeds) && $CFG->digestforum_enablerssfeeds) {
-//-------------------------------------------------------------------------------
+            // -------------------------------------------------------------------------------
             $mform->addElement('header', 'rssheader', get_string('rss'));
-            $choices = array();
+            $choices = [];
             $choices[0] = get_string('none');
             $choices[1] = get_string('discussions', 'digestforum');
             $choices[2] = get_string('posts', 'digestforum');
@@ -144,7 +142,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
                 $mform->setDefault('rsstype', $CFG->digestforum_rsstype);
             }
 
-            $choices = array();
+            $choices = [];
             $choices[0] = '0';
             $choices[1] = '1';
             $choices[2] = '2';
@@ -174,17 +172,17 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('lockdiscussionafter', 'lockdiscussionafter', 'digestforum');
         $mform->disabledIf('lockdiscussionafter', 'type', 'eq', 'single');
 
-//-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'blockafterheader', get_string('blockafter', 'digestforum'));
-        $options = array();
-        $options[0] = get_string('blockperioddisabled','digestforum');
-        $options[60*60*24]   = '1 '.get_string('day');
-        $options[60*60*24*2] = '2 '.get_string('days');
-        $options[60*60*24*3] = '3 '.get_string('days');
-        $options[60*60*24*4] = '4 '.get_string('days');
-        $options[60*60*24*5] = '5 '.get_string('days');
-        $options[60*60*24*6] = '6 '.get_string('days');
-        $options[60*60*24*7] = '1 '.get_string('week');
+        $options = [];
+        $options[0] = get_string('blockperioddisabled', 'digestforum');
+        $options[60 * 60 * 24]   = '1 ' . get_string('day');
+        $options[60 * 60 * 24 * 2] = '2 ' . get_string('days');
+        $options[60 * 60 * 24 * 3] = '3 ' . get_string('days');
+        $options[60 * 60 * 24 * 4] = '4 ' . get_string('days');
+        $options[60 * 60 * 24 * 5] = '5 ' . get_string('days');
+        $options[60 * 60 * 24 * 6] = '6 ' . get_string('days');
+        $options[60 * 60 * 24 * 7] = '1 ' . get_string('week');
         $mform->addElement('select', 'blockperiod', get_string('blockperiod', 'digestforum'), $options);
         $mform->addHelpButton('blockperiod', 'blockperiod', 'digestforum');
 
@@ -202,14 +200,14 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('warnafter', 'warnafter', 'digestforum');
         $mform->hideIf('warnafter', 'blockperiod', 'eq', 0);
 
-//-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
 
         // Add the whole digestforum grading options.
         $this->add_digestforum_grade_settings($mform, 'digestforum');
 
         $this->standard_coursemodule_elements();
-//-------------------------------------------------------------------------------
-// buttons
+        // -------------------------------------------------------------------------------
+        // buttons
         $this->add_action_buttons();
     }
 
@@ -310,15 +308,15 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $type      =& $mform->getElement('type');
         $typevalue = $mform->getElementValue('type');
 
-        //we don't want to have these appear as possible selections in the form but
-        //we want the form to display them if they are set.
-        if ($typevalue[0]=='news') {
+        // we don't want to have these appear as possible selections in the form but
+        // we want the form to display them if they are set.
+        if ($typevalue[0] == 'news') {
             $type->addOption(get_string('namenews', 'digestforum'), 'news');
             $mform->addHelpButton('type', 'namenews', 'digestforum');
             $type->freeze();
             $type->setPersistantFreeze(true);
         }
-        if ($typevalue[0]=='social') {
+        if ($typevalue[0] == 'social') {
             $type->addOption(get_string('namesocial', 'digestforum'), 'social');
             $type->freeze();
             $type->setPersistantFreeze(true);

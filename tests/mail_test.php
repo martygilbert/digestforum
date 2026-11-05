@@ -107,7 +107,7 @@ final class mail_test extends \advanced_testcase {
         // Must be no longer than 15 characters.
         $CFG->messageinbound_mailbox = 'moodlemoodle123';
 
-        $record = $DB->get_record('messageinbound_handlers', array('classname' => '\mod_digestforum\message\inbound\reply_handler'));
+        $record = $DB->get_record('messageinbound_handlers', ['classname' => '\mod_digestforum\message\inbound\reply_handler']);
         $record->enabled = true;
         $record->id = $DB->update_record('messageinbound_handlers', $record);
     }
@@ -118,14 +118,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             'author' => (object) [
@@ -142,7 +142,7 @@ final class mail_test extends \advanced_testcase {
         $this->messagesink->close();
         $this->eventsink = $this->redirectEvents();
         $this->send_digest_posts_and_assert($author, [$post]);
-        $events = array_filter($this->eventsink->get_events(), function($event) {
+        $events = array_filter($this->eventsink->get_events(), function ($event) {
             return $event instanceof \core\event\notification_sent;
         });
         $this->assertCount(1, $events);
@@ -161,11 +161,11 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create users enrolled in the course as students.
-        list($author, $recipient, $unconfirmed, $deleted) = $this->helper_create_users($course, 4);
+        [$author, $recipient, $unconfirmed, $deleted] = $this->helper_create_users($course, 4);
 
         // Make the third user unconfirmed (thence inactive) to make sure it does not break the notifications.
         $DB->set_field('user', 'confirmed', 0, ['id' => $unconfirmed->id]);
@@ -174,7 +174,7 @@ final class mail_test extends \advanced_testcase {
         $DB->set_field('user', 'deleted', 1, ['id' => $deleted->id]);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -213,14 +213,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Run cron and check that the expected number of users received the notification.
         $expect = [
@@ -250,11 +250,11 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // A user with the manageactivities capability within the course can subscribe.
         $roleids = $DB->get_records_menu('role', null, '', 'shortname, id');
@@ -263,13 +263,13 @@ final class mail_test extends \advanced_testcase {
         // Suscribe the recipient only.
         \mod_digestforum\subscriptions::subscribe_user($recipient->id, $digestforum);
 
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $recipient->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Run cron and check that the expected number of users received the notification.
         $expect = [
@@ -299,18 +299,18 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // A user with the manageactivities capability within the course can subscribe.
         $roleids = $DB->get_records_menu('role', null, '', 'shortname, id');
         assign_capability('moodle/course:manageactivities', CAP_ALLOW, $roleids['student'], \context_course::instance($course->id));
 
         // Run cron and check that the expected number of users received the notification.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Subscribe the user to the discussion.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($recipient->id, $discussion);
@@ -341,14 +341,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -422,14 +422,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -453,17 +453,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Unsubscribe the 'author' user from the digestforum.
         \mod_digestforum\subscriptions::unsubscribe_user($author->id, $digestforum);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -487,17 +487,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Subscribe the 'recipient' user from the digestforum.
         \mod_digestforum\subscriptions::subscribe_user($recipient->id, $digestforum);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -521,14 +521,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Unsubscribe the 'author' user from the discussion.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -558,14 +558,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $this->helper_update_post_time($post, -90);
 
         // Subscribe the 'recipient' user to the discussion.
@@ -616,14 +616,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $this->helper_update_post_time($post, -90);
 
         // Have a user reply to the discussion before we subscribed.
@@ -662,14 +662,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $this->helper_update_post_time($post, -90);
 
         // Unsubscribe the 'author' user from the digestforum.
@@ -720,14 +720,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Unsubscribe the 'recipient' user from the discussion.
         \mod_digestforum\subscriptions::subscribe_user($recipient->id, $digestforum);
@@ -762,23 +762,23 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $expectedmessages = array();
+        $expectedmessages = [];
 
         // Create a user enrolled in the course as a student.
-        list($author) = $this->helper_create_users($course, 1);
+        [$author] = $this->helper_create_users($course, 1);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $this->helper_update_post_time($post, -90);
 
-        $expectedmessages[] = array(
+        $expectedmessages[] = [
             'id' => $post->id,
             'subject' => $post->subject,
             'count' => 0,
-        );
+        ];
 
         // Then subscribe the user to the discussion.
         $this->assertTrue(\mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion));
@@ -805,11 +805,11 @@ final class mail_test extends \advanced_testcase {
 
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $u1, $u2, $u3) = $this->helper_create_users($course, 4);
+        [$author, $u1, $u2, $u3] = $this->helper_create_users($course, 4);
 
         // Subscribe the three users to the digestforum.
         \mod_digestforum\subscriptions::subscribe_user($u1->id, $digestforum);
@@ -823,7 +823,7 @@ final class mail_test extends \advanced_testcase {
         $DB->set_field('user', 'auth', 'nologin', ['id' => $u2->id]);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $expect = [
             (object) [
@@ -851,44 +851,44 @@ final class mail_test extends \advanced_testcase {
      */
     public static function digestforum_post_email_templates_provider(): array {
         // Base information, we'll build variations based on it.
-        $base = array(
-            'user' => array('firstname' => 'Love', 'lastname' => 'Moodle', 'mailformat' => 0, 'maildigest' => 0),
-            'course' => array('shortname' => '101', 'fullname' => 'Moodle 101'),
-            'digestforums' => array(
-                array(
+        $base = [
+            'user' => ['firstname' => 'Love', 'lastname' => 'Moodle', 'mailformat' => 0, 'maildigest' => 0],
+            'course' => ['shortname' => '101', 'fullname' => 'Moodle 101'],
+            'digestforums' => [
+                [
                     'name' => 'Moodle Forum',
-                    'digestforumposts' => array(
-                        array(
+                    'digestforumposts' => [
+                        [
                             'name' => 'Hello Moodle',
                             'message' => 'Welcome to Moodle',
                             'messageformat' => FORMAT_MOODLE,
-                            'attachments' => array(
-                                array(
+                            'attachments' => [
+                                [
                                     'filename' => 'example.txt',
-                                    'filecontents' => 'Basic information about the course'
-                                ),
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-            'expectations' => array(
-                array(
+                                    'filecontents' => 'Basic information about the course',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'expectations' => [
+                [
                     // Each digestforum is sent as its own digest, named after the digestforum.
                     'subject' => '^Moodle Forum',
-                    'contents' => array(
+                    'contents' => [
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachment example.txt:' . '\r*\n' .
                             'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' . '\r*\n',
                         'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle',
-                    ),
-                ),
-            ),
-        );
+                    ],
+                ],
+            ],
+        ];
 
         // Build the text cases.
-        $textcases = array('Text mail without ampersands, quotes or lt/gt' => array('data' => $base));
+        $textcases = ['Text mail without ampersands, quotes or lt/gt' => ['data' => $base]];
 
         // Single and double quotes everywhere.
         $newcase = $base;
@@ -897,10 +897,10 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['name'] = 'Moodle Forum\'"';
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle\'"';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle\'"';
-        $newcase['expectations'][0]['contents'] = array(
+        $newcase['expectations'][0]['contents'] = [
             'Attachment example.txt:', '~{\$a', '~&amp;(quot|\#039);', 'Love Moodle\'', 'Moodle Forum\'"',
-            'Hello Moodle\'"', 'Welcome to Moodle\'"');
-        $textcases['Text mail with quotes everywhere'] = array('data' => $newcase);
+            'Hello Moodle\'"', 'Welcome to Moodle\'"'];
+        $textcases['Text mail with quotes everywhere'] = ['data' => $newcase];
 
         // Lt and gt everywhere. This case is completely borked because format_string()
         // strips tags with $CFG->formatstringstriptags and also escapes < and > (correct
@@ -911,10 +911,10 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['name'] = 'Moodle Forum>';
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle>';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle>';
-        $newcase['expectations'][0]['contents'] = array(
+        $newcase['expectations'][0]['contents'] = [
             'Attachment example.txt:', '~{\$a', '~&amp;gt;', 'Love Moodle>', 'Moodle Forum>',
-            'Hello Moodle>', 'Welcome to Moodle>');
-        $textcases['Text mail with gt and lt everywhere'] = array('data' => $newcase);
+            'Hello Moodle>', 'Welcome to Moodle>'];
+        $textcases['Text mail with gt and lt everywhere'] = ['data' => $newcase];
 
         // Ampersands everywhere. This case is completely borked because format_string()
         // escapes ampersands (correct for web presentation but not for text email). See MDL-19829.
@@ -924,40 +924,40 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['name'] = 'Moodle Forum&';
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle&';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle&';
-        $newcase['expectations'][0]['contents'] = array(
+        $newcase['expectations'][0]['contents'] = [
             'Attachment example.txt:', '~{\$a', '~&amp;amp;', 'Love Moodle&', 'Moodle Forum&',
-            'Hello Moodle&', 'Welcome to Moodle&');
-        $textcases['Text mail with ampersands everywhere'] = array('data' => $newcase);
+            'Hello Moodle&', 'Welcome to Moodle&'];
+        $textcases['Text mail with ampersands everywhere'] = ['data' => $newcase];
 
         // Text+image message i.e. @@PLUGINFILE@@ token handling.
         $newcase = $base;
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Text and image';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle, '
-            .'@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png !';
-        $newcase['expectations'][0]['contents'] = array(
+            . '@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png !';
+        $newcase['expectations'][0]['contents'] = [
             '~{$a',
             '~&(amp|lt|gt|quot|\#039);(?!course)',
             'Attachment example.txt:' . '\r*\n' .
-            'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' .  '\r*\n' ,
+            'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' .  '\r*\n',
             'Text and image', 'Moodle Forum',
             'Welcome to Moodle, *' . '\r*\n' . '.*'
-                .'https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
-                .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *' . '\r*\n' . '.*!',
-            'Love Moodle');
-        $textcases['Text mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
+                . 'https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
+                . 'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *' . '\r*\n' . '.*!',
+            'Love Moodle'];
+        $textcases['Text mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = ['data' => $newcase];
 
         // Now the html cases.
-        $htmlcases = array();
+        $htmlcases = [];
 
         // New base for html cases, no quotes, lts, gts or ampersands.
         $htmlbase = $base;
         $htmlbase['user']['mailformat'] = 1;
-        $htmlbase['expectations'][0]['contents'] = array(
+        $htmlbase['expectations'][0]['contents'] = [
             '~{\$a',
             '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
-            '<h4[^>]*><a [^>]*>Hello Moodle</a>', '\'Moodle Forum\'', '>Welcome.*Moodle', '>Love Moodle');
-        $htmlcases['HTML mail without ampersands, quotes or lt/gt'] = array('data' => $htmlbase);
+            '<h4[^>]*><a [^>]*>Hello Moodle</a>', '\'Moodle Forum\'', '>Welcome.*Moodle', '>Love Moodle'];
+        $htmlcases['HTML mail without ampersands, quotes or lt/gt'] = ['data' => $htmlbase];
 
         // Single and double quotes, lt and gt, ampersands everywhere.
         $newcase = $htmlbase;
@@ -966,31 +966,31 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['name'] = 'Moodle Forum\'">&';
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle\'">&';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle\'">&';
-        $newcase['expectations'][0]['contents'] = array(
+        $newcase['expectations'][0]['contents'] = [
             '~{\$a',
             '~&amp;(amp|lt|gt|quot|\#039);',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
             '<h4[^>]*><a [^>]*>Hello Moodle\'"&gt;&amp;</a>', '\'Moodle Forum\'"&gt;&amp;\'',
-            '>Welcome.*Moodle\'"&gt;&amp;', '>Love Moodle&\#039;&quot;&gt;&amp;');
-        $htmlcases['HTML mail with quotes, gt, lt and ampersand  everywhere'] = array('data' => $newcase);
+            '>Welcome.*Moodle\'"&gt;&amp;', '>Love Moodle&\#039;&quot;&gt;&amp;'];
+        $htmlcases['HTML mail with quotes, gt, lt and ampersand  everywhere'] = ['data' => $newcase];
 
         // Text+image message i.e. @@PLUGINFILE@@ token handling.
         $newcase = $htmlbase;
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'HTML text and image';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = '<p>Welcome to Moodle, '
-            .'<img src="@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png"'
-            .' alt="" width="200" height="393" class="img-fluid" />!</p>';
-        $newcase['expectations'][0]['contents'] = array(
+            . '<img src="@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png"'
+            . ' alt="" width="200" height="393" class="img-fluid" />!</p>';
+        $newcase['expectations'][0]['contents'] = [
             '~{\$a',
             '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
             '<h4[^>]*><a [^>]*>HTML text and image</a>', '\'Moodle Forum\'',
             '<p>Welcome to Moodle, '
-            .'<img src="https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
-                .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png"'
-                .' alt="" width="200" height="393" class="img-fluid" />!</p>',
-            '>Love Moodle');
-        $htmlcases['HTML mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
+            . '<img src="https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
+                . 'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png"'
+                . ' alt="" width="200" height="393" class="img-fluid" />!</p>',
+            '>Love Moodle'];
+        $htmlcases['HTML mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = ['data' => $newcase];
 
         return $textcases + $htmlcases;
     }
@@ -1007,14 +1007,14 @@ final class mail_test extends \advanced_testcase {
         $this->resetAfterTest();
 
         // Create the course, with the specified options.
-        $options = array();
+        $options = [];
         foreach ($data['course'] as $option => $value) {
             $options[$option] = $value;
         }
         $course = $this->getDataGenerator()->create_course($options);
 
         // Create the user, with the specified options and enrol in the course.
-        $options = array();
+        $options = [];
         foreach ($data['user'] as $option => $value) {
             $options[$option] = $value;
         }
@@ -1022,11 +1022,11 @@ final class mail_test extends \advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create digestforums, always force susbscribed (for easy), with the specified options.
-        $posts = array();
+        $posts = [];
         foreach ($data['digestforums'] as $datadigestforum) {
-            $digestforumposts = isset($datadigestforum['digestforumposts']) ? $datadigestforum['digestforumposts'] : array();
+            $digestforumposts = isset($datadigestforum['digestforumposts']) ? $datadigestforum['digestforumposts'] : [];
             unset($datadigestforum['digestforumposts']);
-            $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+            $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
             foreach ($datadigestforum as $option => $value) {
                 $options[$option] = $value;
             }
@@ -1034,31 +1034,31 @@ final class mail_test extends \advanced_testcase {
 
             // Create posts, always for immediate delivery (for easy), with the specified options.
             foreach ($digestforumposts as $digestforumpost) {
-                $attachments = isset($digestforumpost['attachments']) ? $digestforumpost['attachments'] : array();
+                $attachments = isset($digestforumpost['attachments']) ? $digestforumpost['attachments'] : [];
                 unset($digestforumpost['attachments']);
-                $postoptions = array('course' => $course->id, 'digestforum' => $digestforum->id, 'userid' => $user->id,
-                    'mailnow' => 1, 'attachment' => !empty($attachments));
+                $postoptions = ['course' => $course->id, 'digestforum' => $digestforum->id, 'userid' => $user->id,
+                    'mailnow' => 1, 'attachment' => !empty($attachments)];
                 foreach ($digestforumpost as $option => $value) {
                     $postoptions[$option] = $value;
                 }
-                list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user, $postoptions);
+                [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user, $postoptions);
                 $posts[$post->subject] = $post; // Need this to verify cron output.
 
                 // Add the attachments to the post.
                 if ($attachments) {
                     $fs = get_file_storage();
                     foreach ($attachments as $attachment) {
-                        $filerecord = array(
+                        $filerecord = [
                             'contextid' => \context_module::instance($digestforum->cmid)->id,
                             'component' => 'mod_digestforum',
                             'filearea'  => 'attachment',
                             'itemid'    => $post->id,
                             'filepath'  => '/',
-                            'filename'  => $attachment['filename']
-                        );
+                            'filename'  => $attachment['filename'],
+                        ];
                         $fs->create_file_from_string($filerecord, $attachment['filecontents']);
                     }
-                    $DB->set_field('digestforum_posts', 'attachment', '1', array('id' => $post->id));
+                    $DB->set_field('digestforum_posts', 'attachment', '1', ['id' => $post->id]);
                 }
             }
         }
@@ -1112,7 +1112,7 @@ final class mail_test extends \advanced_testcase {
             if (isset($foundexpectation) and isset($foundexpectation['contents'])) {
                 $mail->body = quoted_printable_decode($mail->body);
                 if (!is_array($foundexpectation['contents'])) { // Accept both string and array.
-                    $foundexpectation['contents'] = array($foundexpectation['contents']);
+                    $foundexpectation['contents'] = [$foundexpectation['contents']];
                 }
                 foreach ($foundexpectation['contents'] as $content) {
                     if (strpos($content, '~') !== 0) {
@@ -1140,14 +1140,14 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $DB->set_field('digestforum_posts', 'mailed', 1);
 
         // No posts shoudl be considered.
@@ -1172,17 +1172,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Post a discussion to the digestforum.
-        list($discussion, $postmailednow) = $this->helper_post_to_digestforum($digestforum, $author, ['mailnow' => 1]);
+        [$discussion, $postmailednow] = $this->helper_post_to_digestforum($digestforum, $author, ['mailnow' => 1]);
 
         // Only the mailnow post should be considered.
         $expect = [
@@ -1213,17 +1213,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Create one users enrolled in the course as an editing teacher.
-        list($editor) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editor] = $this->helper_create_users($course, 1, 'editingteacher');
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Hide the coursemodule.
         set_coursemodule_visible($digestforum->cmid, 0);
@@ -1262,17 +1262,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Create one users enrolled in the course as an editing teacher.
-        list($editor) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editor] = $this->helper_create_users($course, 1, 'editingteacher');
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Only the mailnow post should be considered.
         $expect = [
@@ -1313,17 +1313,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Create one users enrolled in the course as an editing teacher.
-        list($editor) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editor] = $this->helper_create_users($course, 1, 'editingteacher');
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Update the discussion to have a timestart in the future.
         $DB->set_field('digestforum_discussions', 'timestart', time() + DAYSECS);
@@ -1373,17 +1373,17 @@ final class mail_test extends \advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author, $recipient) = $this->helper_create_users($course, 2);
+        [$author, $recipient] = $this->helper_create_users($course, 2);
 
         // Create one users enrolled in the course as an editing teacher.
-        list($editor) = $this->helper_create_users($course, 1, 'editingteacher');
+        [$editor] = $this->helper_create_users($course, 1, 'editingteacher');
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Update the discussion to have a timestart in the past.
         $DB->set_field('digestforum_discussions', 'timeend', time() - DAYSECS);
@@ -1421,5 +1421,4 @@ final class mail_test extends \advanced_testcase {
         $this->send_digest_posts_and_assert($recipient, [$post]);
         $this->send_digest_posts_and_assert($editor, [$post]);
     }
-
 }

@@ -90,14 +90,14 @@ class sorter {
      * @return array
      */
     public function sort_into_children(array $items): array {
-        $ids = array_reduce($items, function($carry, $item) {
+        $ids = array_reduce($items, function ($carry, $item) {
             $carry[($this->getid)($item)] = true;
             return $carry;
         }, []);
 
         // Split out the items into "parents" and "replies" (children). These are unsorted
         // at this point.
-        [$parents, $replies] = array_reduce($items, function($carry, $item) use ($ids) {
+        [$parents, $replies] = array_reduce($items, function ($carry, $item) use ($ids) {
             $parentid = ($this->getparentid)($item);
 
             if (!empty($ids[$parentid])) {
@@ -112,7 +112,7 @@ class sorter {
         }, [[], []]);
 
         if (empty($replies)) {
-            return array_map(function($parent) {
+            return array_map(function ($parent) {
                 return [$parent, []];
             }, $parents);
         }
@@ -121,13 +121,13 @@ class sorter {
         $sortedreplies = $this->sort_into_children($replies);
 
         // Sort the parents and sorted replies into their matching pairs.
-        return array_map(function($parent) use ($sortedreplies) {
+        return array_map(function ($parent) use ($sortedreplies) {
             $parentid = ($this->getid)($parent);
             return [
                 $parent,
-                array_values(array_filter($sortedreplies, function($replydata) use ($parentid) {
+                array_values(array_filter($sortedreplies, function ($replydata) use ($parentid) {
                     return ($this->getparentid)($replydata[0]) == $parentid;
-                }))
+                })),
             ];
         }, $parents);
     }

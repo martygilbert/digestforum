@@ -67,7 +67,7 @@ final class vaults_author_test extends \advanced_testcase {
             $userid1 => $user1contextid,
             $userid2 => $user2contextid,
             $userid3 => $user3contextid,
-            $fakeuserid => $fakeusercontextid
+            $fakeuserid => $fakeusercontextid,
         ];
 
         $this->assertEquals($expected, $authorvault->get_context_ids_for_author_ids($userids));

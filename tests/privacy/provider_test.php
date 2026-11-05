@@ -39,7 +39,6 @@ use mod_digestforum\privacy\provider;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class provider_test extends \core_privacy\tests\provider_testcase {
-
     // Include the privacy subcontext_info trait.
     // This includes the subcontext builders.
     use \mod_digestforum\privacy\subcontext_info;
@@ -139,8 +138,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $course = $this->getDataGenerator()->create_course();
         $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
@@ -176,8 +175,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $course = $this->getDataGenerator()->create_course();
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
@@ -231,10 +230,10 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $course = $this->getDataGenerator()->create_course();
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
         // Post twice - only the second discussion should be included.
         $this->helper_post_to_digestforum($digestforum, $otheruser);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
@@ -297,11 +296,11 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $course = $this->getDataGenerator()->create_course();
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
 
         // Post twice - only the second discussion should be included.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
-        list($otherdiscussion, $otherpost) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
+        [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
@@ -338,10 +337,10 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         $course = $this->getDataGenerator()->create_course();
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
         // Post twice - only the second discussion should be included.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
-        list($otherdiscussion, $otherpost) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
@@ -495,14 +494,14 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             'course' => $course->id,
             'scale' => 100,
         ]);
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
         // Rate the other users content.
         $rm = new \rating_manager();
-        $ratingoptions = new \stdClass;
+        $ratingoptions = new \stdClass();
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_digestforum';
         $ratingoptions->ratingarea = 'post';
@@ -565,14 +564,14 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             'course' => $course->id,
             'scale' => 100,
         ]);
-        list($user, $otheruser, $anotheruser) = $this->helper_create_users($course, 3);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
+        [$user, $otheruser, $anotheruser] = $this->helper_create_users($course, 3);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
         // Other users rate my content.
         $rm = new \rating_manager();
-        $ratingoptions = new \stdClass;
+        $ratingoptions = new \stdClass();
         $ratingoptions->context = $context;
         $ratingoptions->component = 'mod_digestforum';
         $ratingoptions->ratingarea = 'post';
@@ -645,7 +644,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cm3 = get_coursemodule_from_instance('digestforum', $digestforum3->id);
         $context3 = \context_module::instance($cm3->id);
 
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Set a digest value for each digestforum.
         digestforum_set_user_maildigest($digestforum0, 0, $user);
@@ -693,7 +692,6 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertEquals(0, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum0->id]));
         $this->assertFalse($DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum1->id]));
         $this->assertEquals(2, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum2->id]));
-
     }
 
     /**
@@ -712,7 +710,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cmon = get_coursemodule_from_instance('digestforum', $digestforumon->id);
         $contexton = \context_module::instance($cmon->id);
 
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Set user tracking data.
         digestforum_tp_stop_tracking($digestforumoff->id, $user->id);
@@ -728,8 +726,10 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         // Check export data for each context.
         $this->export_context_data_for_user($user->id, $contextoff, 'mod_digestforum');
-        $this->assertEquals(0,
-                \core_privacy\local\request\writer::with_context($contextoff)->get_metadata([], 'trackreadpreference'));
+        $this->assertEquals(
+            0,
+            \core_privacy\local\request\writer::with_context($contextoff)->get_metadata([], 'trackreadpreference')
+        );
 
         // Delete the data for one of the users in the 'on' digestforum.
         $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
@@ -783,27 +783,27 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cm4 = get_coursemodule_from_instance('digestforum', $digestforum4->id);
         $context4 = \context_module::instance($cm4->id);
 
-        list($author, $user) = $this->helper_create_users($course, 2);
+        [$author, $user] = $this->helper_create_users($course, 2);
 
-        list($f1d1, $f1p1) = $this->helper_post_to_digestforum($digestforum1, $author);
+        [$f1d1, $f1p1] = $this->helper_post_to_digestforum($digestforum1, $author);
         $f1p1reply = $this->helper_post_to_discussion($digestforum1, $f1d1, $author);
         $f1d1 = $DB->get_record('digestforum_discussions', ['id' => $f1d1->id]);
-        list($f1d2, $f1p2) = $this->helper_post_to_digestforum($digestforum1, $author);
+        [$f1d2, $f1p2] = $this->helper_post_to_digestforum($digestforum1, $author);
 
-        list($f2d1, $f2p1) = $this->helper_post_to_digestforum($digestforum2, $author);
+        [$f2d1, $f2p1] = $this->helper_post_to_digestforum($digestforum2, $author);
         $f2p1reply = $this->helper_post_to_discussion($digestforum2, $f2d1, $author);
         $f2d1 = $DB->get_record('digestforum_discussions', ['id' => $f2d1->id]);
-        list($f2d2, $f2p2) = $this->helper_post_to_digestforum($digestforum2, $author);
+        [$f2d2, $f2p2] = $this->helper_post_to_digestforum($digestforum2, $author);
 
-        list($f3d1, $f3p1) = $this->helper_post_to_digestforum($digestforum3, $author);
+        [$f3d1, $f3p1] = $this->helper_post_to_digestforum($digestforum3, $author);
         $f3p1reply = $this->helper_post_to_discussion($digestforum3, $f3d1, $author);
         $f3d1 = $DB->get_record('digestforum_discussions', ['id' => $f3d1->id]);
-        list($f3d2, $f3p2) = $this->helper_post_to_digestforum($digestforum3, $author);
+        [$f3d2, $f3p2] = $this->helper_post_to_digestforum($digestforum3, $author);
 
-        list($f4d1, $f4p1) = $this->helper_post_to_digestforum($digestforum4, $author);
+        [$f4d1, $f4p1] = $this->helper_post_to_digestforum($digestforum4, $author);
         $f4p1reply = $this->helper_post_to_discussion($digestforum4, $f4d1, $author);
         $f4d1 = $DB->get_record('digestforum_discussions', ['id' => $f4d1->id]);
-        list($f4d2, $f4p2) = $this->helper_post_to_digestforum($digestforum4, $author);
+        [$f4d2, $f4p2] = $this->helper_post_to_digestforum($digestforum4, $author);
 
         // Insert read info.
         // User has read post1, but not the reply or second post in digestforum1.
@@ -841,25 +841,25 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         // User has read f1p1.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum1, $f1d1, $f1p1),
-                'postread'
-            );
+            $this->get_subcontext($digestforum1, $f1d1, $f1p1),
+            'postread'
+        );
         $this->assertNotEmpty($readdata);
         $this->assertTrue(isset($readdata->firstread));
         $this->assertTrue(isset($readdata->lastread));
 
         // User has not f1p1reply.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum1, $f1d1, $f1p1reply),
-                'postread'
-            );
+            $this->get_subcontext($digestforum1, $f1d1, $f1p1reply),
+            'postread'
+        );
         $this->assertEmpty($readdata);
 
         // User has not f1p2.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum1, $f1d2, $f1p2),
-                'postread'
-            );
+            $this->get_subcontext($digestforum1, $f1d2, $f1p2),
+            'postread'
+        );
         $this->assertEmpty($readdata);
 
         // Forum 2.
@@ -868,27 +868,27 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         // User has read f2p1.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum2, $f2d1, $f2p1),
-                'postread'
-            );
+            $this->get_subcontext($digestforum2, $f2d1, $f2p1),
+            'postread'
+        );
         $this->assertNotEmpty($readdata);
         $this->assertTrue(isset($readdata->firstread));
         $this->assertTrue(isset($readdata->lastread));
 
         // User has read f2p1reply.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum2, $f2d1, $f2p1reply),
-                'postread'
-            );
+            $this->get_subcontext($digestforum2, $f2d1, $f2p1reply),
+            'postread'
+        );
         $this->assertNotEmpty($readdata);
         $this->assertTrue(isset($readdata->firstread));
         $this->assertTrue(isset($readdata->lastread));
 
         // User has not read f2p2.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum2, $f2d2, $f2p2),
-                'postread'
-            );
+            $this->get_subcontext($digestforum2, $f2d2, $f2p2),
+            'postread'
+        );
         $this->assertEmpty($readdata);
 
         // Forum 3.
@@ -897,23 +897,23 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         // User has not read f3p1.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum3, $f3d1, $f3p1),
-                'postread'
-            );
+            $this->get_subcontext($digestforum3, $f3d1, $f3p1),
+            'postread'
+        );
         $this->assertEmpty($readdata);
 
         // User has not read f3p1reply.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum3, $f3d1, $f3p1reply),
-                'postread'
-            );
+            $this->get_subcontext($digestforum3, $f3d1, $f3p1reply),
+            'postread'
+        );
         $this->assertEmpty($readdata);
 
         // User has read f3p2.
         $readdata = $writer->get_metadata(
-                $this->get_subcontext($digestforum3, $f3d2, $f3p2),
-                'postread'
-            );
+            $this->get_subcontext($digestforum3, $f3d2, $f3p2),
+            'postread'
+        );
         $this->assertNotEmpty($readdata);
         $this->assertTrue(isset($readdata->firstread));
         $this->assertTrue(isset($readdata->lastread));
@@ -944,7 +944,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         $fs = get_file_storage();
         $course = $this->getDataGenerator()->create_course();
-        list($author, $otheruser) = $this->helper_create_users($course, 2);
+        [$author, $otheruser] = $this->helper_create_users($course, 2);
 
         $digestforum = $this->getDataGenerator()->create_module('digestforum', [
             'course' => $course->id,
@@ -954,7 +954,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $context = \context_module::instance($cm->id);
 
         // Create a new discussion + post in the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
 
         // Add a number of replies.
@@ -964,7 +964,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $posts[$reply->id] = $reply;
 
         // Add a fake inline image to the original post.
-        $createdfile = $fs->create_file_from_string([
+        $createdfile = $fs->create_file_from_string(
+            [
                 'contextid' => $context->id,
                 'component' => 'mod_digestforum',
                 'filearea'  => 'post',
@@ -972,14 +973,15 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 'filepath'  => '/',
                 'filename'  => 'example.jpg',
             ],
-        'image contents (not really)');
+            'image contents (not really)'
+        );
 
         // Tag the post and the final reply.
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id, $context, ['example', 'tag']);
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $reply->id, $context, ['example', 'differenttag']);
 
         // Create a second discussion + post in the digestforum without tags.
-        list($otherdiscussion, $otherpost) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $author);
         $otherdiscussion = $DB->get_record('digestforum_discussions', ['id' => $otherdiscussion->id]);
 
         // Add a number of replies.
@@ -1010,7 +1012,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         global $DB;
 
         $course = $this->getDataGenerator()->create_course();
-        list($author, $otheruser) = $this->helper_create_users($course, 2);
+        [$author, $otheruser] = $this->helper_create_users($course, 2);
 
         $digestforum = $this->getDataGenerator()->create_module('digestforum', [
             'course' => $course->id,
@@ -1020,7 +1022,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $context = \context_module::instance($cm->id);
 
         // Create a new discussion + post in the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
         $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
 
         // Add a number of replies.
@@ -1034,7 +1036,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $reply->id, $context, ['example', 'differenttag']);
 
         // Create a second discussion + post in the digestforum without tags.
-        list($otherdiscussion, $otherpost) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$otherdiscussion, $otherpost] = $this->helper_post_to_digestforum($digestforum, $author);
         $otherdiscussion = $DB->get_record('digestforum_discussions', ['id' => $otherdiscussion->id]);
 
         // Add a number of replies.
@@ -1091,7 +1093,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 $context = $contexts[$digestforum->id];
 
                 // Create a new discussion + post in the digestforum.
-                list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
+                [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
                 $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
                 $discussions[$discussion->id] = $discussion;
 
@@ -1165,7 +1167,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertCount(2, $contextlist);
 
         // These are the contexts we expect.
-        $contextids = array_map(function($context) {
+        $contextids = array_map(function ($context) {
             return $context->id;
         }, $contexts);
         sort($contextids);
@@ -1180,18 +1182,18 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         provider::delete_data_for_all_users_in_context($context);
 
         // Determine what should have been deleted.
-        $discussionsindigestforum = array_filter($discussions, function($discussion) use ($digestforum) {
+        $discussionsindigestforum = array_filter($discussions, function ($discussion) use ($digestforum) {
             return $discussion->digestforum == $digestforum->id;
         });
 
-        $postsindigestforum = array_filter($posts, function($post) use ($discussionsindigestforum) {
+        $postsindigestforum = array_filter($posts, function ($post) use ($discussionsindigestforum) {
             return isset($discussionsindigestforum[$post->discussion]);
         });
 
         // All digestforum discussions and posts should have been deleted in this digestforum.
         $this->assertCount(0, $DB->get_records('digestforum_discussions', ['digestforum' => $digestforum->id]));
 
-        list ($insql, $inparams) = $DB->get_in_or_equal(array_keys($discussionsindigestforum));
+         [$insql, $inparams] = $DB->get_in_or_equal(array_keys($discussionsindigestforum));
         $this->assertCount(0, $DB->get_records_select('digestforum_posts', "discussion {$insql}", $inparams));
 
         // All uploaded files relating to this context should have been deleted (post content).
@@ -1223,18 +1225,18 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $context = $contexts[$digestforum->id];
 
         // Grab the list of discussions and posts in the digestforum.
-        $discussionsindigestforum = array_filter($discussions, function($discussion) use ($digestforum) {
+        $discussionsindigestforum = array_filter($discussions, function ($discussion) use ($digestforum) {
             return $discussion->digestforum == $digestforum->id;
         });
 
-        $postsindigestforum = array_filter($posts, function($post) use ($discussionsindigestforum) {
+        $postsindigestforum = array_filter($posts, function ($post) use ($discussionsindigestforum) {
             return isset($discussionsindigestforum[$post->discussion]);
         });
 
         // Forum discussions and posts should not have been deleted in this digestforum.
         $this->assertGreaterThan(0, $DB->count_records('digestforum_discussions', ['digestforum' => $digestforum->id]));
 
-        list ($insql, $inparams) = $DB->get_in_or_equal(array_keys($discussionsindigestforum));
+         [$insql, $inparams] = $DB->get_in_or_equal(array_keys($discussionsindigestforum));
         $this->assertGreaterThan(0, $DB->count_records_select('digestforum_posts', "discussion {$insql}", $inparams));
 
         // Uploaded files relating to this context should remain.
@@ -1298,7 +1300,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 $context = $contexts[$digestforum->id];
 
                 // Create a new discussion + post in the digestforum.
-                list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
+                [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
                 $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
                 $discussions[$discussion->id] = $discussion;
                 $postsbydigestforum[$user->id][$context->id] = [];
@@ -1389,7 +1391,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $otherpostids = [];
         foreach ($postsbydigestforum as $user => $contexts) {
             foreach ($contexts as $thiscontextid => $theseposts) {
-                $thesepostids = array_map(function($post) {
+                $thesepostids = array_map(function ($post) {
                     return $post->id;
                 }, $theseposts);
 
@@ -1402,8 +1404,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 }
             }
         }
-        list($postinsql, $postinparams) = $DB->get_in_or_equal($deletedpostids, SQL_PARAMS_NAMED);
-        list($otherpostinsql, $otherpostinparams) = $DB->get_in_or_equal($otherpostids, SQL_PARAMS_NAMED);
+        [$postinsql, $postinparams] = $DB->get_in_or_equal($deletedpostids, SQL_PARAMS_NAMED);
+        [$otherpostinsql, $otherpostinparams] = $DB->get_in_or_equal($otherpostids, SQL_PARAMS_NAMED);
 
         $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
             \core_user::get_user($user1->id),
@@ -1424,8 +1426,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         // That means that the deleted flag is set, and both the subject and message are empty.
         $this->assertCount(4, $DB->get_records_select('digestforum_posts', "userid = :userid AND deleted = :deleted"
                     . " AND " . $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject')
-                    . " AND " . $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message')
-                , [
+                    . " AND " . $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'), [
                     'userid' => $user1->id,
                     'deleted' => 1,
                     'subject' => '',
@@ -1436,22 +1437,29 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertCount(4, $DB->get_records('digestforum_posts', [
                 'deleted' => 1,
             ]));
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
-            $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject'), [
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
+            $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject'),
+            [
                 'subject' => '',
-            ]));
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
-            $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'), [
+            ]
+        ));
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
+            $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'),
+            [
                 'message' => '',
-            ]));
+            ]
+        ));
 
         // Only the posts in the first discussion should have been marked this way.
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
             "deleted = :deleted AND id {$postinsql}",
-                array_merge($postinparams, [
+            array_merge($postinparams, [
                     'deleted' => 1,
                 ])
-            ));
+        ));
 
         // Ratings should have been removed from the affected posts.
         $this->assertCount(0, $DB->get_records_select('rating', "itemid {$postinsql}", $postinparams));
@@ -1473,12 +1481,18 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         // Original total: 10
         // One post with file removed.
         $componentsql = "component = 'mod_digestforum' AND ";
-        $this->assertCount(0, $DB->get_records_select('files',
-            "{$componentsql} itemid {$postinsql}", $postinparams));
+        $this->assertCount(0, $DB->get_records_select(
+            'files',
+            "{$componentsql} itemid {$postinsql}",
+            $postinparams
+        ));
 
         // Files for the other posts should remain.
-        $this->assertCount(18, $DB->get_records_select('files',
-            "{$componentsql} filename <> '.' AND itemid {$otherpostinsql}", $otherpostinparams));
+        $this->assertCount(18, $DB->get_records_select(
+            'files',
+            "{$componentsql} filename <> '.' AND itemid {$otherpostinsql}",
+            $otherpostinparams
+        ));
     }
 
     /**
@@ -1513,7 +1527,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 $context = $contexts[$digestforum->id];
 
                 // Create a new discussion + post in the digestforum.
-                list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
+                [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
                 $discussion = $DB->get_record('digestforum_discussions', ['id' => $discussion->id]);
                 $discussions[$discussion->id] = $discussion;
                 $postsbydigestforum[$user->id][$context->id] = [];
@@ -1604,7 +1618,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $otherpostids = [];
         foreach ($postsbydigestforum as $user => $contexts) {
             foreach ($contexts as $thiscontextid => $theseposts) {
-                $thesepostids = array_map(function($post) {
+                $thesepostids = array_map(function ($post) {
                     return $post->id;
                 }, $theseposts);
 
@@ -1617,8 +1631,8 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
                 }
             }
         }
-        list($postinsql, $postinparams) = $DB->get_in_or_equal($deletedpostids, SQL_PARAMS_NAMED);
-        list($otherpostinsql, $otherpostinparams) = $DB->get_in_or_equal($otherpostids, SQL_PARAMS_NAMED);
+        [$postinsql, $postinparams] = $DB->get_in_or_equal($deletedpostids, SQL_PARAMS_NAMED);
+        [$otherpostinsql, $otherpostinparams] = $DB->get_in_or_equal($otherpostids, SQL_PARAMS_NAMED);
 
         $approveduserlist = new \core_privacy\local\request\approved_userlist($firstcontext, 'mod_digestforum', [$user1->id]);
         provider::delete_data_for_users($approveduserlist);
@@ -1635,8 +1649,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         // That means that the deleted flag is set, and both the subject and message are empty.
         $this->assertCount(4, $DB->get_records_select('digestforum_posts', "userid = :userid AND deleted = :deleted"
                     . " AND " . $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject')
-                    . " AND " . $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message')
-                , [
+                    . " AND " . $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'), [
                     'userid' => $user1->id,
                     'deleted' => 1,
                     'subject' => '',
@@ -1647,22 +1660,29 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $this->assertCount(4, $DB->get_records('digestforum_posts', [
                 'deleted' => 1,
             ]));
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
-            $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject'), [
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
+            $DB->sql_compare_text('subject') . " = " . $DB->sql_compare_text(':subject'),
+            [
                 'subject' => '',
-            ]));
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
-            $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'), [
+            ]
+        ));
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
+            $DB->sql_compare_text('message') . " = " . $DB->sql_compare_text(':message'),
+            [
                 'message' => '',
-            ]));
+            ]
+        ));
 
         // Only the posts in the first discussion should have been marked this way.
-        $this->assertCount(4, $DB->get_records_select('digestforum_posts',
+        $this->assertCount(4, $DB->get_records_select(
+            'digestforum_posts',
             "deleted = :deleted AND id {$postinsql}",
-                array_merge($postinparams, [
+            array_merge($postinparams, [
                     'deleted' => 1,
                 ])
-            ));
+        ));
 
         // Ratings should have been removed from the affected posts.
         $this->assertCount(0, $DB->get_records_select('rating', "itemid {$postinsql}", $postinparams));
@@ -1684,13 +1704,21 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         // Original total: 10
         // One post with file removed.
         $componentsql = "component = 'mod_digestforum' AND ";
-        $this->assertCount(0, $DB->get_records_select('files',
-            "{$componentsql} itemid {$postinsql}", $postinparams));
+        $this->assertCount(0, $DB->get_records_select(
+            'files',
+            "{$componentsql} itemid {$postinsql}",
+            $postinparams
+        ));
 
         // Files for the other posts should remain.
-        $this->assertCount(18,
-                $DB->get_records_select('files',
-                    "{$componentsql} filename <> '.' AND itemid {$otherpostinsql}", $otherpostinparams));
+        $this->assertCount(
+            18,
+            $DB->get_records_select(
+                'files',
+                "{$componentsql} filename <> '.' AND itemid {$otherpostinsql}",
+                $otherpostinparams
+            )
+        );
     }
 
     /**
@@ -1706,9 +1734,9 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
-        list($author, $user) = $this->helper_create_users($course, 2);
+        [$author, $user] = $this->helper_create_users($course, 2);
 
-        list($fd1, $fp1) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$fd1, $fp1] = $this->helper_post_to_digestforum($digestforum, $author);
 
         $userlist = new \core_privacy\local\request\userlist($context, $component);
         \mod_digestforum\privacy\provider::get_users_in_context($userlist);
@@ -1731,9 +1759,9 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
-        list($author, $user, $other) = $this->helper_create_users($course, 3);
+        [$author, $user, $other] = $this->helper_create_users($course, 3);
 
-        list($fd1, $fp1) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$fd1, $fp1] = $this->helper_post_to_digestforum($digestforum, $author);
         $fp1reply = $this->helper_post_to_discussion($digestforum, $fd1, $user);
         $fd1 = $DB->get_record('digestforum_discussions', ['id' => $fd1->id]);
 
@@ -1765,9 +1793,9 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $context = \context_module::instance($cm->id);
 
-        list($author, $user, $other) = $this->helper_create_users($course, 3);
+        [$author, $user, $other] = $this->helper_create_users($course, 3);
 
-        list($fd1, $fp1) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$fd1, $fp1] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Rate the other users content.
         $rm = new \rating_manager();
@@ -1818,7 +1846,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $othercm = get_coursemodule_from_instance('digestforum', $otherdigestforum->id);
         $othercontext = \context_module::instance($othercm->id);
 
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
 
         // Add digest subscriptions.
         digestforum_set_user_maildigest($digestforum, 0, $user);
@@ -1856,7 +1884,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $othercm = get_coursemodule_from_instance('digestforum', $otherdigestforum->id);
         $othercontext = \context_module::instance($othercm->id);
 
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
 
         // Subscribe the user to the digestforum.
         \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum);
@@ -1893,11 +1921,11 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $othercm = get_coursemodule_from_instance('digestforum', $otherdigestforum->id);
         $othercontext = \context_module::instance($othercm->id);
 
-        list($author, $user, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $user, $otheruser] = $this->helper_create_users($course, 3);
 
         // Post in both of the digestforums.
-        list($fd1, $fp1) = $this->helper_post_to_digestforum($digestforum, $author);
-        list($ofd1, $ofp1) = $this->helper_post_to_digestforum($otherdigestforum, $author);
+        [$fd1, $fp1] = $this->helper_post_to_digestforum($digestforum, $author);
+        [$ofd1, $ofp1] = $this->helper_post_to_digestforum($otherdigestforum, $author);
 
         // Subscribe the user to the discussions.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($user->id, $fd1);
@@ -1935,11 +1963,11 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $othercm = get_coursemodule_from_instance('digestforum', $otherdigestforum->id);
         $othercontext = \context_module::instance($othercm->id);
 
-        list($author, $user, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $user, $otheruser] = $this->helper_create_users($course, 3);
 
         // Post in both of the digestforums.
-        list($fd1, $fp1) = $this->helper_post_to_digestforum($digestforum, $author);
-        list($ofd1, $ofp1) = $this->helper_post_to_digestforum($otherdigestforum, $author);
+        [$fd1, $fp1] = $this->helper_post_to_digestforum($digestforum, $author);
+        [$ofd1, $ofp1] = $this->helper_post_to_digestforum($otherdigestforum, $author);
 
         // Add read information for those users.
         digestforum_tp_add_read_record($user->id, $fp1->id);
@@ -1977,7 +2005,7 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         $othercm = get_coursemodule_from_instance('digestforum', $otherdigestforum->id);
         $othercontext = \context_module::instance($othercm->id);
 
-        list($author, $user, $otheruser) = $this->helper_create_users($course, 3);
+        [$author, $user, $otheruser] = $this->helper_create_users($course, 3);
 
         // Forum tracking is opt-out.
         // Stop tracking the read posts.
@@ -2013,8 +2041,11 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
         ]);
 
         set_user_preference('markasreadonnotification', 0, $user);
-        set_user_preference('digestforum_discussionlistsortorder', \mod_digestforum\local\vaults\discussion_list::SORTORDER_STARTER_ASC,
-            $user);
+        set_user_preference(
+            'digestforum_discussionlistsortorder',
+            \mod_digestforum\local\vaults\discussion_list::SORTORDER_STARTER_ASC,
+            $user
+        );
 
         // Export test users preferences.
         provider::export_user_preferences($user->id);

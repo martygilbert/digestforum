@@ -192,7 +192,7 @@ class discussion_summary extends exporter {
             'urlfactory' => 'mod_digestforum\local\factories\url',
             'user' => 'stdClass',
             'favouriteids' => 'int[]?',
-            'latestauthor' => 'mod_digestforum\local\entities\author?'
+            'latestauthor' => 'mod_digestforum\local\entities\author?',
         ];
     }
 }

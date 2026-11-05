@@ -123,8 +123,14 @@ final class entities_discussion_test extends \advanced_testcase {
      * @param bool $isvisible Expected result from the is_timed_discussion_visible function
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('diplay_period_options_provider')]
-    public function test_display_period_settings($testdescription, $startoffset, $endoffset,
-                                                 $timestartresult, $timeendresult, $isvisible): void {
+    public function test_display_period_settings(
+        $testdescription,
+        $startoffset,
+        $endoffset,
+        $timestartresult,
+        $timeendresult,
+        $isvisible
+    ): void {
         global $CFG;
         $this->resetAfterTest();
 
@@ -160,7 +166,7 @@ final class entities_discussion_test extends \advanced_testcase {
      * @return array start/end time offsets and the expected results.
      */
     public static function diplay_period_options_provider(): array {
-        return array(
+        return [
             ["No dates set", 0, 0, true, false, true],
             ["Only started date in the future", 100, 0, false, false, false],
             ["Only started date in the past", -100, 0, true, false, true],
@@ -169,6 +175,6 @@ final class entities_discussion_test extends \advanced_testcase {
             ["Start date in the past, end date in the future", -100, 100, true, false, true],
             ["Both dates in the past", -100, -50, true, true, false],
             ["Both dates in the future", 100, 150, false, false, false],
-        );
+        ];
     }
 }

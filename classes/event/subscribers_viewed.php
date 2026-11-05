@@ -41,7 +41,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscribers_viewed extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -77,7 +76,7 @@ class subscribers_viewed extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $this->other['digestforumid']));
+        return new \moodle_url('/mod/digestforum/subscribers.php', ['id' => $this->other['digestforumid']]);
     }
 
     /**
@@ -99,10 +98,9 @@ class subscribers_viewed extends \core\event\base {
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }
 }
-

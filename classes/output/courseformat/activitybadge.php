@@ -24,7 +24,6 @@ namespace mod_digestforum\output\courseformat;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class activitybadge extends \core_courseformat\output\activitybadge {
-
     /**
      * This method will be called before exporting the template.
      */

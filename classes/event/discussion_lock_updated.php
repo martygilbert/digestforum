@@ -44,7 +44,7 @@ class discussion_lock_updated extends \core\event\base {
      * @return string
      */
     public function get_description(): string {
-        return "The user with id '$this->userid' {$this->other['status']} the discussion: $this->objectid".
+        return "The user with id '$this->userid' {$this->other['status']} the discussion: $this->objectid" .
             " in the digestforum: {$this->other['digestforumid']}";
     }
 

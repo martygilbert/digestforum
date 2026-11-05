@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -26,12 +25,12 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$f          = required_param('f',PARAM_INT); // The digestforum to mark
-$mark       = required_param('mark',PARAM_ALPHA); // Read or unread?
-$d          = optional_param('d',0,PARAM_INT); // Discussion to mark.
+$f          = required_param('f', PARAM_INT); // The digestforum to mark
+$mark       = required_param('mark', PARAM_ALPHA); // Read or unread?
+$d          = optional_param('d', 0, PARAM_INT); // Discussion to mark.
 $return     = optional_param('return', null, PARAM_LOCALURL);    // Page to return to.
 
-$url = new moodle_url('/mod/digestforum/markposts.php', array('f'=>$f, 'mark'=>$mark));
+$url = new moodle_url('/mod/digestforum/markposts.php', ['f' => $f, 'mark' => $mark]);
 if ($d !== 0) {
     $url->param('d', $d);
 }
@@ -40,11 +39,11 @@ if (null !== $return) {
 }
 $PAGE->set_url($url);
 
-if (! $digestforum = $DB->get_record("digestforum", array("id" => $f))) {
+if (! $digestforum = $DB->get_record("digestforum", ["id" => $f])) {
     throw new \moodle_exception('invaliddigestforumid', 'digestforum');
 }
 
-if (! $course = $DB->get_record("course", array("id" => $digestforum->course))) {
+if (! $course = $DB->get_record("course", ["id" => $digestforum->course])) {
     throw new \moodle_exception('invalidcourseid');
 }
 
@@ -67,7 +66,7 @@ if (isguestuser()) {   // Guests can't change digestforum
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguesttracking', 'digestforum').'<br /><br />'.get_string('liketologin'), get_login_url(), $returnto);
+    echo $OUTPUT->confirm(get_string('noguesttracking', 'digestforum') . '<br /><br />' . get_string('liketologin'), get_login_url(), $returnto);
     echo $OUTPUT->footer();
     exit;
 }
@@ -78,7 +77,7 @@ $info->digestforum = format_string($digestforum->name);
 
 if ($mark == 'read') {
     if (!empty($d)) {
-        if (! $discussion = $DB->get_record('digestforum_discussions', array('id'=> $d, 'digestforum'=> $digestforum->id))) {
+        if (! $discussion = $DB->get_record('digestforum_discussions', ['id' => $d, 'digestforum' => $digestforum->id])) {
             throw new \moodle_exception('invaliddiscussionid', 'digestforum');
         }
 
@@ -86,14 +85,13 @@ if ($mark == 'read') {
     } else {
         // Mark all messages read in current group
         $currentgroup = groups_get_activity_group($cm);
-        if(!$currentgroup) {
+        if (!$currentgroup) {
             // mark_digestforum_read requires ===false, while get_activity_group
             // may return 0
-            $currentgroup=false;
+            $currentgroup = false;
         }
         digestforum_tp_mark_digestforum_read($user, $digestforum->id, $currentgroup);
     }
 }
 
 redirect($returnto);
-

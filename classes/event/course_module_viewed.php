@@ -35,7 +35,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_module_viewed extends \core\event\course_module_viewed {
-
     /**
      * Init method.
      *
@@ -53,11 +52,10 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/view.php', array('f' => $this->objectid));
+        return new \moodle_url('/mod/digestforum/view.php', ['f' => $this->objectid]);
     }
 
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum', 'restore' => 'digestforum');
+        return ['db' => 'digestforum', 'restore' => 'digestforum'];
     }
 }
-

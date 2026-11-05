@@ -22,14 +22,14 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace mod_digestforum\grades;
 
 use coding_exception;
 use context;
 use core_grades\component_gradeitem;
-use core_grades\local\gradeitem as gradeitem;
+use core_grades\local\gradeitem;
 use mod_digestforum\local\container as digestforum_container;
 use mod_digestforum\local\entities\digestforum as digestforum_entity;
 use required_capability_exception;

@@ -34,7 +34,6 @@ require_once($CFG->libdir . '/portfolio/caller.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class digestforum_portfolio_caller extends portfolio_module_caller_base {
-
     protected $postid;
     protected $discussionid;
     protected $attachment;
@@ -52,11 +51,11 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      * @return array
      */
     public static function expected_callbackargs() {
-        return array(
+        return [
             'postid'       => false,
             'discussionid' => false,
             'attachment'   => false,
-        );
+        ];
     }
     /**
      * @param array $callbackargs
@@ -74,16 +73,16 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         global $DB;
 
         if ($this->postid) {
-            if (!$this->post = $DB->get_record('digestforum_posts', array('id' => $this->postid))) {
+            if (!$this->post = $DB->get_record('digestforum_posts', ['id' => $this->postid])) {
                 throw new portfolio_caller_exception('invalidpostid', 'digestforum');
             }
         }
 
-        $dparams = array();
+        $dparams = [];
         if ($this->discussionid) {
-            $dbparams = array('id' => $this->discussionid);
+            $dbparams = ['id' => $this->discussionid];
         } else if ($this->post) {
-            $dbparams = array('id' => $this->post->discussion);
+            $dbparams = ['id' => $this->post->discussion];
         } else {
             throw new portfolio_caller_exception('mustprovidediscussionorpost', 'digestforum');
         }
@@ -92,7 +91,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             throw new portfolio_caller_exception('invaliddiscussionid', 'digestforum');
         }
 
-        if (!$this->digestforum = $DB->get_record('digestforum', array('id' => $this->discussion->digestforum))) {
+        if (!$this->digestforum = $DB->get_record('digestforum', ['id' => $this->discussion->digestforum])) {
             throw new portfolio_caller_exception('invaliddigestforumid', 'digestforum');
         }
 
@@ -106,8 +105,10 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             if ($this->attachment) {
                 // Make sure the requested file belongs to this post.
                 $file = $fs->get_file_by_id($this->attachment);
-                if ($file->get_contextid() != $this->modcontext->id
-                    || $file->get_itemid() != $this->post->id) {
+                if (
+                    $file->get_contextid() != $this->modcontext->id
+                    || $file->get_itemid() != $this->post->id
+                ) {
                     throw new portfolio_caller_exception('filenotfound');
                 }
                 $this->set_file_and_format_data($this->attachment);
@@ -120,12 +121,12 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             if (!empty($this->multifiles)) {
                 $this->keyedfiles[$this->post->id] = $this->multifiles;
             } else if (!empty($this->singlefile)) {
-                $this->keyedfiles[$this->post->id] = array($this->singlefile);
+                $this->keyedfiles[$this->post->id] = [$this->singlefile];
             }
         } else { // whole thread
             $fs = get_file_storage();
             $this->posts = digestforum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
-            $this->multifiles = array();
+            $this->multifiles = [];
             foreach ($this->posts as $post) {
                 $attach = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'attachment', $post->id, 'timemodified', false);
                 $embed  = $fs->get_area_files($this->modcontext->id, 'mod_digestforum', 'post', $post->id, 'timemodified', false);
@@ -139,7 +140,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             }
         }
         if (empty($this->multifiles) && !empty($this->singlefile)) {
-            $this->multifiles = array($this->singlefile); // copy_files workaround
+            $this->multifiles = [$this->singlefile]; // copy_files workaround
         }
         // depending on whether there are files or not, we might have to change richhtml/plainhtml
         if (empty($this->attachment)) {
@@ -166,13 +167,13 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
     function get_navigation() {
         global $CFG;
 
-        $navlinks = array();
-        $navlinks[] = array(
+        $navlinks = [];
+        $navlinks[] = [
             'name' => format_string($this->discussion->name),
             'link' => $CFG->wwwroot . '/mod/digestforum/discuss.php?d=' . $this->discussion->id,
-            'type' => 'title'
-        );
-        return array($navlinks, $this->cm);
+            'type' => 'title',
+        ];
+        return [$navlinks, $this->cm];
     }
     /**
      * either a whole discussion
@@ -194,18 +195,17 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             $writingleap = true;
         }
         if ($this->attachment) { // simplest case first - single file attachment
-            $this->copy_files(array($this->singlefile), $this->attachment);
+            $this->copy_files([$this->singlefile], $this->attachment);
             if ($writingleap) { // if we're writing leap, make the manifest to go along with the file
                 $entry = new portfolio_format_leap2a_file($this->singlefile->get_filename(), $this->singlefile);
                 $leapwriter->add_entry($entry);
                 return $this->exporter->write_new_file($leapwriter->to_xml(), $this->exporter->get('format')->manifest_name(), true);
             }
-
         } else if (empty($this->post)) {  // exporting whole discussion
             $content = ''; // if we're just writing HTML, start a string to add each post to
-            $ids = array(); // if we're writing leap2a, keep track of all entryids so we can add a selection element
+            $ids = []; // if we're writing leap2a, keep track of all entryids so we can add a selection element
             foreach ($this->posts as $post) {
-                $posthtml =  $this->prepare_post($post);
+                $posthtml = $this->prepare_post($post);
                 if ($writingleap) {
                     $ids[] = $this->prepare_post_leap2a($leapwriter, $post, $posthtml);
                 } else {
@@ -217,15 +217,17 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             $manifest = ($this->exporter->get('format') instanceof PORTFOLIO_FORMAT_RICH);
             if ($writingleap) {
                 // add on an extra 'selection' entry
-                $selection = new portfolio_format_leap2a_entry('digestforumdiscussion' . $this->discussionid,
-                    get_string('discussion', 'digestforum') . ': ' . $this->discussion->name, 'selection');
+                $selection = new portfolio_format_leap2a_entry(
+                    'digestforumdiscussion' . $this->discussionid,
+                    get_string('discussion', 'digestforum') . ': ' . $this->discussion->name,
+                    'selection'
+                );
                 $leapwriter->add_entry($selection);
                 $leapwriter->make_selection($selection, $ids, 'Grouping');
                 $content = $leapwriter->to_xml();
                 $name = $this->get('exporter')->get('format')->manifest_name();
             }
             $this->get('exporter')->write_new_file($content, $name, $manifest);
-
         } else { // exporting a single post
             $posthtml = $this->prepare_post($this->post);
 
@@ -257,7 +259,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      * @return int id of new entry
      */
     private function prepare_post_leap2a(portfolio_format_leap2a_writer $leapwriter, $post, $posthtml) {
-        $entry = new portfolio_format_leap2a_entry('digestforumpost' . $post->id,  $post->subject, 'resource', $posthtml);
+        $entry = new portfolio_format_leap2a_entry('digestforumpost' . $post->id, $post->subject, 'resource', $posthtml);
         $entry->published = $post->created;
         $entry->updated = $post->modified;
         $entry->author = $post->author;
@@ -274,7 +276,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      * @param mixed $justone false of id of single file to copy
      * @return bool|void
      */
-    private function copy_files($files, $justone=false) {
+    private function copy_files($files, $justone = false) {
         if (empty($files)) {
             return;
         }
@@ -295,14 +297,14 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
      * @param int $post
      * @return string
      */
-    private function prepare_post($post, $fileoutputextras=null) {
+    private function prepare_post($post, $fileoutputextras = null) {
         global $DB;
         static $users;
         if (empty($users)) {
-            $users = array($this->user->id => $this->user);
+            $users = [$this->user->id => $this->user];
         }
         if (!array_key_exists($post->userid, $users)) {
-            $users[$post->userid] = $DB->get_record('user', array('id' => $post->userid));
+            $users[$post->userid] = $DB->get_record('user', ['id' => $post->userid]);
         }
         // add the user object on to the post so we can pass it to the leap writer if necessary
         $post->author = $users[$post->userid];
@@ -324,13 +326,13 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         } else {
             $output .= '<td class="topic starter">';
         }
-        $output .= '<div class="subject">'.format_string($post->subject).'</div>';
+        $output .= '<div class="subject">' . format_string($post->subject) . '</div>';
 
         $fullname = fullname($users[$post->userid], $viewfullnames);
         $by = new stdClass();
         $by->name = $fullname;
         $by->date = userdate($post->modified, '', core_date::get_user_timezone($this->user));
-        $output .= '<div class="author">'.get_string('bynameondate', 'digestforum', $by).'</div>';
+        $output .= '<div class="author">' . get_string('bynameondate', 'digestforum', $by) . '</div>';
 
         $output .= '</td></tr>';
 
@@ -349,7 +351,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             $output .= "</div>";
         }
 
-        $output .= '</td></tr></table>'."\n\n";
+        $output .= '</td></tr></table>' . "\n\n";
 
         return $output;
     }
@@ -360,12 +362,13 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
         $filesha = '';
         try {
             $filesha = $this->get_sha1_file();
-        } catch (portfolio_caller_exception $e) { } // no files
+        } catch (portfolio_caller_exception $e) {
+        } // no files
 
         if ($this->post) {
             return sha1($filesha . ',' . $this->post->subject . ',' . $this->post->message);
         } else {
-            $sha1s = array($filesha);
+            $sha1s = [$filesha];
             foreach ($this->posts as $post) {
                 $sha1s[] = sha1($post->subject . ',' . $post->message);
             }
@@ -404,7 +407,7 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
     }
 
     public static function base_supported_formats() {
-        return array(PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML, PORTFOLIO_FORMAT_LEAP2A);
+        return [PORTFOLIO_FORMAT_FILE, PORTFOLIO_FORMAT_RICHHTML, PORTFOLIO_FORMAT_PLAINHTML, PORTFOLIO_FORMAT_LEAP2A];
     }
 }
 
@@ -457,14 +460,14 @@ class digestforum_file_info_container extends file_info {
      * @return array with keys contextid, filearea, itemid, filepath and filename
      */
     public function get_params() {
-        return array(
+        return [
             'contextid' => $this->context->id,
             'component' => $this->component,
             'filearea' => $this->filearea,
             'itemid' => null,
             'filepath' => null,
             'filename' => null,
-        );
+        ];
     }
 
     /**
@@ -513,9 +516,9 @@ class digestforum_file_info_container extends file_info {
      */
     private function get_filtered_children($extensions = '*', $countonly = false, $returnemptyfolders = false) {
         global $DB;
-        $params = array('contextid' => $this->context->id,
+        $params = ['contextid' => $this->context->id,
             'component' => $this->component,
-            'filearea' => $this->filearea);
+            'filearea' => $this->filearea];
         $sql = 'SELECT DISTINCT itemid
                     FROM {files}
                     WHERE contextid = :contextid
@@ -525,18 +528,20 @@ class digestforum_file_info_container extends file_info {
             $sql .= ' AND filename <> :emptyfilename';
             $params['emptyfilename'] = '.';
         }
-        list($sql2, $params2) = $this->build_search_files_sql($extensions);
-        $sql .= ' '.$sql2;
+        [$sql2, $params2] = $this->build_search_files_sql($extensions);
+        $sql .= ' ' . $sql2;
         $params = array_merge($params, $params2);
         if ($countonly !== false) {
             $sql .= ' ORDER BY itemid DESC';
         }
 
         $rs = $DB->get_recordset_sql($sql, $params);
-        $children = array();
+        $children = [];
         foreach ($rs as $record) {
-            if (($child = $this->browser->get_file_info($this->context, 'mod_digestforum', $this->filearea, $record->itemid))
-                    && ($returnemptyfolders || $child->count_non_empty_children($extensions))) {
+            if (
+                ($child = $this->browser->get_file_info($this->context, 'mod_digestforum', $this->filearea, $record->itemid))
+                    && ($returnemptyfolders || $child->count_non_empty_children($extensions))
+            ) {
                 $children[] = $child;
             }
             if ($countonly !== false && count($children) >= $countonly) {
@@ -620,14 +625,14 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
                  AND cm.deletioninprogress = 0
                  AND fp.id %ITEMFILTER% AND c.id %COURSEFILTER%";
 
-    $params = array('itemtype' => 'digestforum_posts', 'tagid' => $tag->id, 'component' => 'mod_digestforum',
-                    'coursemodulecontextlevel' => CONTEXT_MODULE);
+    $params = ['itemtype' => 'digestforum_posts', 'tagid' => $tag->id, 'component' => 'mod_digestforum',
+                    'coursemodulecontextlevel' => CONTEXT_MODULE];
 
     if ($ctx) {
         $context = $ctx ? context::instance_by_id($ctx) : context_system::instance();
         $query .= $rec ? ' AND (ctx.id = :contextid OR ctx.path LIKE :path)' : ' AND ctx.id = :contextid';
         $params['contextid'] = $context->id;
-        $params['path'] = $context->path.'/%';
+        $params['path'] = $context->path . '/%';
     }
 
     $query .= " ORDER BY ";
@@ -636,7 +641,7 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
         $fromcontext = context::instance_by_id($fromctx);
         $query .= ' (CASE WHEN ctx.id = :fromcontextid OR ctx.path LIKE :frompath THEN 0 ELSE 1 END),';
         $params['fromcontextid'] = $fromcontext->id;
-        $params['frompath'] = $fromcontext->path.'/%';
+        $params['frompath'] = $fromcontext->path . '/%';
     }
     $query .= ' c.sortorder, cm.id, fp.id';
 
@@ -659,18 +664,18 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
                 $cm = $modinfo->get_cm($taggeditem->cmid);
                 $digestforum = (object)['id'     => $taggeditem->digestforum,
                                   'course' => $taggeditem->courseid,
-                                  'type'   => $taggeditem->type
+                                  'type'   => $taggeditem->type,
                 ];
                 $discussion = (object)['id'        => $taggeditem->discussion,
                                        'timestart' => $taggeditem->timestart,
                                        'timeend'   => $taggeditem->timeend,
                                        'groupid'   => $taggeditem->groupid,
-                                       'firstpost' => $taggeditem->firstpost
+                                       'firstpost' => $taggeditem->firstpost,
                 ];
                 $post = (object)['id' => $taggeditem->id,
                                        'parent' => $taggeditem->parent,
                                        'userid'   => $taggeditem->userid,
-                                       'groupid'   => $taggeditem->groupid
+                                       'groupid'   => $taggeditem->groupid,
                 ];
 
                 $accessible = digestforum_user_can_see_post($digestforum, $discussion, $post, null, $cm);
@@ -692,22 +697,34 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
             context_helper::preload_from_record($item);
             $modinfo = get_fast_modinfo($item->courseid);
             $cm = $modinfo->get_cm($item->cmid);
-            $pageurl = new moodle_url('/mod/digestforum/discuss.php', array('d' => $item->discussion), 'p' . $item->id);
-            $pagename = format_string($item->subject, true, array('context' => context_module::instance($item->cmid)));
+            $pageurl = new moodle_url('/mod/digestforum/discuss.php', ['d' => $item->discussion], 'p' . $item->id);
+            $pagename = format_string($item->subject, true, ['context' => context_module::instance($item->cmid)]);
             $pagename = html_writer::link($pageurl, $pagename);
             $courseurl = course_get_url($item->courseid, $cm->sectionnum);
             $cmname = html_writer::link($cm->url, $cm->get_formatted_name());
-            $coursename = format_string($item->fullname, true, array('context' => context_course::instance($item->courseid)));
+            $coursename = format_string($item->fullname, true, ['context' => context_course::instance($item->courseid)]);
             $coursename = html_writer::link($courseurl, $coursename);
-            $icon = html_writer::link($pageurl, html_writer::empty_tag('img', array('src' => $cm->get_icon_url())));
-            $tagfeed->add($icon, $pagename, $cmname.'<br>'.$coursename);
+            $icon = html_writer::link($pageurl, html_writer::empty_tag('img', ['src' => $cm->get_icon_url()]));
+            $tagfeed->add($icon, $pagename, $cmname . '<br>' . $coursename);
         }
 
-        $content = $OUTPUT->render_from_template('core_tag/tagfeed',
-            $tagfeed->export_for_template($OUTPUT));
+        $content = $OUTPUT->render_from_template(
+            'core_tag/tagfeed',
+            $tagfeed->export_for_template($OUTPUT)
+        );
 
-        return new core_tag\output\tagindex($tag, 'mod_digestforum', 'digestforum_posts', $content,
-            $exclusivemode, $fromctx, $ctx, $rec, $page, $totalpages);
+        return new core_tag\output\tagindex(
+            $tag,
+            'mod_digestforum',
+            'digestforum_posts',
+            $content,
+            $exclusivemode,
+            $fromctx,
+            $ctx,
+            $rec,
+            $page,
+            $totalpages
+        );
     }
 }
 
@@ -721,7 +738,7 @@ function mod_digestforum_get_tagged_posts($tag, $exclusivemode = false, $fromctx
 function digestforum_update_calendar($digestforum, $cmid) {
     global $DB, $CFG;
 
-    require_once($CFG->dirroot.'/calendar/lib.php');
+    require_once($CFG->dirroot . '/calendar/lib.php');
 
     $event = new stdClass();
 
@@ -739,8 +756,11 @@ function digestforum_update_calendar($digestforum, $cmid) {
         $event->visible = instance_is_visible('digestforum', $digestforum);
     }
 
-    $event->id = $DB->get_field('event', 'id',
-            array('modulename' => 'digestforum', 'instance' => $digestforum->id, 'eventtype' => DFORUM_EVENT_TYPE_DUE));
+    $event->id = $DB->get_field(
+        'event',
+        'id',
+        ['modulename' => 'digestforum', 'instance' => $digestforum->id, 'eventtype' => DFORUM_EVENT_TYPE_DUE]
+    );
 
     if ($event->id) {
         $calendarevent = calendar_event::load($event->id);

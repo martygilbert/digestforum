@@ -119,7 +119,7 @@ class digestforum extends db_table_vault {
     protected function from_db_records(array $results): array {
         $entityfactory = $this->get_entity_factory();
 
-        return array_map(function(array $result) use ($entityfactory) {
+        return array_map(function (array $result) use ($entityfactory) {
             [
                 'digestforum' => $digestforumrecord,
                 'course_module' => $coursemodule,
@@ -149,7 +149,7 @@ class digestforum extends db_table_vault {
      */
     public function get_from_course_module_ids(array $ids): array {
         $alias = $this->get_table_alias();
-        list($insql, $params) = $this->get_db()->get_in_or_equal($ids);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($ids);
         $wheresql = 'cm.id ' . $insql;
         $sql = $this->generate_get_records_sql($wheresql);
         $records = $this->get_db()->get_records_sql($sql, $params);

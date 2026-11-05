@@ -24,7 +24,6 @@ namespace mod_digestforum\h5p;
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class canedit {
-
     /**
      * Check if the user can edit an H5P file. In that case, this method will return true if the file belongs to mod_digestforum
      * filearea is post and the user can edit the post where the H5P is.
@@ -37,7 +36,7 @@ class canedit {
     public static function can_edit_content(\stored_file $file): bool {
         global $USER;
 
-        list($type, $component) = \core_component::normalize_component($file->get_component());
+        [$type, $component] = \core_component::normalize_component($file->get_component());
 
         if ($type === 'mod' && $component === 'digestforum') {
             // For mod_digestforum files in posts, check if the user can edit the post where the H5P is.

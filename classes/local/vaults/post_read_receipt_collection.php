@@ -76,7 +76,7 @@ class post_read_receipt_collection extends db_table_vault {
      */
     protected function from_db_records(array $results) {
         $entityfactory = $this->get_entity_factory();
-        $records = array_map(function($result) {
+        $records = array_map(function ($result) {
             return $result['record'];
         }, $results);
 
@@ -113,7 +113,7 @@ class post_read_receipt_collection extends db_table_vault {
      * @return post_read_receipt_collection
      */
     public function get_from_user_and_posts(stdClass $user, array $posts) {
-        $postids = array_map(function($post) {
+        $postids = array_map(function ($post) {
             return $post->get_id();
         }, $posts);
         return $this->get_from_user_id_and_post_ids($user->id, $postids);

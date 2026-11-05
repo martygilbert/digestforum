@@ -107,15 +107,15 @@ class discussion extends exporter {
                     'pin' => ['type' => PARAM_BOOL],
                     'post' => ['type' => PARAM_BOOL],
                     'manage' => ['type' => PARAM_BOOL],
-                    'favourite' => ['type' => PARAM_BOOL]
-                ]
+                    'favourite' => ['type' => PARAM_BOOL],
+                ],
             ],
             'urls' => [
                 'type' => [
                     'view' => ['type' => PARAM_URL],
                     'viewlatest' => [
                         'optional' => true,
-                        'type' => PARAM_URL
+                        'type' => PARAM_URL,
                     ],
                     'viewfirstunread' => [
                         'optional' => true,
@@ -135,16 +135,16 @@ class discussion extends exporter {
                         'type' => PARAM_BOOL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'visible' => [
                         'type' => PARAM_BOOL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
-                    ]
-                ]
-            ]
+                        'null' => NULL_ALLOWED,
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -180,7 +180,6 @@ class discussion extends exporter {
 
                 // If not hiding the group picture, and the group has a picture then use it. Fallback to generic group image.
                 if ($url = get_group_picture_url($group, $digestforum->get_course_id(), true)) {
-
                     $groupdata['urls']['picture'] = $url;
                 } else {
                     $groupdata['urls']['picture'] = $output->image_url('g/g1')->out(false);
@@ -203,14 +202,14 @@ class discussion extends exporter {
             'locked' => $digestforum->is_discussion_locked($discussion),
             'istimelocked' => $digestforum->is_discussion_time_locked($discussion),
             'name' => format_string($discussion->get_name(), true, [
-                'context' => $this->related['context']
+                'context' => $this->related['context'],
             ]),
             'firstpostid' => $discussion->get_first_post_id(),
             'times' => [
                 'modified' => $discussion->get_time_modified(),
                 'start' => $discussion->get_time_start(),
                 'end' => $discussion->get_time_end(),
-                'locked' => $discussion->get_locked()
+                'locked' => $discussion->get_locked(),
             ],
             'userstate' => [
                 'subscribed' => \mod_digestforum\subscriptions::is_subscribed($user->id, $digestforumrecord, $discussion->get_id()),
@@ -222,21 +221,21 @@ class discussion extends exporter {
                 'pin' => $capabilitymanager->can_pin_discussion($user, $discussion),
                 'post' => $capabilitymanager->can_post_in_discussion($user, $discussion),
                 'manage' => $capabilitymanager->can_manage_digestforum($user),
-                'favourite' => $capabilitymanager->can_favourite_discussion($user) // Defaulting to true until we get capabilities sorted
+                'favourite' => $capabilitymanager->can_favourite_discussion($user), // Defaulting to true until we get capabilities sorted
             ],
             'urls' => [
                 'view' => $urlfactory->get_discussion_view_url_from_discussion($discussion)->out(false),
                 'viewfirstunread' => $viewfirstunreadurl->out(false),
                 'markasread' => $urlfactory->get_mark_discussion_as_read_url_from_discussion($digestforum, $discussion)->out(false),
-                'subscribe' => $urlfactory->get_discussion_subscribe_url($discussion)->out(false)
-            ]
+                'subscribe' => $urlfactory->get_discussion_subscribe_url($discussion)->out(false),
+            ],
         ];
 
         if (!empty($this->related['latestpostid'])) {
             $data['urls']['viewlatest'] = $urlfactory->get_discussion_view_latest_post_url_from_discussion(
-                    $discussion,
-                    $this->related['latestpostid']
-                )->out(false);
+                $discussion,
+                $this->related['latestpostid']
+            )->out(false);
         }
 
         if ($capabilitymanager->can_pin_discussions($user)) {
@@ -280,7 +279,7 @@ class discussion extends exporter {
             'user' => 'stdClass',
             'groupsbyid' => 'stdClass[]',
             'latestpostid' => 'int?',
-            'favouriteids' => 'int[]?'
+            'favouriteids' => 'int[]?',
         ];
     }
 }

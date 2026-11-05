@@ -118,7 +118,7 @@ class discussion_list extends db_table_vault {
 
         $favsql = '';
         if ($includefavourites) {
-            list($favsql, $favparams) = $this->get_favourite_sql($userid);
+            [$favsql, $favparams] = $this->get_favourite_sql($userid);
             foreach ($favparams as $key => $param) {
                 $favsql = str_replace(":$key", "'$param'", $favsql);
             }
@@ -132,10 +132,20 @@ class discussion_list extends db_table_vault {
         $thistable = new dml_table(self::TABLE, $alias, $alias);
         $posttable = new dml_table('digestforum_posts', 'fp', 'p_');
         $userfieldsapi = \core_user\fields::for_userpic()->including('deleted');
-        $firstauthorfields = $userfieldsapi->get_sql('fa', false,
-                self::FIRST_AUTHOR_ALIAS, self::FIRST_AUTHOR_ID_ALIAS, false)->selects;
-        $latestuserfields = $userfieldsapi->get_sql('la', false,
-                self::LATEST_AUTHOR_ALIAS, self::LATEST_AUTHOR_ID_ALIAS, false)->selects;
+        $firstauthorfields = $userfieldsapi->get_sql(
+            'fa',
+            false,
+            self::FIRST_AUTHOR_ALIAS,
+            self::FIRST_AUTHOR_ID_ALIAS,
+            false
+        )->selects;
+        $latestuserfields = $userfieldsapi->get_sql(
+            'la',
+            false,
+            self::LATEST_AUTHOR_ALIAS,
+            self::LATEST_AUTHOR_ID_ALIAS,
+            false
+        )->selects;
 
         $fields = implode(', ', [
             $thistable->get_field_select(),
@@ -146,7 +156,7 @@ class discussion_list extends db_table_vault {
 
         $sortkeys = [
             $this->get_sort_order(self::SORTORDER_REPLIES_DESC, $includefavourites),
-            $this->get_sort_order(self::SORTORDER_REPLIES_ASC, $includefavourites)
+            $this->get_sort_order(self::SORTORDER_REPLIES_ASC, $includefavourites),
         ];
         $issortbyreplies = in_array($sortsql, $sortkeys);
 
@@ -169,7 +179,7 @@ class discussion_list extends db_table_vault {
 
         $groupsortorders = [
             $this->get_sort_order(self::SORTORDER_GROUP_DESC, $includefavourites),
-            $this->get_sort_order(self::SORTORDER_GROUP_ASC, $includefavourites)
+            $this->get_sort_order(self::SORTORDER_GROUP_ASC, $includefavourites),
         ];
         $sortbygroup = in_array($sortsql, $groupsortorders);
         if ($sortbygroup) {
@@ -229,7 +239,7 @@ class discussion_list extends db_table_vault {
     protected function from_db_records(array $results) {
         $entityfactory = $this->get_entity_factory();
 
-        return array_map(function(array $result) use ($entityfactory) {
+        return array_map(function (array $result) use ($entityfactory) {
             [
                 'discussion' => $discussion,
                 'firstpost' => $firstpost,
@@ -414,8 +424,11 @@ class discussion_list extends db_table_vault {
         ]);
 
         $includefavourites = $includepostsforuser ? true : false;
-        $sql = $this->generate_get_records_sql($wheresql, $this->get_sort_order($sortorder, $includefavourites),
-            $includepostsforuser);
+        $sql = $this->generate_get_records_sql(
+            $wheresql,
+            $this->get_sort_order($sortorder, $includefavourites),
+            $includepostsforuser
+        );
         $records = $this->get_db()->get_records_sql($sql, $params, $offset, $limit);
 
         return $this->transform_db_records_to_entities($records);
@@ -450,7 +463,7 @@ class discussion_list extends db_table_vault {
         if (empty($groupids)) {
             $wheresql .= "{$alias}.groupid = :allgroupsid";
         } else {
-            list($insql, $groupparams) = $this->get_db()->get_in_or_equal($groupids, SQL_PARAMS_NAMED, 'gid');
+            [$insql, $groupparams] = $this->get_db()->get_in_or_equal($groupids, SQL_PARAMS_NAMED, 'gid');
             $wheresql .= "({$alias}.groupid = :allgroupsid OR {$alias}.groupid {$insql})";
         }
 
@@ -466,8 +479,11 @@ class discussion_list extends db_table_vault {
         ]);
 
         $includefavourites = $includepostsforuser ? true : false;
-        $sql = $this->generate_get_records_sql($wheresql, $this->get_sort_order($sortorder, $includefavourites),
-            $includepostsforuser);
+        $sql = $this->generate_get_records_sql(
+            $wheresql,
+            $this->get_sort_order($sortorder, $includefavourites),
+            $includepostsforuser
+        );
         $records = $this->get_db()->get_records_sql($sql, $params, $offset, $limit);
 
         return $this->transform_db_records_to_entities($records);
@@ -527,7 +543,7 @@ class discussion_list extends db_table_vault {
         if (empty($groupids)) {
             $wheresql .= "{$alias}.groupid = :allgroupsid";
         } else {
-            list($insql, $groupparams) = $this->get_db()->get_in_or_equal($groupids, SQL_PARAMS_NAMED, 'gid');
+            [$insql, $groupparams] = $this->get_db()->get_in_or_equal($groupids, SQL_PARAMS_NAMED, 'gid');
             $wheresql .= "({$alias}.groupid = :allgroupsid OR {$alias}.groupid {$insql})";
         }
 
@@ -556,8 +572,12 @@ class discussion_list extends db_table_vault {
         $usercontext = \context_user::instance($userid);
         $alias = $this->get_table_alias();
         $ufservice = \core_favourites\service_factory::get_service_for_user_context($usercontext);
-        list($favsql, $favparams) = $ufservice->get_join_sql_by_type('mod_digestforum', 'discussions',
-            $this->get_favourite_alias(), "$alias.id");
+        [$favsql, $favparams] = $ufservice->get_join_sql_by_type(
+            'mod_digestforum',
+            'discussions',
+            $this->get_favourite_alias(),
+            "$alias.id"
+        );
 
         return [$favsql, $favparams];
     }

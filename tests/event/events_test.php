@@ -34,7 +34,6 @@ namespace mod_digestforum\event;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class events_test extends \advanced_testcase {
-
     /**
      * Tests set up.
      */
@@ -60,9 +59,9 @@ final class events_test extends \advanced_testcase {
     public function test_course_searched_searchterm_validation(): void {
         $course = $this->getDataGenerator()->create_course();
         $coursectx = \context_course::instance($course->id);
-        $params = array(
+        $params = [
             'context' => $coursectx,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'searchterm' value must be set in other.");
@@ -74,12 +73,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_course_searched_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('searchterm' => 'testing'),
-        );
+            'other' => ['searchterm' => 'testing'],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_COURSE.');
@@ -96,10 +95,10 @@ final class events_test extends \advanced_testcase {
         $coursectx = \context_course::instance($course->id);
         $searchterm = 'testing123';
 
-        $params = array(
+        $params = [
             'context' => $coursectx,
-            'other' => array('searchterm' => $searchterm),
-        );
+            'other' => ['searchterm' => $searchterm],
+        ];
 
         // Create event.
         $event = \mod_digestforum\event\course_searched::create($params);
@@ -124,12 +123,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_created_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -141,12 +140,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_created_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -160,11 +159,11 @@ final class events_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -172,11 +171,11 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $discussion->id,
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         // Create the event.
         $event = \mod_digestforum\event\discussion_created::create($params);
@@ -201,12 +200,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_updated_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -218,12 +217,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_updated_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -237,11 +236,11 @@ final class events_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -249,11 +248,11 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $discussion->id,
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         // Create the event.
         $event = \mod_digestforum\event\discussion_updated::create($params);
@@ -278,12 +277,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_deleted_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -295,12 +294,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_deleted_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -314,11 +313,11 @@ final class events_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -326,11 +325,11 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $discussion->id,
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         $event = \mod_digestforum\event\discussion_deleted::create($params);
 
@@ -354,14 +353,14 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_moved_fromdigestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $todigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $todigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
         $context = \context_module::instance($todigestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('todigestforumid' => $todigestforum->id)
-        );
+            'other' => ['todigestforumid' => $todigestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'fromdigestforumid' value must be set in other.");
@@ -373,14 +372,14 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_moved_todigestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
-        $todigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $todigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($todigestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('fromdigestforumid' => $fromdigestforum->id)
-        );
+            'other' => ['fromdigestforumid' => $fromdigestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'todigestforumid' value must be set in other.");
@@ -392,22 +391,22 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_moved_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
-        $todigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $todigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $fromdigestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $discussion->id,
-            'other' => array('fromdigestforumid' => $fromdigestforum->id, 'todigestforumid' => $todigestforum->id)
-        );
+            'other' => ['fromdigestforumid' => $fromdigestforum->id, 'todigestforumid' => $todigestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -420,12 +419,12 @@ final class events_test extends \advanced_testcase {
     public function test_discussion_moved(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
-        $todigestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $fromdigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $todigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $fromdigestforum->id;
         $record['userid'] = $user->id;
@@ -433,11 +432,11 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($todigestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $discussion->id,
-            'other' => array('fromdigestforumid' => $fromdigestforum->id, 'todigestforumid' => $todigestforum->id)
-        );
+            'other' => ['fromdigestforumid' => $fromdigestforum->id, 'todigestforumid' => $todigestforum->id],
+        ];
 
         $event = \mod_digestforum\event\discussion_moved::create($params);
 
@@ -462,20 +461,20 @@ final class events_test extends \advanced_testcase {
      */
     public function test_discussion_viewed_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $discussion->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -488,11 +487,11 @@ final class events_test extends \advanced_testcase {
     public function test_discussion_viewed(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -500,10 +499,10 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $discussion->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\discussion_viewed::create($params);
 
@@ -527,12 +526,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_course_module_viewed_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -545,14 +544,14 @@ final class events_test extends \advanced_testcase {
     public function test_course_module_viewed(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\course_module_viewed::create($params);
 
@@ -566,7 +565,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\course_module_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -579,12 +578,12 @@ final class events_test extends \advanced_testcase {
     public function test_subscription_created_digestforumid_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -596,12 +595,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_subscription_created_relateduserid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -614,13 +613,13 @@ final class events_test extends \advanced_testcase {
     public function test_subscription_created_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -634,23 +633,23 @@ final class events_test extends \advanced_testcase {
         // Setup test data.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
         $context = \context_module::instance($digestforum->cmid);
 
         // Add a subscription.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $subscription = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_subscription($record);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\subscription_created::create($params);
 
@@ -664,7 +663,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\subscription_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/subscribers.php', ['id' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -677,12 +676,12 @@ final class events_test extends \advanced_testcase {
     public function test_subscription_deleted_digestforumid_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -694,12 +693,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_subscription_deleted_relateduserid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -712,13 +711,13 @@ final class events_test extends \advanced_testcase {
     public function test_subscription_deleted_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -732,23 +731,23 @@ final class events_test extends \advanced_testcase {
         // Setup test data.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
         $context = \context_module::instance($digestforum->cmid);
 
         // Add a subscription.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $subscription = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_subscription($record);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\subscription_deleted::create($params);
 
@@ -762,7 +761,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\subscription_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/subscribers.php', ['id' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -775,12 +774,12 @@ final class events_test extends \advanced_testcase {
     public function test_readtracking_enabled_digestforumid_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -792,12 +791,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_readtracking_enabled_relateduserid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -810,13 +809,13 @@ final class events_test extends \advanced_testcase {
     public function test_readtracking_enabled_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -830,14 +829,14 @@ final class events_test extends \advanced_testcase {
         // Setup test data.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\readtracking_enabled::create($params);
 
@@ -851,7 +850,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\readtracking_enabled', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -864,12 +863,12 @@ final class events_test extends \advanced_testcase {
     public function test_readtracking_disabled_digestforumid_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -881,12 +880,12 @@ final class events_test extends \advanced_testcase {
      */
     public function test_readtracking_disabled_relateduserid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $digestforum->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -899,13 +898,13 @@ final class events_test extends \advanced_testcase {
     public function test_readtracking_disabled_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -919,14 +918,14 @@ final class events_test extends \advanced_testcase {
         // Setup test data.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $event = \mod_digestforum\event\readtracking_disabled::create($params);
 
@@ -940,7 +939,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\readtracking_disabled', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -953,12 +952,12 @@ final class events_test extends \advanced_testcase {
     public function test_subscribers_viewed_digestforumid_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -971,13 +970,13 @@ final class events_test extends \advanced_testcase {
     public function test_subscribers_viewed_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -990,13 +989,13 @@ final class events_test extends \advanced_testcase {
     public function test_subscribers_viewed(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
-            'other' => array('digestforumid' => $digestforum->id),
-        );
+            'other' => ['digestforumid' => $digestforum->id],
+        ];
 
         $event = \mod_digestforum\event\subscribers_viewed::create($params);
 
@@ -1022,10 +1021,10 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
 
-        $params = array(
+        $params = [
             'context' => \context_course::instance($course->id),
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'reportmode' value must be set in other.");
@@ -1038,13 +1037,13 @@ final class events_test extends \advanced_testcase {
     public function test_user_report_viewed_contextlevel_validation(): void {
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
-            'other' => array('reportmode' => 'posts'),
+            'other' => ['reportmode' => 'posts'],
             'relateduserid' => $user->id,
-        );
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be either CONTEXT_SYSTEM, CONTEXT_COURSE or CONTEXT_USER.');
@@ -1056,10 +1055,10 @@ final class events_test extends \advanced_testcase {
      */
     public function test_user_report_viewed_relateduserid_validation(): void {
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
-            'other' => array('reportmode' => 'posts'),
-        );
+            'other' => ['reportmode' => 'posts'],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -1075,11 +1074,11 @@ final class events_test extends \advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $context = \context_course::instance($course->id);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'relateduserid' => $user->id,
-            'other' => array('reportmode' => 'discussions'),
-        );
+            'other' => ['reportmode' => 'discussions'],
+        ];
 
         $event = \mod_digestforum\event\user_report_viewed::create($params);
 
@@ -1103,20 +1102,20 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_created_postid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
-            'other' => array('digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id)
-        );
+            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id],
+        ];
 
         \mod_digestforum\event\post_created::create($params);
     }
@@ -1126,27 +1125,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_created_discussionid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'discussionid' value must be set in other.");
@@ -1158,27 +1157,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_created_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -1190,27 +1189,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_created_digestforumtype_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumtype' value must be set in other.");
@@ -1222,27 +1221,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_created_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -1255,29 +1254,29 @@ final class events_test extends \advanced_testcase {
     public function test_post_created(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $event = \mod_digestforum\event\post_created::create($params);
 
@@ -1291,8 +1290,8 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id));
-        $url->set_anchor('p'.$event->objectid);
+        $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $discussion->id]);
+        $url->set_anchor('p' . $event->objectid);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -1305,29 +1304,29 @@ final class events_test extends \advanced_testcase {
     public function test_post_created_single(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'single'));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'single']);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $event = \mod_digestforum\event\post_created::create($params);
 
@@ -1341,8 +1340,8 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_created', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
-        $url->set_anchor('p'.$event->objectid);
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
+        $url->set_anchor('p' . $event->objectid);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -1354,20 +1353,20 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_deleted_postid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
-            'other' => array('digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id)
-        );
+            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id],
+        ];
 
         \mod_digestforum\event\post_deleted::create($params);
     }
@@ -1377,27 +1376,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_deleted_discussionid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'discussionid' value must be set in other.");
@@ -1409,27 +1408,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_deleted_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -1441,27 +1440,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_deleted_digestforumtype_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumtype' value must be set in other.");
@@ -1473,27 +1472,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_deleted_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -1508,12 +1507,12 @@ final class events_test extends \advanced_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id, $digestforum->course);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -1525,10 +1524,10 @@ final class events_test extends \advanced_testcase {
         $discussionpost = reset($discussionpost);
 
         // Add a few posts.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
-        $posts = array();
+        $posts = [];
         $posts[$discussionpost->id] = $discussionpost;
         for ($i = 0; $i < 3; $i++) {
             $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -1546,7 +1545,7 @@ final class events_test extends \advanced_testcase {
         // Check that the events contain the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_deleted', $event);
         $this->assertEquals(\context_module::instance($digestforum->cmid), $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id));
+        $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $discussion->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
         $this->assertNotEmpty($event->get_name());
@@ -1564,7 +1563,7 @@ final class events_test extends \advanced_testcase {
                 // Check that the event contains the expected values.
                 $this->assertEquals($event->objectid, $discussion->id);
                 $this->assertEquals(\context_module::instance($digestforum->cmid), $event->get_context());
-                $url = new \moodle_url('/mod/digestforum/view.php', array('id' => $digestforum->cmid));
+                $url = new \moodle_url('/mod/digestforum/view.php', ['id' => $digestforum->cmid]);
                 $this->assertEquals($url, $event->get_url());
                 $this->assertEventContextNotUsed($event);
                 $this->assertNotEmpty($event->get_name());
@@ -1574,7 +1573,7 @@ final class events_test extends \advanced_testcase {
                 $this->assertInstanceOf('\mod_digestforum\event\post_deleted', $event);
                 $this->assertEquals($event->objectid, $post->id);
                 $this->assertEquals(\context_module::instance($digestforum->cmid), $event->get_context());
-                $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id));
+                $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $discussion->id]);
                 $this->assertEquals($url, $event->get_url());
                 $this->assertEventContextNotUsed($event);
                 $this->assertNotEmpty($event->get_name());
@@ -1588,29 +1587,29 @@ final class events_test extends \advanced_testcase {
     public function test_post_deleted_single(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'single'));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'single']);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $event = \mod_digestforum\event\post_deleted::create($params);
 
@@ -1624,7 +1623,7 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -1636,27 +1635,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_updated_discussionid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'discussionid' value must be set in other.");
@@ -1668,27 +1667,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_updated_digestforumid_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -1700,27 +1699,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_updated_digestforumtype_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumtype' value must be set in other.");
@@ -1732,27 +1731,27 @@ final class events_test extends \advanced_testcase {
      */
     public function test_post_updated_context_validation(): void {
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
-        $params = array(
+        $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage('Context level must be CONTEXT_MODULE.');
@@ -1765,29 +1764,29 @@ final class events_test extends \advanced_testcase {
     public function test_post_updated(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $event = \mod_digestforum\event\post_updated::create($params);
 
@@ -1801,8 +1800,8 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_updated', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $discussion->id));
-        $url->set_anchor('p'.$event->objectid);
+        $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $discussion->id]);
+        $url->set_anchor('p' . $event->objectid);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -1815,29 +1814,29 @@ final class events_test extends \advanced_testcase {
     public function test_post_updated_single(): void {
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'single'));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'single']);
         $user = $this->getDataGenerator()->create_user();
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => array('discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type)
-        );
+            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+        ];
 
         $event = \mod_digestforum\event\post_updated::create($params);
 
@@ -1851,8 +1850,8 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\post_updated', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
-        $url->set_anchor('p'.$post->id);
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
+        $url->set_anchor('p' . $post->id);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
 
@@ -1871,18 +1870,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -1904,10 +1903,10 @@ final class events_test extends \advanced_testcase {
         $context = \context_module::instance($cm->id);
         $this->assertEquals($context, $event->get_context());
 
-        $url = new \moodle_url('/mod/digestforum/subscribe.php', array(
+        $url = new \moodle_url('/mod/digestforum/subscribe.php', [
             'id' => $digestforum->id,
-            'd' => $discussion->id
-        ));
+            'd' => $discussion->id,
+        ]);
 
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -1926,18 +1925,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -1953,15 +1952,15 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $event = \mod_digestforum\event\discussion_subscription_created::create($params);
 
@@ -1985,18 +1984,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2012,15 +2011,15 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => \context_course::instance($course->id),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         // Without an invalid context.
         $this->expectException(\coding_exception::class);
@@ -2040,18 +2039,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2066,14 +2065,14 @@ final class events_test extends \advanced_testcase {
         $subscription->id = $DB->insert_record('digestforum_discussion_subs', $subscription);
 
         // Without the discussion.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'discussion' value must be set in other.");
@@ -2092,18 +2091,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2118,14 +2117,14 @@ final class events_test extends \advanced_testcase {
         $subscription->id = $DB->insert_record('digestforum_discussion_subs', $subscription);
 
         // Without the digestforumid.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -2144,18 +2143,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2172,14 +2171,14 @@ final class events_test extends \advanced_testcase {
         $context = \context_module::instance($digestforum->cmid);
 
         // Without the relateduserid.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -2198,18 +2197,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2231,10 +2230,10 @@ final class events_test extends \advanced_testcase {
         $context = \context_module::instance($cm->id);
         $this->assertEquals($context, $event->get_context());
 
-        $url = new \moodle_url('/mod/digestforum/subscribe.php', array(
+        $url = new \moodle_url('/mod/digestforum/subscribe.php', [
             'id' => $digestforum->id,
-            'd' => $discussion->id
-        ));
+            'd' => $discussion->id,
+        ]);
 
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
@@ -2253,18 +2252,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2280,15 +2279,15 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $event = \mod_digestforum\event\discussion_subscription_deleted::create($params);
 
@@ -2336,18 +2335,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2363,15 +2362,15 @@ final class events_test extends \advanced_testcase {
 
         $context = \context_module::instance($digestforum->cmid);
 
-        $params = array(
+        $params = [
             'context' => \context_course::instance($course->id),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         // Without an invalid context.
         $this->expectException(\coding_exception::class);
@@ -2391,18 +2390,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2417,14 +2416,14 @@ final class events_test extends \advanced_testcase {
         $subscription->id = $DB->insert_record('digestforum_discussion_subs', $subscription);
 
         // Without the discussion.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'discussion' value must be set in other.");
@@ -2443,18 +2442,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2469,14 +2468,14 @@ final class events_test extends \advanced_testcase {
         $subscription->id = $DB->insert_record('digestforum_discussion_subs', $subscription);
 
         // Without the digestforumid.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
             'relateduserid' => $user->id,
-            'other' => array(
+            'other' => [
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'digestforumid' value must be set in other.");
@@ -2495,18 +2494,18 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2523,14 +2522,14 @@ final class events_test extends \advanced_testcase {
         $context = \context_module::instance($digestforum->cmid);
 
         // Without the relateduserid.
-        $params = array(
+        $params = [
             'context' => \context_module::instance($digestforum->cmid),
             'objectid' => $subscription->id,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $digestforum->id,
                 'discussion' => $discussion->id,
-            )
-        );
+            ],
+        ];
 
         $this->expectException(\coding_exception::class);
         $this->expectExceptionMessage("The 'relateduserid' must be set.");
@@ -2550,19 +2549,19 @@ final class events_test extends \advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
         $quiz = $this->getDataGenerator()->create_module('quiz', $options);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a post.
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -2735,7 +2734,6 @@ final class events_test extends \advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\discussion_subscription_deleted', $event);
         $this->assertEquals($context, $event->get_context());
-
     }
 
     /**
@@ -2749,21 +2747,21 @@ final class events_test extends \advanced_testcase {
         $digestforumgen = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
         $course = $this->getDataGenerator()->create_course();
-        $trackedrecord = array('course' => $course->id, 'type' => 'general', 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
-        $untrackedrecord = array('course' => $course->id, 'type' => 'general');
+        $trackedrecord = ['course' => $course->id, 'type' => 'general', 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
+        $untrackedrecord = ['course' => $course->id, 'type' => 'general'];
         $trackeddigestforum = $this->getDataGenerator()->create_module('digestforum', $trackedrecord);
         $untrackeddigestforum = $this->getDataGenerator()->create_module('digestforum', $untrackedrecord);
 
         // Used functions don't require these settings; adding
         // them just in case there are APIs changes in future.
-        $user = $this->getDataGenerator()->create_user(array(
+        $user = $this->getDataGenerator()->create_user([
             'maildigest' => 1,
-            'trackforums' => 1
-        ));
+            'trackforums' => 1,
+        ]);
 
         $manplugin = enrol_get_plugin('manual');
-        $manualenrol = $DB->get_record('enrol', array('courseid' => $course->id, 'enrol' => 'manual'));
-        $student = $DB->get_record('role', array('shortname' => 'student'));
+        $manualenrol = $DB->get_record('enrol', ['courseid' => $course->id, 'enrol' => 'manual']);
+        $student = $DB->get_record('role', ['shortname' => 'student']);
 
         // The role_assign observer does it's job adding the digestforum_subscriptions record.
         $manplugin->enrol_user($manualenrol, $user->id, $student->id);
@@ -2773,13 +2771,13 @@ final class events_test extends \advanced_testcase {
         set_config('digestforum_trackingtype', 1);
         set_config('digestforum_trackreadposts', 1);
 
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $trackeddigestforum->id;
         $record['userid'] = $user->id;
         $discussion = $digestforumgen->create_discussion($record);
 
-        $record = array();
+        $record = [];
         $record['discussion'] = $discussion->id;
         $record['userid'] = $user->id;
         $post = $digestforumgen->create_post($record);
@@ -2794,7 +2792,7 @@ final class events_test extends \advanced_testcase {
         $this->assertEquals(1, $DB->count_records('digestforum_read'));
 
         // The course_module_created observer does it's job adding a subscription.
-        $digestforumrecord = array('course' => $course->id, 'type' => 'general', 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $digestforumrecord = ['course' => $course->id, 'type' => 'general', 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $extradigestforum = $this->getDataGenerator()->create_module('digestforum', $digestforumrecord);
         $this->assertEquals(2, $DB->count_records('digestforum_subscriptions'));
 
@@ -2805,5 +2803,4 @@ final class events_test extends \advanced_testcase {
         $this->assertEquals(0, $DB->count_records('digestforum_track_prefs'));
         $this->assertEquals(0, $DB->count_records('digestforum_read'));
     }
-
 }

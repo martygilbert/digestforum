@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,10 +22,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../config.php');
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
-require_once($CFG->dirroot.'/rating/lib.php');
-require_once($CFG->dirroot.'/user/lib.php');
+require(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
+require_once($CFG->dirroot . '/rating/lib.php');
+require_once($CFG->dirroot . '/user/lib.php');
 
 $courseid  = optional_param('course', null, PARAM_INT); // Limit the posts to just this course
 $userid = optional_param('id', $USER->id, PARAM_INT);        // User id whose posts we want to view
@@ -45,7 +44,7 @@ $discussionsonly = ($mode !== 'posts');
 $isspecificcourse = !is_null($courseid);
 $iscurrentuser = ($USER->id == $userid);
 
-$url = new moodle_url('/mod/digestforum/user.php', array('id' => $userid));
+$url = new moodle_url('/mod/digestforum/user.php', ['id' => $userid]);
 if ($isspecificcourse) {
     $url->param('course', $courseid);
 }
@@ -63,7 +62,7 @@ if ($perpage != 5) {
     $url->param('perpage', $perpage);
 }
 
-$user = $DB->get_record("user", array("id" => $userid), '*', MUST_EXIST);
+$user = $DB->get_record("user", ["id" => $userid], '*', MUST_EXIST);
 $usercontext = context_user::instance($user->id, MUST_EXIST);
 // Check if the requested user is the guest user
 if (isguestuser($user)) {
@@ -83,13 +82,13 @@ if ($user->deleted) {
 
 $isloggedin = isloggedin();
 $isguestuser = $isloggedin && isguestuser();
-$isparent = !$iscurrentuser && $DB->record_exists('role_assignments', array('userid'=>$USER->id, 'contextid'=>$usercontext->id));
-$hasparentaccess = $isparent && has_all_capabilities(array('moodle/user:viewdetails', 'moodle/user:readuserposts'), $usercontext);
+$isparent = !$iscurrentuser && $DB->record_exists('role_assignments', ['userid' => $USER->id, 'contextid' => $usercontext->id]);
+$hasparentaccess = $isparent && has_all_capabilities(['moodle/user:viewdetails', 'moodle/user:readuserposts'], $usercontext);
 
 // Check whether a specific course has been requested
 if ($isspecificcourse) {
     // Get the requested course and its context
-    $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+    $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
     $coursecontext = context_course::instance($courseid, MUST_EXIST);
     // We have a specific course to search, which we will also assume we are within.
     if ($hasparentaccess) {
@@ -104,7 +103,7 @@ if ($isspecificcourse) {
         require_login($course);
     }
     // Get the course ready for access checks
-    $courses = array($courseid => $course);
+    $courses = [$courseid => $course];
 } else {
     // We are going to search for all of the users posts in all courses!
     // a general require login here as we arn't actually within any course.
@@ -116,11 +115,11 @@ if ($isspecificcourse) {
     $courses = digestforum_get_courses_user_posted_in($user, $discussionsonly);
 }
 
-$params = array(
+$params = [
     'context' => $PAGE->context,
     'relateduserid' => $user->id,
-    'other' => array('reportmode' => $mode),
-);
+    'other' => ['reportmode' => $mode],
+];
 $event = \mod_digestforum\event\user_report_viewed::create($params);
 $event->trigger();
 
@@ -142,7 +141,7 @@ if (empty($result->posts)) {
 
     // Get the page heading
     if ($isspecificcourse) {
-        $pageheading = format_string($course->fullname, true, array('context' => $coursecontext));
+        $pageheading = format_string($course->fullname, true, ['context' => $coursecontext]);
     } else {
         $pageheading = get_string('pluginname', 'mod_digestforum');
     }
@@ -169,11 +168,15 @@ if (empty($result->posts)) {
             }
             // Check to see if this is a discussion or a post.
             if ($mode == 'posts') {
-                $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                        array('id' => $user->id, 'course' => $courseid)));
+                $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url(
+                    '/mod/digestforum/user.php',
+                    ['id' => $user->id, 'course' => $courseid]
+                ));
             } else {
-                $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                        array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url(
+                    '/mod/digestforum/user.php',
+                    ['id' => $user->id, 'course' => $courseid, 'mode' => 'discussions']
+                ));
             }
         }
     } else if ($canviewuser) {
@@ -188,11 +191,15 @@ if (empty($result->posts)) {
             }
             // Check to see if this is a discussion or a post.
             if ($mode == 'posts') {
-                $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                        array('id' => $user->id, 'course' => $courseid)));
+                $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url(
+                    '/mod/digestforum/user.php',
+                    ['id' => $user->id, 'course' => $courseid]
+                ));
             } else {
-                $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                        array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+                $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url(
+                    '/mod/digestforum/user.php',
+                    ['id' => $user->id, 'course' => $courseid, 'mode' => 'discussions']
+                ));
             }
         }
 
@@ -207,7 +214,7 @@ if (empty($result->posts)) {
         // the current uesr doesn't have access to.
         $notification = get_string('cannotviewusersposts', 'digestforum');
         if ($isspecificcourse) {
-            $url = new moodle_url('/course/view.php', array('id' => $courseid));
+            $url = new moodle_url('/course/view.php', ['id' => $courseid]);
         } else {
             $url = new moodle_url('/');
         }
@@ -232,11 +239,11 @@ if (empty($result->posts)) {
     if (!$isspecificcourse) {
         echo $OUTPUT->heading($pagetitle);
     } else {
-        $userheading = array(
+        $userheading = [
                 'heading' => fullname($user),
                 'user' => $user,
-                'usercontext' => $usercontext
-            );
+                'usercontext' => $usercontext,
+            ];
         echo $OUTPUT->context_header($userheading, 2);
     }
     echo $OUTPUT->notification($notification);
@@ -247,7 +254,7 @@ if (empty($result->posts)) {
     die;
 }
 
-$discussions = array();
+$discussions = [];
 foreach ($result->posts as $post) {
     $discussions[] = $post->discussion;
 }
@@ -258,16 +265,16 @@ $rendererfactory = mod_digestforum\local\container::get_renderer_factory();
 $postsrenderer = $rendererfactory->get_user_digestforum_posts_report_renderer(!$isspecificcourse && !$hasparentaccess);
 $postoutput = $postsrenderer->render(
     $USER,
-    array_map(function($digestforum) use ($entityfactory, $result) {
+    array_map(function ($digestforum) use ($entityfactory, $result) {
         $cm = $digestforum->cm;
         $context = context_module::instance($cm->id);
         $course = $result->courses[$digestforum->course];
         return $entityfactory->get_digestforum_from_stdclass($digestforum, $context, $cm, $course);
     }, $result->digestforums),
-    array_map(function($discussion) use ($entityfactory) {
+    array_map(function ($discussion) use ($entityfactory) {
         return $entityfactory->get_discussion_from_stdclass($discussion);
     }, $discussions),
-    array_map(function($post) use ($entityfactory) {
+    array_map(function ($post) use ($entityfactory) {
         return $entityfactory->get_post_from_stdclass($post);
     }, $result->posts)
 );
@@ -280,9 +287,9 @@ if ($discussionsonly) {
     $inpageheading = get_string('postsmadebyuser', 'mod_digestforum', $userfullname);
 }
 if ($isspecificcourse) {
-    $a = new stdClass;
+    $a = new stdClass();
     $a->fullname = $userfullname;
-    $a->coursename = format_string($course->fullname, true, array('context' => $coursecontext));
+    $a->coursename = format_string($course->fullname, true, ['context' => $coursecontext]);
     $pageheading = $a->coursename;
     if ($discussionsonly) {
         $pagetitle = get_string('discussionsstartedbyuserincourse', 'mod_digestforum', $a);
@@ -302,17 +309,21 @@ $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for
 
 // Edit navbar.
 if (isset($courseid) && $courseid != SITEID) {
-    if ($usernode = $PAGE->navigation->find('user' . $user->id , null)) {
+    if ($usernode = $PAGE->navigation->find('user' . $user->id, null)) {
         $usernode->make_active();
     }
 
     // Check to see if this is a discussion or a post.
     if ($mode == 'posts') {
-        $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                array('id' => $user->id, 'course' => $courseid)));
+        $navbar = $PAGE->navbar->add(get_string('posts', 'digestforum'), new moodle_url(
+            '/mod/digestforum/user.php',
+            ['id' => $user->id, 'course' => $courseid]
+        ));
     } else {
-        $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url('/mod/digestforum/user.php',
-                array('id' => $user->id, 'course' => $courseid, 'mode' => 'discussions')));
+        $navbar = $PAGE->navbar->add(get_string('discussions', 'digestforum'), new moodle_url(
+            '/mod/digestforum/user.php',
+            ['id' => $user->id, 'course' => $courseid, 'mode' => 'discussions']
+        ));
     }
     $PAGE->set_secondary_active_tab('participants');
 }
@@ -323,16 +334,16 @@ if (isset($courseid) && $courseid != SITEID) {
     $backurl = new moodle_url('/user/view.php', ['id' => $userid, 'course' => $courseid]);
     echo $OUTPUT->single_button($backurl, get_string('back'), 'get', ['class' => 'mb-3']);
 }
-echo html_writer::start_tag('div', array('class' => 'user-content'));
+echo html_writer::start_tag('div', ['class' => 'user-content']);
 
 if ($isspecificcourse) {
-    $userheading = array(
+    $userheading = [
         'heading' => fullname($user),
         'user' => $user,
-        'usercontext' => $usercontext
-    );
+        'usercontext' => $usercontext,
+    ];
     echo $OUTPUT->context_header($userheading, 2);
-    $coursename = format_string($course->fullname, true, array('context' => $coursecontext));
+    $coursename = format_string($course->fullname, true, ['context' => $coursecontext]);
     $heading = $mode === 'posts' ? get_string('postsmadeincourse', 'mod_digestforum', $coursename) :
         get_string('discussionsstartedincourse', 'mod_digestforum', $coursename);
     echo $OUTPUT->heading($heading, 2, 'main mt-4 mb-4');

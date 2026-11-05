@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -34,7 +33,6 @@ require_once(__DIR__ . '/generator_trait.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class maildigest_test extends \advanced_testcase {
-
     // Make use of the cron tester trait.
     use mod_digestforum_tests_cron_trait;
 
@@ -110,7 +108,7 @@ final class maildigest_test extends \advanced_testcase {
         $return = new \stdClass();
         $return->courses = new \stdClass();
         $return->digestforums = new \stdClass();
-        $return->digestforumids = array();
+        $return->digestforumids = [];
 
         // Create a user.
         $user = $this->getDataGenerator()->create_user();
@@ -131,7 +129,7 @@ final class maildigest_test extends \advanced_testcase {
         $return->digestforumsids[] = $return->digestforums->digestforum2->id;
 
         // Check the digestforum was correctly created.
-        list ($test, $params) = $DB->get_in_or_equal($return->digestforumsids);
+         [$test, $params] = $DB->get_in_or_equal($return->digestforumsids);
 
         // Enrol the user in the courses.
         // DataGenerator->enrol_user automatically sets a role for the user
@@ -154,41 +152,41 @@ final class maildigest_test extends \advanced_testcase {
         self::setUser($helper->user);
 
         // Confirm that there is no current value.
-        $currentsetting = $DB->get_record('digestforum_digests', array(
+        $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
             'userid' => $user->id,
-        ));
+        ]);
         $this->assertFalse($currentsetting);
 
         // Test with each of the valid values:
         // 0, 1, and 2 are valid values.
         digestforum_set_user_maildigest($digestforum1, 0, $user);
-        $currentsetting = $DB->get_record('digestforum_digests', array(
+        $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
             'userid' => $user->id,
-        ));
+        ]);
         $this->assertEquals($currentsetting->maildigest, 0);
 
         digestforum_set_user_maildigest($digestforum1, 1, $user);
-        $currentsetting = $DB->get_record('digestforum_digests', array(
+        $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
             'userid' => $user->id,
-        ));
+        ]);
         $this->assertEquals($currentsetting->maildigest, 1);
 
         digestforum_set_user_maildigest($digestforum1, 2, $user);
-        $currentsetting = $DB->get_record('digestforum_digests', array(
+        $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
             'userid' => $user->id,
-        ));
+        ]);
         $this->assertEquals($currentsetting->maildigest, 2);
 
         // And the default value - this should delete the record again
         digestforum_set_user_maildigest($digestforum1, -1, $user);
-        $currentsetting = $DB->get_record('digestforum_digests', array(
+        $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
             'userid' => $user->id,
-        ));
+        ]);
         $this->assertFalse($currentsetting);
 
         // Try with an invalid value.
@@ -211,11 +209,11 @@ final class maildigest_test extends \advanced_testcase {
         self::setUser($helper->user);
 
         // We test against these options.
-        $digestoptions = array(
+        $digestoptions = [
             '0' => get_string('emaildigestoffshort', 'mod_digestforum'),
             '1' => get_string('emaildigestcompleteshort', 'mod_digestforum'),
             '2' => get_string('emaildigestsubjectsshort', 'mod_digestforum'),
-        );
+        ];
 
         // Everyone receives complete digests, so the default is always complete, whatever the user's setting.
         $this->assertEquals(0, $user->maildigest);
@@ -278,14 +276,14 @@ final class maildigest_test extends \advanced_testcase {
 
         // Add 5 discussions to each digestforum.
         for ($i = 0; $i < 5; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
             $posts[$digestforum1->id][] = $post;
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
             $posts[$digestforum2->id][] = $post;
         }
 
         // Ask for single emails in the profile, and use the default for each digestforum.
-        $DB->set_field('user', 'maildigest', 0, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 0, ['id' => $user->id]);
         digestforum_set_user_maildigest($digestforum1, -1, $user);
         digestforum_set_user_maildigest($digestforum2, -1, $user);
 
@@ -320,14 +318,14 @@ final class maildigest_test extends \advanced_testcase {
 
         // Add 5 discussions to each digestforum.
         for ($i = 0; $i < 5; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
             $posts[$digestforum1->id][] = $post;
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
             $posts[$digestforum2->id][] = $post;
         }
 
         // Ask for single emails in digestforum1, and short digests in digestforum2.
-        $DB->set_field('user', 'maildigest', 0, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 0, ['id' => $user->id]);
         digestforum_set_user_maildigest($digestforum1, 0, $user);
         digestforum_set_user_maildigest($digestforum2, 2, $user);
 
@@ -357,10 +355,16 @@ final class maildigest_test extends \advanced_testcase {
         $digestforum1 = $userhelper->digestforums->digestforum1;
         $digestforum2 = $userhelper->digestforums->digestforum2;
 
-        list($discussion1, $post1) = $this->helper_post_to_digestforum($digestforum1, $user,
-                ['mailnow' => 1, 'name' => 'Discussion in forum one']);
-        list($discussion2, $post2) = $this->helper_post_to_digestforum($digestforum2, $user,
-                ['mailnow' => 1, 'name' => 'Discussion in forum two']);
+        [$discussion1, $post1] = $this->helper_post_to_digestforum(
+            $digestforum1,
+            $user,
+            ['mailnow' => 1, 'name' => 'Discussion in forum one']
+        );
+        [$discussion2, $post2] = $this->helper_post_to_digestforum(
+            $digestforum2,
+            $user,
+            ['mailnow' => 1, 'name' => 'Discussion in forum two']
+        );
 
         $expect = [
             (object) [
@@ -415,7 +419,7 @@ final class maildigest_test extends \advanced_testcase {
         $DB->set_field('user', 'mailformat', 1, ['id' => $user->id]);
         $digestforum1 = $userhelper->digestforums->digestforum1;
 
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
 
         $this->queue_tasks_and_assert([(object) ['userid' => $user->id, 'digests' => 1]]);
         $this->send_digests_and_assert($user, [$digestforum1->id => [$post]]);
@@ -453,7 +457,7 @@ final class maildigest_test extends \advanced_testcase {
         $DB->set_field('user', 'mailformat', 0, ['id' => $user->id]);
         $digestforum1 = $userhelper->digestforums->digestforum1;
 
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
 
         $this->queue_tasks_and_assert([(object) ['userid' => $user->id, 'digests' => 1]]);
         $this->send_digests_and_assert($user, [$digestforum1->id => [$post]]);
@@ -490,8 +494,8 @@ final class maildigest_test extends \advanced_testcase {
             ]);
         }
 
-        list($discussion1, $post1) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
-        list($discussion2, $post2) = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
+        [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum2, $user, ['mailnow' => 1]);
 
         $this->queue_tasks_and_assert([(object) ['userid' => $user->id, 'digests' => 1]]);
         $this->send_digests_and_assert($user, [
@@ -567,11 +571,11 @@ final class maildigest_test extends \advanced_testcase {
         $posts = [];
 
         // Add 1 discussions to digestforum 1.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
         $posts[] = $post;
 
         // Set the tested user's default maildigest setting.
-        $DB->set_field('user', 'maildigest', 1, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 1, ['id' => $user->id]);
 
         // No digests mails should be sent, but 1 digestforum mails will be sent.
         $expect = [
@@ -619,11 +623,11 @@ final class maildigest_test extends \advanced_testcase {
         );
 
         // Add 1 discussions to digestforum 1.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
         $posts[] = $post;
 
         // Set the tested user's default maildigest setting.
-        $DB->set_field('user', 'maildigest', 1, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 1, ['id' => $user->id]);
 
         // No digests mails should be sent, but 1 digestforum mails will be sent.
         $expect = [
@@ -667,11 +671,11 @@ final class maildigest_test extends \advanced_testcase {
         $shortdigests = [];
 
         // Add 1 discussions to digestforum 1.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
         $fulldigests[] = $post;
 
         // Set the tested user's default maildigest setting.
-        $DB->set_field('user', 'maildigest', 1, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 1, ['id' => $user->id]);
 
         // Set the digest time to midnight.
         $CFG->digestforum_mailtime = 0;
@@ -707,11 +711,11 @@ final class maildigest_test extends \advanced_testcase {
         $shortdigests = [];
 
         // Add 1 discussions to digestforum 1.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
         $fulldigests[] = $post;
 
         // Set the tested user's default maildigest setting.
-        $DB->set_field('user', 'maildigest', 1, array('id' => $user->id));
+        $DB->set_field('user', 'maildigest', 1, ['id' => $user->id]);
 
         // Set the digest time to the future (magic, shouldn't work).
         $CFG->digestforum_mailtime = 25;
@@ -825,7 +829,7 @@ final class maildigest_test extends \advanced_testcase {
 
         // Add 5 discussions to digestforum 1.
         for ($i = 0; $i < 5; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
             $posts[] = $post;
         }
 
@@ -882,7 +886,7 @@ final class maildigest_test extends \advanced_testcase {
 
         // Add 5 discussions to digestforum 1.
         for ($i = 0; $i < 5; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum1, $user, ['mailnow' => 1]);
             $posts[] = $post;
         }
 

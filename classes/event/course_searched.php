@@ -41,7 +41,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_searched extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,8 +77,10 @@ class course_searched extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/search.php',
-            array('id' => $this->courseid, 'search' => $this->other['searchterm']));
+        return new \moodle_url(
+            '/mod/digestforum/search.php',
+            ['id' => $this->courseid, 'search' => $this->other['searchterm']]
+        );
     }
 
     /**
@@ -103,4 +104,3 @@ class course_searched extends \core\event\base {
         return false;
     }
 }
-

@@ -43,12 +43,12 @@ function digestforum_tp_get_untracked_digestforums($userid, $courseid) {
     \core\deprecation::emit_deprecation(__FUNCTION__);
 
     if ($CFG->digestforum_allowforcedreadtracking) {
-        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_OFF."
-                            OR (f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." AND (ft.id IS NOT NULL
+        $trackingsql = "AND (f.trackingtype = " . DFORUM_TRACKING_OFF . "
+                            OR (f.trackingtype = " . DFORUM_TRACKING_OPTIONAL . " AND (ft.id IS NOT NULL
                                 OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     } else {
-        $trackingsql = "AND (f.trackingtype = ".DFORUM_TRACKING_OFF."
-                            OR ((f.trackingtype = ".DFORUM_TRACKING_OPTIONAL." OR f.trackingtype = ".DFORUM_TRACKING_FORCED.")
+        $trackingsql = "AND (f.trackingtype = " . DFORUM_TRACKING_OFF . "
+                            OR ((f.trackingtype = " . DFORUM_TRACKING_OPTIONAL . " OR f.trackingtype = " . DFORUM_TRACKING_FORCED . ")
                                 AND (ft.id IS NOT NULL
                                     OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     }
@@ -64,7 +64,6 @@ function digestforum_tp_get_untracked_digestforums($userid, $courseid) {
             $digestforums[$digestforum->id] = $digestforum;
         }
         return $digestforums;
-
     } else {
         return [];
     }

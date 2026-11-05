@@ -55,9 +55,9 @@ trait mod_digestforum_tests_cron_trait {
             } else {
                 $uniqueusers++;
                 $this->assertMatchesRegularExpression(
-                        "/Queued {$expect->digests} digests and {$expect->messages} messages for {$expect->userid}/",
-                        $output
-                    );
+                    "/Queued {$expect->digests} digests and {$expect->messages} messages for {$expect->userid}/",
+                    $output
+                );
             }
         }
 

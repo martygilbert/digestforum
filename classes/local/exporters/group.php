@@ -64,7 +64,7 @@ class group extends exporter {
                 'type' => PARAM_INT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'urls' => [
                 'type' => [
@@ -73,8 +73,8 @@ class group extends exporter {
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
-                    ]
+                        'null' => NULL_ALLOWED,
+                    ],
                 ],
             ],
         ];
@@ -90,8 +90,8 @@ class group extends exporter {
         return [
             'id' => $group->id,
             'urls' => [
-                'image' => $imageurl ? $imageurl->out(false) : null
-            ]
+                'image' => $imageurl ? $imageurl->out(false) : null,
+            ],
         ];
     }
 
@@ -103,7 +103,7 @@ class group extends exporter {
     protected static function define_related() {
         return [
             'urlmanager' => 'mod_digestforum\local\managers\url',
-            'context' => 'context'
+            'context' => 'context',
         ];
     }
 }

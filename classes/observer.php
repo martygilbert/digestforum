@@ -28,7 +28,6 @@ defined('MOODLE_INTERNAL') || die();
  * Event observer for mod_digestforum.
  */
 class mod_digestforum_observer {
-
     /**
      * Triggered via user_enrolment_deleted event.
      *
@@ -41,16 +40,16 @@ class mod_digestforum_observer {
         // Get user enrolment info from event.
         $cp = (object)$event->other['userenrolment'];
         if ($cp->lastenrol) {
-            if (!$digestforums = $DB->get_records('digestforum', array('course' => $cp->courseid), '', 'id')) {
+            if (!$digestforums = $DB->get_records('digestforum', ['course' => $cp->courseid], '', 'id')) {
                 return;
             }
-            list($digestforumselect, $params) = $DB->get_in_or_equal(array_keys($digestforums), SQL_PARAMS_NAMED);
+            [$digestforumselect, $params] = $DB->get_in_or_equal(array_keys($digestforums), SQL_PARAMS_NAMED);
             $params['userid'] = $cp->userid;
 
-            $DB->delete_records_select('digestforum_digests', 'userid = :userid AND digestforum '.$digestforumselect, $params);
-            $DB->delete_records_select('digestforum_subscriptions', 'userid = :userid AND digestforum '.$digestforumselect, $params);
-            $DB->delete_records_select('digestforum_track_prefs', 'userid = :userid AND digestforumid '.$digestforumselect, $params);
-            $DB->delete_records_select('digestforum_read', 'userid = :userid AND digestforumid '.$digestforumselect, $params);
+            $DB->delete_records_select('digestforum_digests', 'userid = :userid AND digestforum ' . $digestforumselect, $params);
+            $DB->delete_records_select('digestforum_subscriptions', 'userid = :userid AND digestforum ' . $digestforumselect, $params);
+            $DB->delete_records_select('digestforum_track_prefs', 'userid = :userid AND digestforumid ' . $digestforumselect, $params);
+            $DB->delete_records_select('digestforum_read', 'userid = :userid AND digestforumid ' . $digestforumselect, $params);
         }
     }
 
@@ -84,7 +83,7 @@ class mod_digestforum_observer {
                    AND f.forcesubscribe = :initial
                    AND m.name = 'digestforum'
                    AND fs.id IS NULL";
-        $params = array('courseid' => $context->instanceid, 'userid' => $userid, 'initial' => DFORUM_INITIALSUBSCRIBE);
+        $params = ['courseid' => $context->instanceid, 'userid' => $userid, 'initial' => DFORUM_INITIALSUBSCRIBE];
 
         $digestforums = $DB->get_records_sql($sql, $params);
         foreach ($digestforums as $digestforum) {

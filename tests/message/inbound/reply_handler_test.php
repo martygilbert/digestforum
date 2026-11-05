@@ -32,7 +32,6 @@ use Throwable;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\message\inbound\reply_handler::class)]
 final class reply_handler_test extends advanced_testcase {
-
     /**
      * Test attachment processing
      */

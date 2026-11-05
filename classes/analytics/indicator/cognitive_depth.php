@@ -34,7 +34,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cognitive_depth extends activity_base {
-
     /**
      * Returns the name.
      *
@@ -69,7 +68,6 @@ class cognitive_depth extends activity_base {
      * @return string[]
      */
     protected function feedback_replied_events() {
-        return array('\mod_digestforum\event\assessable_uploaded');
+        return ['\mod_digestforum\event\assessable_uploaded'];
     }
-
 }

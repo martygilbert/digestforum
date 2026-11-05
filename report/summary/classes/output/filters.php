@@ -39,7 +39,6 @@ use digestforumreport_summary;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class filters implements renderable, templatable {
-
     /**
      * Course modules the report relates to.
      * Array of stdClass objects
@@ -199,8 +198,8 @@ class filters implements renderable, templatable {
 
         $groupsselectedcount = count($groupsselected);
         if ($groupsselectedcount > 0 && $groupsselectedcount < count($groupsavailable)) {
-            list($digestforumidin, $digestforumidparams) = $DB->get_in_or_equal($digestforumids, SQL_PARAMS_NAMED);
-            list($groupidin, $groupidparams) = $DB->get_in_or_equal($groupsselected, SQL_PARAMS_NAMED);
+            [$digestforumidin, $digestforumidparams] = $DB->get_in_or_equal($digestforumids, SQL_PARAMS_NAMED);
+            [$groupidin, $groupidparams] = $DB->get_in_or_equal($groupsselected, SQL_PARAMS_NAMED);
 
             $discussionswhere = "course = :courseid AND digestforum {$digestforumidin} AND groupid {$groupidin}";
             $discussionsparams = ['courseid' => $this->courseid];

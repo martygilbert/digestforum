@@ -35,7 +35,6 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cron_task extends \core\task\scheduled_task {
-
     // Use the logging trait to get some nice, juicy, logging.
     use \core\task\logging_trait;
 
@@ -124,7 +123,7 @@ class cron_task extends \core\task\scheduled_task {
         $this->process_post_data($posts);
 
         // Mark posts as read.
-        list($in, $params) = $DB->get_in_or_equal(array_keys($posts));
+        [$in, $params] = $DB->get_in_or_equal(array_keys($posts));
         $DB->set_field_select('digestforum_posts', 'mailed', 1, "id {$in}", $params);
     }
 
@@ -195,7 +194,7 @@ class cron_task extends \core\task\scheduled_task {
     protected function fill_course_cache($courseids) {
         global $DB;
 
-        list($in, $params) = $DB->get_in_or_equal($courseids);
+        [$in, $params] = $DB->get_in_or_equal($courseids);
         $this->courses = $DB->get_records_select('course', "id $in", $params);
     }
 
@@ -213,7 +212,7 @@ class cron_task extends \core\task\scheduled_task {
                 'forcesubscribe',
                 'type',
             ];
-        list($in, $params) = $DB->get_in_or_equal($digestforumids);
+        [$in, $params] = $DB->get_in_or_equal($digestforumids);
         $this->digestforums = $DB->get_records_select('digestforum', "id $in", $params, '', implode(', ', $requiredfields));
         foreach ($this->digestforums as $id => $digestforum) {
             \mod_digestforum\subscriptions::fill_subscription_cache($id);
@@ -232,7 +231,6 @@ class cron_task extends \core\task\scheduled_task {
         if (empty($discussionids)) {
             $this->discussions = [];
         } else {
-
             $requiredfields = [
                     'id',
                     'groupid',
@@ -241,9 +239,14 @@ class cron_task extends \core\task\scheduled_task {
                     'timeend',
                 ];
 
-            list($in, $params) = $DB->get_in_or_equal($discussionids);
+            [$in, $params] = $DB->get_in_or_equal($discussionids);
             $this->discussions = $DB->get_records_select(
-                    'digestforum_discussions', "id $in", $params, '', implode(', ', $requiredfields));
+                'digestforum_discussions',
+                "id $in",
+                $params,
+                '',
+                implode(', ', $requiredfields)
+            );
         }
     }
 
@@ -257,9 +260,14 @@ class cron_task extends \core\task\scheduled_task {
             return;
         }
         // Get the list of digestforum subscriptions for per-user per-digestforum maildigest settings.
-        list($in, $params) = $DB->get_in_or_equal(array_keys($this->users));
+        [$in, $params] = $DB->get_in_or_equal(array_keys($this->users));
         $digestspreferences = $DB->get_recordset_select(
-                'digestforum_digests', "userid $in", $params, '', 'id, userid, digestforum, maildigest');
+            'digestforum_digests',
+            "userid $in",
+            $params,
+            '',
+            'id, userid, digestforum, maildigest'
+        );
         foreach ($digestspreferences as $digestpreference) {
             if (!isset($this->digestusers[$digestpreference->digestforum])) {
                 $this->digestusers[$digestpreference->digestforum] = [];
@@ -340,7 +348,7 @@ class cron_task extends \core\task\scheduled_task {
             // Setup this user so that the capabilities are cached, and environment matches receiving user.
             \core\cron::setup_user($user);
 
-            list($individualpostdata, $digestpostdata) = $this->fetch_posts_for_user($user);
+            [$individualpostdata, $digestpostdata] = $this->fetch_posts_for_user($user);
 
             if (!empty($digestpostdata)) {
                 // Insert all of the records for the digest.
@@ -385,11 +393,12 @@ class cron_task extends \core\task\scheduled_task {
                 $counts['ignored']++;
             }
 
-            $this->log(sprintf("Queued %d digests and %d messages for %s",
-                    $usercounts['digests'],
-                    $usercounts['messages'],
-                    $user->id
-                ), 2);
+            $this->log(sprintf(
+                "Queued %d digests and %d messages for %s",
+                $usercounts['digests'],
+                $usercounts['messages'],
+                $user->id
+            ), 2);
         }
         $this->log(
             sprintf(
@@ -400,7 +409,9 @@ class cron_task extends \core\task\scheduled_task {
                 $counts['messages'],
                 $counts['users'],
                 $counts['ignored']
-            ), 1);
+            ),
+            1
+        );
     }
 
     /**
@@ -515,7 +526,7 @@ class cron_task extends \core\task\scheduled_task {
     protected function get_unmailed_posts($starttime, $endtime, $now = null) {
         global $CFG, $DB;
 
-        $params = array();
+        $params = [];
         $params['mailed'] = DFORUM_MAILED_PENDING;
         $params['ptimestart'] = $starttime;
         $params['ptimeend'] = $endtime;
@@ -536,7 +547,7 @@ class cron_task extends \core\task\scheduled_task {
         }
 
         return $DB->get_records_sql(
-               "SELECT
+            "SELECT
                     p.id,
                     p.discussion,
                     d.digestforum,
@@ -551,6 +562,7 @@ class cron_task extends \core\task\scheduled_task {
                    AND (p.created < :ptimeend OR p.mailnow = :mailnow)
                 $timedsql
                  ORDER BY p.modified ASC",
-             $params);
+            $params
+        );
     }
 }

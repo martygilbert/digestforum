@@ -30,7 +30,7 @@ $definitions = [
         'mode' => cache_store::MODE_REQUEST,
         'simplekeys' => true,
         'simpledata' => true,
-        'staticacceleration' => true
+        'staticacceleration' => true,
     ],
     'digestforum_count_discussions' => [
         'mode' => cache_store::MODE_REQUEST,

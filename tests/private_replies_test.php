@@ -33,7 +33,6 @@ require_once(__DIR__ . '/generator_trait.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class private_replies_test extends \advanced_testcase {
-
     use mod_digestforum_tests_generator_trait;
 
     /**

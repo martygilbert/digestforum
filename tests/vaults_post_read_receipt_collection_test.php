@@ -58,7 +58,7 @@ final class vaults_post_read_receipt_collection_test extends \advanced_testcase 
             'discussionid' => $discussion1->id,
             'postid' => $post1->id,
             'firstread' => time(),
-            'lastread' => time()
+            'lastread' => time(),
         ]);
         // Receipt for other user.
         $DB->insert_record('digestforum_read', [
@@ -67,7 +67,7 @@ final class vaults_post_read_receipt_collection_test extends \advanced_testcase 
             'discussionid' => $discussion1->id,
             'postid' => $post1->id,
             'firstread' => time(),
-            'lastread' => time()
+            'lastread' => time(),
         ]);
         $DB->insert_record('digestforum_read', [
             'userid' => $user->id,
@@ -75,7 +75,7 @@ final class vaults_post_read_receipt_collection_test extends \advanced_testcase 
             'discussionid' => $discussion2->id,
             'postid' => $post3->id,
             'firstread' => time(),
-            'lastread' => time()
+            'lastread' => time(),
         ]);
 
         $post1 = $entityfactory->get_post_from_stdClass($post1);

@@ -49,11 +49,12 @@ final class locallib_test extends \advanced_testcase {
 
         // Create a digestforum activity.
         $time = time();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum',
-                array(
+        $digestforum = $this->getDataGenerator()->create_module(
+            'digestforum',
+            [
                     'course' => $course->id,
-                    'duedate' => $time
-                )
+                    'duedate' => $time,
+                ]
         );
 
         // Check that there is now an event in the database.

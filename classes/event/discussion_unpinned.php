@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * The mod_digestforum discussion unpinned event.
  *
@@ -67,7 +68,7 @@ class discussion_unpinned extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
+        return new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->objectid]);
     }
 
     /**
@@ -95,7 +96,7 @@ class discussion_unpinned extends \core\event\base {
      * @return array
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
     /**
@@ -104,8 +105,8 @@ class discussion_unpinned extends \core\event\base {
      * @return array
      */
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

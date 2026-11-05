@@ -75,8 +75,10 @@ final class events_test extends \advanced_testcase {
         $this->assertEquals(CONTEXT_MODULE, $event->contextlevel);
         $this->assertEquals($digestforum->cmid, $event->contextinstanceid);
         $this->assertEquals($teacher->id, $event->userid);
-        $url = new \moodle_url('/mod/digestforum/report/summary/index.php',
-                ['courseid' => $course->id, 'digestforumid' => $digestforum->id]);
+        $url = new \moodle_url(
+            '/mod/digestforum/report/summary/index.php',
+            ['courseid' => $course->id, 'digestforumid' => $digestforum->id]
+        );
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
         $this->assertNotEmpty($event->get_name());
@@ -124,8 +126,10 @@ final class events_test extends \advanced_testcase {
         $this->assertEquals(CONTEXT_MODULE, $event->contextlevel);
         $this->assertEquals($digestforum->cmid, $event->contextinstanceid);
         $this->assertEquals($teacher->id, $event->userid);
-        $url = new \moodle_url('/mod/digestforum/report/summary/index.php',
-                ['courseid' => $course->id, 'digestforumid' => $digestforum->id]);
+        $url = new \moodle_url(
+            '/mod/digestforum/report/summary/index.php',
+            ['courseid' => $course->id, 'digestforumid' => $digestforum->id]
+        );
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
         $this->assertNotEmpty($event->get_name());

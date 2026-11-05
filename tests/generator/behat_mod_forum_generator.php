@@ -23,7 +23,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class behat_mod_digestforum_generator extends behat_generator_base {
-
     /**
      * Get a list of the entities that Behat can create using the generator step.
      *
@@ -143,7 +142,7 @@ class behat_mod_digestforum_generator extends behat_generator_base {
 
         // Return processed data.
         if (!isset($data['discussion'])) {
-            throw new Exception('It was not possible to find a discussion to create a post, '.
+            throw new Exception('It was not possible to find a discussion to create a post, ' .
                 'please specify discussion or parentsubject.');
         }
 

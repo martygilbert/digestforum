@@ -33,7 +33,6 @@ use digestforumreport_summary\summary_table;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class digestforumreport_summary_renderer extends plugin_renderer_base {
-
     /**
      * Render the filters available for the digestforum summary report.
      *

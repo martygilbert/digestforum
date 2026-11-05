@@ -79,7 +79,7 @@ class discussion extends db_table_vault {
     protected function from_db_records(array $results) {
         $entityfactory = $this->get_entity_factory();
 
-        return array_map(function(array $result) use ($entityfactory) {
+        return array_map(function (array $result) use ($entityfactory) {
             [
                 'record' => $record,
             ] = $result;

@@ -102,8 +102,8 @@ class posts extends exporter {
         return [
             'posts' => [
                 'type' => post_exporter::read_properties_definition(),
-                'multiple' => true
-            ]
+                'multiple' => true,
+            ],
         ];
     }
 
@@ -123,7 +123,7 @@ class posts extends exporter {
         $tagsbypostid = $this->tagsbypostid;
         $ratingbypostid = $this->ratingbypostid;
         $exportedposts = array_map(
-            function($post) use (
+            function ($post) use (
                 $related,
                 $authorsbyid,
                 $authorcontextids,
@@ -150,7 +150,7 @@ class posts extends exporter {
                     'messageinlinefiles' => $inlineattachments,
                     'authorgroups' => $authorgroups,
                     'tags' => $tags,
-                    'rating' => $rating
+                    'rating' => $rating,
                 ]));
                 return $exporter->export($output);
             },
@@ -158,7 +158,7 @@ class posts extends exporter {
         );
 
         return [
-            'posts' => $exportedposts
+            'posts' => $exportedposts,
         ];
     }
 
@@ -176,7 +176,7 @@ class posts extends exporter {
             'readreceiptcollection' => 'mod_digestforum\local\entities\post_read_receipt_collection?',
             'user' => 'stdClass',
             'context' => 'context',
-            'includehtml' => 'bool'
+            'includehtml' => 'bool',
         ];
     }
 }

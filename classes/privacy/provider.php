@@ -25,14 +25,14 @@
 namespace mod_digestforum\privacy;
 
 use core_grades\component_gradeitem as gradeitem;
-use \core_privacy\local\request\userlist;
-use \core_privacy\local\request\approved_contextlist;
-use \core_privacy\local\request\approved_userlist;
-use \core_privacy\local\request\deletion_criteria;
-use \core_privacy\local\request\writer;
-use \core_privacy\local\request\helper as request_helper;
-use \core_privacy\local\metadata\collection;
-use \core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
+use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
+use core_privacy\local\request\deletion_criteria;
+use core_privacy\local\request\writer;
+use core_privacy\local\request\helper as request_helper;
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\transform;
 use tool_dataprivacy\context_instance;
 
 defined('MOODLE_INTERNAL') || die();
@@ -58,7 +58,6 @@ class provider implements
     // This plugin has some sitewide user preferences to export.
     \core_privacy\local\request\user_preference_provider
 {
-
     use subcontext_info;
 
     /**
@@ -132,7 +131,7 @@ class provider implements
             'userid' => 'privacy:metadata:digestforum_queue:userid',
             'discussionid' => 'privacy:metadata:digestforum_queue:discussionid',
             'postid' => 'privacy:metadata:digestforum_queue:postid',
-            'timemodified' => 'privacy:metadata:digestforum_queue:timemodified'
+            'timemodified' => 'privacy:metadata:digestforum_queue:timemodified',
         ], 'privacy:metadata:digestforum_queue');
 
         // The 'digestforum_grades' table stores grade data.
@@ -151,8 +150,10 @@ class provider implements
         $items->add_user_preference('autosubscribe', 'privacy:metadata:preference:autosubscribe');
         $items->add_user_preference('trackforums', 'privacy:metadata:preference:trackforums');
         $items->add_user_preference('markasreadonnotification', 'privacy:metadata:preference:markasreadonnotification');
-        $items->add_user_preference('digestforum_discussionlistsortorder',
-            'privacy:metadata:preference:digestforum_discussionlistsortorder');
+        $items->add_user_preference(
+            'digestforum_discussionlistsortorder',
+            'privacy:metadata:preference:digestforum_discussionlistsortorder'
+        );
 
         return $items;
     }
@@ -437,66 +438,101 @@ class provider implements
                     $markasreadonnotificationdescription = get_string('markasreadonnotificationyes', 'mod_digestforum');
                     break;
             }
-            writer::export_user_preference('mod_digestforum', 'markasreadonnotification', $markasreadonnotification,
-                    $markasreadonnotificationdescription);
+            writer::export_user_preference(
+                'mod_digestforum',
+                'markasreadonnotification',
+                $markasreadonnotification,
+                $markasreadonnotificationdescription
+            );
         }
 
         $vaultfactory = \mod_digestforum\local\container::get_vault_factory();
         $discussionlistvault = $vaultfactory->get_discussions_in_digestforum_vault();
-        $discussionlistsortorder = get_user_preferences('digestforum_discussionlistsortorder',
-            $discussionlistvault::SORTORDER_LASTPOST_DESC, $user->id);
+        $discussionlistsortorder = get_user_preferences(
+            'digestforum_discussionlistsortorder',
+            $discussionlistvault::SORTORDER_LASTPOST_DESC,
+            $user->id
+        );
         switch ($discussionlistsortorder) {
             case $discussionlistvault::SORTORDER_LASTPOST_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbylastpostdesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbylastpostdesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_LASTPOST_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbylastpostasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbylastpostasc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_CREATED_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbycreateddesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbycreateddesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_CREATED_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbycreatedasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbycreatedasc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_REPLIES_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbyrepliesdesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbyrepliesdesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_REPLIES_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbyrepliesasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbyrepliesasc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_DISCUSSION_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbydiscussiondesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbydiscussiondesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_DISCUSSION_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbydiscussionasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbydiscussionasc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_STARTER_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbystarterdesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbystarterdesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_STARTER_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbystarterasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbystarterasc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_GROUP_DESC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbygroupdesc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbygroupdesc',
+                    'mod_digestforum'
+                );
                 break;
             case $discussionlistvault::SORTORDER_GROUP_ASC:
-                $discussionlistsortorderdescription = get_string('discussionlistsortbygroupasc',
-                    'mod_digestforum');
+                $discussionlistsortorderdescription = get_string(
+                    'discussionlistsortbygroupasc',
+                    'mod_digestforum'
+                );
                 break;
         }
-        writer::export_user_preference('mod_digestforum', 'digestforum_discussionlistsortorder',
-            $discussionlistsortorder, $discussionlistsortorderdescription);
+        writer::export_user_preference(
+            'mod_digestforum',
+            'digestforum_discussionlistsortorder',
+            $discussionlistsortorder,
+            $discussionlistsortorderdescription
+        );
     }
 
 
@@ -515,7 +551,7 @@ class provider implements
         $user = $contextlist->get_user();
         $userid = $user->id;
 
-        list($contextsql, $contextparams) = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
+        [$contextsql, $contextparams] = $DB->get_in_or_equal($contextlist->get_contextids(), SQL_PARAMS_NAMED);
         $params = $contextparams;
 
         // Digested digestforums.
@@ -648,7 +684,7 @@ class provider implements
         global $DB;
 
         // Find all of the discussions, and discussion subscriptions for this digestforum.
-        list($digestforuminsql, $digestforumparams) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        [$digestforuminsql, $digestforumparams] = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
         $sql = "SELECT
                     d.*,
                     g.name as groupname,
@@ -722,20 +758,20 @@ class provider implements
                         JOIN {digestforum_posts} p ON p.discussion = d.id";
 
         // All discussions with posts authored by the user or containing private replies to the user.
-        list($digestforuminsql1, $digestforumparams1) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        [$digestforuminsql1, $digestforumparams1] = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
         $sql1 = "{$commonsql}
                        WHERE f.id {$digestforuminsql1}
                          AND (p.userid = :postuserid OR p.privatereplyto = :privatereplyrecipient)";
 
         // All discussions with the posts marked as read by the user.
-        list($digestforuminsql2, $digestforumparams2) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        [$digestforuminsql2, $digestforumparams2] = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
         $sql2 = "{$commonsql}
                         JOIN {digestforum_read} fr ON fr.postid = p.id
                        WHERE f.id {$digestforuminsql2}
                          AND fr.userid = :readuserid";
 
         // All discussions with ratings provided by the user.
-        list($digestforuminsql3, $digestforumparams3) = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
+        [$digestforuminsql3, $digestforumparams3] = $DB->get_in_or_equal(array_keys($mappings), SQL_PARAMS_NAMED);
         $ratingsql = \core_rating\privacy\provider::get_sql_join('rat', 'mod_digestforum', 'post', 'p.id', $userid, true);
         $sql3 = "{$commonsql}
                  {$ratingsql->join}
@@ -926,15 +962,16 @@ class provider implements
         }
 
         // Check for any ratings that the user has made on this post.
-        \core_rating\privacy\provider::export_area_ratings($userid,
-                $context,
-                $postarea,
-                'mod_digestforum',
-                'post',
-                $post->id,
-                $userid,
-                true
-            );
+        \core_rating\privacy\provider::export_area_ratings(
+            $userid,
+            $context,
+            $postarea,
+            'mod_digestforum',
+            'post',
+            $post->id,
+            $userid,
+            true
+        );
     }
 
     /**
@@ -965,8 +1002,12 @@ class provider implements
             }
 
             writer::with_context(\context_module::instance($digestforum->cmid))
-                ->export_metadata([], 'digestpreference', $maildigest,
-                    get_string('privacy:digesttypepreference', 'mod_digestforum', $a));
+                ->export_metadata(
+                    [],
+                    'digestpreference',
+                    $maildigest,
+                    get_string('privacy:digesttypepreference', 'mod_digestforum', $a)
+                );
 
             return true;
         }
@@ -1057,8 +1098,10 @@ class provider implements
         global $USER;
         if (null !== $grade) {
             $context = \context_module::instance($digestforum->cmid);
-            $exportpath = array_merge([],
-                [get_string('privacy:metadata:digestforum_grades', 'mod_digestforum')]);
+            $exportpath = array_merge(
+                [],
+                [get_string('privacy:metadata:digestforum_grades', 'mod_digestforum')]
+            );
             $gradingmanager = get_grading_manager($context, 'mod_digestforum', 'digestforum');
             $controller = $gradingmanager->get_active_controller();
 
@@ -1278,12 +1321,22 @@ class provider implements
             // Note: Do _not_ delete ratings of other users. Only delete ratings on the users own posts.
             // Ratings are aggregate fields and deleting the rating of this post will have an effect on the rating
             // of any post.
-            \core_rating\privacy\provider::delete_ratings_select($context, 'mod_digestforum', 'post',
-                    "IN ($postidsql)", $postparams);
+            \core_rating\privacy\provider::delete_ratings_select(
+                $context,
+                'mod_digestforum',
+                'post',
+                "IN ($postidsql)",
+                $postparams
+            );
 
             // Delete all Tags.
-            \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_digestforum', 'digestforum_posts',
-                    "IN ($postidsql)", $postparams);
+            \core_tag\privacy\provider::delete_item_tags_select(
+                $context,
+                'mod_digestforum',
+                'digestforum_posts',
+                "IN ($postidsql)",
+                $postparams
+            );
 
             // Delete all files from the posts.
             $fs = get_file_storage();
@@ -1304,7 +1357,7 @@ class provider implements
         $cm = $DB->get_record('course_modules', ['id' => $context->instanceid]);
         $digestforum = $DB->get_record('digestforum', ['id' => $cm->instance]);
 
-        list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$userinsql, $userinparams] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
         $params = array_merge(['digestforumid' => $digestforum->id], $userinparams);
 
         $DB->delete_records_select('digestforum_track_prefs', "digestforumid = :digestforumid AND userid {$userinsql}", $params);
@@ -1345,7 +1398,7 @@ class provider implements
         $fs->delete_area_files_select($context->id, 'mod_digestforum', 'post', "IN ($postidsql)", $params);
         $fs->delete_area_files_select($context->id, 'mod_digestforum', 'attachment', "IN ($postidsql)", $params);
 
-        list($sql, $params) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+        [$sql, $params] = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
         $params['digestforum'] = $digestforum->id;
         // Delete advanced grading information.
         $grades = $DB->get_records_select('digestforum_grades', "digestforum = :digestforum AND userid $sql", $params);

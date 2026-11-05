@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -34,7 +33,7 @@ $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking re
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
 
-$url = new moodle_url('/mod/digestforum/discuss.php', array('d'=>$d));
+$url = new moodle_url('/mod/digestforum/discuss.php', ['d' => $d]);
 if ($parent !== 0) {
     $url->param('parent', $parent);
 }
@@ -206,7 +205,7 @@ if ($move > 0 && confirm_sesskey()) {
         'other' => [
             'fromdigestforumid' => $digestforumid,
             'todigestforumid' => $digestforumto->id,
-        ]
+        ],
     ];
     $event = \mod_digestforum\event\discussion_moved::create($params);
     $event->add_record_snapshot('digestforum_discussions', $discussionrecord);
@@ -292,7 +291,7 @@ if (!$capabilitymanager->can_view_post($USER, $discussion, $post)) {
 }
 
 $istracked = digestforum_tp_is_tracked($digestforumrecord, $USER);
-if ($mark == 'read'|| $mark == 'unread') {
+if ($mark == 'read' || $mark == 'unread') {
     if ($CFG->digestforum_usermarksread && digestforum_tp_can_track_digestforums($digestforumrecord) && $istracked) {
         if ($mark == 'read') {
             digestforum_tp_add_read_record($USER->id, $postid);
@@ -365,7 +364,7 @@ if ($istracked && !$CFG->digestforum_usermarksread) {
     if ($displaymode == DFORUM_MODE_THREADED) {
         digestforum_tp_add_read_record($USER->id, $post->get_id());
     } else {
-        $postids = array_map(function($post) {
+        $postids = array_map(function ($post) {
             return $post->get_id();
         }, array_merge([$post], array_values($replies)));
         digestforum_tp_mark_posts_read($USER, $postids);

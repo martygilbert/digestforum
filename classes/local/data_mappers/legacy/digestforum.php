@@ -43,7 +43,7 @@ class digestforum {
      * @return stdClass[]
      */
     public function to_legacy_objects(array $digestforums): array {
-        return array_map(function(digestforum_entity $digestforum) {
+        return array_map(function (digestforum_entity $digestforum) {
             return (object) [
                 'id' => $digestforum->get_id(),
                 'course' => $digestforum->get_course_id(),

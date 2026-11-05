@@ -30,7 +30,6 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class restore_date_test extends \restore_date_testcase {
-
     /**
      * Test restore dates.
      */
@@ -39,7 +38,7 @@ final class restore_date_test extends \restore_date_testcase {
 
         $gg = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $record = ['assesstimefinish' => 100, 'assesstimestart' => 100, 'ratingtime' => 1, 'assessed' => 2, 'scale' => 1];
-        list($course, $digestforum) = $this->create_course_and_module('digestforum', $record);
+        [$course, $digestforum] = $this->create_course_and_module('digestforum', $record);
 
         // Forum Discussions/posts/ratings.
         $timestamp = 996699;
@@ -62,7 +61,7 @@ final class restore_date_test extends \restore_date_testcase {
         $DB->set_field('digestforum_discussions', 'timemodified', $timestamp);
 
         // Ratings.
-        $ratingoptions = new \stdClass;
+        $ratingoptions = new \stdClass();
         $ratingoptions->context = \context_module::instance($digestforum->cmid);
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->component = 'mod_digestforum';

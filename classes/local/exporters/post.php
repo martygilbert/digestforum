@@ -74,9 +74,9 @@ class post extends exporter {
                     'description' => 'The URL used to export the attachment',
                     'optional' => true,
                     'default' => null,
-                    'null' => NULL_ALLOWED
-                ]
-            ]
+                    'null' => NULL_ALLOWED,
+                ],
+            ],
         ];
         $attachmentdefinition['html'] = [
             'type' => [
@@ -85,9 +85,9 @@ class post extends exporter {
                     'description' => 'The HTML source for the Plagiarism Response',
                     'optional' => true,
                     'default' => null,
-                    'null' => NULL_ALLOWED
+                    'null' => NULL_ALLOWED,
                 ],
-            ]
+            ],
         ];
 
         return [
@@ -104,23 +104,23 @@ class post extends exporter {
                 'type' => PARAM_INT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'timecreated' => [
                 'type' => PARAM_INT,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'timemodified' => [
                 'type' => PARAM_INT,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'unread' => [
                 'type' => PARAM_BOOL,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'isdeleted' => ['type' => PARAM_BOOL],
             'isprivatereply' => ['type' => PARAM_BOOL],
@@ -129,13 +129,13 @@ class post extends exporter {
                 'type' => PARAM_INT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'charcount' => [
                 'type' => PARAM_INT,
                 'optional' => true,
                 'default' => null,
-                'null' => NULL_ALLOWED
+                'null' => NULL_ALLOWED,
             ],
             'capabilities' => [
                 'type' => [
@@ -183,8 +183,8 @@ class post extends exporter {
                         'type' => PARAM_BOOL,
                         'null' => NULL_ALLOWED,
                         'description' => 'Whether the user can post a private reply',
-                    ]
-                ]
+                    ],
+                ],
             ],
             'urls' => [
                 'optional' => true,
@@ -196,35 +196,35 @@ class post extends exporter {
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'viewisolated' => [
                         'description' => 'The URL used to view the post in isolation',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'viewparent' => [
                         'description' => 'The URL used to view the parent of the post',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'edit' => [
                         'description' => 'The URL used to edit the post',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'delete' => [
                         'description' => 'The URL used to delete the post',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'split' => [
                         'description' => 'The URL used to split the discussion ' .
@@ -232,47 +232,47 @@ class post extends exporter {
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'reply' => [
                         'description' => 'The URL used to reply to the post',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'export' => [
                         'description' => 'The URL used to export the post',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'markasread' => [
                         'description' => 'The URL used to mark the post as read',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'markasunread' => [
                         'description' => 'The URL used to mark the post as unread',
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
+                        'null' => NULL_ALLOWED,
                     ],
                     'discuss' => [
                         'type' => PARAM_URL,
                         'optional' => true,
                         'default' => null,
-                        'null' => NULL_ALLOWED
-                    ]
-                ]
+                        'null' => NULL_ALLOWED,
+                    ],
+                ],
             ],
             'attachments' => [
                 'multiple' => true,
-                'type' => $attachmentdefinition
+                'type' => $attachmentdefinition,
             ],
             'messageinlinefiles' => [
                 'optional' => true,
@@ -319,9 +319,9 @@ class post extends exporter {
                                 'description' => 'The URL to view the tag',
                                 'null' => NULL_NOT_ALLOWED,
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ],
             'html' => [
                 'optional' => true,
@@ -349,8 +349,8 @@ class post extends exporter {
                         'type' => PARAM_RAW,
                         'description' => 'The HTML source to view the author details',
                     ],
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -467,7 +467,7 @@ class post extends exporter {
                 'export' => $canexport,
                 'controlreadstatus' => $cancontrolreadstatus,
                 'canreplyprivately' => $canreplyprivately,
-                'selfenrol' => $canselfenrol
+                'selfenrol' => $canselfenrol,
             ],
             'urls' => [
                 'view' => $viewurl ? $viewurl->out(false) : null,
@@ -483,14 +483,17 @@ class post extends exporter {
                 'discuss' => $discussurl ? $discussurl->out(false) : null,
             ],
             'attachments' => ($exportattachments) ? $this->export_attachments($attachments, $post, $output, $canexport) : [],
-            'messageinlinefiles' => ($exportinlineattachments) ? $this->export_inline_attachments($inlineattachments,
-                $post, $output) : [],
+            'messageinlinefiles' => ($exportinlineattachments) ? $this->export_inline_attachments(
+                $inlineattachments,
+                $post,
+                $output
+            ) : [],
             'tags' => ($loadcontent && $hastags) ? $this->export_tags($tags) : [],
             'html' => $includehtml ? [
                 'rating' => ($loadcontent && $hasrating) ? $output->render($rating) : null,
                 'taglist' => ($loadcontent && $hastags) ? $output->tag_list($tags) : null,
-                'authorsubheading' => ($loadcontent) ? $this->get_author_subheading_html($exportedauthor, $timecreated) : null
-            ] : null
+                'authorsubheading' => ($loadcontent) ? $this->get_author_subheading_html($exportedauthor, $timecreated) : null,
+            ] : null,
         ];
     }
 
@@ -515,7 +518,7 @@ class post extends exporter {
             'messageinlinefiles' => '\stored_file[]?',
             'tags' => '\core_tag_tag[]?',
             'rating' => 'rating?',
-            'includehtml' => 'bool'
+            'includehtml' => 'bool',
         ];
     }
 
@@ -532,8 +535,8 @@ class post extends exporter {
             'itemid' => $this->post->get_id(),
             'options' => [
                 'para' => false,
-                'trusted' => $this->post->is_message_trusted()
-            ]
+                'trusted' => $this->post->is_message_trusted(),
+            ],
         ];
     }
 
@@ -556,7 +559,7 @@ class post extends exporter {
                 'content' => $message,
                 'cmid' => $digestforum->get_course_module_record()->id,
                 'course' => $digestforum->get_course_id(),
-                'digestforum' => $digestforum->get_id()
+                'digestforum' => $digestforum->get_id(),
             ]);
         }
 
@@ -581,10 +584,10 @@ class post extends exporter {
         $context = $this->related['context'];
 
         if ($enableplagiarism) {
-            require_once($CFG->libdir . '/plagiarismlib.php' );
+            require_once($CFG->libdir . '/plagiarismlib.php');
         }
 
-        return array_map(function($attachment) use (
+        return array_map(function ($attachment) use (
             $output,
             $enableplagiarism,
             $canexport,
@@ -603,17 +606,17 @@ class post extends exporter {
                     'file' => $attachment,
                     'cmid' => $digestforum->get_course_module_record()->id,
                     'course' => $digestforum->get_course_id(),
-                    'digestforum' => $digestforum->get_id()
+                    'digestforum' => $digestforum->get_id(),
                 ]);
             } else {
                 $plagiarismhtml = null;
             }
 
             $exportedattachment->urls = [
-                'export' => $exporturl ? $exporturl->out(false) : null
+                'export' => $exporturl ? $exporturl->out(false) : null,
             ];
             $exportedattachment->html = [
-                'plagiarism' => $plagiarismhtml
+                'plagiarism' => $plagiarismhtml,
             ];
 
             return $exportedattachment;
@@ -630,12 +633,13 @@ class post extends exporter {
      */
     private function export_inline_attachments(array $inlineattachments, post_entity $post, renderer_base $output): array {
 
-        return array_map(function($attachment) use (
+        return array_map(function ($attachment) use (
             $output,
             $post
         ) {
             $exporter = new stored_file_exporter($attachment, ['context' => $this->related['context']]);
-            return $exporter->export($output);;
+            return $exporter->export($output);
+            ;
         }, $inlineattachments);
     }
 
@@ -651,7 +655,7 @@ class post extends exporter {
         $capabilitymanager = $this->related['capabilitymanager'];
         $canmanagetags = $capabilitymanager->can_manage_tags($user);
 
-        return array_values(array_map(function($tag) use ($context, $canmanagetags) {
+        return array_values(array_map(function ($tag) use ($context, $canmanagetags) {
             $viewurl = core_tag_tag::make_url($tag->tagcollid, $tag->rawname, 0, $context->id);
             return [
                 'id' => $tag->taginstanceid,
@@ -660,8 +664,8 @@ class post extends exporter {
                 'displayname' => $tag->get_display_name(),
                 'flag' => $canmanagetags && !empty($tag->flag),
                 'urls' => [
-                    'view' => $viewurl->out(false)
-                ]
+                    'view' => $viewurl->out(false),
+                ],
             ];
         }, $tags));
     }

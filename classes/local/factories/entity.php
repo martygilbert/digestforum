@@ -232,11 +232,11 @@ class entity {
     public function get_posts_sorter(): sorter_entity {
         return new sorter_entity(
             // Get id function for a post_entity.
-            function(post_entity $post) {
+            function (post_entity $post) {
                 return $post->get_id();
             },
             // Get parent id function for a post_entity.
-            function(post_entity $post) {
+            function (post_entity $post) {
                 return $post->get_parent_id();
             }
         );
@@ -250,11 +250,11 @@ class entity {
     public function get_exported_posts_sorter(): sorter_entity {
         return new sorter_entity(
             // Get id function for an exported post.
-            function(stdClass $post) {
+            function (stdClass $post) {
                 return $post->id;
             },
             // Get parent id function for an exported post.
-            function(stdClass $post) {
+            function (stdClass $post) {
                 return $post->parentid;
             }
         );

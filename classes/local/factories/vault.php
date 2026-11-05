@@ -64,8 +64,12 @@ class vault {
      * @param file_storage $filestorage A file storage instance
      * @param legacy_data_mapper $legacyfactory Datamapper
      */
-    public function __construct(moodle_database $db, entity_factory $entityfactory,
-        file_storage $filestorage, legacy_data_mapper $legacyfactory) {
+    public function __construct(
+        moodle_database $db,
+        entity_factory $entityfactory,
+        file_storage $filestorage,
+        legacy_data_mapper $legacyfactory
+    ) {
         $this->db = $db;
         $this->entityfactory = $entityfactory;
         $this->filestorage = $filestorage;

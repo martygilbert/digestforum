@@ -37,7 +37,6 @@ use table_sql;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class summary_table extends table_sql {
-
     /** Forum filter type */
     const FILTER_DFORUM = 1;
 
@@ -125,8 +124,16 @@ class summary_table extends table_sql {
      * @param bool $iscoursereport Whether the user is running a course level report
      * @param bool $accessalldigestforums If user is running a course level report, do they have access to all digestforums in the course?
      */
-    public function __construct(int $courseid, array $filters, bool $allowbulkoperations,
-            bool $canseeprivatereplies, int $perpage, bool $canexport, bool $iscoursereport, bool $accessalldigestforums) {
+    public function __construct(
+        int $courseid,
+        array $filters,
+        bool $allowbulkoperations,
+        bool $canseeprivatereplies,
+        int $perpage,
+        bool $canexport,
+        bool $iscoursereport,
+        bool $accessalldigestforums
+    ) {
         global $OUTPUT;
 
         $uniqueid = $courseid . ($iscoursereport ? '' : '_' . $filters['digestforums'][0]);
@@ -150,7 +157,7 @@ class summary_table extends table_sql {
                 'label' => get_string('selectall'),
                 'labelclasses' => 'visually-hidden',
                 'classes' => 'm-1',
-                'checked' => false
+                'checked' => false,
             ]);
             $columnheaders['select'] = $OUTPUT->render($togglercheckbox);
         }
@@ -274,7 +281,7 @@ class summary_table extends table_sql {
         }
 
         global $OUTPUT;
-        return $OUTPUT->user_picture($data, array('courseid' => $this->courseid, 'includefullname' => true));
+        return $OUTPUT->user_picture($data, ['courseid' => $this->courseid, 'includefullname' => true]);
     }
 
     /**
@@ -423,7 +430,7 @@ class summary_table extends table_sql {
 
         $paramcounterror = false;
 
-        switch($filtertype) {
+        switch ($filtertype) {
             case self::FILTER_DFORUM:
                 // Requires at least one digestforum ID.
                 if (empty($values)) {
@@ -431,7 +438,7 @@ class summary_table extends table_sql {
                 } else {
                     // No select fields required - displayed in title.
                     // No extra joins required, digestforum is already joined.
-                    list($digestforumidin, $digestforumidparams) = $DB->get_in_or_equal($values, SQL_PARAMS_NAMED);
+                    [$digestforumidin, $digestforumidparams] = $DB->get_in_or_equal($values, SQL_PARAMS_NAMED);
                     $this->sql->filterwhere .= " AND f.id {$digestforumidin}";
                     $this->sql->params += $digestforumidparams;
                 }
@@ -447,17 +454,16 @@ class summary_table extends table_sql {
 
                 // Skip adding filter if not applied, or all valid options are selected.
                 if (!empty($groups)) {
-                    list($groupidin, $groupidparams) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
+                    [$groupidin, $groupidparams] = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
 
                     // Posts within selected groups and/or not in any groups (group ID -1) are included.
                     // No user filtering as anyone enrolled can potentially post to unrestricted discussions.
                     if (array_search(-1, $groups) !== false) {
                         $this->sql->filterwhere .= " AND d.groupid {$groupidin}";
                         $this->sql->params += $groupidparams;
-
                     } else {
                         // Only posts and users within selected groups are included.
-                        list($groupusersin, $groupusersparams) = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
+                        [$groupusersin, $groupusersparams] = $DB->get_in_or_equal($groups, SQL_PARAMS_NAMED);
 
                         // No joins required (handled by where to prevent data duplication).
                         $this->sql->filterwhere .= "
@@ -474,9 +480,11 @@ class summary_table extends table_sql {
                 break;
 
             case self::FILTER_DATES:
-                if (!isset($values['from']['enabled']) || !isset($values['to']['enabled']) ||
+                if (
+                    !isset($values['from']['enabled']) || !isset($values['to']['enabled']) ||
                         ($values['from']['enabled'] && !isset($values['from']['timestamp'])) ||
-                        ($values['to']['enabled'] && !isset($values['to']['timestamp']))) {
+                        ($values['to']['enabled'] && !isset($values['to']['timestamp']))
+                ) {
                     $paramcounterror = true;
                 } else {
                     $this->sql->filterbase['dates'] = '';
@@ -760,7 +768,6 @@ class summary_table extends table_sql {
 
         $readers = get_log_manager()->get_readers('core\log\sql_reader');
         foreach ($readers as $reader) {
-
             // If reader is not a sql_internal_table_reader and not legacy store then return.
             if (!($reader instanceof \core\log\sql_internal_table_reader)) {
                 continue;
@@ -798,7 +805,7 @@ class summary_table extends table_sql {
             $contextids[] = $digestforumcontext->id;
         }
 
-        list($contextidin, $contextidparams) = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
+        [$contextidin, $contextidparams] = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED);
 
         $params = $contextidparams + $dateparams;
         $sql = "INSERT INTO {" . self::LOG_SUMMARY_TEMP_TABLE . "} (userid, viewcount)
@@ -824,7 +831,7 @@ class summary_table extends table_sql {
         $xmldbtable = new \xmldb_table($temptablename);
         $xmldbtable->add_field('userid', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, null, null);
         $xmldbtable->add_field('viewcount', XMLDB_TYPE_INTEGER, 10, null, XMLDB_NOTNULL, null, null);
-        $xmldbtable->add_key('primary', XMLDB_KEY_PRIMARY, array('userid'));
+        $xmldbtable->add_key('primary', XMLDB_KEY_PRIMARY, ['userid']);
 
         $dbman->create_temp_table($xmldbtable);
     }
@@ -927,8 +934,12 @@ class summary_table extends table_sql {
      * @param string $format The format to download the report.
      */
     public function download($format) {
-        $filename = 'summary_report_' . userdate(time(), get_string('backupnameformat', 'langconfig'),
-                99, false);
+        $filename = 'summary_report_' . userdate(
+            time(),
+            get_string('backupnameformat', 'langconfig'),
+            99,
+            false
+        );
 
         $this->is_downloading($format, $filename);
         $this->out($this->perpage, false);
@@ -951,7 +962,7 @@ class summary_table extends table_sql {
                 $digestforumids[] = $cm->instance;
             }
 
-            list($digestforumidin, $digestforumidparams) = $DB->get_in_or_equal($digestforumids, SQL_PARAMS_NAMED);
+            [$digestforumidin, $digestforumidparams] = $DB->get_in_or_equal($digestforumids, SQL_PARAMS_NAMED);
 
             // This should be really fast.
             $sql = "SELECT 'x'
@@ -994,34 +1005,40 @@ class summary_table extends table_sql {
             $data->attributes = [
                 [
                     'name' => 'data-action',
-                    'value' => 'toggle'
+                    'value' => 'toggle',
                 ],
                 [
                     'name' => 'data-togglegroup',
-                    'value' => 'summaryreport-table'
+                    'value' => 'summaryreport-table',
                 ],
                 [
                     'name' => 'data-toggle',
-                    'value' => 'action'
+                    'value' => 'action',
                 ],
                 [
                     'name' => 'disabled',
-                    'value' => true
-                ]
+                    'value' => true,
+                ],
             ];
             $data->actions = [
                 [
                     'value' => '#messageselect',
-                    'name' => get_string('messageselectadd')
-                ]
+                    'name' => get_string('messageselectadd'),
+                ],
             ];
         }
 
         // Include the pagination size selector.
         $perpageoptions = array_combine($this->perpageoptions, $this->perpageoptions);
         $selected = in_array($this->perpage, $this->perpageoptions) ? $this->perpage : $this->perpageoptions[0];
-        $perpageselect = new \single_select(new \moodle_url(''), 'perpage',
-                $perpageoptions, $selected, null, 'selectperpage');
+        $perpageselect = new \single_select(
+            new \moodle_url(''),
+            'perpage',
+            $perpageoptions,
+            $selected,
+            null,
+            'selectperpage'
+        );
         $perpageselect->set_label(get_string('perpage', 'moodle'));
 
         $data->perpage = $perpageselect->export_for_template($OUTPUT);

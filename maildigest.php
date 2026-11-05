@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../config.php');
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+require(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
 $id = required_param('id', PARAM_INT);
 $maildigest = required_param('maildigest', PARAM_INT);
@@ -33,17 +32,17 @@ $backtoindex = optional_param('backtoindex', 0, PARAM_INT);
 // We must have a valid session key.
 require_sesskey();
 
-$digestforum = $DB->get_record('digestforum', array('id' => $id));
-$course  = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+$digestforum = $DB->get_record('digestforum', ['id' => $id]);
+$course  = $DB->get_record('course', ['id' => $digestforum->course], '*', MUST_EXIST);
 $cm      = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 require_login($course, false, $cm);
 
-$url = new moodle_url('/mod/digestforum/maildigest.php', array(
+$url = new moodle_url('/mod/digestforum/maildigest.php', [
     'id' => $id,
     'maildigest' => $maildigest,
-));
+]);
 $PAGE->set_url($url);
 $PAGE->set_context($context);
 
@@ -59,13 +58,19 @@ if ($maildigest === -1) {
     // Get the default maildigest options.
     $info->maildigest = $USER->maildigest;
     $info->maildigesttitle = $digestoptions[$info->maildigest];
-    $info->maildigestdescription = get_string('emaildigest_' . $info->maildigest,
-        'mod_digestforum', $info);
+    $info->maildigestdescription = get_string(
+        'emaildigest_' . $info->maildigest,
+        'mod_digestforum',
+        $info
+    );
     $updatemessage = get_string('emaildigestupdated_default', 'digestforum', $info);
 } else {
     $info->maildigesttitle = $digestoptions[$info->maildigest];
-    $info->maildigestdescription = get_string('emaildigest_' . $info->maildigest,
-        'mod_digestforum', $info);
+    $info->maildigestdescription = get_string(
+        'emaildigest_' . $info->maildigest,
+        'mod_digestforum',
+        $info
+    );
     $updatemessage = get_string('emaildigestupdated', 'digestforum', $info);
 }
 

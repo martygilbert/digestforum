@@ -33,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscriptions {
-
     /**
      * The status value for an unsubscribed discussion.
      *
@@ -50,7 +49,7 @@ class subscriptions {
      *
      * @var array[] An array of arrays.
      */
-    protected static $digestforumcache = array();
+    protected static $digestforumcache = [];
 
     /**
      * The list of digestforums which have been wholly retrieved for the digestforum subscription cache.
@@ -60,7 +59,7 @@ class subscriptions {
      *
      * @var bool[]
      */
-    protected static $fetcheddigestforums = array();
+    protected static $fetcheddigestforums = [];
 
     /**
      * The subscription cache for digestforum discussions.
@@ -72,7 +71,7 @@ class subscriptions {
      *
      * @var array[]
      */
-    protected static $digestforumdiscussioncache = array();
+    protected static $digestforumdiscussioncache = [];
 
     /**
      * The list of digestforums which have been wholly retrieved for the digestforum discussion subscription cache.
@@ -82,7 +81,7 @@ class subscriptions {
      *
      * @var bool[]
      */
-    protected static $discussionfetcheddigestforums = array();
+    protected static $discussionfetcheddigestforums = [];
 
     /**
      * Whether a user is subscribed to this digestforum, or a discussion within
@@ -165,8 +164,8 @@ class subscriptions {
      */
     public static function is_subscribable($digestforum) {
         return (isloggedin() && !isguestuser() &&
-                !\mod_digestforum\subscriptions::is_forcesubscribed($digestforum) &&
-                !\mod_digestforum\subscriptions::subscription_disabled($digestforum));
+                !self::is_forcesubscribed($digestforum) &&
+                !self::subscription_disabled($digestforum));
     }
 
     /**
@@ -183,7 +182,7 @@ class subscriptions {
         global $DB;
 
         if (is_numeric($digestforum)) {
-            debugging(__METHOD__.': Argument #1 ($digestforum) must be a stdClass record of a digestforum', DEBUG_DEVELOPER);
+            debugging(__METHOD__ . ': Argument #1 ($digestforum) must be a stdClass record of a digestforum', DEBUG_DEVELOPER);
 
             $digestforum = $DB->get_record("digestforum", ["id" => $digestforum], '*', MUST_EXIST);
         }
@@ -225,14 +224,14 @@ class subscriptions {
         // Get courses that $USER is enrolled in and can see.
         $courses = enrol_get_my_courses();
         if (empty($courses)) {
-            return array();
+            return [];
         }
 
-        $courseids = array();
-        foreach($courses as $course) {
+        $courseids = [];
+        foreach ($courses as $course) {
             $courseids[] = $course->id;
         }
-        list($coursesql, $courseparams) = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'c');
+        [$coursesql, $courseparams] = $DB->get_in_or_equal($courseids, SQL_PARAMS_NAMED, 'c');
 
         // Get all digestforums from the user's courses that they are subscribed to and which are not set to forced.
         // It is possible for users to be subscribed to a digestforum in subscription disallowed mode so they must be listed
@@ -246,15 +245,15 @@ class subscriptions {
                 AND fs.id IS NOT NULL
                 AND cm.course
                 $coursesql";
-        $params = array_merge($courseparams, array(
-            'modulename'=>'digestforum',
+        $params = array_merge($courseparams, [
+            'modulename' => 'digestforum',
             'userid' => $USER->id,
             'forcesubscribe' => DFORUM_FORCESUBSCRIBE,
-        ));
+        ]);
         $digestforums = $DB->get_recordset_sql($sql, $params);
 
-        $unsubscribabledigestforums = array();
-        foreach($digestforums as $digestforum) {
+        $unsubscribabledigestforums = [];
+        foreach ($digestforums as $digestforum) {
             if (empty($digestforum->visible)) {
                 // The digestforum is hidden - check if the user can view the digestforum.
                 $context = \context_module::instance($digestforum->cm);
@@ -284,9 +283,9 @@ class subscriptions {
         global $DB;
 
         // Only active enrolled users or everybody on the frontpage.
-        list($esql, $params) = get_enrolled_sql($context, 'mod/digestforum:allowforcesubscribe', $groupid, true);
+        [$esql, $params] = get_enrolled_sql($context, 'mod/digestforum:allowforcesubscribe', $groupid, true);
         if (!$sort) {
-            list($sort, $sortparams) = users_order_by_sql('u');
+            [$sort, $sortparams] = users_order_by_sql('u');
             $params = array_merge($params, $sortparams);
         }
 
@@ -336,26 +335,28 @@ class subscriptions {
             // This digestforum has not been fetched as a whole.
             if (isset($userid)) {
                 if (!isset(self::$digestforumcache[$userid])) {
-                    self::$digestforumcache[$userid] = array();
+                    self::$digestforumcache[$userid] = [];
                 }
 
                 if (!isset(self::$digestforumcache[$userid][$digestforumid])) {
-                    if ($DB->record_exists('digestforum_subscriptions', array(
+                    if (
+                        $DB->record_exists('digestforum_subscriptions', [
                         'userid' => $userid,
                         'digestforum' => $digestforumid,
-                    ))) {
+                        ])
+                    ) {
                         self::$digestforumcache[$userid][$digestforumid] = true;
                     } else {
                         self::$digestforumcache[$userid][$digestforumid] = false;
                     }
                 }
             } else {
-                $subscriptions = $DB->get_recordset('digestforum_subscriptions', array(
+                $subscriptions = $DB->get_recordset('digestforum_subscriptions', [
                     'digestforum' => $digestforumid,
-                ), '', 'id, userid');
+                ], '', 'id, userid');
                 foreach ($subscriptions as $id => $data) {
                     if (!isset(self::$digestforumcache[$data->userid])) {
-                        self::$digestforumcache[$data->userid] = array();
+                        self::$digestforumcache[$data->userid] = [];
                     }
                     self::$digestforumcache[$data->userid][$digestforumid] = true;
                 }
@@ -376,7 +377,7 @@ class subscriptions {
         global $DB;
 
         if (!isset(self::$digestforumcache[$userid])) {
-            self::$digestforumcache[$userid] = array();
+            self::$digestforumcache[$userid] = [];
         }
 
         $sql = "SELECT
@@ -387,11 +388,11 @@ class subscriptions {
                 WHERE f.course = :course
                 AND f.forcesubscribe <> :subscriptionforced";
 
-        $subscriptions = $DB->get_recordset_sql($sql, array(
+        $subscriptions = $DB->get_recordset_sql($sql, [
             'course' => $courseid,
             'userid' => $userid,
             'subscriptionforced' => DFORUM_FORCESUBSCRIBE,
-        ));
+        ]);
 
         foreach ($subscriptions as $id => $data) {
             self::$digestforumcache[$userid][$id] = !empty($data->subscriptionid);
@@ -409,14 +410,19 @@ class subscriptions {
      * @param boolean $includediscussionsubscriptions Whether to take discussion subscriptions and unsubscriptions into consideration.
      * @return array list of users.
      */
-    public static function fetch_subscribed_users($digestforum, $groupid = 0, $context = null, $fields = null,
-            $includediscussionsubscriptions = false) {
+    public static function fetch_subscribed_users(
+        $digestforum,
+        $groupid = 0,
+        $context = null,
+        $fields = null,
+        $includediscussionsubscriptions = false
+    ) {
         global $CFG, $DB;
 
         if (empty($fields)) {
             $userfieldsapi = \core_user\fields::for_name();
             $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
-            $fields ="u.id,
+            $fields = "u.id,
                       u.username,
                       $allnames,
                       u.maildisplay,
@@ -441,13 +447,12 @@ class subscriptions {
         $context = digestforum_get_context($digestforum->id, $context);
         if (self::is_forcesubscribed($digestforum)) {
             $results = self::get_potential_subscribers($context, $groupid, $fields);
-
         } else {
             // Only active enrolled users or everybody on the frontpage.
-            list($esql, $params) = get_enrolled_sql($context, '', $groupid, true);
+            [$esql, $params] = get_enrolled_sql($context, '', $groupid, true);
             $params['digestforumid'] = $digestforum->id;
 
-            list($sort, $sortparams) = users_order_by_sql('u');
+            [$sort, $sortparams] = users_order_by_sql('u');
             $params = array_merge($params, $sortparams);
 
             if ($includediscussionsubscriptions) {
@@ -469,7 +474,6 @@ class subscriptions {
                         JOIN ($esql) je ON je.id = u.id
                         WHERE u.auth <> 'nologin' AND u.suspended = 0 AND u.confirmed = 1
                         ORDER BY $sort";
-
             } else {
                 $sql = "SELECT $fields
                         FROM {user} u
@@ -507,7 +511,7 @@ class subscriptions {
         self::fill_discussion_subscription_cache($digestforumid, $userid);
 
         if (!isset(self::$digestforumdiscussioncache[$userid]) || !isset(self::$digestforumdiscussioncache[$userid][$digestforumid])) {
-            return array();
+            return [];
         }
 
         return self::$digestforumdiscussioncache[$userid][$digestforumid];
@@ -530,16 +534,16 @@ class subscriptions {
             // This digestforum hasn't been fetched as a whole yet.
             if (isset($userid)) {
                 if (!isset(self::$digestforumdiscussioncache[$userid])) {
-                    self::$digestforumdiscussioncache[$userid] = array();
+                    self::$digestforumdiscussioncache[$userid] = [];
                 }
 
                 if (!isset(self::$digestforumdiscussioncache[$userid][$digestforumid])) {
-                    $subscriptions = $DB->get_recordset('digestforum_discussion_subs', array(
+                    $subscriptions = $DB->get_recordset('digestforum_discussion_subs', [
                         'userid' => $userid,
                         'digestforum' => $digestforumid,
-                    ), null, 'id, discussion, preference');
+                    ], null, 'id, discussion, preference');
 
-                    self::$digestforumdiscussioncache[$userid][$digestforumid] = array();
+                    self::$digestforumdiscussioncache[$userid][$digestforumid] = [];
                     foreach ($subscriptions as $id => $data) {
                         self::add_to_discussion_cache($digestforumid, $userid, $data->discussion, $data->preference);
                     }
@@ -547,9 +551,9 @@ class subscriptions {
                     $subscriptions->close();
                 }
             } else {
-                $subscriptions = $DB->get_recordset('digestforum_discussion_subs', array(
+                $subscriptions = $DB->get_recordset('digestforum_discussion_subs', [
                     'digestforum' => $digestforumid,
-                ), null, 'id, userid, discussion, preference');
+                ], null, 'id, userid, discussion, preference');
                 foreach ($subscriptions as $id => $data) {
                     self::add_to_discussion_cache($digestforumid, $data->userid, $data->discussion, $data->preference);
                 }
@@ -570,11 +574,11 @@ class subscriptions {
      */
     protected static function add_to_discussion_cache($digestforumid, $userid, $discussion, $preference) {
         if (!isset(self::$digestforumdiscussioncache[$userid])) {
-            self::$digestforumdiscussioncache[$userid] = array();
+            self::$digestforumdiscussioncache[$userid] = [];
         }
 
         if (!isset(self::$digestforumdiscussioncache[$userid][$digestforumid])) {
-            self::$digestforumdiscussioncache[$userid][$digestforumid] = array();
+            self::$digestforumdiscussioncache[$userid][$digestforumid] = [];
         }
 
         self::$digestforumdiscussioncache[$userid][$digestforumid][$discussion] = $preference;
@@ -587,8 +591,8 @@ class subscriptions {
      * checking digestforum discussion subscription states.
      */
     public static function reset_discussion_cache() {
-        self::$digestforumdiscussioncache = array();
-        self::$discussionfetcheddigestforums = array();
+        self::$digestforumdiscussioncache = [];
+        self::$discussionfetcheddigestforums = [];
     }
 
     /**
@@ -598,8 +602,8 @@ class subscriptions {
      * checking digestforum subscription states.
      */
     public static function reset_digestforum_cache() {
-        self::$digestforumcache = array();
-        self::$fetcheddigestforums = array();
+        self::$digestforumcache = [];
+        self::$fetcheddigestforums = [];
     }
 
     /**
@@ -628,13 +632,16 @@ class subscriptions {
         $result = $DB->insert_record("digestforum_subscriptions", $sub);
 
         if ($userrequest) {
-            $discussionsubscriptions = $DB->get_recordset('digestforum_discussion_subs', array('userid' => $userid, 'digestforum' => $digestforum->id));
-            $DB->delete_records_select('digestforum_discussion_subs',
-                    'userid = :userid AND digestforum = :digestforumid AND preference <> :preference', array(
+            $discussionsubscriptions = $DB->get_recordset('digestforum_discussion_subs', ['userid' => $userid, 'digestforum' => $digestforum->id]);
+            $DB->delete_records_select(
+                'digestforum_discussion_subs',
+                'userid = :userid AND digestforum = :digestforumid AND preference <> :preference',
+                [
                         'userid' => $userid,
                         'digestforumid' => $digestforum->id,
                         'preference' => self::DFORUM_DISCUSSION_UNSUBSCRIBED,
-                    ));
+                ]
+            );
 
             // Reset the subscription caches for this digestforum.
             // We know that the there were previously entries and there aren't any more.
@@ -651,13 +658,13 @@ class subscriptions {
         self::$digestforumcache[$userid][$digestforum->id] = true;
 
         $context = digestforum_get_context($digestforum->id, $context);
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $result,
             'relateduserid' => $userid,
-            'other' => array('digestforumid' => $digestforum->id),
+            'other' => ['digestforumid' => $digestforum->id],
 
-        );
+        ];
         $event  = event\subscription_created::create($params);
         if ($userrequest && $discussionsubscriptions) {
             foreach ($discussionsubscriptions as $subscription) {
@@ -684,23 +691,25 @@ class subscriptions {
     public static function unsubscribe_user($userid, $digestforum, $context = null, $userrequest = false) {
         global $DB;
 
-        $sqlparams = array(
+        $sqlparams = [
             'userid' => $userid,
             'digestforum' => $digestforum->id,
-        );
+        ];
         $DB->delete_records('digestforum_digests', $sqlparams);
 
         if ($digestforumsubscription = $DB->get_record('digestforum_subscriptions', $sqlparams)) {
-            $DB->delete_records('digestforum_subscriptions', array('id' => $digestforumsubscription->id));
+            $DB->delete_records('digestforum_subscriptions', ['id' => $digestforumsubscription->id]);
 
             if ($userrequest) {
                 $discussionsubscriptions = $DB->get_recordset('digestforum_discussion_subs', $sqlparams);
-                $DB->delete_records('digestforum_discussion_subs',
-                        array('userid' => $userid, 'digestforum' => $digestforum->id, 'preference' => self::DFORUM_DISCUSSION_UNSUBSCRIBED));
+                $DB->delete_records(
+                    'digestforum_discussion_subs',
+                    ['userid' => $userid, 'digestforum' => $digestforum->id, 'preference' => self::DFORUM_DISCUSSION_UNSUBSCRIBED]
+                );
 
                 // We know that the there were previously entries and there aren't any more.
                 if (isset(self::$digestforumdiscussioncache[$userid]) && isset(self::$digestforumdiscussioncache[$userid][$digestforum->id])) {
-                    self::$digestforumdiscussioncache[$userid][$digestforum->id] = array();
+                    self::$digestforumdiscussioncache[$userid][$digestforum->id] = [];
                 }
             }
 
@@ -708,13 +717,13 @@ class subscriptions {
             self::$digestforumcache[$userid][$digestforum->id] = false;
 
             $context = digestforum_get_context($digestforum->id, $context);
-            $params = array(
+            $params = [
                 'context' => $context,
                 'objectid' => $digestforumsubscription->id,
                 'relateduserid' => $userid,
-                'other' => array('digestforumid' => $digestforum->id),
+                'other' => ['digestforumid' => $digestforum->id],
 
-            );
+            ];
             $event = event\subscription_deleted::create($params);
             $event->add_record_snapshot('digestforum_subscriptions', $digestforumsubscription);
             if ($userrequest && $discussionsubscriptions) {
@@ -742,7 +751,7 @@ class subscriptions {
         global $DB;
 
         // First check whether the user is subscribed to the discussion already.
-        $subscription = $DB->get_record('digestforum_discussion_subs', array('userid' => $userid, 'discussion' => $discussion->id));
+        $subscription = $DB->get_record('digestforum_discussion_subs', ['userid' => $userid, 'discussion' => $discussion->id]);
         if ($subscription) {
             if ($subscription->preference != self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
                 // The user is already subscribed to the discussion. Ignore.
@@ -750,10 +759,10 @@ class subscriptions {
             }
         }
         // No discussion-level subscription. Check for a digestforum level subscription.
-        if ($DB->record_exists('digestforum_subscriptions', array('userid' => $userid, 'digestforum' => $discussion->digestforum))) {
+        if ($DB->record_exists('digestforum_subscriptions', ['userid' => $userid, 'digestforum' => $discussion->digestforum])) {
             if ($subscription && $subscription->preference == self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
                 // The user is subscribed to the digestforum, but unsubscribed from the discussion, delete the discussion preference.
-                $DB->delete_records('digestforum_discussion_subs', array('id' => $subscription->id));
+                $DB->delete_records('digestforum_discussion_subs', ['id' => $subscription->id]);
                 unset(self::$digestforumdiscussioncache[$userid][$discussion->digestforum][$discussion->id]);
             } else {
                 // The user is already subscribed to the digestforum. Ignore.
@@ -776,16 +785,16 @@ class subscriptions {
         }
 
         $context = digestforum_get_context($discussion->digestforum, $context);
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
             'relateduserid' => $userid,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $discussion->digestforum,
                 'discussion' => $discussion->id,
-            ),
+            ],
 
-        );
+        ];
         $event  = event\discussion_subscription_created::create($params);
         $event->trigger();
 
@@ -804,7 +813,7 @@ class subscriptions {
         global $DB;
 
         // First check whether the user's subscription preference for this discussion.
-        $subscription = $DB->get_record('digestforum_discussion_subs', array('userid' => $userid, 'discussion' => $discussion->id));
+        $subscription = $DB->get_record('digestforum_discussion_subs', ['userid' => $userid, 'discussion' => $discussion->id]);
         if ($subscription) {
             if ($subscription->preference == self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
                 // The user is already unsubscribed from the discussion. Ignore.
@@ -812,10 +821,10 @@ class subscriptions {
             }
         }
         // No discussion-level preference. Check for a digestforum level subscription.
-        if (!$DB->record_exists('digestforum_subscriptions', array('userid' => $userid, 'digestforum' => $discussion->digestforum))) {
+        if (!$DB->record_exists('digestforum_subscriptions', ['userid' => $userid, 'digestforum' => $discussion->digestforum])) {
             if ($subscription && $subscription->preference != self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
                 // The user is not subscribed to the digestforum, but subscribed from the discussion, delete the discussion subscription.
-                $DB->delete_records('digestforum_discussion_subs', array('id' => $subscription->id));
+                $DB->delete_records('digestforum_discussion_subs', ['id' => $subscription->id]);
                 unset(self::$digestforumdiscussioncache[$userid][$discussion->digestforum][$discussion->id]);
             } else {
                 // The user is not subscribed from the digestforum. Ignore.
@@ -838,16 +847,16 @@ class subscriptions {
         }
 
         $context = digestforum_get_context($discussion->digestforum, $context);
-        $params = array(
+        $params = [
             'context' => $context,
             'objectid' => $subscription->id,
             'relateduserid' => $userid,
-            'other' => array(
+            'other' => [
                 'digestforumid' => $discussion->digestforum,
                 'discussion' => $discussion->id,
-            ),
+            ],
 
-        );
+        ];
         $event  = event\discussion_subscription_deleted::create($params);
         $event->trigger();
 
@@ -867,17 +876,17 @@ class subscriptions {
     public static function get_user_default_subscription($digestforum, $context, $cm, ?int $discussionid) {
         global $USER;
         $manageactivities = has_capability('moodle/course:manageactivities', $context);
-        if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !$manageactivities) {
+        if (self::subscription_disabled($digestforum) && !$manageactivities) {
             // User does not have permission to subscribe to this discussion at all.
             $discussionsubscribe = false;
-        } else if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
+        } else if (self::is_forcesubscribed($digestforum)) {
             // User does not have permission to unsubscribe from this discussion at all.
             $discussionsubscribe = true;
         } else {
             if (isset($discussionid) && self::is_subscribed($USER->id, $digestforum, $discussionid, $cm)) {
                 // User is subscribed to the discussion - continue the subscription.
                 $discussionsubscribe = true;
-            } else if (!isset($discussionid) && \mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforum, null, $cm)) {
+            } else if (!isset($discussionid) && self::is_subscribed($USER->id, $digestforum, null, $cm)) {
                 // Starting a new discussion, and the user is subscribed to the digestforum - subscribe to the discussion.
                 $discussionsubscribe = true;
             } else {

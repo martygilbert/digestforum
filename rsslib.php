@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,7 +24,7 @@
  */
 
 /* Include the core RSS lib */
-require_once($CFG->libdir.'/rsslib.php');
+require_once($CFG->libdir . '/rsslib.php');
 
 /**
  * Returns the path to the cached rss feed contents. Creates/updates the cache if necessary.
@@ -38,7 +37,7 @@ function digestforum_rss_get_feed($context, $args) {
 
     $status = true;
 
-    //are RSS feeds enabled?
+    // are RSS feeds enabled?
     if (empty($CFG->digestforum_enablerssfeeds)) {
         debugging('DISABLED (module configuration)');
         return null;
@@ -48,24 +47,24 @@ function digestforum_rss_get_feed($context, $args) {
     $cm = get_coursemodule_from_instance('digestforum', $digestforumid, 0, false, MUST_EXIST);
     $modcontext = context_module::instance($cm->id);
 
-    //context id from db should match the submitted one
+    // context id from db should match the submitted one
     if ($context->id != $modcontext->id || !has_capability('mod/digestforum:viewdiscussion', $modcontext)) {
         return null;
     }
 
-    $digestforum = $DB->get_record('digestforum', array('id' => $digestforumid), '*', MUST_EXIST);
+    $digestforum = $DB->get_record('digestforum', ['id' => $digestforumid], '*', MUST_EXIST);
     if (!rss_enabled_for_mod('digestforum', $digestforum)) {
         return null;
     }
 
-    //the sql that will retreive the data for the feed and be hashed to get the cache filename
-    list($sql, $params) = digestforum_rss_get_sql($digestforum, $cm);
+    // the sql that will retreive the data for the feed and be hashed to get the cache filename
+    [$sql, $params] = digestforum_rss_get_sql($digestforum, $cm);
 
     // Hash the sql to get the cache file name.
     $filename = rss_get_file_name($digestforum, $sql, $params);
     $cachedfilepath = rss_get_file_full_name('mod_digestforum', $filename);
 
-    //Is the cache out of date?
+    // Is the cache out of date?
     $cachedfilelastmodified = 0;
     if (file_exists($cachedfilepath)) {
         $cachedfilelastmodified = filemtime($cachedfilepath);
@@ -75,14 +74,16 @@ function digestforum_rss_get_feed($context, $args) {
 
     // If it hasn't been generated we need to create it.
     // Otherwise, if it has been > 60 seconds since we last updated, check for new items.
-    if (($cachedfilelastmodified == 0) || (($dontrecheckcutoff > $cachedfilelastmodified) &&
-        digestforum_rss_newstuff($digestforum, $cm, $cachedfilelastmodified))) {
+    if (
+        ($cachedfilelastmodified == 0) || (($dontrecheckcutoff > $cachedfilelastmodified) &&
+        digestforum_rss_newstuff($digestforum, $cm, $cachedfilelastmodified))
+    ) {
         // Need to regenerate the cached version.
         $result = digestforum_rss_feed_contents($digestforum, $sql, $params, $modcontext);
         $status = rss_save_file('mod_digestforum', $filename, $result);
     }
 
-    //return the path to the cached version
+    // return the path to the cached version
     return $cachedfilepath;
 }
 
@@ -96,7 +97,7 @@ function digestforum_rss_delete_file($digestforum) {
 }
 
 ///////////////////////////////////////////////////////
-//Utility functions
+// Utility functions
 
 /**
  * If there is new stuff in the digestforum since $time this returns true
@@ -110,7 +111,7 @@ function digestforum_rss_delete_file($digestforum) {
 function digestforum_rss_newstuff($digestforum, $cm, $time) {
     global $DB;
 
-    list($sql, $params) = digestforum_rss_get_sql($digestforum, $cm, $time);
+    [$sql, $params] = digestforum_rss_get_sql($digestforum, $cm, $time);
 
     return $DB->record_exists_sql($sql, $params);
 }
@@ -123,7 +124,7 @@ function digestforum_rss_newstuff($digestforum, $cm, $time) {
  * @param int      $time  check for items since this epoch timestamp
  * @return string the SQL query to be used to get the Discussion/Post details from the digestforum table of the database
  */
-function digestforum_rss_get_sql($digestforum, $cm, $time=0) {
+function digestforum_rss_get_sql($digestforum, $cm, $time = 0) {
     if ($digestforum->rsstype == 1) { // Discussion RSS
         return digestforum_rss_feed_discussions_sql($digestforum, $cm, $time);
     } else { // Post RSS
@@ -139,7 +140,7 @@ function digestforum_rss_get_sql($digestforum, $cm, $time=0) {
  * @param int      $newsince  check for items since this epoch timestamp
  * @return string the SQL query to be used to get the Discussion details from the digestforum table of the database
  */
-function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
+function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince = 0) {
     global $CFG, $DB, $USER;
 
     $timelimit = '';
@@ -147,7 +148,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
     $modcontext = null;
 
     $now = floor(time() / 60) * 60; // DB Cache Friendly.
-    $params = array();
+    $params = [];
 
     $modcontext = context_module::instance($cm->id);
 
@@ -175,7 +176,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
     // Get group enforcing SQL.
     $groupmode = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
-    list($groupselect, $groupparams) = digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
+    [$groupselect, $groupparams] = digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
 
     // Add the groupparams to the params array.
     $params = array_merge($params, $groupparams);
@@ -193,7 +194,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
              WHERE d.digestforum = {$digestforum->id} AND p.parent = 0 AND p.deleted <> 1
                    $timelimit $groupselect $newsince
           ORDER BY $digestforumsort";
-    return array($sql, $params);
+    return [$sql, $params];
 }
 
 /**
@@ -204,7 +205,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince=0) {
  * @param int      $newsince  check for items since this epoch timestamp
  * @return string the SQL query to be used to get the Post details from the digestforum table of the database
  */
-function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince=0) {
+function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince = 0) {
     global $USER;
 
     $modcontext = context_module::instance($cm->id);
@@ -212,9 +213,9 @@ function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince=0) {
     // Get group enforcement SQL.
     $groupmode = groups_get_activity_groupmode($cm);
     $currentgroup = groups_get_activity_group($cm);
-    $params = array();
+    $params = [];
 
-    list($groupselect, $groupparams) = digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
+    [$groupselect, $groupparams] = digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext);
 
     // Add the groupparams to the params array.
     $params = array_merge($params, $groupparams);
@@ -262,7 +263,7 @@ function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince=0) {
                 $groupselect
             ORDER BY p.created desc";
 
-    return array($sql, $params);
+    return [$sql, $params];
 }
 
 /**
@@ -274,9 +275,9 @@ function digestforum_rss_feed_posts_sql($digestforum, $cm, $newsince=0) {
  * @param stdClass $modcontext   The context instance of the digestforum module
  * @return string SQL Query for group details of the digestforum
  */
-function digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext=null) {
+function digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modcontext = null) {
     $groupselect = '';
-    $params = array();
+    $params = [];
 
     if ($groupmode) {
         if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
@@ -295,7 +296,7 @@ function digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modconte
         }
     }
 
-    return array($groupselect, $params);
+    return [$groupselect, $params];
 }
 
 /**
@@ -316,9 +317,9 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
 
     $recs = $DB->get_recordset_sql($sql, $params, 0, $digestforum->rssarticles);
 
-    //set a flag. Are we displaying discussions or posts?
+    // set a flag. Are we displaying discussions or posts?
     $isdiscussion = true;
-    if (!empty($digestforum->rsstype) && $digestforum->rsstype!=1) {
+    if (!empty($digestforum->rsstype) && $digestforum->rsstype != 1) {
         $isdiscussion = false;
     }
 
@@ -326,7 +327,7 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
         throw new \moodle_exception('invalidcoursemodule');
     }
 
-    $items = array();
+    $items = [];
     foreach ($recs as $rec) {
             $item = new stdClass();
 
@@ -337,57 +338,63 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
             $discussion->timeend = $rec->timeend;
 
             $post = null;
-            if (!$isdiscussion) {
-                $post = new stdClass();
-                $post->id = $rec->postid;
-                $post->parent = $rec->postparent;
-                $post->userid = $rec->userid;
-            }
+        if (!$isdiscussion) {
+            $post = new stdClass();
+            $post->id = $rec->postid;
+            $post->parent = $rec->postparent;
+            $post->userid = $rec->userid;
+        }
 
-            if ($isdiscussion && !digestforum_user_can_see_discussion($digestforum, $discussion, $context)) {
-                // This is a discussion which the user has no permission to view
+        if ($isdiscussion && !digestforum_user_can_see_discussion($digestforum, $discussion, $context)) {
+            // This is a discussion which the user has no permission to view
+            $item->title = get_string('digestforumsubjecthidden', 'digestforum');
+            $message = get_string('digestforumbodyhidden', 'digestforum');
+            $item->author = get_string('digestforumauthorhidden', 'digestforum');
+        } else if (!$isdiscussion && !digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
+            if (digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm, false)) {
+                // This is a post which the user has no permission to view.
                 $item->title = get_string('digestforumsubjecthidden', 'digestforum');
                 $message = get_string('digestforumbodyhidden', 'digestforum');
                 $item->author = get_string('digestforumauthorhidden', 'digestforum');
-            } else if (!$isdiscussion && !digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm)) {
-                if (digestforum_user_can_see_post($digestforum, $discussion, $post, $USER, $cm, false)) {
-                    // This is a post which the user has no permission to view.
-                    $item->title = get_string('digestforumsubjecthidden', 'digestforum');
-                    $message = get_string('digestforumbodyhidden', 'digestforum');
-                    $item->author = get_string('digestforumauthorhidden', 'digestforum');
-                } else {
-                    // This is a post which has been deleted.
-                    $item->title = get_string('digestforumsubjectdeleted', 'mod_digestforum');
-                    $message = get_string('digestforumbodydeleted', 'mod_digestforum');
-                    $item->author = get_string('digestforumauthorhidden', 'digestforum');
-                }
             } else {
-                // The user must have permission to view
-                if ($isdiscussion && !empty($rec->discussionname)) {
-                    $item->title = format_string($rec->discussionname);
-                } else if (!empty($rec->postsubject)) {
-                    $item->title = format_string($rec->postsubject);
-                } else {
-                    //we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
-                    $item->title = format_string($digestforum->name.' '.userdate($rec->postcreated,get_string('strftimedatetimeshort', 'langconfig')));
-                }
-                $item->author = fullname($rec);
-                $message = file_rewrite_pluginfile_urls($rec->postmessage, 'pluginfile.php', $context->id,
-                        'mod_digestforum', 'post', $rec->postid);
+                // This is a post which has been deleted.
+                $item->title = get_string('digestforumsubjectdeleted', 'mod_digestforum');
+                $message = get_string('digestforumbodydeleted', 'mod_digestforum');
+                $item->author = get_string('digestforumauthorhidden', 'digestforum');
             }
+        } else {
+            // The user must have permission to view
+            if ($isdiscussion && !empty($rec->discussionname)) {
+                $item->title = format_string($rec->discussionname);
+            } else if (!empty($rec->postsubject)) {
+                $item->title = format_string($rec->postsubject);
+            } else {
+                // we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
+                $item->title = format_string($digestforum->name . ' ' . userdate($rec->postcreated, get_string('strftimedatetimeshort', 'langconfig')));
+            }
+            $item->author = fullname($rec);
+            $message = file_rewrite_pluginfile_urls(
+                $rec->postmessage,
+                'pluginfile.php',
+                $context->id,
+                'mod_digestforum',
+                'post',
+                $rec->postid
+            );
+        }
 
-            if ($isdiscussion) {
-                $item->link = $CFG->wwwroot."/mod/digestforum/discuss.php?d=".$rec->discussionid;
-            } else {
-                $item->link = $CFG->wwwroot."/mod/digestforum/discuss.php?d=".$rec->discussionid."&parent=".$rec->postid;
-            }
+        if ($isdiscussion) {
+            $item->link = $CFG->wwwroot . "/mod/digestforum/discuss.php?d=" . $rec->discussionid;
+        } else {
+            $item->link = $CFG->wwwroot . "/mod/digestforum/discuss.php?d=" . $rec->discussionid . "&parent=" . $rec->postid;
+        }
 
             $item->description = format_text($message, $rec->postformat, [
                 'context' => $context,
                 'trusted' => $rec->posttrust,
             ]);
 
-            //TODO: MDL-31129 implement post attachment handling
+            // TODO: MDL-31129 implement post attachment handling
             /*if (!$isdiscussion) {
                 $post_file_area_name = str_replace('//', '/', "$digestforum->course/$CFG->moddata/digestforum/$digestforum->id/$rec->postid");
                 $post_files = get_directory_list("$CFG->dataroot/$post_file_area_name");
@@ -399,13 +406,15 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
             $item->pubdate = $rec->postcreated;
 
             $items[] = $item;
-        }
+    }
     $recs->close();
 
     // Create the RSS header.
-    $header = rss_standard_header(strip_tags(format_string($digestforum->name,true)),
-                                  $CFG->wwwroot."/mod/digestforum/view.php?f=".$digestforum->id,
-                                  format_string($digestforum->intro,true)); // TODO: fix format
+    $header = rss_standard_header(
+        strip_tags(format_string($digestforum->name, true)),
+        $CFG->wwwroot . "/mod/digestforum/view.php?f=" . $digestforum->id,
+        format_string($digestforum->intro, true)
+    ); // TODO: fix format
     // Now all the RSS items, if there are any.
     $articles = '';
     if (!empty($items)) {

@@ -43,7 +43,7 @@ class extract_context {
      * @return context[] List of contexts matching the records.
      */
     public function execute(array $records): array {
-        return array_map(function($record) {
+        return array_map(function ($record) {
             $contextid = $record->ctxid;
             context_helper::preload_from_record($record);
             $context = context::instance_by_id($contextid);

@@ -59,7 +59,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
      * @param \moodle_url|null $url
      * @return array
      */
-    protected function get_expected_attachment(\stored_file $file, array $values  = [], ?\moodle_url $url = null): array {
+    protected function get_expected_attachment(\stored_file $file, array $values = [], ?\moodle_url $url = null): array {
         if (!$url) {
             $url = \moodle_url::make_pluginfile_url(
                 $file->get_contextid(),
@@ -93,7 +93,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 'timecreatedformatted' => userdate($file->get_timecreated()),
                 'timemodifiedformatted' => userdate($file->get_timemodified()),
                 'url' => $url->out(),
-            ], $values);
+            ],
+            $values
+        );
     }
 
     /**
@@ -105,7 +107,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
 
         // Create a user.
-        $user = self::getDataGenerator()->create_user(array('trackforums' => 1));
+        $user = self::getDataGenerator()->create_user(['trackforums' => 1]);
 
         // Set to the user.
         self::setUser($user);
@@ -157,8 +159,11 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $digestforum2->lang = '';
 
         // Check the digestforum was correctly created.
-        $this->assertEquals(2, $DB->count_records_select('digestforum', 'id = :digestforum1 OR id = :digestforum2',
-                array('digestforum1' => $digestforum1->id, 'digestforum2' => $digestforum2->id)));
+        $this->assertEquals(2, $DB->count_records_select(
+            'digestforum',
+            'id = :digestforum1 OR id = :digestforum2',
+            ['digestforum1' => $digestforum1->id, 'digestforum2' => $digestforum2->id]
+        ));
 
         // Enrol the user in two courses.
         // DataGenerator->enrol_user automatically sets a role for the user with the permission mod/form:viewdiscussion.
@@ -188,7 +193,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $roleid2 = $this->assignUserCapability('mod/digestforum:viewdiscussion', $context2->id, $newrole);
 
         // Call the external function passing course ids.
-        $digestforums = mod_digestforum_external::get_digestforums_by_courses(array($course1->id, $course2->id));
+        $digestforums = mod_digestforum_external::get_digestforums_by_courses([$course1->id, $course2->id]);
         $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
         $this->assertCount(2, $digestforums);
 
@@ -254,13 +259,13 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertTrue($digestforums[0]['cancreatediscussions']);
 
         // Change the type of the digestforum, the user shouldn't be able to add discussions.
-        $DB->set_field('digestforum', 'type', 'news', array('id' => $digestforum1->id));
+        $DB->set_field('digestforum', 'type', 'news', ['id' => $digestforum1->id]);
         $digestforums = mod_digestforum_external::get_digestforums_by_courses();
         $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
         $this->assertFalse($digestforums[0]['cancreatediscussions']);
 
         // Call for the second course we unenrolled the user from.
-        $digestforums = mod_digestforum_external::get_digestforums_by_courses(array($course2->id));
+        $digestforums = mod_digestforum_external::get_digestforums_by_courses([$course2->id]);
         $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
         $this->assertCount(0, $digestforums);
     }
@@ -274,7 +279,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
 
         // Create a user.
-        $user = self::getDataGenerator()->create_user(array('trackforums' => 1));
+        $user = self::getDataGenerator()->create_user(['trackforums' => 1]);
 
         // Set to the user.
         self::setUser($user);
@@ -320,7 +325,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
 
         // Create a user.
-        $user = self::getDataGenerator()->create_user(array('trackforums' => 1));
+        $user = self::getDataGenerator()->create_user(['trackforums' => 1]);
 
         // Set to the user.
         self::setUser($user);
@@ -395,7 +400,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'urls' => [
                 'profile' => $urlfactory->get_author_profile_url($user2entity, $course1->id)->out(false),
                 'profileimage' => $urlfactory->get_author_profile_image_url($user2entity),
-            ]
+            ],
         ];
 
         $user3 = self::getDataGenerator()->create_user(['fullname' => "Mr Pants 1"]);
@@ -409,7 +414,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'urls' => [
                 'profile' => $urlfactory->get_author_profile_url($user3entity, $course1->id)->out(false),
                 'profileimage' => $urlfactory->get_author_profile_image_url($user3entity),
-            ]
+            ],
         ];
         $digestforumgenerator = self::getDataGenerator()->get_plugin_generator('mod_digestforum');
 
@@ -459,14 +464,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion1reply1 = $digestforumgenerator->create_post($record);
         $filename = 'shouldbeanimage.jpg';
         // Add a fake inline image to the post.
-        $filerecordinline = array(
+        $filerecordinline = [
             'contextid' => $digestforum1context->id,
             'component' => 'mod_digestforum',
             'filearea'  => 'post',
             'itemid'    => $discussion1reply1->id,
             'filepath'  => '/',
             'filename'  => $filename,
-        );
+        ];
         $fs = get_file_storage();
         $timepost = time();
         $file = $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
@@ -493,32 +498,38 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'urls' => [
                 'profile' => $urlfactory->get_author_profile_url($user3entity, $course1->id)->out(false),
                 'profileimage' => $urlfactory->get_author_profile_image_url($user3entity),
-            ]
+            ],
         ];
 
         // Create what we expect to be returned when querying the discussion.
-        $expectedposts = array(
-            'posts' => array(),
+        $expectedposts = [
+            'posts' => [],
             'courseid' => $course1->id,
             'digestforumid' => $digestforum1->id,
-            'ratinginfo' => array(
+            'ratinginfo' => [
                 'contextid' => $digestforum1context->id,
                 'component' => 'mod_digestforum',
                 'ratingarea' => 'post',
                 'canviewall' => null,
                 'canviewany' => null,
-                'scales' => array(),
-                'ratings' => array(),
-            ),
-            'warnings' => array(),
-        );
+                'scales' => [],
+                'ratings' => [],
+            ],
+            'warnings' => [],
+        ];
 
         // User pictures are initially empty, we should get the links once the external function is called.
         $isolatedurl = $urlfactory->get_discussion_view_url_from_discussion_id($discussion1reply2->discussion);
         $isolatedurl->params(['parent' => $discussion1reply2->id]);
-        $message = file_rewrite_pluginfile_urls($discussion1reply2->message, 'pluginfile.php',
-            $digestforum1context->id, 'mod_digestforum', 'post', $discussion1reply2->id);
-        $expectedposts['posts'][] = array(
+        $message = file_rewrite_pluginfile_urls(
+            $discussion1reply2->message,
+            'pluginfile.php',
+            $digestforum1context->id,
+            'mod_digestforum',
+            'post',
+            $discussion1reply2->id
+        );
+        $expectedposts['posts'][] = [
             'id' => $discussion1reply2->id,
             'discussionid' => $discussion1reply2->discussion,
             'parentid' => $discussion1reply2->parent,
@@ -528,21 +539,21 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'subject' => $discussion1reply2->subject,
             'replysubject' => $discussion1reply2->subject,
             'message' => $message,
-            'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+            'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
             'unread' => null,
             'isdeleted' => false,
             'isprivatereply' => false,
             'haswordcount' => true,
             'wordcount' => count_words($message),
             'charcount' => count_letters($message),
-            'author'=> $exporteduser3,
+            'author' => $exporteduser3,
             'attachments' => [],
             'messageinlinefiles' => [],
             'tags' => [],
             'html' => [
                 'rating' => null,
                 'taglist' => null,
-                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser3, $discussion1reply2->created)
+                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser3, $discussion1reply2->created),
             ],
             'capabilities' => [
                 'view' => 1,
@@ -553,17 +564,17 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 'export' => 0,
                 'controlreadstatus' => 0,
                 'canreplyprivately' => 0,
-                'selfenrol' => 0
+                'selfenrol' => 0,
             ],
             'urls' => [
                 'view' => $urlfactory->get_view_post_url_from_post_id($discussion1reply2->discussion, $discussion1reply2->id),
                 'viewisolated' => $isolatedurl->out(false),
                 'viewparent' => $urlfactory->get_view_post_url_from_post_id($discussion1reply2->discussion, $discussion1reply2->parent),
                 'edit' => null,
-                'delete' =>null,
+                'delete' => null,
                 'split' => null,
                 'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                    'reply' => $discussion1reply2->id
+                    'reply' => $discussion1reply2->id,
                 ]))->out(false),
                 'export' => null,
                 'markasread' => null,
@@ -571,17 +582,23 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id($discussion1reply2->discussion),
             ],
             'label' => get_string(
-                'postbyuser', 'mod_digestforum',
+                'postbyuser',
+                'mod_digestforum',
                 ['post' => $discussion1reply2->subject, 'user' => $exporteduser3['fullname']]
             ),
-        );
-
+        ];
 
         $isolatedurl = $urlfactory->get_discussion_view_url_from_discussion_id($discussion1reply1->discussion);
         $isolatedurl->params(['parent' => $discussion1reply1->id]);
-        $message = file_rewrite_pluginfile_urls($discussion1reply1->message, 'pluginfile.php',
-            $digestforum1context->id, 'mod_digestforum', 'post', $discussion1reply1->id);
-        $expectedposts['posts'][] = array(
+        $message = file_rewrite_pluginfile_urls(
+            $discussion1reply1->message,
+            'pluginfile.php',
+            $digestforum1context->id,
+            'mod_digestforum',
+            'post',
+            $discussion1reply1->id
+        );
+        $expectedposts['posts'][] = [
             'id' => $discussion1reply1->id,
             'discussionid' => $discussion1reply1->discussion,
             'parentid' => $discussion1reply1->parent,
@@ -591,23 +608,23 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'subject' => $discussion1reply1->subject,
             'replysubject' => $discussion1reply1->subject,
             'message' => $message,
-            'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+            'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
             'unread' => null,
             'isdeleted' => false,
             'isprivatereply' => false,
             'haswordcount' => true,
             'wordcount' => count_words($message),
             'charcount' => count_letters($message),
-            'author'=> $exporteduser2,
+            'author' => $exporteduser2,
             'attachments' => [],
             'messageinlinefiles' => [
-                0 => $this->get_expected_attachment($file)
+                0 => $this->get_expected_attachment($file),
             ],
             'tags' => [],
             'html' => [
                 'rating' => null,
                 'taglist' => null,
-                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser2, $discussion1reply1->created)
+                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser2, $discussion1reply1->created),
             ],
             'capabilities' => [
                 'view' => 1,
@@ -618,17 +635,17 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 'export' => 0,
                 'controlreadstatus' => 0,
                 'canreplyprivately' => 0,
-                'selfenrol' => 0
+                'selfenrol' => 0,
             ],
             'urls' => [
                 'view' => $urlfactory->get_view_post_url_from_post_id($discussion1reply1->discussion, $discussion1reply1->id),
                 'viewisolated' => $isolatedurl->out(false),
                 'viewparent' => $urlfactory->get_view_post_url_from_post_id($discussion1reply1->discussion, $discussion1reply1->parent),
                 'edit' => null,
-                'delete' =>null,
+                'delete' => null,
                 'split' => null,
                 'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                    'reply' => $discussion1reply1->id
+                    'reply' => $discussion1reply1->id,
                 ]))->out(false),
                 'export' => null,
                 'markasread' => null,
@@ -636,10 +653,11 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id($discussion1reply1->discussion),
             ],
             'label' => get_string(
-                'postbyuser', 'mod_digestforum',
+                'postbyuser',
+                'mod_digestforum',
                 ['post' => $discussion1reply1->subject, 'user' => $exporteduser2['fullname']]
             ),
-        );
+        ];
 
         // Test a discussion with two additional posts (total 3 posts).
         $posts = mod_digestforum_external::get_discussion_posts($discussion1->id, 'modified', 'DESC', true);
@@ -652,7 +670,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Check we receive the unread count correctly on tracked digestforum.
         digestforum_tp_count_digestforum_unread_posts($digestforum2cm, $course1, true);    // Reset static cache.
-        $result = mod_digestforum_external::get_digestforums_by_courses(array($course1->id));
+        $result = mod_digestforum_external::get_digestforums_by_courses([$course1->id]);
         $result = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $result);
         foreach ($result as $f) {
             if ($f['id'] == $digestforum2->id) {
@@ -693,7 +711,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Check we receive 0 unread posts.
         digestforum_tp_count_digestforum_unread_posts($digestforum2cm, $course1, true);    // Reset static cache.
-        $result = mod_digestforum_external::get_digestforums_by_courses(array($course1->id));
+        $result = mod_digestforum_external::get_digestforums_by_courses([$course1->id]);
         $result = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $result);
         foreach ($result as $f) {
             if ($f['id'] == $digestforum2->id) {
@@ -797,7 +815,6 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $user = self::getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
-
         // Set the first created user to the test user.
         self::setUser($user);
 
@@ -833,15 +850,20 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $options = [
             [
                 'name' => 'inlineattachmentsid',
-                'value' => $draftidinlineattach
+                'value' => $draftidinlineattach,
             ],
             [
                 'name' => 'attachmentsid',
-                'value' => $draftidattach
-            ]
+                'value' => $draftidattach,
+            ],
         ];
-        $discussion = mod_digestforum_external::add_discussion($digestforum->id, 'the inline attachment subject', $dummytext,
-            -1, $options);
+        $discussion = mod_digestforum_external::add_discussion(
+            $digestforum->id,
+            'the inline attachment subject',
+            $dummytext,
+            -1,
+            $options
+        );
 
         $posts = mod_digestforum_external::get_discussion_posts($discussion['discussionid'], 'modified', 'DESC');
         $posts = external_api::clean_returnvalue(mod_digestforum_external::get_discussion_posts_returns(), $posts);
@@ -849,8 +871,12 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertCount(0, $post['messageinlinefiles']);
         $this->assertEmpty($post['messageinlinefiles']);
 
-        $posts = mod_digestforum_external::get_discussion_posts($discussion['discussionid'], 'modified', 'DESC',
-            true);
+        $posts = mod_digestforum_external::get_discussion_posts(
+            $discussion['discussionid'],
+            'modified',
+            'DESC',
+            true
+        );
         $posts = external_api::clean_returnvalue(mod_digestforum_external::get_discussion_posts_returns(), $posts);
         $post = $posts['posts'][0];
         $this->assertCount(1, $post['messageinlinefiles']);
@@ -1000,10 +1026,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Create what we expect to be returned when querying the digestforums.
 
-        $post1 = $DB->get_record('digestforum_posts', array('id' => $discussion1->firstpost), '*', MUST_EXIST);
+        $post1 = $DB->get_record('digestforum_posts', ['id' => $discussion1->firstpost], '*', MUST_EXIST);
 
         // User pictures are initially empty, we should get the links once the external function is called.
-        $expecteddiscussions = array(
+        $expecteddiscussions = [
             'id' => $discussion1->firstpost,
             'name' => $discussion1->name,
             'groupid' => (int) $discussion1->groupid,
@@ -1035,15 +1061,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'canreply' => false,
             'canlock' => false,
             'starred' => false,
-            'canfavourite' => true
-        );
+            'canfavourite' => true,
+        ];
         // Call the external function passing digestforum id.
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
         $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
-        $expectedreturn = array(
-            'discussions' => array($expecteddiscussions),
-            'warnings' => array()
-        );
+        $expectedreturn = [
+            'discussions' => [$expecteddiscussions],
+            'warnings' => [],
+        ];
 
         // Wait the theme to be loaded (the external_api call does that) to generate the user profiles.
         $userpicture = new \user_picture($user1);
@@ -1257,8 +1283,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion1->id);
 
         // Pin discussion2.
-        $DB->update_record('digestforum_discussions',
-            (object) array('id' => $discussion2->id, 'pinned' => DFORUM_DISCUSSION_PINNED));
+        $DB->update_record(
+            'digestforum_discussions',
+            (object) ['id' => $discussion2->id, 'pinned' => DFORUM_DISCUSSION_PINNED]
+        );
 
         // Call the external function passing digestforum id.
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
@@ -1293,7 +1321,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         self::setAdminUser();
 
         // Create course to add the module.
-        $course = self::getDataGenerator()->create_course(array('groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0));
+        $course = self::getDataGenerator()->create_course(['groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0]);
 
         // Forum with tracking off.
         $record = new \stdClass();
@@ -1347,8 +1375,13 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $formats = [FORMAT_PLAIN, FORMAT_MOODLE, FORMAT_MARKDOWN, FORMAT_HTML];
         $options = [];
         foreach ($formats as $format) {
-            $createdpost = mod_digestforum_external::add_discussion_post($discussion->firstpost,
-                'with some format', 'some formatted here...', $options, $format);
+            $createdpost = mod_digestforum_external::add_discussion_post(
+                $discussion->firstpost,
+                'with some format',
+                'some formatted here...',
+                $options,
+                $format
+            );
             $createdpost = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_post_returns(), $createdpost);
             $dbformat = $DB->get_field('digestforum_posts', 'messageformat', ['id' => $createdpost['postid']]);
             $this->assertEquals($format, $dbformat);
@@ -1358,8 +1391,13 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         // transformed and the format being FORMAT_HTML (when, like in this case,  user preferred
         // format is HTML, inferred from editor in preferences).
         $options = [['name' => 'topreferredformat', 'value' => true]];
-        $createdpost = mod_digestforum_external::add_discussion_post($discussion->firstpost,
-            'interesting subject', 'with some https://example.com link', $options, FORMAT_MOODLE);
+        $createdpost = mod_digestforum_external::add_discussion_post(
+            $discussion->firstpost,
+            'interesting subject',
+            'with some https://example.com link',
+            $options,
+            FORMAT_MOODLE
+        );
         $createdpost = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_post_returns(), $createdpost);
         $dbpost = $DB->get_record('digestforum_posts', ['id' => $createdpost['postid']]);
         // Format HTML and content converted, we should get.
@@ -1376,14 +1414,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $filearea = 'draft';
         $component = 'user';
         $filenameimg = 'shouldbeanimage.txt';
-        $filerecordinline = array(
+        $filerecordinline = [
             'contextid' => $usercontext->id,
             'component' => $component,
             'filearea'  => $filearea,
             'itemid'    => $draftidinlineattach,
             'filepath'  => $filepath,
             'filename'  => $filenameimg,
-        );
+        ];
         $fs = get_file_storage();
 
         // Create a file in a draft area for regular attachments.
@@ -1394,13 +1432,17 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
         $fs->create_file_from_string($filerecordattach, 'simple text attachment');
 
-        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
-                         array('name' => 'attachmentsid', 'value' => $draftidattach));
+        $options = [['name' => 'inlineattachmentsid', 'value' => $draftidinlineattach],
+                         ['name' => 'attachmentsid', 'value' => $draftidattach]];
         $dummytext = 'Here is an inline image: <img src="' . $CFG->wwwroot
                      . "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}"
                      . '" alt="inlineimage">.';
-        $createdpost = mod_digestforum_external::add_discussion_post($discussion->firstpost, 'new post inline attachment',
-                                                               $dummytext, $options);
+        $createdpost = mod_digestforum_external::add_discussion_post(
+            $discussion->firstpost,
+            'new post inline attachment',
+            $dummytext,
+            $options
+        );
         $createdpost = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_post_returns(), $createdpost);
 
         $posts = mod_digestforum_external::get_discussion_posts($discussion->id, 'modified', 'ASC');
@@ -1423,10 +1465,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertTrue($postfound);
 
         // Check not posting in groups the user is not member of.
-        $group = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         groups_add_member($group->id, $otheruser->id);
 
-        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, array('groupmode' => SEPARATEGROUPS));
+        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, ['groupmode' => SEPARATEGROUPS]);
         $record->digestforum = $digestforum->id;
         $record->userid = $otheruser->id;
         $record->groupid = $group->id;
@@ -1453,7 +1495,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $user = self::getDataGenerator()->create_user();
         $admin = get_admin();
         // Create course to add the module.
-        $course = self::getDataGenerator()->create_course(array('groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0));
+        $course = self::getDataGenerator()->create_course(['groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0]);
 
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
@@ -1513,10 +1555,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($user->id, $digestforum, $discussion2->id, $cm));
         // Add a discussion post in a digestforum discussion where the user is not subscribed (auto-subscribe preference disabled),
         // and the option parameter 'discussionsubscribe' => true in the webservice.
-        $option = array('name' => 'discussionsubscribe', 'value' => true);
+        $option = ['name' => 'discussionsubscribe', 'value' => true];
         $options[] = $option;
-        mod_digestforum_external::add_discussion_post($discussion2->firstpost, 'some subject 2', 'some text here 2...',
-            $options);
+        mod_digestforum_external::add_discussion_post(
+            $discussion2->firstpost,
+            'some subject 2',
+            'some text here 2...',
+            $options
+        );
 
         $posts = mod_digestforum_external::get_discussion_posts($discussion2->id, 'modified', 'ASC');
         $posts = external_api::clean_returnvalue(mod_digestforum_external::get_discussion_posts_returns(), $posts);
@@ -1570,9 +1616,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertEquals('the subject', $discussions['discussions'][0]['subject']);
         $this->assertEquals('some text here...', $discussions['discussions'][0]['message']);
 
-        $discussion2pinned = mod_digestforum_external::add_discussion($digestforum->id, 'the pinned subject', 'some 2 text here...', -1,
-                                                                array('options' => array('name' => 'discussionpinned',
-                                                                                         'value' => true)));
+        $discussion2pinned = mod_digestforum_external::add_discussion(
+            $digestforum->id,
+            'the pinned subject',
+            'some 2 text here...',
+            -1,
+            ['options' => ['name' => 'discussionpinned',
+            'value' => true]]
+        );
         $discussion3 = mod_digestforum_external::add_discussion($digestforum->id, 'the non pinnedsubject', 'some 3 text here...');
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
         $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
@@ -1592,14 +1643,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $filearea = 'draft';
         $component = 'user';
         $filenameimg = 'shouldbeanimage.txt';
-        $filerecord = array(
+        $filerecord = [
             'contextid' => $usercontext->id,
             'component' => $component,
             'filearea'  => $filearea,
             'itemid'    => $draftidinlineattach,
             'filepath'  => $filepath,
             'filename'  => $filenameimg,
-        );
+        ];
 
         // Create a file in a draft area for regular attachments.
         $filerecordattach = $filerecord;
@@ -1613,10 +1664,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                     "/draftfile.php/{$usercontext->id}/user/draft/{$draftidinlineattach}/{$filenameimg}" .
                     '" alt="inlineimage">.';
 
-        $options = array(array('name' => 'inlineattachmentsid', 'value' => $draftidinlineattach),
-                         array('name' => 'attachmentsid', 'value' => $draftidattach));
-        $createddiscussion = mod_digestforum_external::add_discussion($digestforum->id, 'the inline attachment subject',
-                                                                $dummytext, -1, $options);
+        $options = [['name' => 'inlineattachmentsid', 'value' => $draftidinlineattach],
+                         ['name' => 'attachmentsid', 'value' => $draftidattach]];
+        $createddiscussion = mod_digestforum_external::add_discussion(
+            $digestforum->id,
+            'the inline attachment subject',
+            $dummytext,
+            -1,
+            $options
+        );
         $createddiscussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $createddiscussion);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
@@ -1650,14 +1706,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
 
         // Create course to add the module.
-        $course = self::getDataGenerator()->create_course(array('groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0));
+        $course = self::getDataGenerator()->create_course(['groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0]);
         $user = self::getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Forum forcing separate gropus.
         $record = new \stdClass();
         $record->course = $course->id;
-        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, array('groupmode' => SEPARATEGROUPS));
+        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, ['groupmode' => SEPARATEGROUPS]);
 
         // Try to post (user not enrolled).
         self::setUser($user);
@@ -1678,7 +1734,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         }
 
         // Create a group.
-        $group = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
 
         // Try to post in a group the user is not enrolled.
         try {
@@ -1724,7 +1780,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertEquals($group->id, $discussions['discussions'][1]['groupid']);
 
         // Enrol the same user in other group.
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         groups_add_member($group2->id, $user->id);
 
         // Now add a discussions without indicating a group. The function should guess the correct group (the first one).
@@ -1739,7 +1795,6 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertEquals($group->id, $discussions['discussions'][0]['groupid']);
         $this->assertEquals($group->id, $discussions['discussions'][1]['groupid']);
         $this->assertEquals($group->id, $discussions['discussions'][2]['groupid']);
-
     }
 
     /**
@@ -1752,7 +1807,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         // Create courses to add the modules.
         $course = self::getDataGenerator()->create_course();
         $user = self::getDataGenerator()->create_user();
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
 
         // First digestforum with tracking off.
         $record = new \stdClass();
@@ -1844,13 +1899,13 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertTrue($result['cancreateattachment']);
 
         // Disable attachments.
-        $DB->set_field('digestforum', 'maxattachments', 0, array('id' => $digestforum->id));
+        $DB->set_field('digestforum', 'maxattachments', 0, ['id' => $digestforum->id]);
         $result = mod_digestforum_external::can_add_discussion($digestforum->id);
         $result = external_api::clean_returnvalue(mod_digestforum_external::can_add_discussion_returns(), $result);
         $this->assertFalse($result['status']);
         $this->assertFalse($result['canpindiscussions']);
         $this->assertFalse($result['cancreateattachment']);
-        $DB->set_field('digestforum', 'maxattachments', 1, array('id' => $digestforum->id));    // Enable attachments again.
+        $DB->set_field('digestforum', 'maxattachments', 1, ['id' => $digestforum->id]);    // Enable attachments again.
 
         self::setAdminUser();
         $result = mod_digestforum_external::can_add_discussion($digestforum->id);
@@ -1905,8 +1960,8 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         // Create course to add the module.
         $course = self::getDataGenerator()->create_course();
 
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
-        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
+        $teacherrole = $DB->get_record('role', ['shortname' => 'editingteacher']);
         $this->getDataGenerator()->enrol_user($user1->id, $course->id, $studentrole->id, 'manual');
         $this->getDataGenerator()->enrol_user($user2->id, $course->id, $studentrole->id, 'manual');
         $this->getDataGenerator()->enrol_user($user3->id, $course->id, $studentrole->id, 'manual');
@@ -1929,7 +1984,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Retrieve the first post.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
         // Rate the discussion as user2.
         $rating1 = new \stdClass();
@@ -1995,7 +2050,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $record->course = $course->id;
         $digestforum = self::getDataGenerator()->create_module('digestforum', $record);
 
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $this->getDataGenerator()->enrol_user($student->id, $course->id, $studentrole->id, 'manual');
 
         self::setUser($student);
@@ -2003,8 +2058,8 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $result = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_access_information_returns(), $result);
 
         // Check default values for capabilities.
-        $enabledcaps = array('canviewdiscussion', 'canstartdiscussion', 'canreplypost', 'canviewrating', 'cancreateattachment',
-            'canexportownpost', 'cancantogglefavourite', 'cancanmailnow', 'candeleteownpost', 'canallowforcesubscribe');
+        $enabledcaps = ['canviewdiscussion', 'canstartdiscussion', 'canreplypost', 'canviewrating', 'cancreateattachment',
+            'canexportownpost', 'cancantogglefavourite', 'cancanmailnow', 'candeleteownpost', 'canallowforcesubscribe'];
 
         unset($result['warnings']);
         foreach ($result as $capname => $capvalue) {
@@ -2081,7 +2136,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                 ],
             ]);
         $post = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_post_returns(), $post);
-        $privatereply = $DB->get_record('digestforum_posts', array('id' => $post['postid']));
+        $privatereply = $DB->get_record('digestforum_posts', ['id' => $post['postid']]);
         $this->assertEquals($student1->id, $privatereply->privatereplyto);
         // Bump the time of the private reply to ensure order.
         $privatereply->created++;
@@ -2258,9 +2313,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         // Add a discussion.
@@ -2274,8 +2329,8 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $result = mod_digestforum_external::delete_post($discussion->firstpost);
         $result = external_api::clean_returnvalue(mod_digestforum_external::delete_post_returns(), $result);
         $this->assertTrue($result['status']);
-        $this->assertEquals(0, $DB->count_records('digestforum_posts', array('id' => $discussion->firstpost)));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussions', array('id' => $discussion->id)));
+        $this->assertEquals(0, $DB->count_records('digestforum_posts', ['id' => $discussion->firstpost]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussions', ['id' => $discussion->id]));
     }
 
     /**
@@ -2287,9 +2342,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         // Add a discussion.
@@ -2298,7 +2353,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
         // Add a post.
         $record = new \stdClass();
@@ -2313,8 +2368,8 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $result = mod_digestforum_external::delete_post($post->id);
         $result = external_api::clean_returnvalue(mod_digestforum_external::delete_post_returns(), $result);
         $this->assertTrue($result['status']);
-        $this->assertEquals(1, $DB->count_records('digestforum_posts', array('discussion' => $discussion->id)));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussions', array('id' => $discussion->id)));
+        $this->assertEquals(1, $DB->count_records('digestforum_posts', ['discussion' => $discussion->id]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussions', ['id' => $discussion->id]));
     }
 
     /**
@@ -2326,20 +2381,20 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
         $otheruser = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         self::getDataGenerator()->enrol_user($otheruser->id, $course->id, $role->id);
 
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
         // Add a post.
         $record = new \stdClass();
@@ -2442,14 +2497,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion1reply1 = $digestforumgenerator->create_post($record);
         $filename = 'shouldbeanimage.jpg';
         // Add a fake inline image to the post.
-        $filerecordinline = array(
+        $filerecordinline = [
                 'contextid' => $digestforum1context->id,
                 'component' => 'mod_digestforum',
                 'filearea'  => 'post',
                 'itemid'    => $discussion1reply1->id,
                 'filepath'  => '/',
                 'filename'  => $filename,
-        );
+        ];
         $fs = get_file_storage();
         $file1 = $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
 
@@ -2461,14 +2516,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion2reply1 = $digestforumgenerator->create_post($record);
         $filename = 'shouldbeanimage.jpg';
         // Add a fake inline image to the post.
-        $filerecordinline = array(
+        $filerecordinline = [
                 'contextid' => $digestforum1context->id,
                 'component' => 'mod_digestforum',
                 'filearea'  => 'post',
                 'itemid'    => $discussion2reply1->id,
                 'filepath'  => '/',
                 'filename'  => $filename,
-        );
+        ];
         $fs = get_file_storage();
         $file2 = $fs->create_file_from_string($filerecordinline, 'image contents (not really)');
 
@@ -2488,10 +2543,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion->timeend = $time - 100;
         $DB->update_record('digestforum_discussions', $discussion);
         // Create what we expect to be returned when querying the discussion.
-        $expectedposts = array(
-            'discussions' => array(),
-            'warnings' => array(),
-        );
+        $expectedposts = [
+            'discussions' => [],
+            'warnings' => [],
+        ];
 
         $isolatedurluser = $urlfactory->get_discussion_view_url_from_discussion_id($discussion1reply1->discussion);
         $isolatedurluser->params(['parent' => $discussion1reply1->id]);
@@ -2514,9 +2569,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                         'timemodified' => $discussion1reply1->modified,
                         'subject' => $discussion1reply1->subject,
                         'replysubject' => $discussion1reply1->subject,
-                        'message' => file_rewrite_pluginfile_urls($discussion1reply1->message, 'pluginfile.php',
-                        $digestforum1context->id, 'mod_digestforum', 'post', $discussion1reply1->id),
-                        'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+                        'message' => file_rewrite_pluginfile_urls(
+                            $discussion1reply1->message,
+                            'pluginfile.php',
+                            $digestforum1context->id,
+                            'mod_digestforum',
+                            'post',
+                            $discussion1reply1->id
+                        ),
+                        'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
                         'unread' => null,
                         'isdeleted' => false,
                         'isprivatereply' => false,
@@ -2530,7 +2591,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'rating' => null,
                             'taglist' => null,
                             'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
-                                (object)$exporteduser2, $discussion1reply1->created)
+                                (object)$exporteduser2,
+                                $discussion1reply1->created
+                            ),
                         ],
                         'charcount' => null,
                         'capabilities' => [
@@ -2542,37 +2605,43 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'export' => false,
                             'controlreadstatus' => false,
                             'canreplyprivately' => true,
-                            'selfenrol' => false
+                            'selfenrol' => false,
                         ],
                         'urls' => [
                             'view' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion1reply1->discussion, $discussion1reply1->id)->out(false),
+                                $discussion1reply1->discussion,
+                                $discussion1reply1->id
+                            )->out(false),
                             'viewisolated' => $isolatedurluser->out(false),
                             'viewparent' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion1reply1->discussion, $discussion1reply1->parent)->out(false),
+                                $discussion1reply1->discussion,
+                                $discussion1reply1->parent
+                            )->out(false),
                             'edit' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'edit' => $discussion1reply1->id
+                                'edit' => $discussion1reply1->id,
                             ]))->out(false),
                             'delete' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'delete' => $discussion1reply1->id
+                                'delete' => $discussion1reply1->id,
                             ]))->out(false),
                             'split' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'prune' => $discussion1reply1->id
+                                'prune' => $discussion1reply1->id,
                             ]))->out(false),
                             'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                                'reply' => $discussion1reply1->id
+                                'reply' => $discussion1reply1->id,
                             ]))->out(false),
                             'export' => null,
                             'markasread' => null,
                             'markasunread' => null,
                             'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id(
-                                $discussion1reply1->discussion)->out(false),
+                                $discussion1reply1->discussion
+                            )->out(false),
                         ],
                         'label' => get_string(
-                            'postbyuser', 'mod_digestforum',
+                            'postbyuser',
+                            'mod_digestforum',
                             ['post' => $discussion1reply1->subject, 'user' => $exporteduser2['fullname']]
                         ),
-                    ]
+                    ],
                 ],
                 'parentposts' => [
                     [
@@ -2584,9 +2653,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                         'timemodified' => $discussion1firstpostobject->modified,
                         'subject' => $discussion1firstpostobject->subject,
                         'replysubject' => $discussion1firstpostobject->subject,
-                        'message' => file_rewrite_pluginfile_urls($discussion1firstpostobject->message, 'pluginfile.php',
-                            $digestforum1context->id, 'mod_digestforum', 'post', $discussion1firstpostobject->id),
-                        'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+                        'message' => file_rewrite_pluginfile_urls(
+                            $discussion1firstpostobject->message,
+                            'pluginfile.php',
+                            $digestforum1context->id,
+                            'mod_digestforum',
+                            'post',
+                            $discussion1firstpostobject->id
+                        ),
+                        'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
                         'unread' => null,
                         'isdeleted' => false,
                         'isprivatereply' => false,
@@ -2600,7 +2675,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'rating' => null,
                             'taglist' => null,
                             'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
-                                (object)$exporteduser1, $discussion1firstpostobject->created)
+                                (object)$exporteduser1,
+                                $discussion1firstpostobject->created
+                            ),
                         ],
                         'charcount' => null,
                         'capabilities' => [
@@ -2612,34 +2689,38 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'export' => false,
                             'controlreadstatus' => false,
                             'canreplyprivately' => true,
-                            'selfenrol' => false
+                            'selfenrol' => false,
                         ],
                         'urls' => [
                             'view' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion1firstpostobject->discussion, $discussion1firstpostobject->id)->out(false),
+                                $discussion1firstpostobject->discussion,
+                                $discussion1firstpostobject->id
+                            )->out(false),
                             'viewisolated' => $isolatedurlparent->out(false),
                             'viewparent' => null,
                             'edit' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'edit' => $discussion1firstpostobject->id
+                                'edit' => $discussion1firstpostobject->id,
                             ]))->out(false),
                             'delete' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'delete' => $discussion1firstpostobject->id
+                                'delete' => $discussion1firstpostobject->id,
                             ]))->out(false),
                             'split' => null,
                             'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                                'reply' => $discussion1firstpostobject->id
+                                'reply' => $discussion1firstpostobject->id,
                             ]))->out(false),
                             'export' => null,
                             'markasread' => null,
                             'markasunread' => null,
                             'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id(
-                                $discussion1firstpostobject->discussion)->out(false),
+                                $discussion1firstpostobject->discussion
+                            )->out(false),
                         ],
                         'label' => get_string(
-                            'postbyuser', 'mod_digestforum',
+                            'postbyuser',
+                            'mod_digestforum',
                             ['post' => $discussion1firstpostobject->subject, 'user' => $exporteduser1['fullname']]
                         ),
-                    ]
+                    ],
                 ],
             ],
         ];
@@ -2665,9 +2746,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                         'timemodified' => $discussion2reply1->modified,
                         'subject' => $discussion2reply1->subject,
                         'replysubject' => $discussion2reply1->subject,
-                        'message' => file_rewrite_pluginfile_urls($discussion2reply1->message, 'pluginfile.php',
-                            $digestforum1context->id, 'mod_digestforum', 'post', $discussion2reply1->id),
-                        'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+                        'message' => file_rewrite_pluginfile_urls(
+                            $discussion2reply1->message,
+                            'pluginfile.php',
+                            $digestforum1context->id,
+                            'mod_digestforum',
+                            'post',
+                            $discussion2reply1->id
+                        ),
+                        'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
                         'unread' => null,
                         'isdeleted' => false,
                         'isprivatereply' => false,
@@ -2681,7 +2768,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'rating' => null,
                             'taglist' => null,
                             'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
-                                (object)$exporteduser2, $discussion2reply1->created)
+                                (object)$exporteduser2,
+                                $discussion2reply1->created
+                            ),
                         ],
                         'charcount' => null,
                         'capabilities' => [
@@ -2693,37 +2782,43 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'export' => false,
                             'controlreadstatus' => false,
                             'canreplyprivately' => true,
-                            'selfenrol' => false
+                            'selfenrol' => false,
                         ],
                         'urls' => [
                             'view' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion2reply1->discussion, $discussion2reply1->id)->out(false),
+                                $discussion2reply1->discussion,
+                                $discussion2reply1->id
+                            )->out(false),
                             'viewisolated' => $isolatedurluser->out(false),
                             'viewparent' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion2reply1->discussion, $discussion2reply1->parent)->out(false),
+                                $discussion2reply1->discussion,
+                                $discussion2reply1->parent
+                            )->out(false),
                             'edit' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'edit' => $discussion2reply1->id
+                                'edit' => $discussion2reply1->id,
                             ]))->out(false),
                             'delete' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'delete' => $discussion2reply1->id
+                                'delete' => $discussion2reply1->id,
                             ]))->out(false),
                             'split' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'prune' => $discussion2reply1->id
+                                'prune' => $discussion2reply1->id,
                             ]))->out(false),
                             'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                                'reply' => $discussion2reply1->id
+                                'reply' => $discussion2reply1->id,
                             ]))->out(false),
                             'export' => null,
                             'markasread' => null,
                             'markasunread' => null,
                             'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id(
-                                $discussion2reply1->discussion)->out(false),
+                                $discussion2reply1->discussion
+                            )->out(false),
                         ],
                         'label' => get_string(
-                            'postbyuser', 'mod_digestforum',
+                            'postbyuser',
+                            'mod_digestforum',
                             ['post' => $discussion2reply1->subject, 'user' => $exporteduser2['fullname']]
                         ),
-                    ]
+                    ],
                 ],
                 'parentposts' => [
                     [
@@ -2735,9 +2830,15 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                         'timemodified' => $discussion2firstpostobject->modified,
                         'subject' => $discussion2firstpostobject->subject,
                         'replysubject' => $discussion2firstpostobject->subject,
-                        'message' => file_rewrite_pluginfile_urls($discussion2firstpostobject->message, 'pluginfile.php',
-                            $digestforum1context->id, 'mod_digestforum', 'post', $discussion2firstpostobject->id),
-                        'messageformat' => 1,   // This value is usually changed by \core_external\util::format_text() function.
+                        'message' => file_rewrite_pluginfile_urls(
+                            $discussion2firstpostobject->message,
+                            'pluginfile.php',
+                            $digestforum1context->id,
+                            'mod_digestforum',
+                            'post',
+                            $discussion2firstpostobject->id
+                        ),
+                        'messageformat' => 1, // This value is usually changed by \core_external\util::format_text() function.
                         'unread' => null,
                         'isdeleted' => false,
                         'isprivatereply' => false,
@@ -2751,7 +2852,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'rating' => null,
                             'taglist' => null,
                             'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
-                                (object)$exporteduser1, $discussion2firstpostobject->created)
+                                (object)$exporteduser1,
+                                $discussion2firstpostobject->created
+                            ),
                         ],
                         'charcount' => null,
                         'capabilities' => [
@@ -2763,36 +2866,40 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
                             'export' => false,
                             'controlreadstatus' => false,
                             'canreplyprivately' => true,
-                            'selfenrol' => false
+                            'selfenrol' => false,
                         ],
                         'urls' => [
                             'view' => $urlfactory->get_view_post_url_from_post_id(
-                                $discussion2firstpostobject->discussion, $discussion2firstpostobject->id)->out(false),
+                                $discussion2firstpostobject->discussion,
+                                $discussion2firstpostobject->id
+                            )->out(false),
                             'viewisolated' => $isolatedurlparent->out(false),
                             'viewparent' => null,
                             'edit' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'edit' => $discussion2firstpostobject->id
+                                'edit' => $discussion2firstpostobject->id,
                             ]))->out(false),
                             'delete' => (new \moodle_url('/mod/digestforum/post.php', [
-                                'delete' => $discussion2firstpostobject->id
+                                'delete' => $discussion2firstpostobject->id,
                             ]))->out(false),
                             'split' => null,
                             'reply' => (new \moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-                                'reply' => $discussion2firstpostobject->id
+                                'reply' => $discussion2firstpostobject->id,
                             ]))->out(false),
                             'export' => null,
                             'markasread' => null,
                             'markasunread' => null,
                             'discuss' => $urlfactory->get_discussion_view_url_from_discussion_id(
-                                $discussion2firstpostobject->discussion)->out(false),
+                                $discussion2firstpostobject->discussion
+                            )->out(false),
 
                         ],
                         'label' => get_string(
-                            'postbyuser', 'mod_digestforum',
+                            'postbyuser',
+                            'mod_digestforum',
                             ['post' => $discussion2firstpostobject->subject, 'user' => $exporteduser1['fullname']]
                         ),
                     ],
-                ]
+                ],
             ],
         ];
 
@@ -2821,7 +2928,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $cm->groupmode = SEPARATEGROUPS;
         $DB->update_record('course_modules', $cm);
         $teacher = self::getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'teacher'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'teacher'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($teacher->id, $course1->id, $role->id);
         groups_add_member($group2->id, $teacher->id);
         self::setUser($teacher);
@@ -2840,9 +2947,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         // Add a discussion.
         $record = new \stdClass();
@@ -2866,9 +2973,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         // Add a discussion.
         $record = new \stdClass();
@@ -2876,7 +2983,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         // Add a post.
         $record = new \stdClass();
         $record->course = $course->id;
@@ -2901,19 +3008,19 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
         $otheruser = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         self::getDataGenerator()->enrol_user($otheruser->id, $course->id, $role->id);
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         // Add a post.
         $record = new \stdClass();
         $record->course = $course->id;
@@ -2939,17 +3046,17 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
         // Add a discussion.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
         $discussion = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $parentpost = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $parentpost = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
         // Add a post.
         $record = new \stdClass();
         $record->course = $course->id;
@@ -2961,14 +3068,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Add some files only in the attachment area.
         $filename = 'faketxt.txt';
-        $filerecordinline = array(
+        $filerecordinline = [
             'contextid' => \context_module::instance($digestforum->cmid)->id,
             'component' => 'mod_digestforum',
             'filearea'  => 'attachment',
             'itemid'    => $post->id,
             'filepath'  => '/',
             'filename'  => $filename,
-        );
+        ];
         $fs = get_file_storage();
         $fs->create_file_from_string($filerecordinline, 'fake txt contents 1.');
         $filerecordinline['filename'] = 'otherfaketxt.txt';
@@ -2990,7 +3097,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertCount(2, $result['files']);
 
         // Keep only certain files in the area.
-        $filestokeep = array(array('filename' => $filename, 'filepath' => '/'));
+        $filestokeep = [['filename' => $filename, 'filepath' => '/']];
         $result = mod_digestforum_external::prepare_draft_area_for_post($post->id, 'attachment', $result['draftitemid'], $filestokeep);
         $result = external_api::clean_returnvalue(mod_digestforum_external::prepare_draft_area_for_post_returns(), $result);
         $this->assertCount(1, $result['files']);
@@ -3016,7 +3123,7 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
         $this->setAdminUser();
 
@@ -3035,8 +3142,13 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             ['name' => 'pinned', 'value' => true],
         ];
 
-        $result = mod_digestforum_external::update_discussion_post($discussion->firstpost, $subject, $message, $messageformat,
-            $options);
+        $result = mod_digestforum_external::update_discussion_post(
+            $discussion->firstpost,
+            $subject,
+            $message,
+            $messageformat,
+            $options
+        );
         $result = external_api::clean_returnvalue(mod_digestforum_external::update_discussion_post_returns(), $result);
         $this->assertTrue($result['status']);
 
@@ -3061,10 +3173,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $cm = get_coursemodule_from_id('digestforum', $digestforum->cmid, 0, false, MUST_EXIST);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         $this->setUser($user);
@@ -3093,14 +3205,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $filearea = 'draft';
         $component = 'user';
         $filenameimg = 'fakeimage.png';
-        $filerecordinline = array(
+        $filerecordinline = [
             'contextid' => $usercontext->id,
             'component' => $component,
             'filearea'  => $filearea,
             'itemid'    => $draftidinlineattach,
             'filepath'  => $filepath,
             'filename'  => $filenameimg,
-        );
+        ];
         $fs = get_file_storage();
 
         // Create a file in a draft area for regular attachments.
@@ -3153,9 +3265,9 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->resetAfterTest(true);
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $user = $this->getDataGenerator()->create_user();
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user->id, $course->id, $role->id);
 
         $this->setAdminUser();

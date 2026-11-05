@@ -40,7 +40,6 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class big_search_form implements renderable, templatable {
-
     public $course;
     public $datefrom;
     public $dateto;
@@ -77,10 +76,10 @@ class big_search_form implements renderable, templatable {
         $this->actionurl = new moodle_url('/mod/digestforum/search.php');
 
         $digestforumoptions = ['' => get_string('alldigestforums', 'digestforum')] + digestforum_menu_list($course);
-        $this->digestforumoptions = array_map(function($option) use ($digestforumoptions) {
+        $this->digestforumoptions = array_map(function ($option) use ($digestforumoptions) {
             return [
                 'value' => $option,
-                'name' => $digestforumoptions[$option]
+                'name' => $digestforumoptions[$option],
             ];
         }, array_keys($digestforumoptions));
     }
@@ -206,19 +205,22 @@ class big_search_form implements renderable, templatable {
         $showstandard = ($tagtypestoshow != \core_tag_tag::HIDE_STANDARD);
         $typenewtags = ($tagtypestoshow != \core_tag_tag::STANDARD_ONLY);
 
-        $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = array('#tags', $typenewtags, '',
-                              get_string('entertags', 'tag'), false, $showstandard, get_string('noselection', 'form')));
+        $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = ['#tags', $typenewtags, '',
+                              get_string('entertags', 'tag'), false, $showstandard, get_string('noselection', 'form')]);
 
         $data->tagsenabled = \core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts');
         $namefield = empty($CFG->keeptagnamecase) ? 'name' : 'rawname';
-        $tags = $DB->get_records('tag',
-            array('isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_digestforum', 'digestforum_posts')),
-            $namefield, 'rawname,' . $namefield . ' as fieldname');
+        $tags = $DB->get_records(
+            'tag',
+            ['isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_digestforum', 'digestforum_posts')],
+            $namefield,
+            'rawname,' . $namefield . ' as fieldname'
+        );
         $data->tags = [];
         foreach ($tags as $tag) {
             $data->tagoptions[] = ['value'    => $tag->rawname,
                                    'text'     => $tag->fieldname,
-                                   'selected' => in_array($tag->rawname, $this->tags)
+                                   'selected' => in_array($tag->rawname, $this->tags),
             ];
         }
 
@@ -233,12 +235,16 @@ class big_search_form implements renderable, templatable {
         }
 
         $data->datefromfields = html_writer::div(html_writer::select_time('days', 'fromday', $datefrom), 'mb-3 fitem ms-2')
-                              . html_writer::div(html_writer::select_time('months', 'frommonth', $datefrom),
-                           'mb-3 fitem ms-2')
+                              . html_writer::div(
+                                  html_writer::select_time('months', 'frommonth', $datefrom),
+                                  'mb-3 fitem ms-2'
+                              )
                               . html_writer::div(html_writer::select_time('years', 'fromyear', $datefrom), 'mb-3 fitem ms-2')
                               . html_writer::div(html_writer::select_time('hours', 'fromhour', $datefrom), 'mb-3 fitem ms-2')
-                              . html_writer::div(html_writer::select_time('minutes', 'fromminute', $datefrom),
-                           'mb-3 fitem ms-2');
+                              . html_writer::div(
+                                  html_writer::select_time('minutes', 'fromminute', $datefrom),
+                                  'mb-3 fitem ms-2'
+                              );
 
         $data->datetofields = html_writer::div(html_writer::select_time('days', 'today', $dateto), 'mb-3 fitem ms-2')
                             . html_writer::div(html_writer::select_time('months', 'tomonth', $dateto), 'mb-3 fitem ms-2')
@@ -259,5 +265,4 @@ class big_search_form implements renderable, templatable {
 
         return $data;
     }
-
 }

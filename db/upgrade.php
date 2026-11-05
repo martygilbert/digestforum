@@ -99,8 +99,16 @@ function xmldb_digestforum_upgrade($oldversion) {
             new xmldb_field('duedate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'introformat'),
             new xmldb_field('cutoffdate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'duedate'),
             new xmldb_field('grade_digestforum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'scale'),
-            new xmldb_field('grade_digestforum_notify', XMLDB_TYPE_INTEGER, '4', null, XMLDB_NOTNULL, null, '0',
-                'grade_digestforum'),
+            new xmldb_field(
+                'grade_digestforum_notify',
+                XMLDB_TYPE_INTEGER,
+                '4',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'grade_digestforum'
+            ),
         ];
         foreach ($fields as $field) {
             if (!$dbman->field_exists($table, $field)) {

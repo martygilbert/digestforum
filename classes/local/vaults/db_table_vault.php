@@ -75,8 +75,11 @@ abstract class db_table_vault {
      * @param object|null $user The user object
      * @return string
      */
-    abstract protected function generate_get_records_sql(?string $wheresql = null, ?string $sortsql = null,
-        ?int $userid = null): string;
+    abstract protected function generate_get_records_sql(
+        ?string $wheresql = null,
+        ?string $sortsql = null,
+        ?int $userid = null
+    ): string;
 
     /**
      * Convert the DB records into entities. The list of records will have been
@@ -141,11 +144,11 @@ abstract class db_table_vault {
      */
     protected function transform_db_records_to_entities(array $records) {
         $preprocessors = $this->get_preprocessors();
-        $result = array_map(function($record) {
+        $result = array_map(function ($record) {
             return ['record' => $record];
         }, $records);
 
-        $result = array_reduce(array_keys($preprocessors), function($carry, $preprocessor) use ($records, $preprocessors) {
+        $result = array_reduce(array_keys($preprocessors), function ($carry, $preprocessor) use ($records, $preprocessors) {
             $step = $preprocessors[$preprocessor];
             $dependencies = $step->execute($records);
 
@@ -179,7 +182,7 @@ abstract class db_table_vault {
      */
     public function get_from_ids(array $ids) {
         $alias = $this->get_table_alias();
-        list($insql, $params) = $this->get_db()->get_in_or_equal($ids);
+        [$insql, $params] = $this->get_db()->get_in_or_equal($ids);
         $wheresql = $alias . '.id ' . $insql;
         $sql = $this->generate_get_records_sql($wheresql);
         $records = $this->get_db()->get_records_sql($sql, $params);

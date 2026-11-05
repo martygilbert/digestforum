@@ -29,7 +29,6 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class tracker_test extends \advanced_testcase {
-
     /**
      * Add a tracker record.
      *
@@ -167,7 +166,9 @@ final class tracker_test extends \advanced_testcase {
         $this->assertNotEquals($id, digestforum_get_email_message_id(4, 2, '2026-11-04'));
 
         // The date defaults to today.
-        $this->assertEquals(digestforum_get_email_message_id(1, 2, userdate(time(), '%Y%m%d')),
-                digestforum_get_email_message_id(1, 2));
+        $this->assertEquals(
+            digestforum_get_email_message_id(1, 2, userdate(time(), '%Y%m%d')),
+            digestforum_get_email_message_id(1, 2)
+        );
     }
 }

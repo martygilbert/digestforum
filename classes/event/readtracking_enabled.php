@@ -76,7 +76,7 @@ class readtracking_enabled extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
+        return new \moodle_url('/mod/digestforum/view.php', ['f' => $this->other['digestforumid']]);
     }
 
     /**
@@ -102,8 +102,8 @@ class readtracking_enabled extends \core\event\base {
     }
 
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

@@ -98,8 +98,11 @@ class url {
      * @param int|null $sortorder The sorting order
      * @return moodle_url
      */
-    public function get_digestforum_view_url_from_digestforum(digestforum_entity $digestforum, ?int $pageno = null,
-            ?int $sortorder = null): moodle_url {
+    public function get_digestforum_view_url_from_digestforum(
+        digestforum_entity $digestforum,
+        ?int $pageno = null,
+        ?int $sortorder = null
+    ): moodle_url {
 
         return $this->get_digestforum_view_url_from_course_module_id($digestforum->get_course_module_record()->id, $pageno, $sortorder);
     }
@@ -112,8 +115,11 @@ class url {
      * @param int|null $sortorder The sorting order
      * @return moodle_url
      */
-    public function get_digestforum_view_url_from_course_module_id(int $coursemoduleid, ?int $pageno = null,
-            ?int $sortorder = null): moodle_url {
+    public function get_digestforum_view_url_from_course_module_id(
+        int $coursemoduleid,
+        ?int $pageno = null,
+        ?int $sortorder = null
+    ): moodle_url {
 
         $url = new moodle_url('/mod/digestforum/view.php', [
             'id' => $coursemoduleid,
@@ -138,7 +144,7 @@ class url {
      */
     public function get_discussion_view_url_from_discussion_id(int $discussionid): moodle_url {
         return new moodle_url('/mod/digestforum/discuss.php', [
-            'd' => $discussionid
+            'd' => $discussionid,
         ]);
     }
 
@@ -251,11 +257,11 @@ class url {
             return new moodle_url('/course/modedit.php', [
                 'update' => $digestforum->get_course_module_record()->id,
                 'sesskey' => sesskey(),
-                'return' => 1
+                'return' => 1,
             ]);
         } else {
             return new moodle_url('/mod/digestforum/post.php', [
-                'edit' => $post->get_id()
+                'edit' => $post->get_id(),
             ]);
         }
     }
@@ -268,7 +274,7 @@ class url {
      */
     public function get_split_discussion_at_post_url_from_post(post_entity $post): moodle_url {
         return new moodle_url('/mod/digestforum/post.php', [
-            'prune' => $post->get_id()
+            'prune' => $post->get_id(),
         ]);
     }
 
@@ -280,7 +286,7 @@ class url {
      */
     public function get_delete_post_url_from_post(post_entity $post): moodle_url {
         return new moodle_url('/mod/digestforum/post.php', [
-            'delete' => $post->get_id()
+            'delete' => $post->get_id(),
         ]);
     }
 
@@ -292,7 +298,7 @@ class url {
      */
     public function get_reply_to_post_url_from_post(post_entity $post): moodle_url {
         return new moodle_url('/mod/digestforum/post.php#mformdigestforum', [
-            'reply' => $post->get_id()
+            'reply' => $post->get_id(),
         ]);
     }
 
@@ -329,7 +335,7 @@ class url {
         $params = [
             'd' => $post->get_discussion_id(),
             'postid' => $post->get_id(),
-            'mark' => 'read'
+            'mark' => 'read',
         ];
 
         $url = new moodle_url('/mod/digestforum/discuss.php', $params);
@@ -354,7 +360,7 @@ class url {
         $params = [
             'd' => $post->get_discussion_id(),
             'postid' => $post->get_id(),
-            'mark' => 'unread'
+            'mark' => 'unread',
         ];
 
         $url = new moodle_url('/mod/digestforum/discuss.php', $params);
@@ -400,7 +406,7 @@ class url {
     public function get_author_profile_url(author_entity $author, int $courseid): moodle_url {
         return new moodle_url('/user/view.php', [
             'id' => $author->get_id(),
-            'course' => $courseid
+            'course' => $courseid,
         ]);
     }
 
@@ -438,7 +444,7 @@ class url {
     public function get_author_group_url(\stdClass $group): moodle_url {
         return new moodle_url('/user/index.php', [
                 'id' => $group->courseid,
-                'group' => $group->id
+                'group' => $group->id,
         ]);
     }
     /**
@@ -486,7 +492,7 @@ class url {
         return new moodle_url('/mod/digestforum/subscribe.php', [
             'sesskey' => sesskey(),
             'id' => $discussion->get_digestforum_id(),
-            'd' => $discussion->get_id()
+            'd' => $discussion->get_id(),
         ]);
     }
 
@@ -501,7 +507,7 @@ class url {
         return new moodle_url('discuss.php', [
             'sesskey' => sesskey(),
             'd' => $discussion->get_id(),
-            'pin' => $discussion->is_pinned() ? DFORUM_DISCUSSION_UNPINNED : DFORUM_DISCUSSION_PINNED
+            'pin' => $discussion->is_pinned() ? DFORUM_DISCUSSION_UNPINNED : DFORUM_DISCUSSION_PINNED,
         ]);
     }
 }

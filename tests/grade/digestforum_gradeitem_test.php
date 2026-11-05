@@ -181,8 +181,12 @@ final class digestforum_gradeitem_test extends \advanced_testcase {
      * @param bool $expected The expected result.
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('should_grade_only_active_users_provider')]
-    public function test_should_grade_only_active_users(bool $showonlyactiveenrolconfig, bool $showonlyactiveenrolpreference,
-            bool $viewsuspendeduserscapability, bool $expected): void {
+    public function test_should_grade_only_active_users(
+        bool $showonlyactiveenrolconfig,
+        bool $showonlyactiveenrolpreference,
+        bool $viewsuspendeduserscapability,
+        bool $expected
+    ): void {
         global $DB;
 
         $this->resetAfterTest();

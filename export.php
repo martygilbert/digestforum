@@ -76,7 +76,7 @@ $pagetitle = get_string('export', 'mod_digestforum');
 $context = $digestforum->get_context();
 
 $form = new mod_digestforum\form\export_form($url->out(false), [
-    'digestforum' => $digestforum
+    'digestforum' => $digestforum,
 ]);
 
 if ($form->is_cancelled()) {
@@ -136,7 +136,7 @@ if ($form->is_cancelled()) {
         $dataformat,
         $fields,
         $iterator,
-        function($exportdata) use ($fields, $striphtml, $humandates, $canviewfullname, $context) {
+        function ($exportdata) use ($fields, $striphtml, $humandates, $canviewfullname, $context) {
             $data = new stdClass();
 
             foreach ($fields as $field) {
@@ -154,8 +154,14 @@ if ($form->is_cancelled()) {
                 }
 
                 if ($field == 'message') {
-                    $data->message = file_rewrite_pluginfile_urls($data->message, 'pluginfile.php', $context->id, 'mod_digestforum',
-                        'post', $data->id);
+                    $data->message = file_rewrite_pluginfile_urls(
+                        $data->message,
+                        'pluginfile.php',
+                        $context->id,
+                        'mod_digestforum',
+                        'post',
+                        $data->id
+                    );
                 }
 
                 // Convert any boolean fields to their integer equivalent for output.
@@ -173,7 +179,8 @@ if ($form->is_cancelled()) {
                 $data->modified = userdate($data->modified);
             }
             return $data;
-        });
+        }
+    );
     die;
 }
 
@@ -192,7 +199,7 @@ if (!$PAGE->has_secondary_navigation()) {
 }
 
 // It is possible that the following fields have been provided in the URL.
-$userids = array_filter($userids, static function(int $userid) use ($course, $cm): bool {
+$userids = array_filter($userids, static function (int $userid) use ($course, $cm): bool {
     return $cm->effectivegroupmode != SEPARATEGROUPS || groups_user_groups_visible($course, $userid, $cm);
 });
 $form->set_data(['useridsselected' => $userids, 'discussionids' => $discussionids, 'from' => $from, 'to' => $to]);

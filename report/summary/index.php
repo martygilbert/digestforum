@@ -112,8 +112,10 @@ $PAGE->activityheader->disable();
 $PAGE->navbar->add(get_string('nodetitle', 'digestforumreport_summary'));
 
 // Activate the secondary nav tab.
-navigation_node::override_active_url(new moodle_url('/mod/digestforum/report/summary/index.php',
-    ['courseid' => $courseid, 'digestforumid' => $digestforumid]));
+navigation_node::override_active_url(new moodle_url(
+    '/mod/digestforum/report/summary/index.php',
+    ['courseid' => $courseid, 'digestforumid' => $digestforumid]
+));
 
 $allowbulkoperations = !$download && !empty($CFG->messaging) && has_capability('moodle/course:bulkmessaging', $context);
 $canseeprivatereplies = false;
@@ -154,8 +156,16 @@ if ($numdigestforums === $viewallcount) {
 }
 
 // Prepare and display the report.
-$table = new \digestforumreport_summary\summary_table($courseid, $filters, $allowbulkoperations,
-        $canseeprivatereplies, $perpage, $canexport, $iscoursereport, $accessalldigestforums);
+$table = new \digestforumreport_summary\summary_table(
+    $courseid,
+    $filters,
+    $allowbulkoperations,
+    $canseeprivatereplies,
+    $perpage,
+    $canexport,
+    $iscoursereport,
+    $accessalldigestforums
+);
 $table->baseurl = $pageurl;
 
 $eventparams = [
@@ -190,7 +200,7 @@ if ($download) {
 
     unset($filters['digestforums']);
     echo $renderer->render_filters_form($course, $cms, $pageurl, $filters);
-    $table->show_download_buttons_at(array(TABLE_P_BOTTOM));
+    $table->show_download_buttons_at([TABLE_P_BOTTOM]);
     echo $renderer->render_summary_table($table);
     echo $OUTPUT->footer();
 }

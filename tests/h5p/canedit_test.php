@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace mod_digestforum\h5p;
 
@@ -29,7 +29,6 @@ use stdClass;
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\h5p\canedit::class)]
 final class canedit_test extends \advanced_testcase {
-
     /**
      * Test the behaviour of can_edit_content().
      *
@@ -43,8 +42,13 @@ final class canedit_test extends \advanced_testcase {
      * @return void
      */
     #[\PHPUnit\Framework\Attributes\DataProvider('can_edit_content_provider')]
-    public function test_can_edit_content(string $currentuser, string $fileauthor, string $filecomponent, bool $expected,
-            $filearea = 'unittest'): void {
+    public function test_can_edit_content(
+        string $currentuser,
+        string $fileauthor,
+        string $filecomponent,
+        bool $expected,
+        $filearea = 'unittest'
+    ): void {
         global $USER, $DB;
 
         $this->setRunTestInSeparateProcess(true);

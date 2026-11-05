@@ -46,20 +46,20 @@ final class rsslib_test extends \advanced_testcase {
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
 
         // Post twice.
         $this->helper_post_to_digestforum($digestforum, $otheruser);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
 
-        list($sql, $params) = digestforum_rss_feed_discussions_sql($digestforum, $cm);
+        [$sql, $params] = digestforum_rss_feed_discussions_sql($digestforum, $cm);
         $discussions = $DB->get_records_sql($sql, $params);
         $this->assertCount(2, $discussions);
 
         $post->deleted = 1;
         $DB->update_record('digestforum_posts', $post);
 
-        list($sql, $params) = digestforum_rss_feed_discussions_sql($digestforum, $cm);
+        [$sql, $params] = digestforum_rss_feed_discussions_sql($digestforum, $cm);
         $discussions = $DB->get_records_sql($sql, $params);
         $this->assertCount(1, $discussions);
     }
@@ -77,20 +77,20 @@ final class rsslib_test extends \advanced_testcase {
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
-        list($user, $otheruser) = $this->helper_create_users($course, 2);
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
 
         // Post twice.
         $this->helper_post_to_digestforum($digestforum, $otheruser);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $otheruser);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $otheruser);
 
-        list($sql, $params) = digestforum_rss_feed_posts_sql($digestforum, $cm);
+        [$sql, $params] = digestforum_rss_feed_posts_sql($digestforum, $cm);
         $posts = $DB->get_records_sql($sql, $params);
         $this->assertCount(2, $posts);
 
         $post->deleted = 1;
         $DB->update_record('digestforum_posts', $post);
 
-        list($sql, $params) = digestforum_rss_feed_posts_sql($digestforum, $cm);
+        [$sql, $params] = digestforum_rss_feed_posts_sql($digestforum, $cm);
         $posts = $DB->get_records_sql($sql, $params);
         $this->assertCount(1, $posts);
     }

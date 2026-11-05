@@ -209,7 +209,7 @@ class discussion_list {
             'settings' => [
                 'excludetext' => true,
                 'togglemoreicon' => true,
-                'excludesubscription' => true
+                'excludesubscription' => true,
             ],
             'totaldiscussioncount' => $alldiscussionscount,
             'userid' => $user->id,
@@ -227,7 +227,7 @@ class discussion_list {
 
         if ($this->postprocessfortemplate !== null) {
             // We've got some post processing to do!
-            $exportedposts = ($this->postprocessfortemplate) ($discussions, $user, $digestforum);
+            $exportedposts = ($this->postprocessfortemplate)($discussions, $user, $digestforum);
         }
 
         $baseurl = new \moodle_url($PAGE->url, ['o' => $sortorder, 's' => $pagesize]);
@@ -284,7 +284,7 @@ class discussion_list {
         $post = (object) [
             'course' => $digestforum->get_course_id(),
             'digestforum' => $digestforum->get_id(),
-            'discussion' => 0,           // Ie discussion # not defined yet.
+            'discussion' => 0, // Ie discussion # not defined yet.
             'parent' => 0,
             'subject' => '',
             'userid' => $user->id,
@@ -295,32 +295,36 @@ class discussion_list {
         ];
         $thresholdwarning = digestforum_check_throttling($digestforumrecord, $cm);
 
-        $formparams = array(
+        $formparams = [
             'course' => $digestforum->get_course_record(),
             'cm' => $cm,
             'coursecontext' => $coursecontext,
             'modcontext' => $modcontext,
             'digestforum' => $digestforumrecord,
             'post' => $post,
-            'subscribe' => \mod_digestforum\subscriptions::is_subscribed($user->id, $digestforumrecord,
-                null, $cm),
+            'subscribe' => \mod_digestforum\subscriptions::is_subscribed(
+                $user->id,
+                $digestforumrecord,
+                null,
+                $cm
+            ),
             'thresholdwarning' => $thresholdwarning,
             'inpagereply' => true,
-            'edit' => 0
-        );
+            'edit' => 0,
+        ];
         $posturl = new \moodle_url('/mod/digestforum/post.php');
-        $mformpost = new \mod_digestforum_post_form($posturl, $formparams, 'post', '', array('id' => 'mformdigestforum'));
+        $mformpost = new \mod_digestforum_post_form($posturl, $formparams, 'post', '', ['id' => 'mformdigestforum']);
         $discussionsubscribe = \mod_digestforum\subscriptions::get_user_default_subscription($digestforumrecord, $coursecontext, $cm, null);
 
-        $params = array('reply' => 0, 'digestforum' => $digestforumrecord->id, 'edit' => 0) +
-            (isset($post->groupid) ? array('groupid' => $post->groupid) : array()) +
-            array(
+        $params = ['reply' => 0, 'digestforum' => $digestforumrecord->id, 'edit' => 0] +
+            (isset($post->groupid) ? ['groupid' => $post->groupid] : []) +
+            [
                 'userid' => $post->userid,
                 'parent' => $post->parent,
                 'discussion' => $post->discussion,
                 'course' => $digestforum->get_course_id(),
-                'discussionsubscribe' => $discussionsubscribe
-            );
+                'discussionsubscribe' => $discussionsubscribe,
+            ];
         $mformpost->set_data($params);
 
         return $mformpost->render();
@@ -368,8 +372,8 @@ class discussion_list {
 
         if ($digestforum->is_cutoff_date_reached()) {
             $notifications[] = (new notification(
-                    get_string('cutoffdatereached', 'digestforum'),
-                    notification::NOTIFY_INFO
+                get_string('cutoffdatereached', 'digestforum'),
+                notification::NOTIFY_INFO
             ))->set_show_closebutton();
         }
 
@@ -377,7 +381,7 @@ class discussion_list {
             $notifications[] = (new notification(
                 get_string('thisdigestforumisthrottled', 'digestforum', [
                     'blockafter' => $digestforum->get_block_after(),
-                    'blockperiod' => get_string('secondstotime' . $digestforum->get_block_period())
+                    'blockperiod' => get_string('secondstotime' . $digestforum->get_block_period()),
                 ]),
                 notification::NOTIFY_INFO
             ))->set_show_closebutton();
@@ -421,11 +425,12 @@ class discussion_list {
         if ('eachuser' === $digestforum->get_type()) {
             $notifications[] = (new notification(
                 get_string('allowsdiscussions', 'digestforum'),
-                notification::NOTIFY_INFO)
+                notification::NOTIFY_INFO
+            )
             )->set_show_closebutton();
         }
 
-        return array_map(function($notification) {
+        return array_map(function ($notification) {
             return $notification->export_for_template($this->renderer);
         }, $notifications);
     }

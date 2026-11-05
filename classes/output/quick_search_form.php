@@ -39,7 +39,6 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quick_search_form implements renderable, templatable {
-
     /** @var int The course ID. */
     protected $courseid;
     /** @var string Current query. */
@@ -72,9 +71,8 @@ class quick_search_form implements renderable, templatable {
             'query' => $this->query,
             'helpicon' => $this->helpicon->export_for_template($output),
             'inputname' => 'search',
-            'searchstring' => get_string('searchdigestforums', 'mod_digestforum')
+            'searchstring' => get_string('searchdigestforums', 'mod_digestforum'),
         ];
         return $data;
     }
-
 }
