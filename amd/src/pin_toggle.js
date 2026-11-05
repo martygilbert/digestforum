@@ -59,7 +59,7 @@ define([
             var pinstate = toggleElement.data('targetstate');
             Repository.setPinDiscussionState(digestforumid, discussionid, pinstate)
                 .then(function(context) {
-                    return callback(toggleElement, context);
+                    return callback(toggleElement, context); // eslint-disable-line promise/no-callback-in-promise
                 })
                 .then(function() {
                     return String.get_string("pinupdated", "digestforum")

@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: A user can navigate to previous and next discussions
+Feature: Digest forum: A user can navigate to previous and next discussions
   In order to get go the previous discussion
   As a user
   I need to click on the previous discussion link

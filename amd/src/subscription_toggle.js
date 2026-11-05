@@ -59,7 +59,7 @@ define([
                         discussionId: discussionId,
                         subscriptionState: subscriptionState
                     });
-                    return callback(toggleElement, context);
+                    return callback(toggleElement, context); // eslint-disable-line promise/no-callback-in-promise
                 })
                 .catch(Notification.exception);
 

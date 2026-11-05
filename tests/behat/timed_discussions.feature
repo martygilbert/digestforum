@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Users can choose to set start and end time for display of their discussions
+Feature: Digest forum: Users can choose to set start and end time for display of their discussions
   In order to temporarly hide discussions to students
   As a teacher
   I need to set a discussion time start and time end

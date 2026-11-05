@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Forum discussions can be split
+Feature: Digest forum: Forum discussions can be split
   In order to manage digestforum discussions in my course
   As a Teacher
   I need to be able to split threads to keep them on topic.

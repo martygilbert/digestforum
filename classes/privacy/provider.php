@@ -1100,7 +1100,7 @@ class provider implements
      *
      * @param   int         $userid The userid of the user whose data is to be exported.
      * @param   \stdClass   $digestforum The digestforum whose data is being exported.
-     * @param   int         $tracke if the user is subscribed
+     * @param   int         $tracked if the user tracks the digestforum
      * @return  bool        Whether any data was stored.
      */
     protected static function export_tracking_data(int $userid, \stdClass $digestforum, int $tracked) {

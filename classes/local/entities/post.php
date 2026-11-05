@@ -89,6 +89,8 @@ class post {
      * @param bool $mailnow Should this post be mailed immediately
      * @param bool $deleted Is the post deleted
      * @param int $privatereplyto Which user this reply is intended for in a private reply situation
+     * @param int|null $wordcount Number of words in the message
+     * @param int|null $charcount Number of characters in the message
      */
     public function __construct(
         int $id,

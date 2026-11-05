@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Include private replies in the summary report
+Feature: Digest forum: Include private replies in the summary report
   In order to generate accurate reports based on what is visible
   As a teacher
   I should have private replies being counted as well

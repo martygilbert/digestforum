@@ -34,7 +34,7 @@ Feature: A student can favourite a discussion via the digestforum settings menu
 
   Scenario: Student can favourite a discussion from the discussion list
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I click on "Discussion 1" action menu
+    And I click on "Discussion 1" digestforum action menu
     And I click on "[title='Star this discussion']" "css_element"
-    And I click on "Discussion 1" action menu
+    And I click on "Discussion 1" digestforum action menu
     And I click on "[title='Unstar this discussion']" "css_element"

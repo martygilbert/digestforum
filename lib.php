@@ -180,6 +180,7 @@ function digestforum_instance_created($context, $digestforum) {
  * will update an existing instance with new data.
  *
  * @param object $digestforum digestforum instance (with magic quotes)
+ * @param mod_digestforum_mod_form $mform The submitted form
  * @return bool success
  */
 function digestforum_update_instance($digestforum, $mform) {
@@ -845,7 +846,8 @@ EOF;
  * Create/update grade items for given digestforum.
  *
  * @param stdClass $digestforum Forum object with extra cmidnumber
- * @param mixed $grades Optional array/object of grade(s); 'reset' means reset grades in gradebook
+ * @param mixed $ratings Optional array/object of rating grade(s); 'reset' means reset grades in gradebook
+ * @param mixed $digestforumgrades Optional array/object of whole-digestforum grade(s); 'reset' means reset grades
  */
 function digestforum_grade_item_update($digestforum, $ratings = null, $digestforumgrades = null): void {
     global $CFG;
@@ -918,7 +920,7 @@ function digestforum_grade_item_delete($digestforum) {
  *
  * This is used to find out if scale used anywhere.
  *
- * @param $scaleid int
+ * @param int $scaleid
  * @return boolean True if the scale is used by any digestforum
  */
 function digestforum_scale_used_anywhere(int $scaleid): bool {
@@ -1321,6 +1323,8 @@ function digestforum_search_posts(
 /**
  * Get all the posts for a user in a digestforum suitable for digestforum_print_post
  *
+ * @param int $digestforumid The digestforum id
+ * @param int $userid The user id
  * @uses CONTEXT_MODULE
  * @return array
  */
@@ -1457,7 +1461,7 @@ function digestforum_get_post_from_log($log) {
 /**
  * Given a discussion id, return the first post from the discussion
  *
- * @param int $dicsussionid
+ * @param int $discussionid
  * @return array
  */
 function digestforum_get_firstpost_from_discussion($discussionid) {
@@ -2203,7 +2207,9 @@ function digestforum_get_course_digestforum($courseid, $type) {
 /**
  * Return rating related permissions
  *
- * @param string $options the context id
+ * @param int $contextid the context id
+ * @param string $component the component
+ * @param string $ratingarea the rating area
  * @return array an associative array of the user's rating permissions
  */
 function digestforum_rating_permissions($contextid, $component, $ratingarea) {
@@ -2378,6 +2384,8 @@ function mod_digestforum_rating_can_see_item_ratings($params) {
  *
  * @param stdClass $digestforum The digestforum object.
  * @param int $discussionid The discussion to create an icon for.
+ * @param moodle_url|null $returnurl The URL to return to after changing the subscription.
+ * @param bool $includetext Whether to include the text with the icon.
  * @return string The generated markup.
  */
 function digestforum_get_discussion_subscription_icon($digestforum, $discussionid, $returnurl = null, $includetext = false) {
@@ -3152,7 +3160,7 @@ function digestforum_update_post($newpost, $mform, $unused = null) {
  * Given an object containing all the necessary data,
  * create a new discussion and return the id
  *
- * @param object $post
+ * @param object $discussion
  * @param mixed $mform
  * @param string $unused
  * @param int $userid
@@ -4730,7 +4738,7 @@ function digestforum_tp_delete_read_records($userid = -1, $postid = -1, $discuss
  * requested).
  *
  * @param mixed $digestforum The digestforum object to test, or the int id (optional).
- * @param mixed $userid The user object to check for (optional).
+ * @param mixed $user The user object to check for (optional).
  * @return boolean
  */
 function digestforum_tp_can_track_digestforums($digestforum = false, $user = false) {
@@ -4788,7 +4796,7 @@ function digestforum_tp_can_track_digestforums($digestforum = false, $user = fal
  * be specified. If not specified, the current user is assumed.
  *
  * @param mixed $digestforum If int, the id of the digestforum being checked; if object, the digestforum object
- * @param int $userid The id of the user being checked (optional).
+ * @param mixed $user The user object, or id, being checked (optional).
  * @return boolean
  */
 function digestforum_tp_is_tracked($digestforum, $user = false) {
@@ -5395,6 +5403,8 @@ function digestforum_reset_course_form_definition(&$mform) {
 
 /**
  * Course reset form defaults.
+ *
+ * @param stdClass $course The course
  * @return array
  */
 function digestforum_reset_course_form_defaults($course) {
@@ -5469,7 +5479,7 @@ function digestforum_get_extra_capabilities() {
 /**
  * Adds module specific settings to the settings block
  *
- * @param settings_navigation $settings The settings navigation object
+ * @param settings_navigation $settingsnav The settings navigation object
  * @param navigation_node $digestforumnode The node to add module settings to
  */
 function digestforum_extend_settings_navigation(settings_navigation $settingsnav, navigation_node $digestforumnode) {
@@ -5756,7 +5766,7 @@ function digestforum_get_courses_user_posted_in(
  * Gets all of the digestforums a user has posted in for one or more courses.
  *
  * @param stdClass $user
- * @param array $courseids An array of courseids to search or if not provided
+ * @param array|null $courseids An array of courseids to search or if not provided
  *                       all courses the user has posted within
  * @param bool $discussionsonly If true then only digestforums where the user has started
  *                       a discussion will be returned.
@@ -5992,7 +6002,7 @@ function digestforum_get_posts_by_user(
 
             // This is needed for functionality later on in the digestforum code. It is converted to an object
             // because the cm_info is readonly from 2.6. This is a dirty hack because some other parts of the
-            // code were expecting an writeable object. See {@link digestforum_print_post()}.
+            // code were expecting an writeable object. See {@see digestforum_print_post()}.
             $digestforum->cm = new stdClass();
             foreach ($cm as $key => $value) {
                 $digestforum->cm->$key = $value;
@@ -6911,7 +6921,7 @@ function mod_digestforum_core_calendar_event_timestart_updated(\calendar_event $
  *
  * @param   \mod_digestforum\local\entities\digestforum  $digestforum The digestforum entity
  * @param   stdClass                         $user The user to render for
- * @param   int[]|null                       $groupid The group to render
+ * @param   int|null                         $groupid The group to render
  * @param   int|null                         $sortorder The sort order to use when selecting the discussions in the list
  * @param   int|null                         $pageno The zero-indexed page number to use
  * @param   int|null                         $pagesize The number of discussions to show on the page
@@ -6960,7 +6970,7 @@ function mod_digestforum_get_discussion_summaries(
  *
  * @param   \mod_digestforum\local\entities\digestforum  $digestforum The digestforum entity
  * @param   stdClass                         $user The user to render for
- * @param   int                              $groupid The group to render
+ * @param   int|null                         $groupid The group to render
  * @return  int                              The number of discussions in a digestforum
  */
 function mod_digestforum_count_all_discussions(
@@ -6997,7 +7007,7 @@ function mod_digestforum_count_all_discussions(
  *
  * @param   \mod_digestforum\local\entities\digestforum  $digestforum The digestforum entity
  * @param   stdClass                         $user The user viewing
- * @param   int                              $groupid The groupid requested
+ * @param   int|null                         $groupid The groupid requested
  * @return  array                            The list of groups to show
  */
 function mod_digestforum_get_groups_from_groupid(
@@ -7169,7 +7179,7 @@ function mod_digestforum_extend_navigation_user(
  *
  * @param int $userid mdluserid of the user in question
  * @param int $forumid instance id of the digestforum
- * @param string $digestdate, in the format of 'yyyy-mm-dd'. if omitted, then all time
+ * @param string $digestdate in the format of 'yyyy-mm-dd'. if omitted, then all time
  * @return int percentage open rate, rounded to a whole number, or -1 if not enough data
  */
 function mod_digestforum_get_month_open_rate($userid, $forumid, $digestdate = 0) {

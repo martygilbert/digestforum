@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: A teacher or admin can view subscriptions tab
+Feature: Digest forum: A teacher or admin can view subscriptions tab
 
   Background:
     Given the following "users" exist:

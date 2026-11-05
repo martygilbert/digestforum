@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Posting to all groups in a visible group discussion is restricted to users with access to all groups
+Feature: Digest forum: Posting to all groups in a visible group discussion is restricted to users with access to all groups
   In order to post to all groups in a digestforum with visible groups
   As a teacher
   I need to have the accessallgroups capability

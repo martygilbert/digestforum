@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: Students can choose from 4 discussion display options and their choice is remembered
+Feature: Digest forum: Students can choose from 4 discussion display options and their choice is remembered
   In order to read digestforum posts in a suitable view
   As a user
   I need to select which display method I want to use

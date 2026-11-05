@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Groups report filter is not available if no groups exist
+Feature: Digest forum: Groups report filter is not available if no groups exist
   When no groups exist
   As a teacher
   I can view the digestforum summary report for all users of a digestforum

@@ -100,6 +100,7 @@ class discussion_list {
      * @param   builder_factory     $builderfactory The factory used to fetch the builder instances
      * @param   capability_manager  $capabilitymanager The managed used to check capabilities on the digestforum
      * @param   url_factory         $urlfactory The factory used to create URLs in the digestforum
+     * @param   digestforum_gradeitem $digestforumgradeitem The grade item for the digestforum
      * @param   string              $template
      * @param   notification[]      $notifications A list of any notifications to be displayed within the page
      * @param   callable|null       $postprocessfortemplate Callback function to process discussion lists for templates
@@ -141,11 +142,11 @@ class discussion_list {
      *
      * @param   stdClass    $user The user to render for
      * @param   cm_info     $cm The course module info for this discussion list
-     * @param   int         $groupid The group to render
-     * @param   int         $sortorder The sort order to use when selecting the discussions in the list
-     * @param   int         $pageno The zero-indexed page number to use
-     * @param   int         $pagesize The number of discussions to show on the page
-     * @param   int         $displaymode The discussion display mode
+     * @param   int|null    $groupid The group to render
+     * @param   int|null    $sortorder The sort order to use when selecting the discussions in the list
+     * @param   int|null    $pageno The zero-indexed page number to use
+     * @param   int|null    $pagesize The number of discussions to show on the page
+     * @param   int|null    $displaymode The discussion display mode
      * @param   bool        $enablediscussioncreation To show the discussion button.
      * @return  string      The rendered content for display
      */
@@ -273,7 +274,7 @@ class discussion_list {
      *
      * @param stdClass $user The user the form is being generated for
      * @param \cm_info $cm
-     * @param int $groupid The groupid if any
+     * @param int|null $groupid The groupid if any
      *
      * @return string The rendered html
      */
@@ -339,7 +340,7 @@ class discussion_list {
     /**
      * Fetch the page size to use when displaying the page.
      *
-     * @param   int         $pagesize The number of discussions to show on the page
+     * @param   int|null    $pagesize The number of discussions to show on the page
      * @return  int         The normalised page size
      */
     private function get_page_size(?int $pagesize): int {
@@ -353,7 +354,7 @@ class discussion_list {
     /**
      * Fetch the current page number (zero-indexed).
      *
-     * @param   int         $pageno The zero-indexed page number to use
+     * @param   int|null    $pageno The zero-indexed page number to use
      * @return  int         The normalised page number
      */
     private function get_page_number(?int $pageno): int {

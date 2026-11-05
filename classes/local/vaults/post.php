@@ -481,6 +481,7 @@ class post extends db_table_vault {
      *
      * @param   stdClass    $user The user to fetch counts for
      * @param   bool        $canseeprivatereplies Whether this user can see all private replies or not
+     * @param   string      $posttablealias The alias of the post table in the query
      * @return  array       The SQL WHERE clause, and parameters to use in the SQL.
      */
     private function get_private_reply_sql(stdClass $user, bool $canseeprivatereplies, $posttablealias = "p") {

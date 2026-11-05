@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: A teacher or admin when changes the subscription mode should land in the subscriptions tab
+Feature: Digest forum: A teacher or admin when changes the subscription mode should land in the subscriptions tab
 
   Background:
     Given the following "users" exist:

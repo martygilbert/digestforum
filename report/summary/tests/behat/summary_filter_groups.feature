@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Groups report filter is available if groups exist
+Feature: Digest forum: Groups report filter is available if groups exist
   In order to retrieve targeted digestforum data
   As a teacher
   I can filter the digestforum summary report by groups of users

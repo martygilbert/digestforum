@@ -133,7 +133,7 @@ class digestforum_post implements \renderable, \templatable {
     /**
      * Export this data so it can be used as the context for a mustache template.
      *
-     * @param \mod_digestforum_renderer $renderer The render to be used for formatting the message and attachments
+     * @param \renderer_base $renderer The render to be used for formatting the message and attachments
      * @param bool $plaintext Whethe the target is a plaintext target
      * @return array Data ready for use in a mustache template
      */

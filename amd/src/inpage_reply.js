@@ -176,6 +176,7 @@ define([
 
                         return currentRoot.find(Selectors.post.inpageReplyContent).hide();
                     })
+                    // eslint-disable-next-line promise/always-return
                     .then(function() {
                         location.href = "#p" + newid;
 

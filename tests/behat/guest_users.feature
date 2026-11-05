@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: Guest and not logged users could see the option to add new post or reply
+Feature: Digest forum: Guest and not logged users could see the option to add new post or reply
   In order to guide users to create an account
   As a guest or not logged user
   I want to see the option to add new post or reply

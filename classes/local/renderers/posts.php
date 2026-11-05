@@ -50,7 +50,7 @@ class posts {
      * @param renderer_base $renderer Renderer base
      * @param exported_posts_builder $exportedpostsbuilder Builder for building exported posts
      * @param string $template The template to render
-     * @param callable $postprocessfortemplate Function to process exported posts before template rendering
+     * @param callable|null $postprocessfortemplate Function to process exported posts before template rendering
      */
     public function __construct(
         renderer_base $renderer,

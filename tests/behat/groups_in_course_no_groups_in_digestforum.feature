@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Forums in 'No groups' mode allow posting to All participants for all users
+Feature: Digest forum: Forums in 'No groups' mode allow posting to All participants for all users
   In order to post to a digestforum in 'No groups' mode, which is in course which has groups
   As any user
   I need to post

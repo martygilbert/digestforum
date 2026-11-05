@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Blog posts are always displayed in reverse chronological order
+Feature: Digest forum: Blog posts are always displayed in reverse chronological order
   In order to use digestforum as a blog
   As a user
   I need to see most recent blog posts first

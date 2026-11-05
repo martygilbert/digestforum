@@ -473,6 +473,8 @@ class test_capability_manager extends capability_manager { // phpcs:ignore PSR1.
      * @param bool $reply Value for can_reply_to_post
      * @param bool $export Value for can_export_post
      * @param bool $controlreadstatus Value for can_manually_control_post_read_status
+     * @param bool $canreplyprivatelytopost Value for can_reply_privately_to_post
+     * @param bool $canenrol Value for can_self_enrol
      */
     public function __construct(
         bool $view = true,

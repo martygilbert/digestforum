@@ -117,7 +117,7 @@ class behat_mod_digestforum extends behat_base {
      * The step begins from the digestforum's page or from the digestforum's course page.
      *
      * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
-     * @param string $postname The subject of the post
+     * @param string $postsubject The subject of the post
      * @param string $digestforumname The digestforum name
      * @param TableNode $table
      */
@@ -171,7 +171,7 @@ class behat_mod_digestforum extends behat_base {
     /**
      * Opens up the action menu for the discussion
      *
-     * @Given /^I click on "(?P<post_subject_string>(?:[^"]|\\")*)" action menu$/
+     * @Given /^I click on "(?P<post_subject_string>(?:[^"]|\\")*)" digestforum action menu$/
      * @param string $discussion The subject of the discussion
      */
     public function i_click_on_action_menu($discussion) {
@@ -535,7 +535,7 @@ class behat_mod_digestforum extends behat_base {
      * This is used instead of navigating through 4-5 different steps and to solve issues where JS would be required to click
      * on the advanced button
      *
-     * @param $postsubject
+     * @param string $postsubject
      * @throws coding_exception
      * @throws dml_exception
      * @throws moodle_exception

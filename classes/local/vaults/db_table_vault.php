@@ -70,7 +70,7 @@ abstract class db_table_vault {
      *
      * @param string|null $wheresql Where conditions for the SQL
      * @param string|null $sortsql Order by conditions for the SQL
-     * @param object|null $user The user object
+     * @param int|null $userid The user id
      * @return string
      */
     abstract protected function generate_get_records_sql(

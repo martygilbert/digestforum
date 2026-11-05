@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: A user can control their default discussion subscription settings
+Feature: Digest forum: A user can control their default discussion subscription settings
   In order to automatically subscribe to discussions
   As a user
   I can choose my default subscription preference

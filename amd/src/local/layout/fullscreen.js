@@ -111,7 +111,7 @@ const getLayoutHelpers = (layoutNode, FocusLockManager, focusOnClose) => {
             try {
                 focusOnClose.focus();
             } catch (e) {
-                // eslint-disable-line
+                // The element may have gone, so there is nothing to focus.
             }
         }
     };

@@ -235,7 +235,7 @@ class mod_digestforum_renderer extends plugin_renderer_base {
     /**
      * Display a digestforum post in the relevant context.
      *
-     * @param \mod_digestforum\output\digestforum_post $post The post to display.
+     * @param \mod_digestforum\output\digestforum_post_email $post The post to display.
      * @return string
      */
     public function render_digestforum_post_email(\mod_digestforum\output\digestforum_post_email $post) {

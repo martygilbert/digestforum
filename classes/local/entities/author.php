@@ -67,11 +67,13 @@ class author {
      * @param string $lastname Last name
      * @param string $fullname Full name
      * @param string $email Email
+     * @param bool $deleted Is the author deleted
      * @param string|null $middlename Middle name
      * @param string|null $firstnamephonetic Phonetic spelling of first name
      * @param string|null $lastnamephonetic Phonetic spelling of last name
      * @param string|null $alternatename Altername name
      * @param string|null $imagealt Image alt
+     * @param string|null $initials Initials
      */
     public function __construct(
         int $id,

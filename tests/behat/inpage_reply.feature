@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: Students can reply to a discussion in page.
+Feature: Digest forum: Students can reply to a discussion in page.
 
   Background:
     Given the following "users" exist:

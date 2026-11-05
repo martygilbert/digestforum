@@ -455,6 +455,9 @@ class send_user_digests extends \core\task\adhoc_task {
 
     /**
      * Add the header to this message.
+     *
+     * @param \stdClass $digestforum The digestforum the digest is for
+     * @param string $digestdate The digest date, yyyy-mm-dd
      */
     protected function add_message_header($digestforum, $digestdate) {
         $site = get_site();

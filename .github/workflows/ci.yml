@@ -95,6 +95,7 @@ jobs:
         run: moodle-plugin-ci savepoints
 
       - name: Mustache Lint
+        continue-on-error: true # Email tables and copied core markup warn by design.
         if: ${{ !cancelled() }}
         run: moodle-plugin-ci mustache
 

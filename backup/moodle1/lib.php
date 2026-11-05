@@ -35,7 +35,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     /**
      * Declare the paths in moodle.xml we are able to convert
      *
-     * The method returns list of {@link convert_path} instances.
+     * The method returns list of {@see convert_path} instances.
      * For each path returned, the corresponding conversion method must be
      * defined.
      *
@@ -43,7 +43,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * actually exist in the file. The last element with the module name was
      * appended by the moodle1_converter class.
      *
-     * @return array of {@link convert_path} instances
+     * @return array of {@see convert_path} instances
      */
     public function get_paths() {
         return [
@@ -68,6 +68,8 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
 
     /**
      * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM data
+     *
+     * @param array $data The digestforum data
      */
     public function process_digestforum($data) {
         global $CFG;

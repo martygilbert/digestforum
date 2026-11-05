@@ -61,7 +61,7 @@ class reply_handler extends \core\message\inbound\handler {
      * Process a message received and validated by the Inbound Message processor.
      *
      * @throws \core\message\inbound\processing_failed_exception
-     * @param \stdClass $messagedata The Inbound Message record
+     * @param \stdClass $record The Inbound Message record
      * @param \stdClass $messagedata The message data packet
      * @return bool Whether the message was successfully processed.
      */

@@ -61,6 +61,7 @@ define(['jquery', 'core/ajax', 'core/templates'], function($, Ajax, Templates) {
                 });
 
                 // Apply the label to the results.
+                // eslint-disable-next-line promise/no-nesting
                 return $.when.apply($.when, promises).then(function() {
                     var args = arguments;
                     $.each(results, function(index, user) {

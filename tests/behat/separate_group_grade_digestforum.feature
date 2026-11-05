@@ -1,5 +1,5 @@
 @mod @mod_digestforum @core_grades
-Feature: I can grade a students by group with separate groups
+Feature: Digest forum: I can grade a students by group with separate groups
   In order to assess a student's contributions
   As a teacher
   I can assign grades to a student based on their separate groups

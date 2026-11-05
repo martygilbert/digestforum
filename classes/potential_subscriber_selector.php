@@ -158,6 +158,8 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
 
     /**
      * Sets this digestforum as force subscribed or not
+     *
+     * @param bool $setting Whether the digestforum is force subscribed
      */
     public function set_force_subscribed($setting = true) {
         $this->forcesubscribed = true;

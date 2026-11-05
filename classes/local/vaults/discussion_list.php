@@ -334,7 +334,7 @@ class discussion_list extends db_table_vault {
      * Get the sort order SQL for a sort method.
      *
      * @param int|null  $sortmethod
-     * @param bool|null $includefavourites
+     * @param bool $includefavourites
      * @return string
      */
     private function get_sort_order(?int $sortmethod, bool $includefavourites = true): string {
@@ -396,7 +396,7 @@ class discussion_list extends db_table_vault {
      * @param   int         $digestforumid The digestforum to fetch the discussion set for
      * @param   bool        $includehiddendiscussions Whether to include hidden discussions or not
      * @param   int|null    $includepostsforuser Which user to include posts for, if any
-     * @param   int         $sortorder The sort order to use
+     * @param   int|null    $sortorder The sort order to use
      * @param   int         $limit The number of discussions to fetch
      * @param   int         $offset The record offset
      * @return  array       The set of data fetched
@@ -440,7 +440,7 @@ class discussion_list extends db_table_vault {
      * @param   int[]       $groupids The list of real groups to filter on
      * @param   bool        $includehiddendiscussions Whether to include hidden discussions or not
      * @param   int|null    $includepostsforuser Which user to include posts for, if any
-     * @param   int         $sortorder The sort order to use
+     * @param   int|null    $sortorder The sort order to use
      * @param   int         $limit The number of discussions to fetch
      * @param   int         $offset The record offset
      * @return  array       The set of data fetched

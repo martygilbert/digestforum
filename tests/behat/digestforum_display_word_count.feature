@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Forum posts display word count
+Feature: Digest forum: Forum posts display word count
   In order to display digestforum word count
   As a teacher
   I need to be able to update digestforum and set "Display word count" to Yes

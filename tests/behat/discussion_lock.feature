@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: As a teacher, you can manually lock individual discussions when viewing the discussion
+Feature: Digest forum: As a teacher, you can manually lock individual discussions when viewing the discussion
 
   Background:
     Given the following "users" exist:

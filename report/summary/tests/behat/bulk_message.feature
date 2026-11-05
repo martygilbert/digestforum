@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Message users in the summary report
+Feature: Digest forum: Message users in the summary report
   In order to encourage users to participate
   As a teacher
   I should be able to send messages to those who are not taking part

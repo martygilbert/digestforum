@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Forum posts can be replied to in private
+Feature: Digest forum: Forum posts can be replied to in private
   In order to post feedback to my students
   As a Teacher
   I need to be able to reply privately to students

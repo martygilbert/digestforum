@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Report relevant content availability
+Feature: Digest forum: Report relevant content availability
   In order to view the appropriate report content
   As a teacher or student
   I need to have the associated capabilities

@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Attachments count column data available
+Feature: Digest forum: Attachments count column data available
   In order to gather data on users' digestforum attachments
   As a teacher
   I need to view accurate attachment count data in the digestforum summary report

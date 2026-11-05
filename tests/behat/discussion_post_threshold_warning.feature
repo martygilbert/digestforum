@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: An admin or teacher sets the post threshold for blocking and warning
+Feature: Digest forum: An admin or teacher sets the post threshold for blocking and warning
   A student should not be able to post more than blocking value
 
   Background:

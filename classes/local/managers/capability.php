@@ -740,7 +740,7 @@ class capability {
      * Check whether the supplied grader can grade the gradee.
      *
      * @param stdClass $grader The user grading
-     * @param stdClass $gradee The user being graded
+     * @param stdClass|null $gradee The user being graded
      * @return bool
      */
     public function can_grade(stdClass $grader, ?stdClass $gradee = null): bool {

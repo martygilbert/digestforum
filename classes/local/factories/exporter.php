@@ -88,7 +88,7 @@ class exporter {
      *
      * @param   stdClass        $user The user viewing the digestforum
      * @param   digestforum_entity    $digestforum The digestforum being viewed
-     * @param   int             $currentgroup The group currently being viewed
+     * @param   int|null        $currentgroup The group currently being viewed
      * @return  digestforum_exporter
      */
     public function get_digestforum_exporter(
@@ -122,6 +122,7 @@ class exporter {
      * @param   digestforum_entity      $digestforum The digestforum being viewed
      * @param   discussion_entity $discussion The discussion being viewed
      * @param   stdClass[]        $groupsbyid The list of groups in the digestforum
+     * @param   int[]             $favouriteids The list of discussion ids that have been favourited
      * @return  discussion_exporter
      */
     public function get_discussion_exporter(
@@ -159,13 +160,14 @@ class exporter {
      * @param   stdClass        $user The user viewing the digestforum
      * @param   digestforum_entity    $digestforum The digestforum being viewed
      * @param   discussion_summary_entity[] $discussions The set of discussion summaries to export
-     * @param   stdClass[]      $groupsbyauthorid The set of groups in an associative array for each author
      * @param   stdClass[]      $groupsbyid The set of groups in the digestforum in an associative array for each group
+     * @param   stdClass[]      $groupsbyauthorid The set of groups in an associative array for each author
      * @param   int[]           $discussionreplycount The number of replies for each discussion
      * @param   int[]           $discussionunreadcount The number of unread posts for each discussion
      * @param   int[]           $latestpostids The latest post id for each discussion
      * @param   int[]           $postauthorcontextids The context ids for the first and last post authors (indexed by author id)
      * @param   int[]           $favourites The list of discussion ids that have been favourited
+     * @param   array           $latestauthors The latest post author for each discussion
      * @return  discussion_summaries_exporter
      */
     public function get_discussion_summaries_exporter(

@@ -93,8 +93,8 @@ class subscriptions {
      *
      * @param int $userid The user ID
      * @param \stdClass $digestforum The record of the digestforum to test
-     * @param int $discussionid The ID of the discussion to check
-     * @param $cm The coursemodule record. If not supplied, this will be calculated using get_fast_modinfo instead.
+     * @param int|null $discussionid The ID of the discussion to check
+     * @param \stdClass|null $cm The coursemodule record. If not supplied, this will be calculated using get_fast_modinfo instead.
      * @return boolean
      */
     public static function is_subscribed($userid, $digestforum, $discussionid = null, $cm = null) {

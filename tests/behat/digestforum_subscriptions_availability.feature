@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: As a teacher I need to see an accurate list of subscribed users
+Feature: Digest forum: As a teacher I need to see an accurate list of subscribed users
   In order to see who is subscribed to a digestforum
   As a teacher
   I need to view the list of subscribed users

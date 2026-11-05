@@ -3314,7 +3314,7 @@ final class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test that {@link digestforum_update_post()} keeps correct digestforum_discussions usermodified.
+     * Test that {@see digestforum_update_post()} keeps correct digestforum_discussions usermodified.
      */
     public function test_digestforum_update_post_keeps_discussions_usermodified(): void {
         global $DB;

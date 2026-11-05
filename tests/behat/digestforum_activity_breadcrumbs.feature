@@ -1,5 +1,5 @@
 @mod @mod_digestforum @javascript
-Feature: A teacher or admin can view breadcrumbs in the reply, delete, split, edit and add discussion advanced pages
+Feature: Digest forum: A teacher or admin can view breadcrumbs in the reply, delete, split, edit and add discussion advanced pages
 
   Background:
     Given the following "users" exist:

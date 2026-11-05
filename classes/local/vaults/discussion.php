@@ -89,6 +89,7 @@ class discussion extends db_table_vault {
      * Get all discussions in the specified digestforum.
      *
      * @param   digestforum_entity $digestforum
+     * @param   string|null $sort The SQL sort order
      * @return  array
      */
     public function get_all_discussions_in_digestforum(digestforum_entity $digestforum, ?string $sort = null): ?array {

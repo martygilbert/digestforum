@@ -37,7 +37,7 @@ class discussion {
     /**
      * Convert a list of discussion entities into stdClasses.
      *
-     * @param discussion_entity[] $authors The authors to convert.
+     * @param discussion_entity[] $discussions The discussions to convert.
      * @return stdClass[]
      */
     public function to_legacy_objects(array $discussions): array {

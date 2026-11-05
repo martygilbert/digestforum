@@ -76,7 +76,6 @@ class big_search_form implements renderable, templatable {
      * Constructor.
      *
      * @param object $course The course.
-     * @param object $user The user.
      */
     public function __construct($course) {
         global $DB, $USER;

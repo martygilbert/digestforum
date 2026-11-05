@@ -60,7 +60,7 @@ class discussion_summaries extends exporter {
     /**
      * Constructor.
      *
-     * @param discussion_summary_entity[] $discussion The list of discussion summaries to export
+     * @param discussion_summary_entity[] $discussions The list of discussion summaries to export
      * @param stdClass[] $groupsbyid The group information for each author
      * @param stdClass[] $groupsbyauthorid The group information for each author
      * @param int[] $discussionreplycount Discussion reply counts indexed by dicussion id

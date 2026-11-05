@@ -215,8 +215,8 @@ class mod_digestforum_external extends external_api {
      * Get the digestforum posts in the specified discussion.
      *
      * @param   int $discussionid
-     * @param   string $sortby
-     * @param   string $sortdirection
+     * @param   string|null $sortby
+     * @param   string|null $sortdirection
      * @param   bool $includeinlineattachments Whether inline attachments should be included or not.
      * @return  array
      */
@@ -370,10 +370,10 @@ class mod_digestforum_external extends external_api {
      * Returns a list of digestforum discussions optionally sorted and paginated.
      *
      * @param int $digestforumid the digestforum instance id
-     * @param int $sortorder The sort order
-     * @param int $page page number
-     * @param int $perpage items per page
-     * @param int $groupid the user course group
+     * @param int|null $sortorder The sort order
+     * @param int|null $page page number
+     * @param int|null $perpage items per page
+     * @param int|null $groupid the user course group
      *
      *
      * @return array the digestforum discussion details including warnings
@@ -1868,8 +1868,8 @@ class mod_digestforum_external extends external_api {
      *
      * @param   int $userid
      * @param   int $cmid
-     * @param   string $sortby
-     * @param   string $sortdirection
+     * @param   string|null $sortby
+     * @param   string|null $sortdirection
      * @return  array
      */
     public static function get_discussion_posts_by_userid(int $userid, int $cmid, ?string $sortby, ?string $sortdirection) {

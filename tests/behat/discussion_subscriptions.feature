@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: A user can control their own subscription preferences for a discussion
+Feature: Digest forum: A user can control their own subscription preferences for a discussion
   In order to receive notifications for things I am interested in
   As a user
   I need to choose my discussion subscriptions

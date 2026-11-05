@@ -26,7 +26,7 @@ import getUserPicker from './local/grader/user_picker';
 import {createLayout as createFullScreenWindow} from 'mod_digestforum/local/layout/fullscreen';
 import getGradingPanelFunctions from './local/grader/gradingpanel';
 import {add as addToast} from 'core/toast';
-import {addNotification} from 'core/notification';
+import {addNotification, exception as displayException} from 'core/notification';
 import {getString} from 'core/str';
 import {failedUpdate} from 'core_grades/grades/grader/gradingpanel/normalise';
 import {addIconToContainerWithPromise} from 'core/loadingicon';
@@ -461,7 +461,7 @@ export const launch = async(getListOfUsers, getContentForUser, getGradeForUser, 
             Templates.render(templateNames.grader.status, renderContext).then(html => {
                 statusContainer.innerHTML = html;
                 return html;
-            }).catch();
+            }).catch(displayException);
         },
         saveGradeFunction,
         {

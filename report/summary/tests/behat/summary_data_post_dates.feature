@@ -1,5 +1,5 @@
 @mod @mod_digestforum @digestforumreport @digestforumreport_summary
-Feature: Post date columns data available
+Feature: Digest forum: Post date columns data available
   In order to determine users' earliest and most recent digestforum posts
   As a teacher
   I need to view that data in the digestforum summary report
