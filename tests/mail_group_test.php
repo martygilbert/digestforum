@@ -68,6 +68,10 @@ final class mail_group_test extends \advanced_testcase {
         // Forcibly reduce the maxeditingtime to a second in the past to
         // ensure that messages are sent out.
         $CFG->maxeditingtime = -1;
+
+        // Send digests straight away.
+        $CFG->digestforum_mailtimelast = 0;
+        $CFG->digestforum_mailtime = -1;
     }
 
     public function tearDown(): void {
@@ -135,33 +139,33 @@ final class mail_group_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'otheruser' => (object) [
                 'userid' => $otheruser->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'teacher' => (object) [
                 'userid' => $teacher->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'editingteacher' => (object) [
                 'userid' => $editingteacher->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, []);
-        $this->send_notifications_and_assert($otheruser, []);
-        $this->send_notifications_and_assert($teacher, []);
-        $this->send_notifications_and_assert($editingteacher, [$post]);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($otheruser, []);
+        $this->send_digest_posts_and_assert($teacher, []);
+        $this->send_digest_posts_and_assert($editingteacher, [$post]);
     }
 
     /**
@@ -214,32 +218,32 @@ final class mail_group_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'otheruser' => (object) [
                 'userid' => $otheruser->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'teacher' => (object) [
                 'userid' => $teacher->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             'editingteacher' => (object) [
                 'userid' => $editingteacher->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, []);
-        $this->send_notifications_and_assert($otheruser, []);
-        $this->send_notifications_and_assert($teacher, []);
-        $this->send_notifications_and_assert($editingteacher, [$post]);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($otheruser, []);
+        $this->send_digest_posts_and_assert($teacher, []);
+        $this->send_digest_posts_and_assert($editingteacher, [$post]);
     }
 }

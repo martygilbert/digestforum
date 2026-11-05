@@ -101,29 +101,58 @@ trait mod_digestforum_tests_cron_trait {
      * Run any send_user_digests tasks for the specified user, and
      * ensure that the posts specified were sent.
      *
+     * Each digestforum is sent as its own digest, so the posts are grouped by digestforum id.
+     *
      * @param   \stdClass   $user
-     * @param   \stdClass[] $fullposts
-     * @param   \stdClass[] $shortposts
+     * @param   \stdClass[][] $postsbyforum The posts expected in each digest, keyed by digestforum id
      */
-    protected function send_digests_and_assert($user, $fullposts = [], $shortposts = []) {
+    protected function send_digests_and_assert($user, $postsbyforum = []) {
         ob_start();
         $this->runAdhocTasks(\mod_digestforum\task\send_user_digests::class, $user->id);
         $output = ob_get_contents();
         ob_end_clean();
 
-        if (empty($shortposts) && empty($fullposts)) {
+        if (empty($postsbyforum)) {
             $this->assertEquals('', $output);
-            $this->assertMatchesRegularExpression("/Digest sent with 0 messages./", $output);
-        } else {
-            $this->assertMatchesRegularExpression("/Sending digestforum digests for {$user->username}/", $output);
-            foreach ($fullposts as $post) {
+            return;
+        }
+
+        $this->assertMatchesRegularExpression("/Sending digestforum digests for {$user->username}/", $output);
+        foreach ($postsbyforum as $digestforumid => $posts) {
+            $this->assertMatchesRegularExpression("/Composing digest for digestforum {$digestforumid}/", $output);
+            foreach ($posts as $post) {
+                // Everyone receives the complete digest (format 1).
                 $this->assertMatchesRegularExpression("/Adding post {$post->id} in format 1/", $output);
             }
-            foreach ($shortposts as $post) {
-                $this->assertMatchesRegularExpression("/Adding post {$post->id} in format 2/", $output);
-            }
-            $count = count($fullposts) + count($shortposts);
-            $this->assertMatchesRegularExpression("/Digest sent with {$count} messages./", $output);
         }
+        $count = count($postsbyforum);
+        $this->assertMatchesRegularExpression("/Sent {$count} digest\\(s\\)./", $output);
+    }
+
+    /**
+     * Run any send_user_digests tasks for the specified user, and ensure that the posts specified were sent,
+     * grouping them into the digest for each digestforum.
+     *
+     * @param   \stdClass   $user
+     * @param   \stdClass[] $posts
+     * @param   bool        $ignoreemptyposts Don't check the output when no posts are expected
+     */
+    protected function send_digest_posts_and_assert($user, $posts = [], $ignoreemptyposts = false) {
+        global $DB;
+
+        if (empty($posts) && $ignoreemptyposts) {
+            ob_start();
+            $this->runAdhocTasks(\mod_digestforum\task\send_user_digests::class, $user->id);
+            $output = ob_get_clean();
+            $this->assertDoesNotMatchRegularExpression("/Adding post/", $output);
+            return;
+        }
+
+        $postsbyforum = [];
+        foreach ($posts as $post) {
+            $digestforumid = $DB->get_field('digestforum_discussions', 'digestforum', ['id' => $post->discussion]);
+            $postsbyforum[$digestforumid][] = $post;
+        }
+        $this->send_digests_and_assert($user, $postsbyforum);
     }
 }

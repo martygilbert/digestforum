@@ -560,17 +560,8 @@ final class overview_test extends \advanced_testcase {
             $this->assertStringNotContainsString('data-inplaceeditable="1"', $item->get_content());
         } else {
             $this->assertStringContainsString('data-inplaceeditable="1"', $item->get_content());
-            switch ($usermaildigest) {
-                case 0:
-                    $default = get_string('emaildigestoffshort', 'digestforum');
-                    break;
-                case 1:
-                    $default = get_string('emaildigestcompleteshort', 'digestforum');
-                    break;
-                case 2:
-                    $default = get_string('emaildigestsubjectsshort', 'digestforum');
-                    break;
-            }
+            // Everyone receives complete digests, so the default is always complete, whatever the user's setting.
+            $default = get_string('emaildigestcompleteshort', 'digestforum');
             $emaildigestvalue = get_string(
                 'emaildigestdefault',
                 'digestforum',

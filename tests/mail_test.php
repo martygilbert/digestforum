@@ -74,6 +74,10 @@ final class mail_test extends \advanced_testcase {
         // Forcibly reduce the maxeditingtime to a second in the past to
         // ensure that messages are sent out.
         $CFG->maxeditingtime = -1;
+
+        // Send digests straight away.
+        $CFG->digestforum_mailtimelast = 0;
+        $CFG->digestforum_mailtime = -1;
     }
 
     public function tearDown(): void {
@@ -126,24 +130,28 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         $this->messagesink->close();
         $this->eventsink = $this->redirectEvents();
-        $this->send_notifications_and_assert($author, [$post]);
-        $events = $this->eventsink->get_events();
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $events = array_filter($this->eventsink->get_events(), function($event) {
+            return $event instanceof \core\event\notification_sent;
+        });
+        $this->assertCount(1, $events);
         $event = reset($events);
 
-        $this->assertEquals($course->id, $event->other['courseid']);
+        // A digest is a notification from the site, not from a course.
+        $this->assertEquals(SITEID, $event->other['courseid']);
 
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     public function test_forced_subscription(): void {
@@ -171,27 +179,27 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $unconfirmed->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $deleted->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, [$post]);
-        $this->send_notifications_and_assert($unconfirmed, []);
-        $this->send_notifications_and_assert($deleted, []);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($unconfirmed, []);
+        $this->send_digest_posts_and_assert($deleted, []);
     }
 
     /**
@@ -218,17 +226,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
     }
 
     /**
@@ -270,13 +278,13 @@ final class mail_test extends \advanced_testcase {
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     /**
@@ -315,13 +323,13 @@ final class mail_test extends \advanced_testcase {
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     /**
@@ -345,17 +353,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     /**
@@ -384,28 +392,28 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $student->id,
-                'messages' => 2,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $otherstudent->id,
-                'messages' => 2,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $teacher->id,
-                'messages' => 2,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $otherteacher->id,
-                'messages' => 2,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // The actual messages sent will respect private replies.
-        $this->send_notifications_and_assert($student, [$post, $reply]);
-        $this->send_notifications_and_assert($teacher, [$post, $reply]);
-        $this->send_notifications_and_assert($otherteacher, [$post, $reply]);
-        $this->send_notifications_and_assert($otherstudent, [$post]);
+        $this->send_digest_posts_and_assert($student, [$post, $reply]);
+        $this->send_digest_posts_and_assert($teacher, [$post, $reply]);
+        $this->send_digest_posts_and_assert($otherteacher, [$post, $reply]);
+        $this->send_digest_posts_and_assert($otherstudent, [$post]);
     }
 
     public function test_optional(): void {
@@ -426,17 +434,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
     }
 
     public function test_automatic_with_unsubscribed_user(): void {
@@ -460,17 +468,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     public function test_optional_with_subscribed_user(): void {
@@ -494,17 +502,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     public function test_automatic_with_unsubscribed_discussion(): void {
@@ -531,17 +539,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
     }
 
     public function test_optional_with_subscribed_discussion(): void {
@@ -569,17 +577,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
 
         // Have a user reply to the discussion.
         $reply = $this->helper_post_to_discussion($digestforum, $discussion, $author);
@@ -589,17 +597,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$reply]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$reply]);
     }
 
     public function test_optional_with_subscribed_discussion_and_post(): void {
@@ -635,17 +643,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$reply]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$reply]);
     }
 
     public function test_automatic_with_subscribed_discussion_in_unsubscribed_digestforum(): void {
@@ -674,17 +682,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
 
         // Now post a reply to the original post.
         $reply = $this->helper_post_to_discussion($digestforum, $discussion, $author);
@@ -693,17 +701,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, [$reply]);
-        $this->send_notifications_and_assert($recipient, [$reply]);
+        $this->send_digest_posts_and_assert($author, [$reply]);
+        $this->send_digest_posts_and_assert($recipient, [$reply]);
     }
 
     public function test_optional_with_unsubscribed_discussion_in_subscribed_digestforum(): void {
@@ -731,17 +739,17 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $recipient->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
     }
 
     /**
@@ -783,12 +791,12 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($author, [$reply]);
+        $this->send_digest_posts_and_assert($author, [$reply]);
     }
 
     public function test_subscription_by_inactive_users(): void {
@@ -820,119 +828,22 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             (object) [
                 'userid' => $u1->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $u2->id,
-                'messages' => 0,
+                'digests' => 0,
             ],
             (object) [
                 'userid' => $u3->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
 
         $this->queue_tasks_and_assert($expect);
-        $this->send_notifications_and_assert($u1, []);
-        $this->send_notifications_and_assert($u2, []);
-        $this->send_notifications_and_assert($u3, [$post]);
-    }
-
-    public function test_digestforum_message_inbound_multiple_posts(): void {
-        $this->resetAfterTest(true);
-
-        // Create a course, with a digestforum.
-        $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-
-        // Create a user enrolled in the course as a student.
-        list($author) = $this->helper_create_users($course, 1);
-
-        $expectedmessages = array();
-
-        // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
-        $this->helper_update_post_time($post, -90);
-
-        $expectedmessages[] = (object) [
-            'id' => $post->id,
-            'subject' => $post->subject,
-            'count' => 0,
-        ];
-
-        // Then post a reply to the first discussion.
-        $reply = $this->helper_post_to_discussion($digestforum, $discussion, $author);
-        $this->helper_update_post_time($reply, -60);
-
-        $expectedmessages[] = (object) [
-            'id' => $reply->id,
-            'subject' => $reply->subject,
-            'count' => 1,
-        ];
-
-        // Ensure that messageinbound is enabled and configured for the digestforum handler.
-        $this->helper_spoof_message_inbound_setup();
-
-        $author->emailstop = '0';
-        set_user_preference('message_provider_mod_digestforum_posts_enabled', 'email', $author);
-
-        // Run cron and check that the expected number of users received the notification.
-        // Clear the mailsink, and close the messagesink.
-        $this->mailsink->clear();
-        $this->messagesink->close();
-
-        $expect = [
-            'author' => (object) [
-                'userid' => $author->id,
-                'messages' => count($expectedmessages),
-            ],
-        ];
-        $this->queue_tasks_and_assert($expect);
-
-        $this->send_notifications_and_assert($author, $expectedmessages);
-        $messages = $this->mailsink->get_messages();
-
-        // There should be the expected number of messages.
-        $this->assertEquals(2, count($messages));
-
-        foreach ($messages as $message) {
-            $this->assertMatchesRegularExpression('/Reply-To: moodlemoodle123\+[^@]*@example.com/', $message->header);
-        }
-    }
-
-    public function test_long_subject(): void {
-        $this->resetAfterTest(true);
-
-        // Create a course, with a digestforum.
-        $course = $this->getDataGenerator()->create_course();
-
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-
-        // Create a user enrolled in the course as student.
-        list($author) = $this->helper_create_users($course, 1);
-
-        // Post a discussion to the digestforum.
-        $subject = 'This is the very long digestforum post subject that somebody was very kind of leaving, it is intended to check if long subject comes in mail correctly. Thank you.';
-        $a = (object)array('courseshortname' => $course->shortname, 'digestforumname' => $digestforum->name, 'subject' => $subject);
-        $expectedsubject = get_string('postmailsubject', 'digestforum', $a);
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author, array('name' => $subject));
-
-        // Run cron and check that the expected number of users received the notification.
-        $expect = [
-            'author' => (object) [
-                'userid' => $author->id,
-                'messages' => 1,
-            ],
-        ];
-        $this->queue_tasks_and_assert($expect);
-
-        $this->send_notifications_and_assert($author, [$post]);
-        $messages = $this->messagesink->get_messages_by_component('mod_digestforum');
-        $message = reset($messages);
-        $this->assertEquals($author->id, $message->useridfrom);
-        $this->assertEquals($expectedsubject, $message->subject);
+        $this->send_digest_posts_and_assert($u1, []);
+        $this->send_digest_posts_and_assert($u2, []);
+        $this->send_digest_posts_and_assert($u3, [$post]);
     }
 
     /**
@@ -963,13 +874,14 @@ final class mail_test extends \advanced_testcase {
             ),
             'expectations' => array(
                 array(
-                    'subject' => '.*101.*Hello',
+                    // Each digestforum is sent as its own digest, named after the digestforum.
+                    'subject' => '^Moodle Forum',
                     'contents' => array(
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachment example.txt:' . '\r*\n' .
                             'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' . '\r*\n',
-                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle', '1\d1'
+                        'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle',
                     ),
                 ),
             ),
@@ -986,7 +898,7 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle\'"';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle\'"';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;(quot|\#039);', 'Love Moodle\'', '101\'', 'Moodle Forum\'"',
+            'Attachment example.txt:', '~{\$a', '~&amp;(quot|\#039);', 'Love Moodle\'', 'Moodle Forum\'"',
             'Hello Moodle\'"', 'Welcome to Moodle\'"');
         $textcases['Text mail with quotes everywhere'] = array('data' => $newcase);
 
@@ -1000,7 +912,7 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle>';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle>';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;gt;', 'Love Moodle>', '101>', 'Moodle Forum>',
+            'Attachment example.txt:', '~{\$a', '~&amp;gt;', 'Love Moodle>', 'Moodle Forum>',
             'Hello Moodle>', 'Welcome to Moodle>');
         $textcases['Text mail with gt and lt everywhere'] = array('data' => $newcase);
 
@@ -1013,7 +925,7 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Hello Moodle&';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle&';
         $newcase['expectations'][0]['contents'] = array(
-            'Attachment example.txt:', '~{\$a', '~&amp;amp;', 'Love Moodle&', '101&', 'Moodle Forum&',
+            'Attachment example.txt:', '~{\$a', '~&amp;amp;', 'Love Moodle&', 'Moodle Forum&',
             'Hello Moodle&', 'Welcome to Moodle&');
         $textcases['Text mail with ampersands everywhere'] = array('data' => $newcase);
 
@@ -1022,7 +934,6 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['digestforumposts'][0]['name'] = 'Text and image';
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = 'Welcome to Moodle, '
             .'@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png !';
-        $newcase['expectations'][0]['subject'] = '.*101.*Text and image';
         $newcase['expectations'][0]['contents'] = array(
             '~{$a',
             '~&(amp|lt|gt|quot|\#039);(?!course)',
@@ -1030,9 +941,9 @@ final class mail_test extends \advanced_testcase {
             'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' .  '\r*\n' ,
             'Text and image', 'Moodle Forum',
             'Welcome to Moodle, *' . '\r*\n' . '.*'
-                .'https://www.example.com/moodle/pluginfile.php/\d+/mod_digestforum/post/\d+/'
+                .'https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
                 .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png *' . '\r*\n' . '.*!',
-            'Love Moodle', '1\d1');
+            'Love Moodle');
         $textcases['Text mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
 
         // Now the html cases.
@@ -1043,9 +954,9 @@ final class mail_test extends \advanced_testcase {
         $htmlbase['user']['mailformat'] = 1;
         $htmlbase['expectations'][0]['contents'] = array(
             '~{\$a',
-            '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl)',
-            '<div class="attachments">( *\n *)?<a href',
-            '<div class="subject">\n.*Hello Moodle', '>Moodle Forum', '>Welcome.*Moodle', '>Love Moodle', '>1\d1');
+            '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
+            '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '<h4[^>]*><a [^>]*>Hello Moodle</a>', '\'Moodle Forum\'', '>Welcome.*Moodle', '>Love Moodle');
         $htmlcases['HTML mail without ampersands, quotes or lt/gt'] = array('data' => $htmlbase);
 
         // Single and double quotes, lt and gt, ampersands everywhere.
@@ -1058,9 +969,9 @@ final class mail_test extends \advanced_testcase {
         $newcase['expectations'][0]['contents'] = array(
             '~{\$a',
             '~&amp;(amp|lt|gt|quot|\#039);',
-            '<div class="attachments">( *\n *)?<a href',
-            '<div class="subject">\n.*Hello Moodle\'"&gt;&amp;', '>Moodle Forum\'"&gt;&amp;',
-            '>Welcome.*Moodle\'"&gt;&amp;', '>Love Moodle&\#039;&quot;&gt;&amp;', '>101\'"&gt;&amp');
+            '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '<h4[^>]*><a [^>]*>Hello Moodle\'"&gt;&amp;</a>', '\'Moodle Forum\'"&gt;&amp;\'',
+            '>Welcome.*Moodle\'"&gt;&amp;', '>Love Moodle&\#039;&quot;&gt;&amp;');
         $htmlcases['HTML mail with quotes, gt, lt and ampersand  everywhere'] = array('data' => $newcase);
 
         // Text+image message i.e. @@PLUGINFILE@@ token handling.
@@ -1069,17 +980,16 @@ final class mail_test extends \advanced_testcase {
         $newcase['digestforums'][0]['digestforumposts'][0]['message'] = '<p>Welcome to Moodle, '
             .'<img src="@@PLUGINFILE@@/Screen%20Shot%202016-03-22%20at%205.54.36%20AM%20%281%29.png"'
             .' alt="" width="200" height="393" class="img-fluid" />!</p>';
-        $newcase['expectations'][0]['subject'] = '.*101.*HTML text and image';
         $newcase['expectations'][0]['contents'] = array(
             '~{\$a',
-            '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl)',
-            '<div class="attachments">( *\n *)?<a href',
-            '<div class="subject">\n.*HTML text and image', '>Moodle Forum',
+            '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
+            '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '<h4[^>]*><a [^>]*>HTML text and image</a>', '\'Moodle Forum\'',
             '<p>Welcome to Moodle, '
             .'<img src="https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
                 .'Screen%20Shot%202016-03-22%20at%205\.54\.36%20AM%20%281%29\.png"'
                 .' alt="" width="200" height="393" class="img-fluid" />!</p>',
-            '>Love Moodle', '>1\d1');
+            '>Love Moodle');
         $htmlcases['HTML mail with text+image message i.e. @@PLUGINFILE@@ token handling'] = array('data' => $newcase);
 
         return $textcases + $htmlcases;
@@ -1161,12 +1071,12 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $user->id,
-                'messages' => count($posts),
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
-        $this->send_notifications_and_assert($user, $posts);
+        $this->send_digest_posts_and_assert($user, $posts);
 
         // Get the mails.
         $mails = $this->mailsink->get_messages();
@@ -1244,8 +1154,8 @@ final class mail_test extends \advanced_testcase {
         $this->queue_tasks_and_assert([]);
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
     }
 
     /**
@@ -1278,18 +1188,18 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, [$postmailednow]);
-        $this->send_notifications_and_assert($recipient, [$postmailednow]);
+        $this->send_digest_posts_and_assert($author, [$postmailednow]);
+        $this->send_digest_posts_and_assert($recipient, [$postmailednow]);
     }
 
     /**
@@ -1322,23 +1232,23 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'editor' => (object) [
                 'userid' => $editor->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, [], true);
-        $this->send_notifications_and_assert($recipient, [], true);
-        $this->send_notifications_and_assert($editor, [$post], true);
+        $this->send_digest_posts_and_assert($author, [], true);
+        $this->send_digest_posts_and_assert($recipient, [], true);
+        $this->send_digest_posts_and_assert($editor, [$post], true);
     }
 
     /**
@@ -1368,15 +1278,15 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'editor' => (object) [
                 'userid' => $editor->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
@@ -1385,11 +1295,11 @@ final class mail_test extends \advanced_testcase {
         set_coursemodule_visible($digestforum->cmid, 0);
 
         // No notifications should be queued for the students.
-        $this->send_notifications_and_assert($author, [], true);
-        $this->send_notifications_and_assert($recipient, [], true);
+        $this->send_digest_posts_and_assert($author, [], true);
+        $this->send_digest_posts_and_assert($recipient, [], true);
 
         // The editing teacher should still receive the post.
-        $this->send_notifications_and_assert($editor, [$post]);
+        $this->send_digest_posts_and_assert($editor, [$post]);
     }
 
     /**
@@ -1422,9 +1332,9 @@ final class mail_test extends \advanced_testcase {
         $this->queue_tasks_and_assert([]);
 
         // No notifications should be queued for any user.
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
-        $this->send_notifications_and_assert($editor, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($editor, []);
 
         // Update the discussion to have a timestart in the past.
         $DB->set_field('digestforum_discussions', 'timestart', time() - DAYSECS);
@@ -1433,23 +1343,23 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'editor' => (object) [
                 'userid' => $editor->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued for any user.
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, [$post]);
-        $this->send_notifications_and_assert($editor, [$post]);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($editor, [$post]);
     }
 
     /**
@@ -1482,9 +1392,9 @@ final class mail_test extends \advanced_testcase {
         $this->queue_tasks_and_assert([]);
 
         // No notifications should be queued for any user.
-        $this->send_notifications_and_assert($author, []);
-        $this->send_notifications_and_assert($recipient, []);
-        $this->send_notifications_and_assert($editor, []);
+        $this->send_digest_posts_and_assert($author, []);
+        $this->send_digest_posts_and_assert($recipient, []);
+        $this->send_digest_posts_and_assert($editor, []);
 
         // Update the discussion to have a timestart in the past.
         $DB->set_field('digestforum_discussions', 'timeend', time() + DAYSECS);
@@ -1493,64 +1403,23 @@ final class mail_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
             'editor' => (object) [
                 'userid' => $editor->id,
-                'messages' => 1,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
 
         // No notifications should be queued for any user.
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($recipient, [$post]);
-        $this->send_notifications_and_assert($editor, [$post]);
+        $this->send_digest_posts_and_assert($author, [$post]);
+        $this->send_digest_posts_and_assert($recipient, [$post]);
+        $this->send_digest_posts_and_assert($editor, [$post]);
     }
 
-    /**
-     * Test notification comes with customdata.
-     */
-    public function test_notification_customdata(): void {
-        $this->resetAfterTest(true);
-
-        $course = $this->getDataGenerator()->create_course();
-
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-
-        list($author) = $this->helper_create_users($course, 1);
-        list($commenter) = $this->helper_create_users($course, 1);
-
-        // New posts should not have Re: in the subject.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
-        $expect = [
-            'author' => (object) [
-                'userid' => $author->id,
-                'messages' => 1,
-            ],
-            'commenter' => (object) [
-                'userid' => $commenter->id,
-                'messages' => 1,
-            ],
-        ];
-        $this->queue_tasks_and_assert($expect);
-
-        $this->send_notifications_and_assert($author, [$post]);
-        $this->send_notifications_and_assert($commenter, [$post]);
-        $messages = $this->messagesink->get_messages_by_component('mod_digestforum');
-        $messages = reset($messages);
-        $customdata = json_decode($messages->customdata);
-        $this->assertEquals($digestforum->id, $customdata->instance);
-        $this->assertEquals($digestforum->cmid, $customdata->cmid);
-        $this->assertEquals($post->id, $customdata->postid);
-        $this->assertEquals($discussion->id, $customdata->discussionid);
-        $this->assertObjectHasProperty('notificationiconurl', $customdata);
-        $this->assertObjectHasProperty('actionbuttons', $customdata);
-        $this->assertCount(1, (array) $customdata->actionbuttons);
-    }
 }

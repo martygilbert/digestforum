@@ -168,7 +168,7 @@ final class digestforums_test extends core_reportbuilder_testcase {
                 $category->get_formatted_name(),
                 'DFORUM1',
                 '<div class="text_to_html">My cool digestforum</div>',
-                'Standard digestforum for general use',
+                'Standard digest forum for general use',
                 'Wednesday, 2 June 2021, 7:00 AM',
                 'Tuesday, 8 June 2021, 7:00 AM',
                 'Tuesday, 1 June 2021, 8:00 AM',

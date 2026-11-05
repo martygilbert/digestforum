@@ -94,7 +94,7 @@ final class reply_handler_test extends advanced_testcase {
 
         $this->expectException(processing_failed_exception::class);
         $this->expectExceptionMessage('Unable to post your reply, since the total attachment size (3 bytes) is greater than ' .
-            'the maximum size allowed for the digestforum (2 bytes)');
+            'the maximum size allowed for the digest forum (2 bytes)');
         $this->reply_handler_process_message($post, 'My reply', 'Hello', (object) [
             'filename' => 'Foo.txt',
             'content' => 'Foo',

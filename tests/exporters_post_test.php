@@ -315,7 +315,7 @@ final class exporters_post_test extends \advanced_testcase {
 
         $this->assertNotEquals('This is the subject', $exportedpost->subject);
         $this->assertNotEquals('This is the message', $exportedpost->message);
-        $this->assertEquals('This digestforum post has been removed', $exportedpost->label);
+        $this->assertEquals('This digest forum post has been removed', $exportedpost->label);
         $this->assertEquals(null, $exportedpost->timecreated);
         $this->assertEquals(null, $exportedpost->unread);
         $this->assertEquals(true, $exportedpost->isdeleted);

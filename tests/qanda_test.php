@@ -69,6 +69,10 @@ final class qanda_test extends \advanced_testcase {
         // Forcibly reduce the maxeditingtime to a second in the past to
         // ensure that messages are sent out.
         $CFG->maxeditingtime = -1;
+
+        // Send digests straight away.
+        $CFG->digestforum_mailtimelast = 0;
+        $CFG->digestforum_mailtime = -1;
     }
 
     public function tearDown(): void {
@@ -126,28 +130,28 @@ final class qanda_test extends \advanced_testcase {
         $expect = [
             'author' => (object) [
                 'userid' => $author->id,
-                'messages' => 3,
+                'digests' => 1,
             ],
             'recipient' => (object) [
                 'userid' => $recipient->id,
-                'messages' => 3,
+                'digests' => 1,
             ],
             'otheruser' => (object) [
                 'userid' => $otheruser->id,
-                'messages' => 3,
+                'digests' => 1,
             ],
             'editingteacher' => (object) [
                 'userid' => $editingteacher->id,
-                'messages' => 3,
+                'digests' => 1,
             ],
         ];
         $this->queue_tasks_and_assert($expect);
         $posts = [$post, $reply, $otherreply];
 
         // No notifications should be queued.
-        $this->send_notifications_and_assert($author, $posts);
-        $this->send_notifications_and_assert($recipient, $posts);
-        $this->send_notifications_and_assert($otheruser, [$post]);
-        $this->send_notifications_and_assert($editingteacher, $posts);
+        $this->send_digest_posts_and_assert($author, $posts);
+        $this->send_digest_posts_and_assert($recipient, $posts);
+        $this->send_digest_posts_and_assert($otheruser, [$post]);
+        $this->send_digest_posts_and_assert($editingteacher, $posts);
     }
 }
