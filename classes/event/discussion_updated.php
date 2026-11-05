@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion updated event class.
  *
@@ -98,10 +96,12 @@ class discussion_updated extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];

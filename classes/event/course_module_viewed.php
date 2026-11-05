@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum course module viewed event class.
  *
@@ -55,6 +53,7 @@ class course_module_viewed extends \core\event\course_module_viewed {
         return new \moodle_url('/mod/digestforum/view.php', ['f' => $this->objectid]);
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum', 'restore' => 'digestforum'];
     }

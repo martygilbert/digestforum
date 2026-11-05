@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum user report viewed event class.
  *
@@ -114,6 +112,7 @@ class user_report_viewed extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         return false;
     }

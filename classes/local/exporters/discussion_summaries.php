@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\exporters;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\discussion as discussion_entity;
 use mod_digestforum\local\exporters\post as post_exporter;
 use core\external\exporter;

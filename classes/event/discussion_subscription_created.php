@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion_subscription created event class.
  *
@@ -110,10 +108,12 @@ class discussion_subscription_created extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum_discussion_subs', 'restore' => 'digestforum_discussion_sub'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];

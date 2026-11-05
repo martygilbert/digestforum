@@ -60,6 +60,7 @@ class mod_digestforum_generator extends testing_module_generator {
         parent::reset();
     }
 
+    #[\Override]
     public function create_instance($record = null, ?array $options = null) {
         global $CFG;
         require_once($CFG->dirroot . '/mod/digestforum/lib.php');
@@ -356,6 +357,7 @@ class mod_digestforum_generator extends testing_module_generator {
         return $record;
     }
 
+    #[\Override]
     public function create_content($instance, $record = []) {
         global $USER, $DB;
         $record = (array)$record + [
@@ -370,7 +372,12 @@ class mod_digestforum_generator extends testing_module_generator {
         } else {
             // Create post.
             if (empty($record['parent'])) {
-                $record['parent'] = $DB->get_field('digestforum_discussions', 'firstpost', ['id' => $record['discussion']], MUST_EXIST);
+                $record['parent'] = $DB->get_field(
+                    'digestforum_discussions',
+                    'firstpost',
+                    ['id' => $record['discussion']],
+                    MUST_EXIST,
+                );
             } else if (empty($record['discussion'])) {
                 $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', ['id' => $record['parent']], MUST_EXIST);
             }

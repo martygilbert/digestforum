@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\factories;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\factories\entity as entity_factory;
 use mod_digestforum\local\vaults\author as author_vault;
 use mod_digestforum\local\vaults\discussion as discussion_vault;

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\factories;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\data_mappers\legacy\author as author_data_mapper;
 use mod_digestforum\local\data_mappers\legacy\discussion as discussion_data_mapper;
 use mod_digestforum\local\data_mappers\legacy\digestforum as digestforum_data_mapper;

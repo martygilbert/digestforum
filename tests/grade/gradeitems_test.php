@@ -30,6 +30,7 @@ use coding_exception;
  * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\grades\gradeitems::class)]
 final class gradeitems_test extends advanced_testcase {
     /**
      * Ensure that the mappings are present and correct.

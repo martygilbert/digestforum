@@ -30,6 +30,7 @@ use mod_digestforum\local\exporters\digestforum as digestforum_exporter;
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\exporters\digestforum::class)]
 final class exporters_digestforum_test extends \advanced_testcase {
     #[\Override]
     public function setUp(): void {

@@ -625,7 +625,8 @@ final class lib_test extends \advanced_testcase {
         $unreadcounts = $result[$digestforum1->id];
         $this->assertEquals(6, $unreadcounts->unread);
 
-        // The editing teacher should see 9 unread posts in digestforum 1: 3 discussions posts + 3 normal replies + 3 private replies.
+        // The editing teacher should see 9 unread posts in digestforum 1:
+        // 3 discussions posts + 3 normal replies + 3 private replies.
         $result = digestforum_tp_get_course_unread_posts($t1->id, $course->id);
         $unreadcounts = $result[$digestforum1->id];
         $this->assertEquals(9, $unreadcounts->unread);
@@ -751,7 +752,8 @@ final class lib_test extends \advanced_testcase {
         $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
         $this->assertEquals(6, $result);
 
-        // The editing teacher should see 9 unread posts in digestforum 1: 3 discussions posts + 3 normal replies + 3 private replies.
+        // The editing teacher should see 9 unread posts in digestforum 1:
+        // 3 discussions posts + 3 normal replies + 3 private replies.
         $this->setUser($t1);
         $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
         $this->assertEquals(9, $result);
@@ -767,7 +769,8 @@ final class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test the logic in the digestforum_tp_count_digestforum_unread_posts() function when private replies are present and group modes are set.
+     * Test the logic in the digestforum_tp_count_digestforum_unread_posts() function when private replies are present
+     * and group modes are set.
      */
     public function test_digestforum_tp_count_digestforum_unread_posts_with_private_replies_and_separate_groups(): void {
         $this->resetAfterTest();
@@ -1531,8 +1534,14 @@ final class lib_test extends \advanced_testcase {
         $this->getDataGenerator()->enrol_user($user2->id, $course->id);
         $this->getDataGenerator()->create_group_member(['userid' => $user1->id, 'groupid' => $group1->id]);
 
-        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'groupmode' => VISIBLEGROUPS]);
-        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'groupmode' => SEPARATEGROUPS]);
+        $digestforum1 = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id, 'groupmode' => VISIBLEGROUPS],
+        );
+        $digestforum2 = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id, 'groupmode' => SEPARATEGROUPS],
+        );
         $cm1 = get_coursemodule_from_instance('digestforum', $digestforum1->id);
         $cm2 = get_coursemodule_from_instance('digestforum', $digestforum2->id);
         $context1 = \context_module::instance($cm1->id);
@@ -2725,7 +2734,8 @@ final class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Test the logic for digestforum_get_user_posted_mailnow where the user can select if qanda digestforum post should be sent without delay
+     * Test the logic for digestforum_get_user_posted_mailnow where the user can select if qanda digestforum post
+     * should be sent without delay
      */
     public function test_digestforum_get_user_posted_mailnow(): void {
         $this->resetAfterTest();
@@ -2874,15 +2884,16 @@ final class lib_test extends \advanced_testcase {
         $group1record->groupid = $group1->id;
         $group1record->pinned = DFORUM_DISCUSSION_PINNED;
 
-        $alldiscussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($allrecord);
-        $group1discussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($group1record);
+        $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+        $alldiscussions[] = $digestforumgenerator->create_discussion($allrecord);
+        $group1discussions[] = $digestforumgenerator->create_discussion($group1record);
 
         // Create unpinned discussions.
         $allrecord->pinned = DFORUM_DISCUSSION_UNPINNED;
         $group1record->pinned = DFORUM_DISCUSSION_UNPINNED;
         for ($i = 0; $i < 3; $i++) {
-            $alldiscussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($allrecord);
-            $group1discussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($group1record);
+            $alldiscussions[] = $digestforumgenerator->create_discussion($allrecord);
+            $group1discussions[] = $digestforumgenerator->create_discussion($group1record);
         }
 
         // As viewer1 (no group). This user shouldn't see any of group1's discussions

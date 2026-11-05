@@ -117,7 +117,13 @@ class mod_digestforum_external extends external_api {
                 // Discussions count. This function does static request cache.
                 $digestforumdetails['numdiscussions'] = digestforum_count_discussions($digestforum, $cm, $course);
                 $digestforumdetails['cmid'] = $digestforum->coursemodule;
-                $digestforumdetails['cancreatediscussions'] = digestforum_user_can_post_discussion($digestforum, null, -1, $cm, $context);
+                $digestforumdetails['cancreatediscussions'] = digestforum_user_can_post_discussion(
+                    $digestforum,
+                    null,
+                    -1,
+                    $cm,
+                    $context,
+                );
                 $digestforumdetails['istracked'] = digestforum_tp_is_tracked($digestforum);
                 if (!empty($digestforumdetails['istracked'])) {
                     $digestforumdetails['unreadpostscount'] = digestforum_tp_count_digestforum_unread_posts($cm, $course);
@@ -172,7 +178,11 @@ class mod_digestforum_external extends external_api {
                         'completionreplies' => new external_value(PARAM_INT, 'Student must post replies'),
                         'completionposts' => new external_value(PARAM_INT, 'Student must post discussions or replies'),
                         'cmid' => new external_value(PARAM_INT, 'Course module id'),
-                        'numdiscussions' => new external_value(PARAM_INT, 'Number of discussions in the digestforum', VALUE_OPTIONAL),
+                        'numdiscussions' => new external_value(
+                            PARAM_INT,
+                            'Number of discussions in the digestforum',
+                            VALUE_OPTIONAL,
+                        ),
                         'cancreatediscussions' => new external_value(
                             PARAM_BOOL,
                             'If the user can create discussions',
@@ -210,7 +220,12 @@ class mod_digestforum_external extends external_api {
      * @param   bool $includeinlineattachments Whether inline attachments should be included or not.
      * @return  array
      */
-    public static function get_discussion_posts(int $discussionid, ?string $sortby, ?string $sortdirection, bool $includeinlineattachments = false) {
+    public static function get_discussion_posts(
+        int $discussionid,
+        ?string $sortby,
+        ?string $sortdirection,
+        bool $includeinlineattachments = false,
+    ) {
         global $USER, $CFG;
         // Validate the parameter.
         $params = self::validate_parameters(self::get_discussion_posts_parameters(), [
@@ -817,7 +832,8 @@ class mod_digestforum_external extends external_api {
                                         private (bool); make this reply private to the author of the parent post, default to false.
                                         inlineattachmentsid              (int); the draft file area id for inline attachments
                                         attachmentsid       (int); the draft file area id for attachments
-                                        topreferredformat (bool); convert the message & messageformat to FORMAT_HTML, defaults to false
+                                        topreferredformat (bool); convert the message & messageformat to FORMAT_HTML,
+                                            defaults to false
                             '
                             ),
                             'value' => new external_value(PARAM_RAW, 'the value of the option,
@@ -947,7 +963,7 @@ class mod_digestforum_external extends external_api {
             // We always are going to honor the preferred format. We are creating a new post.
             $preferredformat = editors_get_preferred_format();
             // If the post is not HTML and the preferred format is HTML, convert to it.
-            if ($params['messageformat'] != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
+            if ($params['messageformat'] != FORMAT_HTML && $preferredformat == FORMAT_HTML) {
                 $params['message'] = format_text($params['message'], $params['messageformat'], ['filter' => false]);
             }
             $params['messageformat'] = $preferredformat;
@@ -1042,15 +1058,22 @@ class mod_digestforum_external extends external_api {
                 'messages' => new external_multiple_structure(
                     new external_single_structure(
                         [
-                            'type' => new external_value(PARAM_TEXT, "The classification to be used in the client side", VALUE_REQUIRED),
-                            'message' => new external_value(PARAM_TEXT, 'untranslated english message to explain the warning', VALUE_REQUIRED),
+                            'type' => new external_value(
+                                PARAM_TEXT,
+                                "The classification to be used in the client side",
+                                VALUE_REQUIRED,
+                            ),
+                            'message' => new external_value(
+                                PARAM_TEXT,
+                                'untranslated english message to explain the warning',
+                                VALUE_REQUIRED,
+                            ),
                         ],
                         'Messages'
                     ),
                     'list of warnings',
                     VALUE_OPTIONAL
                 ),
-                // 'alertmessage' => new external_value(PARAM_RAW, 'Success message to be displayed to the user.'),
             ]
         );
     }
@@ -1434,7 +1457,10 @@ class mod_digestforum_external extends external_api {
     public static function get_digestforum_access_information($digestforumid) {
         global $DB;
 
-        $params = self::validate_parameters(self::get_digestforum_access_information_parameters(), ['digestforumid' => $digestforumid]);
+        $params = self::validate_parameters(
+            self::get_digestforum_access_information_parameters(),
+            ['digestforumid' => $digestforumid],
+        );
 
         // Request and permission validation.
         $digestforum = $DB->get_record('digestforum', ['id' => $params['digestforumid']], '*', MUST_EXIST);
@@ -2005,8 +2031,12 @@ class mod_digestforum_external extends external_api {
                         'timecreated' => new external_value(PARAM_INT, 'Timestamp of the discussion start'),
                         'authorfullname' => new external_value(PARAM_RAW, 'Full name of the user that started the discussion'),
                         'posts' => new external_single_structure([
-                            'userposts' => new external_multiple_structure(\mod_digestforum\local\exporters\post::get_read_structure()),
-                            'parentposts' => new external_multiple_structure(\mod_digestforum\local\exporters\post::get_read_structure()),
+                            'userposts' => new external_multiple_structure(
+                                \mod_digestforum\local\exporters\post::get_read_structure(),
+                            ),
+                            'parentposts' => new external_multiple_structure(
+                                \mod_digestforum\local\exporters\post::get_read_structure(),
+                            ),
                         ]),
                     ])
                 ),
@@ -2329,10 +2359,10 @@ class mod_digestforum_external extends external_api {
      * @param string $message updated post message (HTML assumed if messageformat is not provided)
      * @param int $messageformat The format of the message, defaults to FORMAT_HTML
      * @param array $options different configuration options for the post to be updated.
+     *        Timed posts, group changes and tags are not supported yet.
      * @return array of warnings and the status (true if the post/discussion was deleted)
      * @since Moodle 3.8
      * @throws moodle_exception
-     * @todo support more options: timed posts, groups change and tags.
      */
     public static function update_discussion_post(
         $postid,

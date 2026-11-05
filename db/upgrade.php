@@ -40,6 +40,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Upgrade the digestforum module.
+ *
+ * @param int $oldversion The version being upgraded from
+ * @return bool
+ */
 function xmldb_digestforum_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();

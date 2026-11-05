@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Event observer for mod_digestforum.
  */
@@ -47,8 +45,16 @@ class mod_digestforum_observer {
             $params['userid'] = $cp->userid;
 
             $DB->delete_records_select('digestforum_digests', 'userid = :userid AND digestforum ' . $digestforumselect, $params);
-            $DB->delete_records_select('digestforum_subscriptions', 'userid = :userid AND digestforum ' . $digestforumselect, $params);
-            $DB->delete_records_select('digestforum_track_prefs', 'userid = :userid AND digestforumid ' . $digestforumselect, $params);
+            $DB->delete_records_select(
+                'digestforum_subscriptions',
+                'userid = :userid AND digestforum ' . $digestforumselect,
+                $params,
+            );
+            $DB->delete_records_select(
+                'digestforum_track_prefs',
+                'userid = :userid AND digestforumid ' . $digestforumselect,
+                $params,
+            );
             $DB->delete_records_select('digestforum_read', 'userid = :userid AND digestforumid ' . $digestforumselect, $params);
         }
     }

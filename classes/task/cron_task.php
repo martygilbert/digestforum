@@ -307,7 +307,15 @@ class cron_task extends \core\task\scheduled_task {
             $modcontext = \context_module::instance($cm->id);
 
             $this->subscribedusers[$digestforum->id] = [];
-            if ($users = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum, 0, $modcontext, 'u.id, u.maildigest', true)) {
+            if (
+                $users = \mod_digestforum\subscriptions::fetch_subscribed_users(
+                    $digestforum,
+                    0,
+                    $modcontext,
+                    'u.id, u.maildigest',
+                    true,
+                )
+            ) {
                 foreach ($users as $user) {
                     // This user is subscribed to this digestforum.
                     $this->subscribedusers[$digestforum->id][$user->id] = $user->id;
@@ -450,7 +458,7 @@ class cron_task extends \core\task\scheduled_task {
                         continue;
                     }
 
-                    if ($discussion->groupid > 0 and $groupmode = groups_get_activity_groupmode($cm, $course)) {
+                    if ($discussion->groupid > 0 && $groupmode = groups_get_activity_groupmode($cm, $course)) {
                         // This discussion has a groupmode set (SEPARATEGROUPS or VISIBLEGROUPS).
                         // Check whether the user can view it based on their groups.
                         if (!isset($usergroups[$digestforum->id])) {

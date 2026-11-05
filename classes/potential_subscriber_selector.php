@@ -40,7 +40,9 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
     protected $forcesubscribed = false;
     /**
      * Can be used to store existing subscribers so that they can be removed from
-     * the potential subscribers list
+     * the potential subscribers list.
+     *
+     * @var array
      */
     protected $existingsubscribers = [];
 

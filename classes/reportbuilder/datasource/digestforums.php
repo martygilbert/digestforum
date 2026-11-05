@@ -81,7 +81,8 @@ class digestforums extends datasource {
         $discussionalias = $discussionentity->get_table_alias('digestforum_discussions');
         $this->add_entity($discussionentity
             ->add_joins($digestforumentity->get_joins())
-            ->add_join("LEFT JOIN {digestforum_discussions} {$discussionalias} ON {$discussionalias}.digestforum = {$digestforumalias}.id"));
+            ->add_join("LEFT JOIN {digestforum_discussions} {$discussionalias}
+                ON {$discussionalias}.digestforum = {$digestforumalias}.id"));
 
         // Join the post entity.
         $postentity = (new post())

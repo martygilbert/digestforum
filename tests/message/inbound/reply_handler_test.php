@@ -112,7 +112,11 @@ final class reply_handler_test extends advanced_testcase {
         /** @var mod_digestforum_generator $generator */
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        $discussion = $generator->create_discussion(['course' => $digestforum->course, 'digestforum' => $digestforum->id, 'userid' => $user->id]);
+        $discussion = $generator->create_discussion([
+            'course' => $digestforum->course,
+            'digestforum' => $digestforum->id,
+            'userid' => $user->id,
+        ]);
         $post = $generator->create_post(['discussion' => $discussion->id, 'userid' => $user->id]);
 
         return [$discussion, $post];

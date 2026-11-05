@@ -220,7 +220,7 @@ class send_user_digests extends \core\task\adhoc_task {
                 continue;
             }
 
-            if (!$course->visible and !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
                 // The course is hidden and the user does not have access to it.
                 // Permissions may have changed since it was queued.
                 continue;
@@ -250,7 +250,11 @@ class send_user_digests extends \core\task\adhoc_task {
             }
 
             if (!isset($this->viewfullnames[$digestforum->id])) {
-                $this->viewfullnames[$digestforum->id] = has_capability('moodle/site:viewfullnames', $modcontext, $this->recipient->id);
+                $this->viewfullnames[$digestforum->id] = has_capability(
+                    'moodle/site:viewfullnames',
+                    $modcontext,
+                    $this->recipient->id,
+                );
             }
 
             // Set the discussion storage values.

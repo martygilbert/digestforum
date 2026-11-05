@@ -22,6 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $functions = [
 
     'mod_digestforum_get_digestforums_by_courses' => [
@@ -102,7 +104,8 @@ $functions = [
         'classname' => 'mod_digestforum_external',
         'methodname' => 'can_add_discussion',
         'classpath' => 'mod/digestforum/externallib.php',
-        'description' => 'Check if the current user can add discussions in the given digestforum (and optionally for the given group).',
+        'description' => 'Check if the current user can add discussions in the given digestforum ' .
+            '(and optionally for the given group).',
         'type' => 'read',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],

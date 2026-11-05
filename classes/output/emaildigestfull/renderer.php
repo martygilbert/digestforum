@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output\emaildigestfull;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable.
  *

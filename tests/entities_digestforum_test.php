@@ -31,6 +31,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\entities\digestforum::class)]
 final class entities_digestforum_test extends \advanced_testcase {
     /**
      * Test the entity returns expected values.

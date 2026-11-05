@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\exporters;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\discussion_summary as discussion_summary_entity;
 use core\external\exporter;
 use renderer_base;

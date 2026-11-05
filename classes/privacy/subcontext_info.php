@@ -28,8 +28,6 @@ use core_privacy\request\approved_contextlist;
 use core_privacy\request\writer;
 use core_privacy\metadata\item_collection;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Subcontext helper trait.
  *

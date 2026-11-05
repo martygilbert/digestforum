@@ -33,6 +33,8 @@ namespace digestforumreport_summary\event;
  * @copyright  2019 Michael Hawkins <michaelh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\digestforumreport_summary\event\report_viewed::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\digestforumreport_summary\event\report_downloaded::class)]
 final class events_test extends \advanced_testcase {
     /**
      * Test report_downloaded event.

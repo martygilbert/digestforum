@@ -25,6 +25,7 @@ use mod_digestforum\local\entities\author as author_entity;
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\entities\author::class)]
 final class entities_author_test extends \advanced_testcase {
     /**
      * Test the entity returns expected values.

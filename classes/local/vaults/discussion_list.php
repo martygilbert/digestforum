@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\vaults;
 
-defined('MOODLE_INTERNAL') || die();
-
 use core_group\output\group_details;
 use mod_digestforum\local\vaults\preprocessors\extract_record as extract_record_preprocessor;
 use mod_digestforum\local\vaults\preprocessors\extract_user as extract_user_preprocessor;
@@ -342,7 +340,7 @@ class discussion_list extends db_table_vault {
     private function get_sort_order(?int $sortmethod, bool $includefavourites = true): string {
 
         $alias = $this->get_table_alias();
-        // TODO consider user favourites...
+        // User favourites are not considered here.
         $keyfield = $this->get_keyfield($sortmethod);
         $direction = $this->get_sort_direction($sortmethod);
 

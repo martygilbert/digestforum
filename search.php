@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Search the posts in the digestforums of a course.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -23,48 +25,48 @@
 require_once('../../config.php');
 require_once('lib.php');
 
-$id = required_param('id', PARAM_INT);                  // course id
-$search = trim(optional_param('search', '', PARAM_NOTAGS));  // search string
-$page = optional_param('page', 0, PARAM_INT);   // which page to show
-$perpage = optional_param('perpage', 10, PARAM_INT);   // how many per page
-$showform = optional_param('showform', 0, PARAM_INT);   // Just show the form
+$id = required_param('id', PARAM_INT);                  // Course id.
+$search = trim(optional_param('search', '', PARAM_NOTAGS));  // Search string.
+$page = optional_param('page', 0, PARAM_INT);   // Which page to show.
+$perpage = optional_param('perpage', 10, PARAM_INT);   // How many per page.
+$showform = optional_param('showform', 0, PARAM_INT);   // Just show the form.
 
-$user    = trim(optional_param('user', '', PARAM_NOTAGS));    // Names to search for
-$userid  = trim(optional_param('userid', 0, PARAM_INT));      // UserID to search for
-$digestforumid = trim(optional_param('digestforumid', 0, PARAM_INT));      // ForumID to search for
-$subject = trim(optional_param('subject', '', PARAM_NOTAGS)); // Subject
-$phrase  = trim(optional_param('phrase', '', PARAM_NOTAGS));  // Phrase
-$words   = trim(optional_param('words', '', PARAM_NOTAGS));   // Words
-$fullwords = trim(optional_param('fullwords', '', PARAM_NOTAGS)); // Whole words
-$notwords = trim(optional_param('notwords', '', PARAM_NOTAGS));   // Words we don't want
+$user    = trim(optional_param('user', '', PARAM_NOTAGS));    // Names to search for.
+$userid  = trim(optional_param('userid', 0, PARAM_INT));      // UserID to search for.
+$digestforumid = trim(optional_param('digestforumid', 0, PARAM_INT));      // ForumID to search for.
+$subject = trim(optional_param('subject', '', PARAM_NOTAGS)); // Subject.
+$phrase  = trim(optional_param('phrase', '', PARAM_NOTAGS));  // Phrase.
+$words   = trim(optional_param('words', '', PARAM_NOTAGS));   // Words.
+$fullwords = trim(optional_param('fullwords', '', PARAM_NOTAGS)); // Whole words.
+$notwords = trim(optional_param('notwords', '', PARAM_NOTAGS));   // Words we don't want.
 $tags = optional_param_array('tags', [], PARAM_TEXT);
 
-$timefromrestrict = optional_param('timefromrestrict', 0, PARAM_INT); // Use starting date
-$fromday = optional_param('fromday', 0, PARAM_INT);      // Starting date
-$frommonth = optional_param('frommonth', 0, PARAM_INT);      // Starting date
-$fromyear = optional_param('fromyear', 0, PARAM_INT);      // Starting date
-$fromhour = optional_param('fromhour', 0, PARAM_INT);      // Starting date
-$fromminute = optional_param('fromminute', 0, PARAM_INT);      // Starting date
+$timefromrestrict = optional_param('timefromrestrict', 0, PARAM_INT); // Use starting date.
+$fromday = optional_param('fromday', 0, PARAM_INT);      // Starting date.
+$frommonth = optional_param('frommonth', 0, PARAM_INT);      // Starting date.
+$fromyear = optional_param('fromyear', 0, PARAM_INT);      // Starting date.
+$fromhour = optional_param('fromhour', 0, PARAM_INT);      // Starting date.
+$fromminute = optional_param('fromminute', 0, PARAM_INT);      // Starting date.
 if ($timefromrestrict) {
     $calendartype = \core_calendar\type_factory::get_calendar_instance();
     $gregorianfrom = $calendartype->convert_to_gregorian($fromyear, $frommonth, $fromday);
     $datefrom = make_timestamp($gregorianfrom['year'], $gregorianfrom['month'], $gregorianfrom['day'], $fromhour, $fromminute);
 } else {
-    $datefrom = optional_param('datefrom', 0, PARAM_INT);      // Starting date
+    $datefrom = optional_param('datefrom', 0, PARAM_INT);      // Starting date.
 }
 
-$timetorestrict = optional_param('timetorestrict', 0, PARAM_INT); // Use ending date
-$today = optional_param('today', 0, PARAM_INT);      // Ending date
-$tomonth = optional_param('tomonth', 0, PARAM_INT);      // Ending date
-$toyear = optional_param('toyear', 0, PARAM_INT);      // Ending date
-$tohour = optional_param('tohour', 0, PARAM_INT);      // Ending date
-$tominute = optional_param('tominute', 0, PARAM_INT);      // Ending date
+$timetorestrict = optional_param('timetorestrict', 0, PARAM_INT); // Use ending date.
+$today = optional_param('today', 0, PARAM_INT);      // Ending date.
+$tomonth = optional_param('tomonth', 0, PARAM_INT);      // Ending date.
+$toyear = optional_param('toyear', 0, PARAM_INT);      // Ending date.
+$tohour = optional_param('tohour', 0, PARAM_INT);      // Ending date.
+$tominute = optional_param('tominute', 0, PARAM_INT);      // Ending date.
 if ($timetorestrict) {
     $calendartype = \core_calendar\type_factory::get_calendar_instance();
     $gregorianto = $calendartype->convert_to_gregorian($toyear, $tomonth, $today);
     $dateto = make_timestamp($gregorianto['year'], $gregorianto['month'], $gregorianto['day'], $tohour, $tominute);
 } else {
-    $dateto = optional_param('dateto', 0, PARAM_INT);      // Ending date
+    $dateto = optional_param('dateto', 0, PARAM_INT);      // Ending date.
 }
 $starredonly = optional_param('starredonly', false, PARAM_BOOL); // Include only favourites.
 
@@ -181,7 +183,7 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_url(new moodle_url('/mod/digestforum/search.php', $params));
 $PAGE->set_secondary_active_tab("coursehome");
 
-if (empty($search)) {   // Check the other parameters instead
+if (empty($search)) {   // Check the other parameters instead.
     if (!empty($words)) {
         $search .= ' ' . $words;
     }
@@ -261,7 +263,7 @@ if (!$search || $showform) {
     exit;
 }
 
-/// We need to do a search now and print results
+// We need to do a search now and print results.
 
 $searchterms = str_replace('digestforumid:', 'instance:', $search);
 $searchterms = explode(' ', $searchterms);
@@ -292,10 +294,10 @@ if (!$posts = digestforum_search_posts($searchterms, $course->id, $page * $perpa
     exit;
 }
 
-// including this here to prevent it being included if there are no search results
+// Including this here to prevent it being included if there are no search results.
 require_once($CFG->dirroot . '/rating/lib.php');
 
-// set up the ratings information that will be the same for all posts
+// Set up the ratings information that will be the same for all posts.
 $ratingoptions = new stdClass();
 $ratingoptions->component = 'mod_digestforum';
 $ratingoptions->ratingarea = 'post';
@@ -339,12 +341,12 @@ echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 $url = new moodle_url('search.php', ['search' => $search, 'id' => $course->id, 'perpage' => $perpage]);
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
-// added to implement highlighting of search terms found only in HTML markup
-// fiedorow - 9/2/2005
+// Added to implement highlighting of search terms found only in HTML markup
+// fiedorow - 9/2/2005.
 $strippedsearch = str_replace('user:', '', $search);
 $strippedsearch = str_replace('subject:', '', $strippedsearch);
 $strippedsearch = str_replace('&quot;', '', $strippedsearch);
-$searchterms = explode(' ', $strippedsearch);    // Search for words independently
+$searchterms = explode(' ', $strippedsearch);    // Search for words independently.
 foreach ($searchterms as $key => $searchterm) {
     if (preg_match('/^\-/', $searchterm)) {
         unset($searchterms[$key]);
@@ -352,7 +354,7 @@ foreach ($searchterms as $key => $searchterm) {
         $searchterms[$key] = preg_replace('/^\+/', '', $searchterm);
     }
 }
-$strippedsearch = implode(' ', $searchterms);    // Rebuild the string
+$strippedsearch = implode(' ', $searchterms);    // Rebuild the string.
 $entityfactory = mod_digestforum\local\container::get_entity_factory();
 $vaultfactory = mod_digestforum\local\container::get_vault_factory();
 $rendererfactory = mod_digestforum\local\container::get_renderer_factory();
@@ -460,12 +462,11 @@ function digestforum_print_big_search_form($course) {
 /**
  * This function takes each word out of the search string, makes sure they are at least
  * two characters long and returns an string of the space-separated search
- * terms.
+ * terms. The two character minimum is hardcoded.
  *
  * @param string $words String containing space-separated strings to search for.
  * @param string $prefix String to prepend to the each token taken out of $words.
  * @return string The filtered search terms, separated by spaces.
- * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter.
  */
 function digestforum_clean_search_terms($words, $prefix = '') {
     $searchterms = explode(' ', $words);

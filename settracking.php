@@ -25,7 +25,7 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$id         = required_param('id', PARAM_INT);                           // The digestforum to subscribe or unsubscribe to
+$id         = required_param('id', PARAM_INT);                           // The digestforum to subscribe or unsubscribe to.
 $returnpage = optional_param('returnpage', 'index.php', PARAM_FILE);    // Page to return to.
 
 require_sesskey();
@@ -67,7 +67,7 @@ if (digestforum_tp_is_tracked($digestforum)) {
     } else {
         throw new \moodle_exception('cannottrack', '', get_local_referer(false));
     }
-} else { // subscribe
+} else { // Subscribe.
     if (digestforum_tp_start_tracking($digestforum->id)) {
         $event = \mod_digestforum\event\readtracking_enabled::create($eventparams);
         $event->trigger();

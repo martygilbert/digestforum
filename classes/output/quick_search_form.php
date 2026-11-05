@@ -23,7 +23,6 @@
  */
 
 namespace mod_digestforum\output;
-defined('MOODLE_INTERNAL') || die();
 
 use help_icon;
 use moodle_url;
@@ -61,6 +60,7 @@ class quick_search_form implements renderable, templatable {
         $this->helpicon = new help_icon('search', 'core');
     }
 
+    #[\Override]
     public function export_for_template(renderer_base $output) {
         $hiddenfields = [
             (object) ['name' => 'id', 'value' => $this->courseid],

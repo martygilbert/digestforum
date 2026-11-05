@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\vaults;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\factories\entity as entity_factory;
 use moodle_database;
 

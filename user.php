@@ -27,11 +27,11 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 
-$courseid  = optional_param('course', null, PARAM_INT); // Limit the posts to just this course
-$userid = optional_param('id', $USER->id, PARAM_INT);        // User id whose posts we want to view
-$mode = optional_param('mode', 'posts', PARAM_ALPHA);   // The mode to use. Either posts or discussions
-$page = optional_param('page', 0, PARAM_INT);           // The page number to display
-$perpage = optional_param('perpage', 5, PARAM_INT);     // The number of posts to display per page
+$courseid  = optional_param('course', null, PARAM_INT); // Limit the posts to just this course.
+$userid = optional_param('id', $USER->id, PARAM_INT);        // User id whose posts we want to view.
+$mode = optional_param('mode', 'posts', PARAM_ALPHA);   // The mode to use. Either posts or discussions.
+$page = optional_param('page', 0, PARAM_INT);           // The page number to display.
+$perpage = optional_param('perpage', 5, PARAM_INT);     // The number of posts to display per page.
 
 if (empty($userid)) {
     if (!isloggedin()) {
@@ -64,13 +64,13 @@ if ($perpage != 5) {
 
 $user = $DB->get_record("user", ["id" => $userid], '*', MUST_EXIST);
 $usercontext = context_user::instance($user->id, MUST_EXIST);
-// Check if the requested user is the guest user
+// Check if the requested user is the guest user.
 if (isguestuser($user)) {
     // The guest user cannot post, so it is not possible to view any posts.
     // May as well just bail aggressively here.
     throw new \moodle_exception('invaliduserid');
 }
-// Make sure the user has not been deleted
+// Make sure the user has not been deleted.
 if ($user->deleted) {
     $PAGE->set_title(get_string('userdeleted'));
     $PAGE->set_context(context_system::instance());
@@ -85,24 +85,24 @@ $isguestuser = $isloggedin && isguestuser();
 $isparent = !$iscurrentuser && $DB->record_exists('role_assignments', ['userid' => $USER->id, 'contextid' => $usercontext->id]);
 $hasparentaccess = $isparent && has_all_capabilities(['moodle/user:viewdetails', 'moodle/user:readuserposts'], $usercontext);
 
-// Check whether a specific course has been requested
+// Check whether a specific course has been requested.
 if ($isspecificcourse) {
-    // Get the requested course and its context
+    // Get the requested course and its context.
     $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
     $coursecontext = context_course::instance($courseid, MUST_EXIST);
     // We have a specific course to search, which we will also assume we are within.
     if ($hasparentaccess) {
         // A `parent` role won't likely have access to the course so we won't attempt
         // to enter it. We will however still make them jump through the normal
-        // login hoops
+        // login hoops.
         require_login();
         $PAGE->set_context($coursecontext);
         $PAGE->set_course($course);
     } else {
-        // Enter the course we are searching
+        // Enter the course we are searching.
         require_login($course);
     }
-    // Get the course ready for access checks
+    // Get the course ready for access checks.
     $courses = [$courseid => $course];
 } else {
     // We are going to search for all of the users posts in all courses!
@@ -132,14 +132,14 @@ if (empty($result->posts)) {
     // are no posts made by the requested user that the current user is able to
     // see.
     // In either case we need to decide whether we can show personal information
-    // about the requested user to the current user so we will execute some checks
+    // about the requested user to the current user so we will execute some checks.
 
     $canviewuser = \core\user::can_view_profile($user, null, $usercontext);
 
-    // Prepare the page title
+    // Prepare the page title.
     $pagetitle = get_string('noposts', 'mod_digestforum');
 
-    // Get the page heading
+    // Get the page heading.
     if ($isspecificcourse) {
         $pageheading = format_string($course->fullname, true, ['context' => $coursecontext]);
     } else {
@@ -181,7 +181,8 @@ if (empty($result->posts)) {
         }
     } else if ($canviewuser) {
         $PAGE->navigation->extend_for_user($user);
-        $PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
+        // See MDL-25805 for reasons and for full commit reference for reversal when fixed.
+        $PAGE->navigation->set_userid_for_parent_checks($user->id);
 
         // Edit navbar.
         if (isset($courseid) && $courseid != SITEID) {
@@ -221,7 +222,7 @@ if (empty($result->posts)) {
         navigation_node::override_active_url($url);
     }
 
-    // Display a page letting the user know that there's nothing to display;
+    // Display a page letting the user know that there's nothing to display.
     $PAGE->set_title($pagetitle);
     if ($isspecificcourse) {
         $PAGE->set_secondary_active_tab('participants');
@@ -305,7 +306,8 @@ $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pageheading);
 
 $PAGE->navigation->extend_for_user($user);
-$PAGE->navigation->set_userid_for_parent_checks($user->id); // see MDL-25805 for reasons and for full commit reference for reversal when fixed.
+// See MDL-25805 for reasons and for full commit reference for reversal when fixed.
+$PAGE->navigation->set_userid_for_parent_checks($user->id);
 
 // Edit navbar.
 if (isset($courseid) && $courseid != SITEID) {

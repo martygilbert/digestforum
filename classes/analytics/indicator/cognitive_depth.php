@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\analytics\indicator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Cognitive depth indicator - digestforum.
  *
@@ -45,10 +43,12 @@ class cognitive_depth extends activity_base {
         return new \lang_string('indicator:cognitivedepth', 'mod_digestforum');
     }
 
+    #[\Override]
     public function get_indicator_type() {
         return self::INDICATOR_COGNITIVE;
     }
 
+    #[\Override]
     public function get_cognitive_depth_level(\cm_info $cm) {
         return self::COGNITIVE_LEVEL_4;
     }

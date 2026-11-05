@@ -145,7 +145,10 @@ digestforum_view(
 // Return here if we post or set subscription etc.
 $SESSION->fromdiscussion = qualified_me();
 
-if (!empty($CFG->enablerssfeeds) && !empty($CFG->digestforum_enablerssfeeds) && $digestforum->get_rss_type() && $digestforum->get_rss_articles()) {
+if (
+    !empty($CFG->enablerssfeeds) && !empty($CFG->digestforum_enablerssfeeds)
+    && $digestforum->get_rss_type() && $digestforum->get_rss_articles()
+) {
     require_once("{$CFG->libdir}/rsslib.php");
 
     $rsstitle = format_string($course->shortname, true, [

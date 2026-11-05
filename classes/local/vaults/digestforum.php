@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\vaults;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\digestforum as digestforum_entity;
 use mod_digestforum\local\vaults\preprocessors\extract_context as extract_context_preprocessor;
 use mod_digestforum\local\vaults\preprocessors\extract_record as extract_record_preprocessor;

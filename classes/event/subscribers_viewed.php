@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum subscribers list viewed event class.
  *
@@ -97,6 +95,7 @@ class subscribers_viewed extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];

@@ -71,8 +71,8 @@ $discussiondatamapper = $legacydatamapperfactory->get_discussion_data_mapper();
 $postvault = $vaultfactory->get_post_vault();
 $postdatamapper = $legacydatamapperfactory->get_post_data_mapper();
 
-if (!isloggedin() or isguestuser()) {
-    if (!isloggedin() and !get_local_referer()) {
+if (!isloggedin() || isguestuser()) {
+    if (!isloggedin() && !get_local_referer()) {
         // No referer+not logged in - probably coming in via email  See MDL-9052.
         require_login();
     }
@@ -157,7 +157,7 @@ if (!empty($digestforum)) {
         throw new \moodle_exception('nopostdigestforum', 'digestforum');
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$cm->visible && !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         redirect(
             $urlfactory->get_course_url_from_digestforum($digestforumentity),
             get_string('activityiscurrentlyhidden'),
@@ -241,7 +241,7 @@ if (!empty($digestforum)) {
     } else {
         $groupmode = $course->groupmode;
     }
-    if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+    if ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $modcontext)) {
         if ($discussion->groupid == -1) {
             throw new \moodle_exception('nopostdigestforum', 'digestforum');
         } else {
@@ -251,7 +251,7 @@ if (!empty($digestforum)) {
         }
     }
 
-    if (!$cm->visible and !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
+    if (!$cm->visible && !has_capability('moodle/course:viewhiddenactivities', $modcontext)) {
         throw new \moodle_exception("activityiscurrentlyhidden");
     }
 
@@ -265,7 +265,7 @@ if (!empty($digestforum)) {
     // Only if there are prefilled contents coming.
     if (!empty($prefilledpost)) {
         // If the prefilled post is not HTML and the preferred format is HTML, convert to it.
-        if ($prefilledpostformat != FORMAT_HTML and $preferredformat == FORMAT_HTML) {
+        if ($prefilledpostformat != FORMAT_HTML && $preferredformat == FORMAT_HTML) {
             $prefilledpost = format_text($prefilledpost, $prefilledpostformat, ['context' => $modcontext]);
         }
     }
@@ -326,14 +326,14 @@ if (!empty($digestforum)) {
 
     if (!($digestforum->type == 'news' && !$post->parent && $discussion->timestart > time())) {
         if (
-            ((time() - $post->created) > $CFG->maxeditingtime) and
+            ((time() - $post->created) > $CFG->maxeditingtime) &&
             !has_capability('mod/digestforum:editanypost', $modcontext)
         ) {
             throw new \moodle_exception('maxtimehaspassed', 'digestforum', '', format_time($CFG->maxeditingtime));
         }
     }
     if (
-        ($post->userid <> $USER->id) and
+        ($post->userid <> $USER->id) &&
         !has_capability('mod/digestforum:editanypost', $modcontext)
     ) {
         throw new \moodle_exception('cannoteditposts', 'digestforum');
@@ -731,9 +731,22 @@ if (!empty($parent)) {
 $postid = empty($post->id) ? null : $post->id;
 $draftideditor = file_get_submitted_draft_itemid('message');
 $editoropts = mod_digestforum_post_form::editor_options($modcontext, $postid);
-$currenttext = file_prepare_draft_area($draftideditor, $modcontext->id, 'mod_digestforum', 'post', $postid, $editoropts, $post->message);
+$currenttext = file_prepare_draft_area(
+    $draftideditor,
+    $modcontext->id,
+    'mod_digestforum',
+    'post',
+    $postid,
+    $editoropts,
+    $post->message,
+);
 $discussionid = isset($discussion) ? $discussion->id : null;
-$discussionsubscribe = \mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $coursecontext, $cm, $discussionid);
+$discussionsubscribe = \mod_digestforum\subscriptions::get_user_default_subscription(
+    $digestforum,
+    $coursecontext,
+    $cm,
+    $discussionid,
+);
 
 $mformpost->set_data(
     [
@@ -1128,7 +1141,11 @@ if (empty($parententity) && empty($edit) && !$capabilitymanager->can_create_disc
 
 if (!empty($discussionentity) && 'qanda' == $digestforumentity->get_type()) {
     $displaywarning = $capabilitymanager->must_post_before_viewing_discussion($USER, $discussionentity);
-    $displaywarning = $displaywarning && !digestforum_user_has_posted($digestforumentity->get_id(), $discussionentity->get_id(), $USER->id);
+    $displaywarning = $displaywarning && !digestforum_user_has_posted(
+        $digestforumentity->get_id(),
+        $discussionentity->get_id(),
+        $USER->id,
+    );
     if ($displaywarning) {
         echo $OUTPUT->notification(get_string('qandanotify', 'digestforum'));
     }
@@ -1144,7 +1161,13 @@ if (!empty($parententity)) {
     $postentities = [$parententity];
 
     if (empty($post->edit)) {
-        if ('qanda' != $digestforumentity->get_type() || digestforum_user_can_see_discussion($digestforum, $discussion, $modcontext)) {
+        if (
+            'qanda' != $digestforumentity->get_type() || digestforum_user_can_see_discussion(
+                $digestforum,
+                $discussion,
+                $modcontext,
+            )
+        ) {
             $replies = $postvault->get_replies_to_post(
                 $USER,
                 $parententity,

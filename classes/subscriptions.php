@@ -24,8 +24,6 @@
 
 namespace mod_digestforum;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum subscription manager.
  *
@@ -367,7 +365,8 @@ class subscriptions {
     }
 
     /**
-     * Fill the digestforum subscription data for all digestforums that the specified userid can subscribe to in the specified course.
+     * Fill the digestforum subscription data for all digestforums that the specified userid can subscribe to
+     * in the specified course.
      *
      * @param int $courseid The course to retrieve a cache for
      * @param int $userid The user ID
@@ -407,7 +406,8 @@ class subscriptions {
      * @param int $groupid The group id if restricting subscriptions to a group of users, or 0 for all.
      * @param context_module $context the digestforum context, to save re-fetching it where possible.
      * @param string $fields requested user fields (with "u." table prefix).
-     * @param boolean $includediscussionsubscriptions Whether to take discussion subscriptions and unsubscriptions into consideration.
+     * @param boolean $includediscussionsubscriptions Whether to take discussion subscriptions and unsubscriptions
+     *        into consideration.
      * @return array list of users.
      */
     public static function fetch_subscribed_users(
@@ -510,7 +510,7 @@ class subscriptions {
     public static function fetch_discussion_subscription($digestforumid, $userid = null) {
         self::fill_discussion_subscription_cache($digestforumid, $userid);
 
-        if (!isset(self::$digestforumdiscussioncache[$userid]) || !isset(self::$digestforumdiscussioncache[$userid][$digestforumid])) {
+        if (!isset(self::$digestforumdiscussioncache[$userid][$digestforumid])) {
             return [];
         }
 
@@ -632,7 +632,10 @@ class subscriptions {
         $result = $DB->insert_record("digestforum_subscriptions", $sub);
 
         if ($userrequest) {
-            $discussionsubscriptions = $DB->get_recordset('digestforum_discussion_subs', ['userid' => $userid, 'digestforum' => $digestforum->id]);
+            $discussionsubscriptions = $DB->get_recordset(
+                'digestforum_discussion_subs',
+                ['userid' => $userid, 'digestforum' => $digestforum->id],
+            );
             $DB->delete_records_select(
                 'digestforum_discussion_subs',
                 'userid = :userid AND digestforum = :digestforumid AND preference <> :preference',
@@ -645,7 +648,7 @@ class subscriptions {
 
             // Reset the subscription caches for this digestforum.
             // We know that the there were previously entries and there aren't any more.
-            if (isset(self::$digestforumdiscussioncache[$userid]) && isset(self::$digestforumdiscussioncache[$userid][$digestforum->id])) {
+            if (isset(self::$digestforumdiscussioncache[$userid][$digestforum->id])) {
                 foreach (self::$digestforumdiscussioncache[$userid][$digestforum->id] as $discussionid => $preference) {
                     if ($preference != self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
                         unset(self::$digestforumdiscussioncache[$userid][$digestforum->id][$discussionid]);
@@ -708,7 +711,7 @@ class subscriptions {
                 );
 
                 // We know that the there were previously entries and there aren't any more.
-                if (isset(self::$digestforumdiscussioncache[$userid]) && isset(self::$digestforumdiscussioncache[$userid][$digestforum->id])) {
+                if (isset(self::$digestforumdiscussioncache[$userid][$digestforum->id])) {
                     self::$digestforumdiscussioncache[$userid][$digestforum->id] = [];
                 }
             }
@@ -761,7 +764,8 @@ class subscriptions {
         // No discussion-level subscription. Check for a digestforum level subscription.
         if ($DB->record_exists('digestforum_subscriptions', ['userid' => $userid, 'digestforum' => $discussion->digestforum])) {
             if ($subscription && $subscription->preference == self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
-                // The user is subscribed to the digestforum, but unsubscribed from the discussion, delete the discussion preference.
+                // The user is subscribed to the digestforum, but unsubscribed from the discussion, delete the discussion
+                // preference.
                 $DB->delete_records('digestforum_discussion_subs', ['id' => $subscription->id]);
                 unset(self::$digestforumdiscussioncache[$userid][$discussion->digestforum][$discussion->id]);
             } else {
@@ -823,7 +827,8 @@ class subscriptions {
         // No discussion-level preference. Check for a digestforum level subscription.
         if (!$DB->record_exists('digestforum_subscriptions', ['userid' => $userid, 'digestforum' => $discussion->digestforum])) {
             if ($subscription && $subscription->preference != self::DFORUM_DISCUSSION_UNSUBSCRIBED) {
-                // The user is not subscribed to the digestforum, but subscribed from the discussion, delete the discussion subscription.
+                // The user is not subscribed to the digestforum, but subscribed from the discussion, delete the discussion
+                // subscription.
                 $DB->delete_records('digestforum_discussion_subs', ['id' => $subscription->id]);
                 unset(self::$digestforumdiscussioncache[$userid][$discussion->digestforum][$discussion->id]);
             } else {

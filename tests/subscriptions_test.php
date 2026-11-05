@@ -1124,9 +1124,15 @@ final class subscriptions_test extends \advanced_testcase {
         \mod_digestforum\subscriptions::reset_discussion_cache();
 
         // A user with no subscriptions should only be fetched once.
-        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache($digestforum->id, $userwithnosubs->id));
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache(
+            $digestforum->id,
+            $userwithnosubs->id,
+        ));
         $startcount = $DB->perf_get_reads();
-        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache($digestforum->id, $userwithnosubs->id));
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache(
+            $digestforum->id,
+            $userwithnosubs->id,
+        ));
         $this->assertEquals($startcount, $DB->perf_get_reads());
 
         // Confirm subsequent calls properly tries to fetch subs.
@@ -1353,6 +1359,11 @@ final class subscriptions_test extends \advanced_testcase {
         $this->assertGreaterThan($suppliedcmcount, $calculatedcmcount);
     }
 
+    /**
+     * The digestforum settings to test subscribability with.
+     *
+     * @return array
+     */
     public static function is_subscribable_digestforums(): array {
         return [
             [
@@ -1370,6 +1381,11 @@ final class subscriptions_test extends \advanced_testcase {
         ];
     }
 
+    /**
+     * Data provider for test_is_subscribable_logged_out() and test_is_subscribable_is_guest().
+     *
+     * @return array
+     */
     public static function is_subscribable_provider(): array {
         $data = [];
         foreach (self::is_subscribable_digestforums() as $digestforum) {
@@ -1407,6 +1423,11 @@ final class subscriptions_test extends \advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribable($digestforum));
     }
 
+    /**
+     * Data provider for test_is_subscribable_loggedin().
+     *
+     * @return array
+     */
     public static function is_subscribable_loggedin_provider(): array {
         return [
             [
@@ -1462,29 +1483,54 @@ final class subscriptions_test extends \advanced_testcase {
 
         // A guest user.
         $this->setUser(0);
-        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, $discussion->id));
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
         $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
 
         // A user enrolled in the course.
         $this->setUser($author->id);
-        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, $discussion->id));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
         $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
 
         // Subscribption disabled.
         $this->setUser($student->id);
         \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_DISALLOWSUBSCRIBE);
         $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
-        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, $discussion->id));
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
         $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
 
         \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_FORCESUBSCRIBE);
         $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
-        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, $discussion->id));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
         $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
 
         // Admin user.
         $this->setAdminUser();
-        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, $discussion->id));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
         $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
     }
 }

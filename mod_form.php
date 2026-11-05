@@ -15,21 +15,29 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings form for the digestforum module.
+ *
  * @package   mod_digestforum
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    // It must be included from a Moodle page
-}
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
 use core_grades\component_gradeitems;
 
+/**
+ * Settings form for the digestforum module.
+ *
+ * @package   mod_digestforum
+ * @copyright Jamie Pratt <me@jamiep.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_digestforum_mod_form extends moodleform_mod {
-    function definition() {
+    #[\Override]
+    public function definition() {
         global $CFG, $COURSE, $DB;
 
         $mform    =& $this->_form;
@@ -207,7 +215,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
 
         $this->standard_coursemodule_elements();
         // -------------------------------------------------------------------------------
-        // buttons
+        // Buttons.
         $this->add_action_buttons();
     }
 
@@ -302,13 +310,14 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->hideIf('grade_digestforum_notify', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
     }
 
-    function definition_after_data() {
+    #[\Override]
+    public function definition_after_data() {
         parent::definition_after_data();
         $mform     =& $this->_form;
         $type      =& $mform->getElement('type');
         $typevalue = $mform->getElementValue('type');
 
-        // we don't want to have these appear as possible selections in the form but
+        // We don't want to have these appear as possible selections in the form but
         // we want the form to display them if they are set.
         if ($typevalue[0] == 'news') {
             $type->addOption(get_string('namenews', 'digestforum'), 'news');
@@ -323,6 +332,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         }
     }
 
+    #[\Override]
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
@@ -394,6 +404,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         }
     }
 
+    #[\Override]
     public function data_preprocessing(&$defaultvalues) {
         parent::data_preprocessing($defaultvalues);
 
@@ -464,7 +475,12 @@ class mod_digestforum_mod_form extends moodleform_mod {
 
         $group = [];
         $completionrepliesenabledel = 'completionrepliesenabled' . $suffix;
-        $group[] =& $mform->createElement('checkbox', $completionrepliesenabledel, '', get_string('completionreplies', 'digestforum'));
+        $group[] =& $mform->createElement(
+            'checkbox',
+            $completionrepliesenabledel,
+            '',
+            get_string('completionreplies', 'digestforum'),
+        );
         $completionrepliesel = 'completionreplies' . $suffix;
         $group[] =& $mform->createElement('text', $completionrepliesel, '', ['size' => 3]);
         $mform->setType($completionrepliesel, PARAM_INT);
@@ -475,6 +491,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         return [$completiondiscussionsgroupel, $completionrepliesgroupel, $completionpostsgroupel];
     }
 
+    #[\Override]
     public function completion_rule_enabled($data) {
         $suffix = $this->get_suffix();
         return (!empty($data['completiondiscussionsenabled' . $suffix]) && $data['completiondiscussions' . $suffix] != 0) ||

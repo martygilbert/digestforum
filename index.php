@@ -15,11 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * List the digestforums in a course, on the course activity overview page.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// The overview page this redirects to checks access.
+// phpcs:ignore moodle.Files.RequireLogin.Missing
 require_once("../../config.php");
 
 $courseid = required_param('id', PARAM_INT);

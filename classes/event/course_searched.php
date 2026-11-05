@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum course searched event class.
  *
@@ -100,6 +98,7 @@ class course_searched extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         return false;
     }

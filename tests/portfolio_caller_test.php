@@ -26,6 +26,7 @@ namespace mod_digestforum;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Brendan Cox <brendan.cox@totaralearning.com>
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\digestforum_portfolio_caller::class)]
 final class portfolio_caller_test extends \advanced_testcase {
     /**
      * Ensure that a file will be loaded in an instance of the caller when supplied valid and
@@ -41,7 +42,7 @@ final class portfolio_caller_test extends \advanced_testcase {
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        /* @var mod_digestforum_generator $digestforumgenerator */
+        /** @var \mod_digestforum_generator $digestforumgenerator */
         $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $discussion = $digestforumgenerator->create_discussion(
             [
@@ -86,7 +87,7 @@ final class portfolio_caller_test extends \advanced_testcase {
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $context = \context_module::instance($digestforum->cmid);
 
-        /* @var mod_digestforum_generator $digestforumgenerator */
+        /** @var \mod_digestforum_generator $digestforumgenerator */
         $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $discussion = $digestforumgenerator->create_discussion(
             [

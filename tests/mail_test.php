@@ -35,6 +35,8 @@ require_once(__DIR__ . '/generator_trait.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\cron_task::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\send_user_digests::class)]
 final class mail_test extends \advanced_testcase {
     // Make use of the cron tester trait.
     use mod_digestforum_tests_cron_trait;
@@ -880,7 +882,8 @@ final class mail_test extends \advanced_testcase {
                         '~{$a',
                         '~&(amp|lt|gt|quot|\#039);(?!course)',
                         'Attachment example.txt:' . '\r*\n' .
-                            'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' . '\r*\n',
+                            'https://www.example.com/moodle/pluginfile.php/\d*/mod_digestforum/attachment/\d*/example.txt' .
+                                '\r*\n',
                         'Hello Moodle', 'Moodle Forum', 'Welcome.*Moodle', 'Love Moodle',
                     ],
                 ],
@@ -956,6 +959,7 @@ final class mail_test extends \advanced_testcase {
             '~{\$a',
             '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '~See this post in context',
             '<h4[^>]*><a [^>]*>Hello Moodle</a>', '\'Moodle Forum\'', '>Welcome.*Moodle', '>Love Moodle'];
         $htmlcases['HTML mail without ampersands, quotes or lt/gt'] = ['data' => $htmlbase];
 
@@ -970,6 +974,7 @@ final class mail_test extends \advanced_testcase {
             '~{\$a',
             '~&amp;(amp|lt|gt|quot|\#039);',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '~See this post in context',
             '<h4[^>]*><a [^>]*>Hello Moodle\'"&gt;&amp;</a>', '\'Moodle Forum\'"&gt;&amp;\'',
             '>Welcome.*Moodle\'"&gt;&amp;', '>Love Moodle&\#039;&quot;&gt;&amp;'];
         $htmlcases['HTML mail with quotes, gt, lt and ampersand  everywhere'] = ['data' => $newcase];
@@ -984,6 +989,7 @@ final class mail_test extends \advanced_testcase {
             '~{\$a',
             '~&(amp|lt|gt|quot|\#039);(?!course|lang|version|iosappid|androidappid|siteurl|Segoe|, Roboto)',
             '<div class="attachments"[^>]*>( *\n *)?<a href',
+            '~See this post in context',
             '<h4[^>]*><a [^>]*>HTML text and image</a>', '\'Moodle Forum\'',
             '<p>Welcome to Moodle, '
             . '<img src="https://www.example.com/moodle/tokenpluginfile.php/[^/]*/\d+/mod_digestforum/post/\d+/'
@@ -1109,7 +1115,7 @@ final class mail_test extends \advanced_testcase {
             $this->assertNotEmpty($foundexpectation, 'Expectation not found for the mail');
 
             // If we have found the expectation and have contents to match, let's do it.
-            if (isset($foundexpectation) and isset($foundexpectation['contents'])) {
+            if (isset($foundexpectation) && isset($foundexpectation['contents'])) {
                 $mail->body = quoted_printable_decode($mail->body);
                 if (!is_array($foundexpectation['contents'])) { // Accept both string and array.
                     $foundexpectation['contents'] = [$foundexpectation['contents']];

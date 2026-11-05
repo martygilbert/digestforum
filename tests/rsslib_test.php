@@ -29,6 +29,8 @@ require_once("{$CFG->dirroot}/mod/digestforum/rsslib.php");
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_rss_feed_discussions_sql')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_rss_feed_posts_sql')]
 final class rsslib_test extends \advanced_testcase {
     // Include the mod_digestforum test helpers.
     // This includes functions to create digestforums, users, discussions, and posts.

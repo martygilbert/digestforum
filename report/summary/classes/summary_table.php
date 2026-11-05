@@ -122,7 +122,8 @@ class summary_table extends table_sql {
      * @param int $perpage The number of rows to display per page.
      * @param bool $canexport Is the user allowed to export records?
      * @param bool $iscoursereport Whether the user is running a course level report
-     * @param bool $accessalldigestforums If user is running a course level report, do they have access to all digestforums in the course?
+     * @param bool $accessalldigestforums If user is running a course level report, do they have access to all digestforums
+     *        in the course?
      */
     public function __construct(
         int $courseid,
@@ -945,7 +946,7 @@ class summary_table extends table_sql {
         $this->out($this->perpage, false);
     }
 
-    /*
+    /**
      * Should the word / char counts be displayed?
      *
      * We don't want to show word/char columns if there is any null value because this means

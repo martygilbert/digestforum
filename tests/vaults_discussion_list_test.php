@@ -33,6 +33,7 @@ require_once(__DIR__ . '/generator_trait.php');
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\vaults\discussion_list::class)]
 final class vaults_discussion_list_test extends \advanced_testcase {
     // Make use of the test generator trait.
     use mod_digestforum_tests_generator_trait;
@@ -95,10 +96,22 @@ final class vaults_discussion_list_test extends \advanced_testcase {
         ));
 
         $now = time();
-        [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
-        [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
-        [$hiddendiscussion, $post3] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
-        [$discussion3, $post4] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 8, 'timemodified' => 4]);
+        [
+            $discussion1,
+            $post1,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
+        [
+            $discussion2,
+            $post2,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
+        [
+            $hiddendiscussion,
+            $post3,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
+        [
+            $discussion3,
+            $post4,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 8, 'timemodified' => 4]);
 
         // By default orders the discussions by last post.
         $summaries = array_values($vault->get_from_digestforum_id(
@@ -377,8 +390,14 @@ final class vaults_discussion_list_test extends \advanced_testcase {
         ));
 
         $now = time();
-        [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => $now + 1]);
-        [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => $now + 2]);
+        [
+            $discussion1,
+            $post1,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => $now + 1]);
+        [
+            $discussion2,
+            $post2,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => $now + 2]);
         [$hiddendiscussion, $post3] = $this->helper_post_to_digestforum(
             $digestforum,
             $user,
@@ -703,9 +722,18 @@ final class vaults_discussion_list_test extends \advanced_testcase {
         ));
 
         $now = time();
-        [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
-        [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
-        [$hiddendiscussion, $post3] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
+        [
+            $discussion1,
+            $post1,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
+        [
+            $discussion2,
+            $post2,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
+        [
+            $hiddendiscussion,
+            $post3,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
 
         $this->assertEquals(2, $vault->get_total_discussion_count_from_digestforum_id(
             $digestforum->id,
@@ -747,9 +775,18 @@ final class vaults_discussion_list_test extends \advanced_testcase {
         ));
 
         $now = time();
-        [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
-        [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
-        [$hiddendiscussion, $post3] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
+        [
+            $discussion1,
+            $post1,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 10, 'timemodified' => 1]);
+        [
+            $discussion2,
+            $post2,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now - 9, 'timemodified' => 2]);
+        [
+            $hiddendiscussion,
+            $post3,
+        ] = $this->helper_post_to_digestforum($digestforum, $user, ['timestart' => $now + 10, 'timemodified' => 3]);
         [$groupdiscussion1, $post4] = $this->helper_post_to_digestforum(
             $digestforum,
             $user,

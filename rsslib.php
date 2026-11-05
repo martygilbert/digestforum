@@ -24,6 +24,8 @@
  */
 
 /* Include the core RSS lib */
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir . '/rsslib.php');
 
 /**
@@ -37,7 +39,7 @@ function digestforum_rss_get_feed($context, $args) {
 
     $status = true;
 
-    // are RSS feeds enabled?
+    // Are RSS feeds enabled?
     if (empty($CFG->digestforum_enablerssfeeds)) {
         debugging('DISABLED (module configuration)');
         return null;
@@ -47,7 +49,7 @@ function digestforum_rss_get_feed($context, $args) {
     $cm = get_coursemodule_from_instance('digestforum', $digestforumid, 0, false, MUST_EXIST);
     $modcontext = context_module::instance($cm->id);
 
-    // context id from db should match the submitted one
+    // Context id from db should match the submitted one.
     if ($context->id != $modcontext->id || !has_capability('mod/digestforum:viewdiscussion', $modcontext)) {
         return null;
     }
@@ -57,7 +59,7 @@ function digestforum_rss_get_feed($context, $args) {
         return null;
     }
 
-    // the sql that will retreive the data for the feed and be hashed to get the cache filename
+    // The sql that will retreive the data for the feed and be hashed to get the cache filename.
     [$sql, $params] = digestforum_rss_get_sql($digestforum, $cm);
 
     // Hash the sql to get the cache file name.
@@ -83,7 +85,7 @@ function digestforum_rss_get_feed($context, $args) {
         $status = rss_save_file('mod_digestforum', $filename, $result);
     }
 
-    // return the path to the cached version
+    // Return the path to the cached version.
     return $cachedfilepath;
 }
 
@@ -96,8 +98,7 @@ function digestforum_rss_delete_file($digestforum) {
     rss_delete_file('mod_digestforum', $digestforum);
 }
 
-///////////////////////////////////////////////////////
-// Utility functions
+// Utility functions.
 
 /**
  * If there is new stuff in the digestforum since $time this returns true
@@ -125,9 +126,9 @@ function digestforum_rss_newstuff($digestforum, $cm, $time) {
  * @return string the SQL query to be used to get the Discussion/Post details from the digestforum table of the database
  */
 function digestforum_rss_get_sql($digestforum, $cm, $time = 0) {
-    if ($digestforum->rsstype == 1) { // Discussion RSS
+    if ($digestforum->rsstype == 1) { // Discussion RSS.
         return digestforum_rss_feed_discussions_sql($digestforum, $cm, $time);
-    } else { // Post RSS
+    } else { // Post RSS.
         return digestforum_rss_feed_posts_sql($digestforum, $cm, $time);
     }
 }
@@ -152,7 +153,7 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince = 0) 
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!empty($CFG->digestforum_enabletimedposts)) { /// Users must fulfill timed posts
+    if (!empty($CFG->digestforum_enabletimedposts)) { // Users must fulfill timed posts.
         if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;
@@ -182,7 +183,8 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince = 0) 
     $params = array_merge($params, $groupparams);
 
     $digestforumsort = "d.timemodified DESC";
-    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
+    $postdata = "p.id AS postid, p.subject, p.created as postcreated, p.modified, p.discussion, p.userid, " .
+        "p.message as postmessage, p.messageformat AS postformat, p.messagetrust AS posttrust";
     $userfieldsapi = \core_user\fields::for_userpic();
     $userpicturefields = $userfieldsapi->get_sql('u', false, '', 'userid', false)->selects;
 
@@ -280,7 +282,7 @@ function digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modconte
     $params = [];
 
     if ($groupmode) {
-        if ($groupmode == VISIBLEGROUPS or has_capability('moodle/site:accessallgroups', $modcontext)) {
+        if ($groupmode == VISIBLEGROUPS || has_capability('moodle/site:accessallgroups', $modcontext)) {
             if ($currentgroup) {
                 $groupselect = "AND (d.groupid = :groupid OR d.groupid = -1)";
                 $params['groupid'] = $currentgroup;
@@ -309,15 +311,14 @@ function digestforum_rss_get_group_sql($cm, $groupmode, $currentgroup, $modconte
  * @param object $context the context this digestforum relates to
  * @return bool|string false if the contents is empty, otherwise the contents of the feed is returned
  *
- * @Todo MDL-31129 implement post attachment handling
+ * @todo MDL-31129 implement post attachment handling
  */
-
 function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
     global $CFG, $DB, $USER;
 
     $recs = $DB->get_recordset_sql($sql, $params, 0, $digestforum->rssarticles);
 
-    // set a flag. Are we displaying discussions or posts?
+    // Set a flag. Are we displaying discussions or posts?
     $isdiscussion = true;
     if (!empty($digestforum->rsstype) && $digestforum->rsstype != 1) {
         $isdiscussion = false;
@@ -346,7 +347,7 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
         }
 
         if ($isdiscussion && !digestforum_user_can_see_discussion($digestforum, $discussion, $context)) {
-            // This is a discussion which the user has no permission to view
+            // This is a discussion which the user has no permission to view.
             $item->title = get_string('digestforumsubjecthidden', 'digestforum');
             $message = get_string('digestforumbodyhidden', 'digestforum');
             $item->author = get_string('digestforumauthorhidden', 'digestforum');
@@ -363,14 +364,17 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
                 $item->author = get_string('digestforumauthorhidden', 'digestforum');
             }
         } else {
-            // The user must have permission to view
+            // The user must have permission to view.
             if ($isdiscussion && !empty($rec->discussionname)) {
                 $item->title = format_string($rec->discussionname);
             } else if (!empty($rec->postsubject)) {
                 $item->title = format_string($rec->postsubject);
             } else {
-                // we should have an item title by now but if we dont somehow then substitute something somewhat meaningful
-                $item->title = format_string($digestforum->name . ' ' . userdate($rec->postcreated, get_string('strftimedatetimeshort', 'langconfig')));
+                // We should have an item title by now but if we dont somehow then substitute something somewhat meaningful.
+                $item->title = format_string($digestforum->name . ' ' . userdate(
+                    $rec->postcreated,
+                    get_string('strftimedatetimeshort', 'langconfig'),
+                ));
             }
             $item->author = fullname($rec);
             $message = file_rewrite_pluginfile_urls(
@@ -394,15 +398,7 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
                 'trusted' => $rec->posttrust,
             ]);
 
-            // TODO: MDL-31129 implement post attachment handling
-            /*if (!$isdiscussion) {
-                $post_file_area_name = str_replace('//', '/', "$digestforum->course/$CFG->moddata/digestforum/$digestforum->id/$rec->postid");
-                $post_files = get_directory_list("$CFG->dataroot/$post_file_area_name");
-
-                if (!empty($post_files)) {
-                    $item->attachments = array();
-                }
-            }*/
+            // Post attachments are not included yet, see MDL-31129.
             $item->pubdate = $rec->postcreated;
 
             $items[] = $item;
@@ -414,7 +410,7 @@ function digestforum_rss_feed_contents($digestforum, $sql, $params, $context) {
         strip_tags(format_string($digestforum->name, true)),
         $CFG->wwwroot . "/mod/digestforum/view.php?f=" . $digestforum->id,
         format_string($digestforum->intro, true)
-    ); // TODO: fix format
+    );
     // Now all the RSS items, if there are any.
     $articles = '';
     if (!empty($items)) {

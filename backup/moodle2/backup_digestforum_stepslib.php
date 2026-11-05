@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Backup steps for the digestforum activity.
+ *
  * @package    mod_digestforum
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
@@ -29,12 +31,13 @@
  * Define the complete digestforum structure for backup, with file and id annotations
  */
 class backup_digestforum_activity_structure_step extends backup_activity_structure_step {
+    #[\Override]
     protected function define_structure() {
 
-        // To know if we are including userinfo
+        // To know if we are including userinfo.
         $userinfo = $this->get_setting_value('userinfo');
 
-        // Define each element separated
+        // Define each element separated.
 
         $digestforum = new backup_nested_element('digestforum', ['id'], [
             'type',
@@ -127,7 +130,7 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
             'timemodified',
         ]);
 
-        // Build the tree
+        // Build the tree.
 
         $digestforum->add_child($discussions);
         $discussions->add_child($discussion);
@@ -159,11 +162,11 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
         $discussion->add_child($discussionsubs);
         $discussionsubs->add_child($discussionsub);
 
-        // Define sources
+        // Define sources.
 
         $digestforum->set_source_table('digestforum', ['id' => backup::VAR_ACTIVITYID]);
 
-        // All these source definitions only happen if we are including user info
+        // All these source definitions only happen if we are including user info.
         if ($userinfo) {
             $discussion->set_source_sql(
                 '
@@ -173,7 +176,7 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
                 [backup::VAR_PARENTID]
             );
 
-            // Need posts ordered by id so parents are always before childs on restore
+            // Need posts ordered by id so parents are always before childs on restore.
             $post->set_source_table('digestforum_posts', ['discussion' => backup::VAR_PARENTID], 'id ASC');
             $discussionsub->set_source_table('digestforum_discussion_subs', ['discussion' => backup::VAR_PARENTID]);
 
@@ -206,7 +209,7 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
             $grade->set_source_table('digestforum_grades', ['digestforum' => backup::VAR_PARENTID]);
         }
 
-        // Define id annotations
+        // Define id annotations.
 
         $digestforum->annotate_ids('scale', 'scale');
 
@@ -231,14 +234,14 @@ class backup_digestforum_activity_structure_step extends backup_activity_structu
         $grade->annotate_ids('userid', 'userid');
 
         $grade->annotate_ids('digestforum', 'digestforum');
-        // Define file annotations
+        // Define file annotations.
 
-        $digestforum->annotate_files('mod_digestforum', 'intro', null); // This file area hasn't itemid
+        $digestforum->annotate_files('mod_digestforum', 'intro', null); // This file area hasn't itemid.
 
         $post->annotate_files('mod_digestforum', 'post', 'id');
         $post->annotate_files('mod_digestforum', 'attachment', 'id');
 
-        // Return the root element (digestforum), wrapped into standard activity structure
+        // Return the root element (digestforum), wrapped into standard activity structure.
         return $this->prepare_activity_structure($digestforum);
     }
 }

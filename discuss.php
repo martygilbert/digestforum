@@ -25,10 +25,10 @@
 
 require_once('../../config.php');
 
-$d      = required_param('d', PARAM_INT);                // Discussion ID
+$d      = required_param('d', PARAM_INT);                // Discussion ID.
 $parent = optional_param('parent', 0, PARAM_INT);        // If set, then display this post and all children.
-$mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread
-$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another digestforum
+$mode   = optional_param('mode', 0, PARAM_INT);          // If set, changes the layout of the thread.
+$move   = optional_param('move', 0, PARAM_INT);          // If set, moves this discussion to another digestforum.
 $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
@@ -85,7 +85,7 @@ $PAGE->set_supplementary_content(
     )
 );
 
-// move this down fix for MDL-6926
+// Move this down fix for MDL-6926.
 require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
 $modcontext = $digestforum->get_context();
@@ -121,7 +121,12 @@ if ($move > 0 && confirm_sesskey()) {
         if ($digestforum->get_type() == 'single') {
             throw new \moodle_exception('cannotmovefromsingledigestforum', 'digestforum', $return);
         } else {
-            throw new \moodle_exception('nopermissions', 'error', $return, get_capability_string('mod/digestforum:movediscussions'));
+            throw new \moodle_exception(
+                'nopermissions',
+                'error',
+                $return,
+                get_capability_string('mod/digestforum:movediscussions'),
+            );
         }
     }
 
@@ -213,7 +218,7 @@ if ($move > 0 && confirm_sesskey()) {
     $event->add_record_snapshot('digestforum', $digestforumto);
     $event->trigger();
 
-    // Delete the RSS files for the 2 digestforums to force regeneration of the feeds
+    // Delete the RSS files for the 2 digestforums to force regeneration of the feeds.
     require_once($CFG->dirroot . '/mod/digestforum/rsslib.php');
     digestforum_rss_delete_file($digestforumrecord);
     digestforum_rss_delete_file($digestforumto);
@@ -226,7 +231,11 @@ if ($pin !== -1 && confirm_sesskey()) {
         throw new \moodle_exception('nopermissions', 'error', $return, get_capability_string('mod/digestforum:pindiscussions'));
     }
 
-    $params = ['context' => $modcontext, 'objectid' => $discussion->get_id(), 'other' => ['digestforumid' => $digestforum->get_id()]];
+    $params = [
+        'context' => $modcontext,
+        'objectid' => $discussion->get_id(),
+        'other' => ['digestforumid' => $digestforum->get_id()],
+    ];
 
     switch ($pin) {
         case DFORUM_DISCUSSION_PINNED:
@@ -273,8 +282,8 @@ if ($displaymode != $saveddisplaymode) {
 }
 
 if ($parent) {
-    // If flat AND parent, then force nested display this time
-    if ($displaymode == DFORUM_MODE_FLATOLDEST or $displaymode == DFORUM_MODE_FLATNEWEST) {
+    // If flat AND parent, then force nested display this time.
+    if ($displaymode == DFORUM_MODE_FLATOLDEST || $displaymode == DFORUM_MODE_FLATNEWEST) {
         $displaymode = DFORUM_MODE_NESTED;
     }
 } else {
@@ -287,7 +296,11 @@ if (!$post = $postvault->get_from_id($parent)) {
 }
 
 if (!$capabilitymanager->can_view_post($USER, $discussion, $post)) {
-    throw new \moodle_exception('noviewdiscussionspermission', 'digestforum', "$CFG->wwwroot/mod/digestforum/view.php?id={$digestforum->get_id()}");
+    throw new \moodle_exception(
+        'noviewdiscussionspermission',
+        'digestforum',
+        "$CFG->wwwroot/mod/digestforum/view.php?id={$digestforum->get_id()}",
+    );
 }
 
 $istracked = digestforum_tp_is_tracked($digestforumrecord, $USER);
@@ -296,7 +309,7 @@ if ($mark == 'read' || $mark == 'unread') {
         if ($mark == 'read') {
             digestforum_tp_add_read_record($USER->id, $postid);
         } else {
-            // unread
+            // Unread.
             digestforum_tp_delete_read_records($USER->id, $postid);
         }
     }
@@ -352,7 +365,7 @@ if (!$isnestedv2displaymode) {
     echo $OUTPUT->container_end();
 }
 
-if ($move == -1 and confirm_sesskey()) {
+if ($move == -1 && confirm_sesskey()) {
     $digestforumname = format_string($digestforum->get_name(), true);
     echo $OUTPUT->notification(get_string('discussionmoved', 'digestforum', $digestforumname), 'notifysuccess');
 }

@@ -25,8 +25,6 @@ namespace mod_digestforum\plugininfo;
 
 use core\plugininfo\base;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum report subplugin info class.
  *

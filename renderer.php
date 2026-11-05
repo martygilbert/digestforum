@@ -286,7 +286,10 @@ class mod_digestforum_renderer extends plugin_renderer_base {
             return $this->render_from_template('mod_digestforum/quick_search_form', $form->export_for_template($this));
         }
 
-        return $this->render_from_template('mod_digestforum/digestforum_new_discussion_actionbar', $form->export_for_template($this));
+        return $this->render_from_template(
+            'mod_digestforum/digestforum_new_discussion_actionbar',
+            $form->export_for_template($this),
+        );
     }
 
     /**

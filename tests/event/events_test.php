@@ -33,6 +33,24 @@ namespace mod_digestforum\event;
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\course_module_viewed::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\course_searched::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_created::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_deleted::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_moved::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_subscription_created::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_subscription_deleted::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_updated::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\discussion_viewed::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\post_created::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\post_deleted::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\post_updated::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\readtracking_disabled::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\readtracking_enabled::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\subscribers_viewed::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\subscription_created::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\subscription_deleted::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\user_report_viewed::class)]
 final class events_test extends \advanced_testcase {
     /**
      * Tests set up.
@@ -1114,7 +1132,11 @@ final class events_test extends \advanced_testcase {
 
         $params = [
             'context' => \context_module::instance($digestforum->cmid),
-            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id],
+            'other' => [
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+                'discussionid' => $discussion->id,
+            ],
         ];
 
         \mod_digestforum\event\post_created::create($params);
@@ -1240,7 +1262,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $this->expectException(\coding_exception::class);
@@ -1275,7 +1301,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $event = \mod_digestforum\event\post_created::create($params);
@@ -1325,7 +1355,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $event = \mod_digestforum\event\post_created::create($params);
@@ -1365,7 +1399,11 @@ final class events_test extends \advanced_testcase {
 
         $params = [
             'context' => \context_module::instance($digestforum->cmid),
-            'other' => ['digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type, 'discussionid' => $discussion->id],
+            'other' => [
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+                'discussionid' => $discussion->id,
+            ],
         ];
 
         \mod_digestforum\event\post_deleted::create($params);
@@ -1491,7 +1529,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $this->expectException(\coding_exception::class);
@@ -1608,7 +1650,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $event = \mod_digestforum\event\post_deleted::create($params);
@@ -1750,7 +1796,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => \context_system::instance(),
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $this->expectException(\coding_exception::class);
@@ -1785,7 +1835,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $event = \mod_digestforum\event\post_updated::create($params);
@@ -1835,7 +1889,11 @@ final class events_test extends \advanced_testcase {
         $params = [
             'context' => $context,
             'objectid' => $post->id,
-            'other' => ['discussionid' => $discussion->id, 'digestforumid' => $digestforum->id, 'digestforumtype' => $digestforum->type],
+            'other' => [
+                'discussionid' => $discussion->id,
+                'digestforumid' => $digestforum->id,
+                'digestforumtype' => $digestforum->type,
+            ],
         ];
 
         $event = \mod_digestforum\event\post_updated::create($params);

@@ -100,7 +100,7 @@ class reply_handler extends \core\message\inbound\handler {
         } else {
             $groupmode = $course->groupmode;
         }
-        if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+        if ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $modcontext)) {
             if ($discussion->groupid == -1) {
                 $canpost = false;
             } else {
@@ -113,14 +113,22 @@ class reply_handler extends \core\message\inbound\handler {
         if (!$canpost) {
             $data = new \stdClass();
             $data->digestforum = $digestforum;
-            throw new \core\message\inbound\processing_failed_exception('messageinboundnopostdigestforum', 'mod_digestforum', $data);
+            throw new \core\message\inbound\processing_failed_exception(
+                'messageinboundnopostdigestforum',
+                'mod_digestforum',
+                $data,
+            );
         }
 
         // And check the availability.
         if (!\core_availability\info_module::is_user_visible($cm)) {
             $data = new \stdClass();
             $data->digestforum = $digestforum;
-            throw new \core\message\inbound\processing_failed_exception('messageinbounddigestforumhidden', 'mod_digestforum', $data);
+            throw new \core\message\inbound\processing_failed_exception(
+                'messageinbounddigestforumhidden',
+                'mod_digestforum',
+                $data,
+            );
         }
 
         // Before we add this we must check that the user will not exceed the blocking threshold.
@@ -184,7 +192,11 @@ class reply_handler extends \core\message\inbound\handler {
                 $data = new \stdClass();
                 $data->digestforum = $digestforum;
                 $data->attachmentcount = $attachmentcount;
-                throw new \core\message\inbound\processing_failed_exception('messageinboundattachmentdisallowed', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundattachmentdisallowed',
+                    'mod_digestforum',
+                    $data,
+                );
             }
 
             if ($digestforum->maxattachments < $attachmentcount) {
@@ -195,7 +207,11 @@ class reply_handler extends \core\message\inbound\handler {
                 $data = new \stdClass();
                 $data->digestforum = $digestforum;
                 $data->attachmentcount = $attachmentcount;
-                throw new \core\message\inbound\processing_failed_exception('messageinboundfilecountexceeded', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundfilecountexceeded',
+                    'mod_digestforum',
+                    $data,
+                );
             }
 
             $filesize = 0;
@@ -214,7 +230,11 @@ class reply_handler extends \core\message\inbound\handler {
                 $data->digestforum = $digestforum;
                 $data->maxbytes = display_size($maxbytes);
                 $data->filesize = display_size($filesize);
-                throw new \core\message\inbound\processing_failed_exception('messageinboundfilesizeexceeded', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundfilesizeexceeded',
+                    'mod_digestforum',
+                    $data,
+                );
             }
         }
 
@@ -253,7 +273,8 @@ class reply_handler extends \core\message\inbound\handler {
         if ($completion->is_enabled($cm) && ($digestforum->completionreplies || $digestforum->completionposts)) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
 
-            mtrace("--> Updating completion status for user {$USER->id} in digestforum {$digestforum->id} for post {$addpost->id}.");
+            mtrace("--> Updating completion status for user {$USER->id} in digestforum {$digestforum->id} " .
+                "for post {$addpost->id}.");
         }
 
         mtrace("--> Created a post {$addpost->id} in {$discussion->id}.");

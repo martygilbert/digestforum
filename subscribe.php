@@ -92,7 +92,7 @@ if ($groupmode && !$issubscribed && !has_capability('moodle/site:accessallgroups
 
 require_login($course, false, $cm);
 
-if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled
+if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled.
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     if (isguestuser()) {
@@ -125,7 +125,7 @@ if ($returnurl) {
 
 $subscribersurl = new moodle_url('/mod/digestforum/subscribers.php', ['id' => $id, 'edit' => $edit]);
 
-if (!is_null($mode) and has_capability('mod/digestforum:managesubscriptions', $context)) {
+if (!is_null($mode) && has_capability('mod/digestforum:managesubscriptions', $context)) {
     require_sesskey();
     switch ($mode) {
         case DFORUM_CHOOSESUBSCRIBE: // 0
@@ -238,8 +238,13 @@ if ($issubscribed) {
             throw new \moodle_exception('cannotunsubscribe', 'digestforum', get_local_referer(false));
         }
     }
-} else {  // subscribe
-    if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !has_capability('mod/digestforum:managesubscriptions', $context)) {
+} else {  // Subscribe.
+    if (
+        \mod_digestforum\subscriptions::subscription_disabled($digestforum) && !has_capability(
+            'mod/digestforum:managesubscriptions',
+            $context,
+        )
+    ) {
         throw new \moodle_exception('disallowsubscribe', 'digestforum', get_local_referer(false));
     }
     if (!has_capability('mod/digestforum:viewdiscussion', $context)) {

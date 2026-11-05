@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Site administration settings for the digestforum module.
+ *
  * @package   mod_digestforum
  * @copyright  2009 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -33,7 +35,7 @@ if ($ADMIN->fulltree) {
         digestforum_get_layout_modes()
     ));
 
-    // Less non-HTML characters than this is short
+    // Less non-HTML characters than this is short.
     $settings->add(new admin_setting_configtext(
         'digestforum_shortpost',
         get_string('shortpost', 'digestforum'),
@@ -42,7 +44,7 @@ if ($ADMIN->fulltree) {
         PARAM_INT
     ));
 
-    // More non-HTML characters than this is long
+    // More non-HTML characters than this is long.
     $settings->add(new admin_setting_configtext(
         'digestforum_longpost',
         get_string('longpost', 'digestforum'),
@@ -51,7 +53,7 @@ if ($ADMIN->fulltree) {
         PARAM_INT
     ));
 
-    // Number of discussions on a page
+    // Number of discussions on a page.
     $settings->add(new admin_setting_configtext(
         'digestforum_manydiscussions',
         get_string('manydiscussions', 'digestforum'),
@@ -74,7 +76,7 @@ if ($ADMIN->fulltree) {
         ));
     }
 
-    // Default number of attachments allowed per post in all digestforums
+    // Default number of attachments allowed per post in all digestforums.
     $settings->add(new admin_setting_configtext(
         'digestforum_maxattachments',
         get_string('maxattachments', 'digestforum'),
@@ -106,7 +108,7 @@ if ($ADMIN->fulltree) {
         $options
     ));
 
-    // Default whether user needs to mark a post as read
+    // Default whether user needs to mark a post as read.
     $settings->add(new admin_setting_configcheckbox(
         'digestforum_trackreadposts',
         get_string('trackdigestforum', 'digestforum'),
@@ -122,7 +124,7 @@ if ($ADMIN->fulltree) {
         0
     ));
 
-    // Default number of days that a post is considered old
+    // Default number of days that a post is considered old.
     $settings->add(new admin_setting_configtext(
         'digestforum_oldpostdays',
         get_string('oldpostdays', 'digestforum'),
@@ -131,7 +133,7 @@ if ($ADMIN->fulltree) {
         PARAM_INT
     ));
 
-    // Default whether user needs to mark a post as read
+    // Default whether user needs to mark a post as read.
     $settings->add(new admin_setting_configcheckbox(
         'digestforum_usermarksread',
         get_string('usermarksread', 'digestforum'),
@@ -143,7 +145,7 @@ if ($ADMIN->fulltree) {
     for ($i = 0; $i < 24; $i++) {
         $options[$i] = sprintf("%02d", $i);
     }
-    // Default time (hour) to execute 'clean_read_records' cron
+    // Default time (hour) to execute 'clean_read_records' cron.
     $settings->add(new admin_setting_configselect(
         'digestforum_cleanreadtime',
         get_string('cleanreadtime', 'digestforum'),
@@ -152,7 +154,7 @@ if ($ADMIN->fulltree) {
         $options
     ));
 
-    // Default time (hour) to send digest email
+    // Default time (hour) to send digest email.
     $settings->add(new admin_setting_configselect(
         'digestforum_mailtime',
         get_string('digestmailtime', 'digestforum'),

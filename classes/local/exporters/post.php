@@ -424,8 +424,14 @@ class post extends exporter {
             $message = $this->get_message($post);
             $label = get_string('postbyuser', 'mod_digestforum', ['post' => $subject, 'user' => $exportedauthor->fullname]);
         } else {
-            $subject = $isdeleted ? get_string('digestforumsubjectdeleted', 'digestforum') : get_string('digestforumsubjecthidden', 'digestforum');
-            $message = $isdeleted ? get_string('digestforumbodydeleted', 'digestforum') : get_string('digestforumbodyhidden', 'digestforum');
+            $subject = $isdeleted ? get_string(
+                'digestforumsubjectdeleted',
+                'digestforum',
+            ) : get_string('digestforumsubjecthidden', 'digestforum');
+            $message = $isdeleted ? get_string(
+                'digestforumbodydeleted',
+                'digestforum',
+            ) : get_string('digestforumbodyhidden', 'digestforum');
             $timecreated = null;
             $label = $subject;
         }

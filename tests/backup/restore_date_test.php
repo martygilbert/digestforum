@@ -29,6 +29,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @copyright  2017 onwards Ankit Agarwal <ankit.agrr@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\restore_digestforum_activity_task::class)]
 final class restore_date_test extends \restore_date_testcase {
     /**
      * Test restore dates.

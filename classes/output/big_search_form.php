@@ -23,7 +23,6 @@
  */
 
 namespace mod_digestforum\output;
-defined('MOODLE_INTERNAL') || die();
 
 use html_writer;
 use moodle_url;
@@ -40,17 +39,29 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class big_search_form implements renderable, templatable {
+    /** @var \stdClass The course being searched. */
     public $course;
+    /** @var int Only find posts made from this time. */
     public $datefrom;
+    /** @var int Only find posts made up to this time. */
     public $dateto;
+    /** @var array The digestforums that can be searched, for the select menu. */
     public $digestforumoptions;
+    /** @var string Whole words to search for. */
     public $fullwords;
+    /** @var string Words that must not be in the posts. */
     public $notwords;
+    /** @var string An exact phrase to search for. */
     public $phrase;
+    /** @var bool Whether the whole words option is shown. */
     public $showfullwords;
+    /** @var string Text to search for in the post subjects. */
     public $subject;
+    /** @var string The name of the author to search for. */
     public $user;
+    /** @var string Words to search for. */
     public $words;
+    /** @var array Tags to search for. */
     public $tags;
     /** @var string The URL of the search form. */
     public $actionurl;
@@ -183,6 +194,7 @@ class big_search_form implements renderable, templatable {
         $this->digestforumid = $digestforumid;
     }
 
+    #[\Override]
     public function export_for_template(renderer_base $output) {
         global $DB, $CFG, $PAGE;
         $data = new stdClass();

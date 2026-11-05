@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum assessable uploaded event class.
  *
@@ -97,10 +95,12 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum_posts', 'restore' => 'digestforum_post'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['discussionid'] = ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Adhoc task to send user digestforum notifications.
  *
@@ -124,7 +122,7 @@ class send_user_notifications extends \core\task\adhoc_task {
         $this->log_start("Sending messages to {$this->recipient->username} ({$this->recipient->id})");
         foreach ($this->courses as $course) {
             $coursecontext = \context_course::instance($course->id);
-            if (!$course->visible and !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
+            if (!$course->visible && !has_capability('moodle/course:viewhiddencourses', $coursecontext)) {
                 // The course is hidden and the user does not have access to it.
                 // Permissions may have changed since it was queued.
                 continue;
@@ -526,7 +524,7 @@ class send_user_notifications extends \core\task\adhoc_task {
             return $this->inboundmanager->generate($this->recipient->id);
         }
 
-        // TODO Check if we can return a string.
+        // This could perhaps return a string instead.
         // This will be controlled by the event.
         return null;
     }
@@ -544,7 +542,14 @@ class send_user_notifications extends \core\task\adhoc_task {
      */
     protected function can_post($course, $digestforum, $discussion, $post, $cm, $context) {
         if (!isset($this->canpostto[$discussion->id])) {
-            $this->canpostto[$discussion->id] = digestforum_user_can_post($digestforum, $discussion, $this->recipient, $cm, $course, $context);
+            $this->canpostto[$discussion->id] = digestforum_user_can_post(
+                $digestforum,
+                $discussion,
+                $this->recipient,
+                $cm,
+                $course,
+                $context,
+            );
         }
         return $this->canpostto[$discussion->id];
     }

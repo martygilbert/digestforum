@@ -26,6 +26,7 @@ use mod_digestforum\local\entities\post as post_entity;
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\entities\discussion::class)]
 final class entities_discussion_test extends \advanced_testcase {
     /**
      * Test the entity returns expected values.

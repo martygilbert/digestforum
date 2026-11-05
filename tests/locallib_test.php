@@ -36,6 +36,7 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @copyright  2018 Shamim Rezaie <shamim@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_update_calendar')]
 final class locallib_test extends \advanced_testcase {
     public function test_digestforum_update_calendar(): void {
         global $DB;

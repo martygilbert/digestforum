@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $messageproviders = [
     // Ordinary single digestforum posts. Never sent: every post goes out in the daily digest instead.
     'posts' => [

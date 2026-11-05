@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * Display or email the digest open rates for each digestforum over the last week.
+ *
+ * @package    mod_digestforum
+ * @copyright  2022 Marty Gilbert
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define('CLI_SCRIPT', true);
 
 require_once(__DIR__ . '/../../../config.php');
@@ -44,7 +52,7 @@ Example:
 \$ sudo -u apache /usr/bin/php email_stats.php --both=johndoe
 \$ sudo -u apache /usr/bin/php email_stats.php --emailonly=johndoe
 
-"; // TODO: localize - to be translated later when everything is finished
+"; // Not localised yet.
 
     echo $help;
     die;
@@ -58,7 +66,6 @@ if (
     $options['displayonly'] = true;
 }
 
-// print_r($options);
 
 if ($options['emailonly'] && $options['displayonly']) {
     echo "Cannot have 'emailonly' and 'displayonly' set.\n";
@@ -106,15 +113,14 @@ $count = 0;
 foreach ($digestforums as $forum) {
     $sql =
         'SELECT digestdate, digestforumid,
-        COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
-        COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-            FROM {digestforum_tracker} 
+        COUNT(case when numviews > 0 then 1 end) AS NumOpened,
+        COUNT(case when numviews = 0 then 1 end) AS NotOpened
+            FROM {digestforum_tracker}
     WHERE digestforumid = ?
         GROUP BY digestdate
         ORDER BY digestdate DESC';
 
     $opened = $DB->get_records_sql($sql, [$forum->id], 0, 7);
-    // $opened = $DB->get_records_sql($sql, [$forum->id]);
 
     $name = preg_replace('/Daily Announcements for /', '', $forum->name);
     $name = preg_replace('/Daily Announcements Only for /', '', $name);
@@ -127,25 +133,24 @@ foreach ($digestforums as $forum) {
 ' . $header;
 
     foreach ($opened as $value) {
-        $pctOpened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
+        $pctopened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
 
         if ($options['both'] || $options['displayonly']) {
             printf(
                 "%-18s %-15s %12s %12s %12.2f%%\n",
-                getDay($value->digestdate) . ' ' . $value->digestdate,
+                get_day($value->digestdate) . ' ' . $value->digestdate,
                 $name,
                 $value->numopened,
                 $value->notopened,
-                $pctOpened
+                $pctopened
             );
-                // round($pctOpened, 2));
         }
         $thistable .=
         '<tr>
-    <td>' . getDay($value->digestdate) . ' - ' . $value->digestdate . '</td>
+    <td>' . get_day($value->digestdate) . ' - ' . $value->digestdate . '</td>
     <td style="text-align: right">' . $value->numopened . '</td>
     <td style="text-align: right">' . $value->notopened . '</td>
-    <td style="text-align: right">' . sprintf("%10.2f%%", $pctOpened) . '</td>
+    <td style="text-align: right">' . sprintf("%10.2f%%", $pctopened) . '</td>
 </tr>';
     }
     if ($opened) {
@@ -165,14 +170,26 @@ if ($options['both'] || $options['emailonly']) {
         }
     }
 
-    $mailresult = email_to_user($userto, core_user::get_noreply_user(), "Stats for $todaysdate", format_string($posthtml), $posthtml);
+    $mailresult = email_to_user(
+        $userto,
+        core_user::get_noreply_user(),
+        "Stats for $todaysdate",
+        format_string($posthtml),
+        $posthtml,
+    );
 
     if (!$mailresult) {
         echo "Error sending email\n";
     }
 }
 
-function getDay($datestr) {
+/**
+ * Get the abbreviated day name for a digest date.
+ *
+ * @param string $datestr The digest date, as yyyy-mm-dd
+ * @return string The day, such as 'Mon'
+ */
+function get_day($datestr) {
     $info = mktime(
         12,
         0,
@@ -182,5 +199,4 @@ function getDay($datestr) {
         substr($datestr, 0, 4)
     );
     return date("D", $info);
-    // echo $info."\n";
 }

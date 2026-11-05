@@ -13,11 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-/*
-    This will email ALL open stats for all users
-    Output must be like:
-    Person - Forum - Sent - Read - %
-*/
+
+/**
+ * Email the digest open stats for all users.
+ *
+ * The output is one line per user and digestforum: Person - Forum - Sent - Read - %.
+ *
+ * @package    mod_digestforum
+ * @copyright  2022 Marty Gilbert
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 define('CLI_SCRIPT', true);
 
 require_once(__DIR__ . '/../../../config.php');
@@ -49,7 +55,7 @@ Example:
 \$ sudo -u apache /usr/bin/php email_full_stats.php --both=johndoe
 \$ sudo -u apache /usr/bin/php email_full_stats.php --emailonly=johndoe
 
-"; // TODO: localize - to be translated later when everything is finished
+"; // Not localised yet.
 
     echo $help;
     die;
@@ -63,7 +69,6 @@ if (
     $options['displayonly'] = true;
 }
 
-// print_r($options);
 
 if ($options['emailonly'] && $options['displayonly']) {
     echo "Cannot have 'emailonly' and 'displayonly' set.\n";
@@ -117,11 +122,11 @@ $count = 0;
 foreach ($digestforums as $forum) {
     $sql =
         'SELECT mdluserid, digestforumid,
-        COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
-        COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-            FROM {digestforum_tracker} 
+        COUNT(case when numviews > 0 then 1 end) AS NumOpened,
+        COUNT(case when numviews = 0 then 1 end) AS NotOpened
+            FROM {digestforum_tracker}
     	WHERE digestforumid = ? AND (digestdate like \'2023-02-%\' OR
-		digestdate=\'2023-01-09\' OR 
+		digestdate=\'2023-01-09\' OR
 		digestdate like \'2023-01-1%\' OR
 		digestdate like \'2023-01-3%\' OR
 		digestdate like \'2023-01-2%\')
@@ -133,7 +138,6 @@ foreach ($digestforums as $forum) {
     */
 
     $opened = $DB->get_records_sql($sql, [$forum->id]);
-    // $opened = $DB->get_records_sql($sql, [$forum->id]);
 
     $name = preg_replace('/Daily Announcements for /', '', $forum->name);
     $name = preg_replace('/Daily Announcements Only for /', '', $name);
@@ -154,7 +158,7 @@ foreach ($digestforums as $forum) {
             continue;
         }
 
-        $pctOpened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
+        $pctopened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
 
         if ($options['both'] || $options['displayonly'] || $csv) {
             $csvdata .=
@@ -162,7 +166,7 @@ foreach ($digestforums as $forum) {
                 $name . ',' .
                 $value->numopened . ',' .
                 $value->notopened . ',' .
-                $pctOpened . "\n";
+                $pctopened . "\n";
 
             if (!$csv) {
                 printf(
@@ -171,9 +175,8 @@ foreach ($digestforums as $forum) {
                     $name,
                     $value->numopened,
                     $value->notopened,
-                    $pctOpened
+                    $pctopened
                 );
-                    // round($pctOpened, 2));
             }
         }
         $thistable .=
@@ -181,7 +184,7 @@ foreach ($digestforums as $forum) {
     <td>' . $user->username . '</td>
     <td style="text-align: right">' . $value->numopened . '</td>
     <td style="text-align: right">' . $value->notopened . '</td>
-    <td style="text-align: right">' . sprintf("%10.2f%%", $pctOpened) . '</td>
+    <td style="text-align: right">' . sprintf("%10.2f%%", $pctopened) . '</td>
 </tr>';
     }
     if ($opened) {
@@ -206,9 +209,21 @@ if ($options['both'] || $options['emailonly']) {
     }
 
     if (!$csv) {
-        $mailresult = email_to_user($userto, core_user::get_noreply_user(), "Stats for $todaysdate", format_string($posthtml), $posthtml);
+        $mailresult = email_to_user(
+            $userto,
+            core_user::get_noreply_user(),
+            "Stats for $todaysdate",
+            format_string($posthtml),
+            $posthtml,
+        );
     } else {
-        $mailresult = email_to_user($userto, core_user::get_noreply_user(), "Stats for $todaysdate", format_string($csvdata), $csvdata);
+        $mailresult = email_to_user(
+            $userto,
+            core_user::get_noreply_user(),
+            "Stats for $todaysdate",
+            format_string($csvdata),
+            $csvdata,
+        );
     }
 
     if (!$mailresult) {
@@ -216,7 +231,13 @@ if ($options['both'] || $options['emailonly']) {
     }
 }
 
-function getDay($datestr) {
+/**
+ * Get the abbreviated day name for a digest date.
+ *
+ * @param string $datestr The digest date, as yyyy-mm-dd
+ * @return string The day, such as 'Mon'
+ */
+function get_day($datestr) {
     $info = mktime(
         12,
         0,
@@ -226,5 +247,4 @@ function getDay($datestr) {
         substr($datestr, 0, 4)
     );
     return date("D", $info);
-    // echo $info."\n";
 }

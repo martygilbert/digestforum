@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Deprecated digestforum functions, kept for backwards compatibility.
+ *
  * @package   mod_digestforum
  * @copyright 2014 Andrew Robert Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -48,7 +50,8 @@ function digestforum_tp_get_untracked_digestforums($userid, $courseid) {
                                 OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     } else {
         $trackingsql = "AND (f.trackingtype = " . DFORUM_TRACKING_OFF . "
-                            OR ((f.trackingtype = " . DFORUM_TRACKING_OPTIONAL . " OR f.trackingtype = " . DFORUM_TRACKING_FORCED . ")
+                            OR ((f.trackingtype = " . DFORUM_TRACKING_OPTIONAL . "
+                                OR f.trackingtype = " . DFORUM_TRACKING_FORCED . ")
                                 AND (ft.id IS NOT NULL
                                     OR (SELECT trackforums FROM {user} WHERE id = ?) = 0)))";
     }

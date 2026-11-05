@@ -81,7 +81,8 @@ final class digestforums_test extends core_reportbuilder_testcase {
 
         $content = $this->get_custom_report_content($report->get('id'));
 
-        // Default columns are course, digestforum, discussion, created, message, user. Sorted by course, digestforum, discussion, created desc.
+        // Default columns are course, digestforum, discussion, created, message, user.
+        // Sorted by course, digestforum, discussion, created desc.
         $this->assertEquals([
             [
                 $course->fullname,
@@ -434,7 +435,11 @@ final class digestforums_test extends core_reportbuilder_testcase {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
         $digestforum = $generator->create_instance(['course' => $course->id]);
-        $discussion = $generator->create_discussion(['course' => $course->id, 'digestforum' => $digestforum->id, 'userid' => $user->id]);
+        $discussion = $generator->create_discussion([
+            'course' => $course->id,
+            'digestforum' => $digestforum->id,
+            'userid' => $user->id,
+        ]);
 
         $this->datasource_stress_test_columns(digestforums::class);
         $this->datasource_stress_test_columns_aggregation(digestforums::class);

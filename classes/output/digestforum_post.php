@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable.
  *
@@ -167,8 +165,14 @@ class digestforum_post implements \renderable, \templatable {
             'postdate'                      => html_entity_decode($this->get_postdate(), ENT_COMPAT),
 
             // Format some components according to the renderer.
-            'message'                       => html_entity_decode($renderer->format_message_text($this->cm, $this->post), ENT_COMPAT),
-            'attachments'                   => html_entity_decode($renderer->format_message_attachments($this->cm, $this->post), ENT_COMPAT),
+            'message'                       => html_entity_decode(
+                $renderer->format_message_text($this->cm, $this->post),
+                ENT_COMPAT,
+            ),
+            'attachments'                   => html_entity_decode(
+                $renderer->format_message_attachments($this->cm, $this->post),
+                ENT_COMPAT,
+            ),
 
             'canreply'                      => $this->canreply,
             'permalink'                     => $this->get_permalink(),
@@ -330,7 +334,7 @@ class digestforum_post implements \renderable, \templatable {
      *
      * @return string
      */
-    protected function _get_discussionlink() {
+    protected function get_discussionlink_url() {
         return new \moodle_url(
             // Posts are viewed on the topic.
             '/mod/digestforum/discuss.php',
@@ -347,7 +351,7 @@ class digestforum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_discussionlink() {
-        $link = $this->_get_discussionlink();
+        $link = $this->get_discussionlink_url();
 
         return $link->out(false);
     }
@@ -358,7 +362,7 @@ class digestforum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_permalink() {
-        $link = $this->_get_discussionlink();
+        $link = $this->get_discussionlink_url();
         $link->set_anchor($this->get_postanchor());
 
         return $link->out(false);
@@ -370,7 +374,7 @@ class digestforum_post implements \renderable, \templatable {
      * @return string
      */
     public function get_parentpostlink() {
-        $link = $this->_get_discussionlink();
+        $link = $this->get_discussionlink_url();
         $link->param('parent', $this->post->parent);
 
         return $link->out(false);

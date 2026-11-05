@@ -22,8 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Helpers for creating users, discussions and posts in digestforum tests.
+ *
+ * @package    mod_digestforum
+ * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 trait mod_digestforum_tests_generator_trait {
     /**
      * Helper to create the required number of users in the specified course.

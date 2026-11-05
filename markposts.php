@@ -25,7 +25,7 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$f          = required_param('f', PARAM_INT); // The digestforum to mark
+$f          = required_param('f', PARAM_INT); // The digestforum to mark.
 $mark       = required_param('mark', PARAM_ALPHA); // Read or unread?
 $d          = optional_param('d', 0, PARAM_INT); // Discussion to mark.
 $return     = optional_param('return', null, PARAM_LOCALURL);    // Page to return to.
@@ -62,11 +62,15 @@ if (null === $return) {
     $returnto = new moodle_url($return);
 }
 
-if (isguestuser()) {   // Guests can't change digestforum
+if (isguestuser()) {   // Guests can't change digestforum.
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->confirm(get_string('noguesttracking', 'digestforum') . '<br /><br />' . get_string('liketologin'), get_login_url(), $returnto);
+    echo $OUTPUT->confirm(
+        get_string('noguesttracking', 'digestforum') . '<br /><br />' . get_string('liketologin'),
+        get_login_url(),
+        $returnto,
+    );
     echo $OUTPUT->footer();
     exit;
 }
@@ -83,11 +87,11 @@ if ($mark == 'read') {
 
         digestforum_tp_mark_discussion_read($user, $d);
     } else {
-        // Mark all messages read in current group
+        // Mark all messages read in current group.
         $currentgroup = groups_get_activity_group($cm);
         if (!$currentgroup) {
-            // mark_digestforum_read requires ===false, while get_activity_group
-            // may return 0
+            // Mark_digestforum_read requires ===false, while get_activity_group
+            // may return 0.
             $currentgroup = false;
         }
         digestforum_tp_mark_digestforum_read($user, $digestforum->id, $currentgroup);

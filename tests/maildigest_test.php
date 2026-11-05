@@ -32,6 +32,8 @@ require_once(__DIR__ . '/generator_trait.php');
  * @copyright  2013 Andrew Nicols
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\cron_task::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\send_user_digests::class)]
 final class maildigest_test extends \advanced_testcase {
     // Make use of the cron tester trait.
     use mod_digestforum_tests_cron_trait;
@@ -56,7 +58,7 @@ final class maildigest_test extends \advanced_testcase {
         // Messaging is not compatible with transactions...
         $this->preventResetByRollback();
 
-        // Catch all messages
+        // Catch all messages.
         $this->messagesink = $this->redirectMessages();
         $this->mailsink = $this->redirectEmails();
 
@@ -132,7 +134,7 @@ final class maildigest_test extends \advanced_testcase {
          [$test, $params] = $DB->get_in_or_equal($return->digestforumsids);
 
         // Enrol the user in the courses.
-        // DataGenerator->enrol_user automatically sets a role for the user
+        // DataGenerator->enrol_user automatically sets a role for the user.
         $this->getDataGenerator()->enrol_user($return->user->id, $return->courses->course1->id);
 
         return $return;
@@ -181,7 +183,7 @@ final class maildigest_test extends \advanced_testcase {
         ]);
         $this->assertEquals($currentsetting->maildigest, 2);
 
-        // And the default value - this should delete the record again
+        // And the default value - this should delete the record again.
         digestforum_set_user_maildigest($digestforum1, -1, $user);
         $currentsetting = $DB->get_record('digestforum_digests', [
             'digestforum' => $digestforum1->id,
@@ -536,6 +538,12 @@ final class maildigest_test extends \advanced_testcase {
         $this->assertGreaterThan(0, $DB->count_records('digestforum_queue', ['userid' => $user->id]));
 
         $task = new class extends \mod_digestforum\task\send_user_digests {
+            /**
+             * Fail to send every digest.
+             *
+             * @param   string  $messageid The Message-ID header for this digest
+             * @return  bool
+             */
             protected function send_mail(string $messageid) {
                 return false;
             }

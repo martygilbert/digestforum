@@ -44,7 +44,7 @@ class mod_digestforum_existing_subscriber_selector extends mod_digestforum_subsc
         [$wherecondition, $params] = $this->search_sql($search, 'u');
         $params['digestforumid'] = $this->digestforumid;
 
-        // only active enrolled or everybody on the frontpage
+        // Only active enrolled or everybody on the frontpage.
         [$esql, $eparams] = get_enrolled_sql($this->context, '', $this->currentgroup, true);
         $fields = $this->required_fields_sql('u');
         [$sort, $sortparams] = users_order_by_sql('u', $search, $this->accesscontext);

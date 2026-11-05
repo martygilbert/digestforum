@@ -38,6 +38,7 @@ use mod_digestforum\privacy\provider;
  * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\privacy\provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     // Include the privacy subcontext_info trait.
     // This includes the subcontext builders.
@@ -685,13 +686,32 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             [$context1->id]
         );
 
-        $this->assertEquals(0, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum0->id]));
-        $this->assertEquals(1, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum1->id]));
-        $this->assertEquals(2, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum2->id]));
+        $this->assertEquals(
+            0,
+            $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum0->id]),
+        );
+        $this->assertEquals(
+            1,
+            $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum1->id]),
+        );
+        $this->assertEquals(
+            2,
+            $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum2->id]),
+        );
         provider::delete_data_for_user($approvedcontextlist);
-        $this->assertEquals(0, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum0->id]));
-        $this->assertFalse($DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum1->id]));
-        $this->assertEquals(2, $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum2->id]));
+        $this->assertEquals(
+            0,
+            $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum0->id]),
+        );
+        $this->assertFalse($DB->get_field(
+            'digestforum_digests',
+            'maildigest',
+            ['userid' => $user->id, 'digestforum' => $digestforum1->id],
+        ));
+        $this->assertEquals(
+            2,
+            $DB->get_field('digestforum_digests', 'maildigest', ['userid' => $user->id, 'digestforum' => $digestforum2->id]),
+        );
     }
 
     /**
@@ -738,13 +758,25 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             [$contexton->id]
         );
 
-        $this->assertTrue($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumoff->id]));
-        $this->assertFalse($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumon->id]));
+        $this->assertTrue($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumoff->id],
+        ));
+        $this->assertFalse($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumon->id],
+        ));
 
         provider::delete_data_for_user($approvedcontextlist);
 
-        $this->assertTrue($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumoff->id]));
-        $this->assertFalse($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumon->id]));
+        $this->assertTrue($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumoff->id],
+        ));
+        $this->assertFalse($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumon->id],
+        ));
 
         // Delete the data for one of the users in the 'off' digestforum.
         $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
@@ -755,8 +787,14 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
 
         provider::delete_data_for_user($approvedcontextlist);
 
-        $this->assertFalse($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumoff->id]));
-        $this->assertFalse($DB->record_exists('digestforum_track_prefs', ['userid' => $user->id, 'digestforumid' => $digestforumon->id]));
+        $this->assertFalse($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumoff->id],
+        ));
+        $this->assertFalse($DB->record_exists(
+            'digestforum_track_prefs',
+            ['userid' => $user->id, 'digestforumid' => $digestforumon->id],
+        ));
     }
 
     /**

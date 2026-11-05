@@ -23,7 +23,6 @@
  */
 
 namespace mod_digestforum\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_digestforum discussion unpinned event.
@@ -50,7 +49,8 @@ class discussion_unpinned extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the digestforum {$this->other['digestforumid']}";
+        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the digestforum " .
+            "{$this->other['digestforumid']}";
     }
 
     /**

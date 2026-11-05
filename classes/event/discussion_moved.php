@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion moved event class.
  *
@@ -60,7 +58,8 @@ class discussion_moved extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' has moved the discussion with id '$this->objectid' from the " .
-            "digestforum with id '{$this->other['fromdigestforumid']}' to the digestforum with id '{$this->other['todigestforumid']}'.";
+            "digestforum with id '{$this->other['fromdigestforumid']}' to the digestforum with id " .
+            "'{$this->other['todigestforumid']}'.";
     }
 
     /**
@@ -102,10 +101,12 @@ class discussion_moved extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['fromdigestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];

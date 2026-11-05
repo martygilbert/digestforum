@@ -15,10 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Tracking image for digest emails: records that a digest has been opened.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
+// The image is loaded by email clients, which are not logged in.
+// phpcs:ignore moodle.Files.RequireLogin.Missing
 require_once(dirname(__FILE__) . '/../../config.php');
 
 // Tracker id.

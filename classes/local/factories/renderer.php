@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\factories;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\grades\digestforum_gradeitem;
 use mod_digestforum\local\entities\discussion as discussion_entity;
 use mod_digestforum\local\entities\digestforum as digestforum_entity;
@@ -336,7 +334,8 @@ class renderer {
                         $digestforum = $digestforumsbyid[$discussion->get_digestforum_id()];
 
                         $viewdiscussionurl = $urlfactory->get_discussion_view_url_from_discussion($discussion);
-                        $exportedpost->urls['viewdigestforum'] = $urlfactory->get_digestforum_view_url_from_digestforum($digestforum)->out(false);
+                        $viewurl = $urlfactory->get_digestforum_view_url_from_digestforum($digestforum);
+                        $exportedpost->urls['viewdigestforum'] = $viewurl->out(false);
                         $exportedpost->urls['viewdiscussion'] = $viewdiscussionurl->out(false);
                         $exportedpost->subject = highlight($highlightwords, $exportedpost->subject);
                         $exportedpost->digestforumname = format_string($digestforum->get_name(), true);
@@ -396,14 +395,20 @@ class renderer {
             'mod_digestforum/digestforum_posts_with_context_links',
             function ($exportedposts, $digestforumsbyid, $discussionsbyid) use ($urlfactory, $addlinkstocontext) {
 
-                return array_map(function ($exportedpost) use ($digestforumsbyid, $discussionsbyid, $addlinkstocontext, $urlfactory) {
+                return array_map(function ($exportedpost) use (
+                    $digestforumsbyid,
+                    $discussionsbyid,
+                    $addlinkstocontext,
+                    $urlfactory,
+                ) {
                     $discussion = $discussionsbyid[$exportedpost->discussionid];
                     $digestforum = $digestforumsbyid[$discussion->get_digestforum_id()];
                     $courserecord = $digestforum->get_course_record();
 
                     if ($addlinkstocontext) {
                         $viewdiscussionurl = $urlfactory->get_discussion_view_url_from_discussion($discussion);
-                        $exportedpost->urls['viewdigestforum'] = $urlfactory->get_digestforum_view_url_from_digestforum($digestforum)->out(false);
+                        $viewurl = $urlfactory->get_digestforum_view_url_from_digestforum($digestforum);
+                        $exportedpost->urls['viewdigestforum'] = $viewurl->out(false);
                         $exportedpost->urls['viewdiscussion'] = $viewdiscussionurl->out(false);
                         $exportedpost->urls['viewcourse'] = $urlfactory->get_course_url_from_digestforum($digestforum)->out(false);
                     }
@@ -539,7 +544,7 @@ class renderer {
                 array_walk($exportedposts['posts'], function ($post) use ($discussionrepliescount, $discussionunreadscount) {
                     $post->discussionrepliescount = $discussionrepliescount[$post->discussionid] ?? 0;
                     $post->discussionunreadscount = $discussionunreadscount[$post->discussionid] ?? 0;
-                    // TODO: Find a better solution due to language differences when defining the singular and plural form.
+                    // This is not ideal, as languages define singular and plural forms differently.
                     $post->isreplyplural = $post->discussionrepliescount != 1 ? true : false;
                     $post->isunreadplural = $post->discussionunreadscount != 1 ? true : false;
                 });

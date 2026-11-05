@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Unsubscribe the current user from all digestforums.
+ *
  * @package   mod_digestforum
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -45,7 +47,7 @@ $PAGE->set_heading($COURSE->fullname);
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strunsubscribeall);
 
-if (data_submitted() and $confirm and confirm_sesskey()) {
+if (data_submitted() && $confirm && confirm_sesskey()) {
     $digestforums = \mod_digestforum\subscriptions::get_unsubscribable_digestforums();
 
     foreach ($digestforums as $digestforum) {

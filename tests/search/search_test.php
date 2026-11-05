@@ -42,6 +42,8 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @copyright   2015 David Monllao {@link http://www.davidmonllao.com}
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\search\post::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\search\activity::class)]
 final class search_test extends \advanced_testcase {
     /**
      * @var string Area id

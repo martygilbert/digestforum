@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum subscription created event class.
  *
@@ -101,6 +99,7 @@ class readtracking_disabled extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         $othermapped = [];
         $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];

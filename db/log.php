@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-global $DB; // TODO: this is a hack, we should really do something with the SQL in SQL tables.
+global $DB; // This is a hack, the SQL should really be in the SQL tables.
 
 $logs = [
     ['module' => 'digestforum', 'action' => 'add', 'mtable' => 'digestforum', 'field' => 'name'],

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\entities;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class to sort lists of items.
  *

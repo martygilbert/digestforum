@@ -26,8 +26,12 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  *
  * @package    mod_digestforum
  * @category   test
+ * @copyright  2026 Marty Gilbert
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversFunction('mod_digestforum_get_month_open_rate')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('mod_digestforum_record_digest_view')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_get_email_message_id')]
 final class tracker_test extends \advanced_testcase {
     /**
      * Add a tracker record.

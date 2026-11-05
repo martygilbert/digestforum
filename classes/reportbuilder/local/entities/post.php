@@ -101,7 +101,14 @@ class post extends base {
                 context_helper::preload_from_record(clone $post);
                 $context = context::instance_by_id($post->ctxid);
 
-                $message = file_rewrite_pluginfile_urls($message, 'pluginfile.php', $context->id, 'mod_digestforum', 'post', $post->id);
+                $message = file_rewrite_pluginfile_urls(
+                    $message,
+                    'pluginfile.php',
+                    $context->id,
+                    'mod_digestforum',
+                    'post',
+                    $post->id,
+                );
 
                 return format_text($message, $post->messageformat, [
                     'context' => $context,

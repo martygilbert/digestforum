@@ -25,6 +25,7 @@ use mod_digestforum\local\entities\sorter as sorter_entity;
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\entities\sorter::class)]
 final class entities_sorter_test extends \advanced_testcase {
     /**
      * Test the entity returns expected values.

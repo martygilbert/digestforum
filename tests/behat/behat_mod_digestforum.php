@@ -88,7 +88,8 @@ class behat_mod_digestforum extends behat_base {
     }
 
     /**
-     * Adds a discussion to the digestforum specified by it's name with the provided table data (usually Subject and Message). The step begins from the digestforum's course page.
+     * Adds a discussion to the digestforum specified by it's name with the provided table data (usually Subject and Message).
+     * The step begins from the digestforum's course page.
      *
      * @Given /^I add a new discussion to "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
      * @param string $digestforumname
@@ -110,8 +111,10 @@ class behat_mod_digestforum extends behat_base {
         $this->add_new_discussion_inline($digestforumname, $table, get_string('addanewdiscussion', 'digestforum'));
     }
 
+    // phpcs:disable moodle.Files.LineLength
     /**
-     * Adds a reply to the specified post of the specified digestforum. The step begins from the digestforum's page or from the digestforum's course page.
+     * Adds a reply to the specified post of the specified digestforum.
+     * The step begins from the digestforum's page or from the digestforum's course page.
      *
      * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum with:$/
      * @param string $postname The subject of the post
@@ -131,7 +134,8 @@ class behat_mod_digestforum extends behat_base {
     }
 
     /**
-     * Inpage Reply - adds a reply to the specified post of the specified digestforum. The step begins from the digestforum's page or from the digestforum's course page.
+     * Inpage Reply - adds a reply to the specified post of the specified digestforum.
+     * The step begins from the digestforum's page or from the digestforum's course page.
      *
      * @Given /^I reply "(?P<post_subject_string>(?:[^"]|\\")*)" post from "(?P<digestforum_name_string>(?:[^"]|\\")*)" digestforum using an inpage reply with:$/
      * @param string $postsubject The subject of the post
@@ -158,6 +162,7 @@ class behat_mod_digestforum extends behat_base {
      * @param string $digestforumname The digestforum name
      */
     public function i_navigate_to_post_in_digestforum($postsubject, $digestforumname) {
+        // phpcs:enable moodle.Files.LineLength
         // Navigate to digestforum discussion.
         $this->execute('behat_navigation::i_am_on_page_instance', [$this->escape($digestforumname), 'digestforum activity']);
         $this->execute('behat_general::click_link', $this->escape($postsubject));
@@ -451,7 +456,13 @@ class behat_mod_digestforum extends behat_base {
      * @param stdClass $cm The context module of the digestforum.
      * @param string $filearea The file area being written to, eg 'attachment' or 'post' (inline).
      */
-    protected function create_post_attachments(int $postid, int $userid, array $attachmentnames, stdClass $cm, string $filearea): void {
+    protected function create_post_attachments(
+        int $postid,
+        int $userid,
+        array $attachmentnames,
+        stdClass $cm,
+        string $filearea,
+    ): void {
         $filestorage = get_file_storage();
 
         foreach ($attachmentnames as $attachmentname) {

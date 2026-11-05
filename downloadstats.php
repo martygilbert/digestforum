@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Download the digest open stats as a CSV file.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -55,25 +57,24 @@ if (!has_capability('moodle/site:config', $sitecontext, ($USER->id))) {
     foreach ($digestforums as $forum) {
         $sql =
             'SELECT digestdate, digestforumid,
-			COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
-			COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-				FROM {digestforum_tracker} 
+			COUNT(case when numviews > 0 then 1 end) AS NumOpened,
+			COUNT(case when numviews = 0 then 1 end) AS NotOpened
+				FROM {digestforum_tracker}
 		WHERE digestforumid = ?
 			GROUP BY digestdate
 			ORDER BY digestdate DESC';
 
         $opened = $DB->get_records_sql($sql, [$forum->id], 0, $limit);
-        // $opened = $DB->get_records_sql($sql, [$forum->id]);
 
         foreach ($opened as $value) {
             $name = preg_replace('/Daily Announcements for /', '', $forum->name);
             $name = preg_replace('/Daily Announcements Only for /', '', $name);
-            $pctOpened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
+            $pctopened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
             echo $value->digestdate . "," .
                 $name . "," .
                 $value->numopened . "," .
                 $value->notopened . "," .
-                round($pctOpened, 2) . "%\n";
+                round($pctopened, 2) . "%\n";
         }
     }
 }

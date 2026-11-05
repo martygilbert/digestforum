@@ -61,7 +61,7 @@ class mod_digestforum_post_form extends moodleform {
      */
     public static function editor_options(context_module $context, $postid) {
         global $COURSE, $PAGE, $CFG;
-        // TODO: add max files and max size support
+        // Max files and max size are not supported yet.
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
         return [
             'maxfiles' => EDITOR_UNLIMITED_FILES,
@@ -77,7 +77,7 @@ class mod_digestforum_post_form extends moodleform {
      *
      * @return void
      */
-    function definition() {
+    public function definition() {
         global $CFG, $OUTPUT;
 
         $mform =& $this->_form;
@@ -112,7 +112,13 @@ class mod_digestforum_post_form extends moodleform {
         $mform->addRule('subject', get_string('required'), 'required', null, 'client');
         $mform->addRule('subject', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('editor', 'message', get_string('message', 'digestforum'), null, self::editor_options($modcontext, (empty($post->id) ? null : $post->id)));
+        $mform->addElement(
+            'editor',
+            'message',
+            get_string('message', 'digestforum'),
+            null,
+            self::editor_options($modcontext, (empty($post->id) ? null : $post->id)),
+        );
         $mform->setType('message', PARAM_RAW);
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
@@ -214,8 +220,8 @@ class mod_digestforum_post_form extends moodleform {
         }
 
         // -------------------------------------------------------------------------------
-        // buttons
-        if (isset($post->edit)) { // hack alert
+        // Buttons.
+        if (isset($post->edit)) { // Hack alert.
             $submitstring = get_string('savechanges');
         } else {
             $submitstring = get_string('posttodigestforum', 'digestforum');
@@ -282,7 +288,7 @@ class mod_digestforum_post_form extends moodleform {
      * @param array $files files uploaded.
      * @return array of errors.
      */
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
         if (($data['timeend'] != 0) && ($data['timestart'] != 0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'digestforum');

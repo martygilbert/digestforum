@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\vaults\preprocessors;
 
-defined('MOODLE_INTERNAL') || die();
-
 use user_picture;
 
 /**

@@ -43,6 +43,7 @@ require_once($CFG->dirroot . '/rating/lib.php');
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\exporters\post::class)]
 final class exporters_post_test extends \advanced_testcase {
     // Make use of the test generator trait.
     use mod_digestforum_tests_generator_trait;
@@ -442,7 +443,7 @@ final class exporters_post_test extends \advanced_testcase {
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class test_capability_manager extends capability_manager {
+class test_capability_manager extends capability_manager { // phpcs:ignore PSR1.Classes.ClassDeclaration.MultipleClasses
     /** @var bool $view Value for can_view_post */
     private $view;
     /** @var bool $edit Value for can_edit_post */

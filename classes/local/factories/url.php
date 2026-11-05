@@ -104,7 +104,11 @@ class url {
         ?int $sortorder = null
     ): moodle_url {
 
-        return $this->get_digestforum_view_url_from_course_module_id($digestforum->get_course_module_record()->id, $pageno, $sortorder);
+        return $this->get_digestforum_view_url_from_course_module_id(
+            $digestforum->get_course_module_record()->id,
+            $pageno,
+            $sortorder,
+        );
     }
 
     /**

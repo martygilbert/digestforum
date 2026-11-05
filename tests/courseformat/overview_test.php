@@ -345,7 +345,8 @@ final class overview_test extends \advanced_testcase {
             'disabled' => true,
             'trackforums' => 0,
         ];
-        yield 'Student. $USER->trackforums disabled. Tracking forced on, with $CFG->digestforum_allowforcedreadtracking disabled' => [
+        yield 'Student. $USER->trackforums disabled. Tracking forced on, ' .
+            'with $CFG->digestforum_allowforcedreadtracking disabled' => [
             'digestforumtype' => DFORUM_TRACKING_FORCED,
             'tracked' => 0,
             'disabled' => true,
@@ -399,7 +400,8 @@ final class overview_test extends \advanced_testcase {
             'disabled' => true,
             'trackforums' => 0,
         ];
-        yield 'Teacher. $USER->trackforums disabled. Tracking forced on, with $CFG->digestforum_allowforcedreadtracking disabled' => [
+        yield 'Teacher. $USER->trackforums disabled. Tracking forced on, ' .
+            'with $CFG->digestforum_allowforcedreadtracking disabled' => [
             'role' => 'teacher',
             'digestforumtype' => DFORUM_TRACKING_FORCED,
             'tracked' => 0,

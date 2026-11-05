@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\entities;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\post as post_entity;
 
 /**

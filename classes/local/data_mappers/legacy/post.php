@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\data_mappers\legacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\post as post_entity;
 use stdClass;
 

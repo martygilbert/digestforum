@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\builders;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\discussion as discussion_entity;
 use mod_digestforum\local\entities\digestforum as digestforum_entity;
 use mod_digestforum\local\factories\legacy_data_mapper as legacy_data_mapper_factory;

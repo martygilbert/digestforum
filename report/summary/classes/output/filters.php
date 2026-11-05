@@ -205,7 +205,12 @@ class filters implements renderable, templatable {
             $discussionsparams = ['courseid' => $this->courseid];
             $discussionsparams += $digestforumidparams + $groupidparams;
 
-            $discussionids = $DB->get_fieldset_select('digestforum_discussions', 'DISTINCT id', $discussionswhere, $discussionsparams);
+            $discussionids = $DB->get_fieldset_select(
+                'digestforum_discussions',
+                'DISTINCT id',
+                $discussionswhere,
+                $discussionsparams,
+            );
 
             foreach ($discussionids as $discussionid) {
                 $this->discussionids[] = ['discid' => $discussionid];

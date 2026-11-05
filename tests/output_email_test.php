@@ -25,6 +25,7 @@ use mod_digestforum\output\digestforum_post_email;
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\output\digestforum_post_email::class)]
 final class output_email_test extends \advanced_testcase {
     /**
      * Data provider for the postdate function tests.

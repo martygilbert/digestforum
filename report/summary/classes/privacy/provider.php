@@ -24,8 +24,6 @@
 
 namespace digestforumreport_summary\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Privacy Subsystem implementation for digestforumreport_summary subplugin, implementing null_provider.
  *

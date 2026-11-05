@@ -46,6 +46,7 @@ require_once($CFG->dirroot . '/mod/digestforum/tests/generator_trait.php');
  * @copyright Simey Lameze <simey@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\completion\custom_completion::class)]
 final class custom_completion_test extends advanced_testcase {
     use \mod_digestforum_tests_generator_trait;
 

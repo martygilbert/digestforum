@@ -35,6 +35,7 @@ require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/backup_digestforum
  * @copyright  2016 Andrew Nicols <andrew@nicols.co.uk>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\backup_digestforum_activity_task::class)]
 final class backup_digestforum_activity_task_test extends \advanced_testcase {
     /**
      * Test the encoding of digestforum content links.
@@ -47,6 +48,11 @@ final class backup_digestforum_activity_task_test extends \advanced_testcase {
         $this->assertEquals($expectation, backup_digestforum_activity_task::encode_content_links($content));
     }
 
+    /**
+     * Data provider for test_encode_content_links().
+     *
+     * @return array
+     */
     public static function encode_content_links_provider(): array {
         global $CFG;
         $altwwwroot = 'http://invalid.example.com/';

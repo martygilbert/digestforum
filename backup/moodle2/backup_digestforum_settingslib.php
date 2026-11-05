@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Backup settings for the digestforum activity.
+ *
  * @package    mod_digestforum
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
@@ -23,4 +25,4 @@
 
  // This activity has not particular settings but the inherited from the generic
  // backup_activity_task so here there isn't any class definition, like the ones
- // existing in /backup/moodle2/backup_settingslib.php (activities section)
+ // existing in /backup/moodle2/backup_settingslib.php (activities section).

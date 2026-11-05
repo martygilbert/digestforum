@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\renderers;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\builders\exported_posts as exported_posts_builder;
 use renderer_base;
 use stdClass;

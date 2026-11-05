@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\factories\renderer as renderer_factory;
 use mod_digestforum\local\factories\legacy_data_mapper as legacy_data_mapper_factory;
 use mod_digestforum\local\factories\entity as entity_factory;

@@ -25,9 +25,9 @@
 require_once("../../config.php");
 require_once("lib.php");
 
-$id    = required_param('id', PARAM_INT);           // digestforum
-$group = optional_param('group', 0, PARAM_INT);      // change of group
-$edit  = optional_param('edit', -1, PARAM_BOOL);     // Turn editing on and off
+$id    = required_param('id', PARAM_INT);           // Digestforum.
+$group = optional_param('group', 0, PARAM_INT);      // Change of group.
+$edit  = optional_param('edit', -1, PARAM_BOOL);     // Turn editing on and off.
 
 $url = new moodle_url('/mod/digestforum/subscribers.php', ['id' => $id]);
 if ($group !== 0) {
@@ -75,7 +75,7 @@ if (data_submitted()) {
     require_sesskey();
     $subscribe = (bool)optional_param('subscribe', false, PARAM_RAW);
     $unsubscribe = (bool)optional_param('unsubscribe', false, PARAM_RAW);
-    /** It has to be one or the other, not both or neither */
+    // It has to be one or the other, not both or neither.
     if (!($subscribe xor $unsubscribe)) {
         throw new \moodle_exception('invalidaction');
     }

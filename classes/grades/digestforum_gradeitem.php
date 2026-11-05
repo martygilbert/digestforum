@@ -117,7 +117,12 @@ class digestforum_gradeitem extends component_gradeitem {
      */
     public function require_user_can_grade(stdClass $gradeduser, stdClass $grader): void {
         if (!$this->user_can_grade($gradeduser, $grader)) {
-            throw new required_capability_exception($this->digestforum->get_context(), 'mod/digestforum:grade', 'nopermissions', '');
+            throw new required_capability_exception(
+                $this->digestforum->get_context(),
+                'mod/digestforum:grade',
+                'nopermissions',
+                '',
+            );
         }
     }
 

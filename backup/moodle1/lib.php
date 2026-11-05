@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum conversion handler
  */
@@ -74,16 +72,16 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     public function process_digestforum($data) {
         global $CFG;
 
-        // get the course module id and context id
+        // Get the course module id and context id.
         $instanceid     = $data['id'];
         $cminfo         = $this->get_cminfo($instanceid);
         $this->moduleid = $cminfo['id'];
         $contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
-        // get a fresh new file manager for this instance
+        // Get a fresh new file manager for this instance.
         $this->fileman = $this->converter->get_file_manager($contextid, 'mod_digestforum');
 
-        // convert course files embedded into the intro
+        // Convert course files embedded into the intro.
         $this->fileman->filearea = 'intro';
         $this->fileman->itemid   = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
@@ -94,7 +92,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
             $data['introformat'] = FORMAT_HTML;
         }
 
-        // start writing digestforum.xml
+        // Start writing digestforum.xml.
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/digestforum.xml");
         $this->xmlwriter->begin_tag('activity', ['id' => $instanceid, 'moduleid' => $this->moduleid,
             'modulename' => 'digestforum', 'contextid' => $contextid]);
@@ -115,13 +113,13 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * This is executed when we reach the closing </MOD> tag of our 'digestforum' path
      */
     public function on_digestforum_end() {
-        // finish writing digestforum.xml
+        // Finish writing digestforum.xml.
         $this->xmlwriter->end_tag('discussions');
         $this->xmlwriter->end_tag('digestforum');
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
 
-        // write inforef.xml
+        // Write inforef.xml.
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/inforef.xml");
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');

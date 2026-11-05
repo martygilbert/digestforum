@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\exporters;
 
-defined('MOODLE_INTERNAL') || die();
-
 use mod_digestforum\local\entities\discussion as discussion_entity;
 use mod_digestforum\local\exporters\post as post_exporter;
 use mod_digestforum\local\factories\exporter as exporter_factory;
@@ -221,7 +219,8 @@ class discussion extends exporter {
                 'pin' => $capabilitymanager->can_pin_discussion($user, $discussion),
                 'post' => $capabilitymanager->can_post_in_discussion($user, $discussion),
                 'manage' => $capabilitymanager->can_manage_digestforum($user),
-                'favourite' => $capabilitymanager->can_favourite_discussion($user), // Defaulting to true until we get capabilities sorted
+                // Defaulting to true until we get capabilities sorted.
+                'favourite' => $capabilitymanager->can_favourite_discussion($user),
             ],
             'urls' => [
                 'view' => $urlfactory->get_discussion_view_url_from_discussion($discussion)->out(false),

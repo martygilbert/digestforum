@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion viewed event class.
  *
@@ -88,6 +86,7 @@ class discussion_viewed extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
         return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }

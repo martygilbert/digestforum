@@ -29,6 +29,7 @@ require_once(__DIR__ . '/generator_trait.php');
  * @copyright  2019 Ryan Wyllie <ryan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\local\builders\exported_posts::class)]
 final class builders_exported_posts_test extends \advanced_testcase {
     // Make use of the test generator trait.
     use mod_digestforum_tests_generator_trait;
@@ -412,8 +413,20 @@ final class builders_exported_posts_test extends \advanced_testcase {
         $datagenerator->enrol_user($user3->id, $course1->id);
         $datagenerator->enrol_user($user3->id, $course2->id);
 
-        \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post1->id, $digestforums[0]->get_context(), ['foo', 'bar']);
-        \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post4->id, $digestforums[0]->get_context(), ['foo', 'baz']);
+        \core_tag_tag::set_item_tags(
+            'mod_digestforum',
+            'digestforum_posts',
+            $post1->id,
+            $digestforums[0]->get_context(),
+            ['foo', 'bar'],
+        );
+        \core_tag_tag::set_item_tags(
+            'mod_digestforum',
+            'digestforum_posts',
+            $post4->id,
+            $digestforums[0]->get_context(),
+            ['foo', 'baz'],
+        );
         \core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post7->id, $digestforums[1]->get_context(), ['bip']);
 
         $exportedposts = $this->builder->build($user1, $digestforums, $discussions, $posts);
@@ -447,8 +460,14 @@ final class builders_exported_posts_test extends \advanced_testcase {
         $user2 = $datagenerator->create_user(['trackforums' => 0]);
         $course1 = $datagenerator->create_course();
         $course2 = $datagenerator->create_course();
-        $digestforum1 = $datagenerator->create_module('digestforum', ['course' => $course1->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL]);
-        $digestforum2 = $datagenerator->create_module('digestforum', ['course' => $course1->id, 'trackingtype' => DFORUM_TRACKING_OFF]);
+        $digestforum1 = $datagenerator->create_module(
+            'digestforum',
+            ['course' => $course1->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL],
+        );
+        $digestforum2 = $datagenerator->create_module(
+            'digestforum',
+            ['course' => $course1->id, 'trackingtype' => DFORUM_TRACKING_OFF],
+        );
         [$discussion1, $post1] = $this->helper_post_to_digestforum($digestforum1, $user1);
         [$discussion2, $post2] = $this->helper_post_to_digestforum($digestforum1, $user2);
         $post3 = $this->helper_reply_to_post($post1, $user1);

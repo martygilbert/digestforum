@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable for use in e-mail.
  *

@@ -49,11 +49,11 @@ class provider implements
     // This plugin has data.
     \core_privacy\local\metadata\provider,
 
-    // This plugin currently implements the original plugin\provider interface.
-    \core_privacy\local\request\plugin\provider,
-
     // This plugin is capable of determining which users have data within it.
     \core_privacy\local\request\core_userlist_provider,
+
+    // This plugin currently implements the original plugin\provider interface.
+    \core_privacy\local\request\plugin\provider,
 
     // This plugin has some sitewide user preferences to export.
     \core_privacy\local\request\user_preference_provider
@@ -161,7 +161,8 @@ class provider implements
     /**
      * Get the list of contexts that contain user information for the specified user.
      *
-     * In the case of digestforum, that is any digestforum where the user has made any post, rated any content, or has any preferences.
+     * In the case of digestforum, that is any digestforum where the user has made any post, rated any content,
+     * or has any preferences.
      *
      * @param   int         $userid     The user to search.
      * @return  contextlist $contextlist  The contextlist containing the list of contexts used in this plugin.
@@ -945,10 +946,25 @@ class provider implements
 
         if ($post->userid == $userid) {
             // Store all ratings against this post as the post belongs to the user. All ratings on it are ratings of their content.
-            \core_rating\privacy\provider::export_area_ratings($userid, $context, $postarea, 'mod_digestforum', 'post', $post->id, false);
+            \core_rating\privacy\provider::export_area_ratings(
+                $userid,
+                $context,
+                $postarea,
+                'mod_digestforum',
+                'post',
+                $post->id,
+                false,
+            );
 
             // Store all tags against this post as the tag belongs to the user.
-            \core_tag\privacy\provider::export_item_tags($userid, $context, $postarea, 'mod_digestforum', 'digestforum_posts', $post->id);
+            \core_tag\privacy\provider::export_item_tags(
+                $userid,
+                $context,
+                $postarea,
+                'mod_digestforum',
+                'digestforum_posts',
+                $post->id,
+            );
 
             // Export all user data stored for this post from the plagiarism API.
             $coursecontext = $context->get_course_context();
@@ -1027,7 +1043,12 @@ class provider implements
         if (null !== $subscribed) {
             // The user is subscribed to this digestforum.
             writer::with_context(\context_module::instance($digestforum->cmid))
-                ->export_metadata([], 'subscriptionpreference', 1, get_string('privacy:subscribedtodigestforum', 'mod_digestforum'));
+                ->export_metadata(
+                    [],
+                    'subscriptionpreference',
+                    1,
+                    get_string('privacy:subscribedtodigestforum', 'mod_digestforum'),
+                );
 
             return true;
         }
@@ -1094,6 +1115,14 @@ class provider implements
         return false;
     }
 
+    /**
+     * Export the advanced grading data for a user's whole-forum grade.
+     *
+     * @param int $userid The user whose grade is exported
+     * @param \stdClass $digestforum The digestforum the grade is for
+     * @param int $grade The id of the grade
+     * @return bool Whether any grading data was exported
+     */
     protected static function export_grading_data(int $userid, \stdClass $digestforum, int $grade) {
         global $USER;
         if (null !== $grade) {
@@ -1118,7 +1147,12 @@ class provider implements
             }
             // The user has a grade for this digestforum.
             writer::with_context(\context_module::instance($digestforum->cmid))
-                ->export_metadata($exportpath, 'gradingenabled', 1, get_string('privacy:metadata:digestforum_grades:grade', 'mod_digestforum'));
+                ->export_metadata(
+                    $exportpath,
+                    'gradingenabled',
+                    1,
+                    get_string('privacy:metadata:digestforum_grades:grade', 'mod_digestforum'),
+                );
 
             return true;
         }
@@ -1126,6 +1160,14 @@ class provider implements
         return false;
     }
 
+    /**
+     * Export a whole-forum grade.
+     *
+     * @param int $grade The grade
+     * @param \context $context The digestforum context
+     * @param \stdClass $digestforum The digestforum the grade is for
+     * @param array $path The export path
+     */
     protected static function export_grade_data(int $grade, \context $context, \stdClass $digestforum, array $path) {
         $gradedata = (object)[
             'digestforum' => $digestforum->name,
@@ -1301,7 +1343,8 @@ class provider implements
 
             // Do not delete discussion or digestforum posts.
             // Instead update them to reflect that the content has been deleted.
-            $postsql = "userid = :userid AND discussion IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)";
+            $postsql = "userid = :userid AND discussion IN (
+                SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforum)";
             $postidsql = "SELECT fp.id FROM {digestforum_posts} fp WHERE {$postsql}";
             $postparams = [
                 'digestforum' => $digestforum->id,
@@ -1372,7 +1415,8 @@ class provider implements
 
         // Do not delete discussion or digestforum posts.
         // Instead update them to reflect that the content has been deleted.
-        $postsql = "userid {$userinsql} AND discussion IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforumid)";
+        $postsql = "userid {$userinsql} AND discussion IN (
+            SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforumid)";
         $postidsql = "SELECT fp.id FROM {digestforum_posts} fp WHERE {$postsql}";
 
         // Update the subject.
@@ -1391,7 +1435,13 @@ class provider implements
         \core_rating\privacy\provider::delete_ratings_select($context, 'mod_digestforum', 'post', "IN ($postidsql)", $params);
 
         // Delete all Tags.
-        \core_tag\privacy\provider::delete_item_tags_select($context, 'mod_digestforum', 'digestforum_posts', "IN ($postidsql)", $params);
+        \core_tag\privacy\provider::delete_item_tags_select(
+            $context,
+            'mod_digestforum',
+            'digestforum_posts',
+            "IN ($postidsql)",
+            $params,
+        );
 
         // Delete all files from the posts.
         $fs = get_file_storage();

@@ -96,7 +96,10 @@ final class managers_capability_test extends \advanced_testcase {
         $this->roleid = $DB->get_field('role', 'id', ['shortname' => 'teacher'], MUST_EXIST);
 
         $datagenerator->enrol_user($this->user->id, $this->course->id, 'teacher');
-        [$discussion, $post] = $this->helper_post_to_digestforum($this->digestforumrecord, $this->user, ['timemodified' => time() - 100]);
+        [
+            $discussion,
+            $post,
+        ] = $this->helper_post_to_digestforum($this->digestforumrecord, $this->user, ['timemodified' => time() - 100]);
         $this->discussion = $this->entityfactory->get_discussion_from_stdClass($discussion);
         $this->discussionrecord = $discussion;
         $this->post = $this->entityfactory->get_post_from_stdClass(

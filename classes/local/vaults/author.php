@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\local\vaults;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Author vault class.
  *

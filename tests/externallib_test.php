@@ -194,7 +194,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Call the external function passing course ids.
         $digestforums = mod_digestforum_external::get_digestforums_by_courses([$course1->id, $course2->id]);
-        $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $digestforums = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforums_by_courses_returns(),
+            $digestforums,
+        );
         $this->assertCount(2, $digestforums);
 
         // Index results by id for easier checks.
@@ -252,7 +255,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Call the external function without passing course id.
         $digestforums = mod_digestforum_external::get_digestforums_by_courses();
-        $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $digestforums = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforums_by_courses_returns(),
+            $digestforums,
+        );
         $this->assertCount(1, $digestforums);
 
         $this->assertEquals($digestforum1->id, $digestforums[0]['id']);
@@ -261,12 +267,18 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         // Change the type of the digestforum, the user shouldn't be able to add discussions.
         $DB->set_field('digestforum', 'type', 'news', ['id' => $digestforum1->id]);
         $digestforums = mod_digestforum_external::get_digestforums_by_courses();
-        $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $digestforums = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforums_by_courses_returns(),
+            $digestforums,
+        );
         $this->assertFalse($digestforums[0]['cancreatediscussions']);
 
         // Call for the second course we unenrolled the user from.
         $digestforums = mod_digestforum_external::get_digestforums_by_courses([$course2->id]);
-        $digestforums = external_api::clean_returnvalue(mod_digestforum_external::get_digestforums_by_courses_returns(), $digestforums);
+        $digestforums = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforums_by_courses_returns(),
+            $digestforums,
+        );
         $this->assertCount(0, $digestforums);
     }
 
@@ -553,7 +565,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'html' => [
                 'rating' => null,
                 'taglist' => null,
-                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser3, $discussion1reply2->created),
+                'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
+                    (object)$exporteduser3,
+                    $discussion1reply2->created,
+                ),
             ],
             'capabilities' => [
                 'view' => 1,
@@ -569,7 +584,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'urls' => [
                 'view' => $urlfactory->get_view_post_url_from_post_id($discussion1reply2->discussion, $discussion1reply2->id),
                 'viewisolated' => $isolatedurl->out(false),
-                'viewparent' => $urlfactory->get_view_post_url_from_post_id($discussion1reply2->discussion, $discussion1reply2->parent),
+                'viewparent' => $urlfactory->get_view_post_url_from_post_id(
+                    $discussion1reply2->discussion,
+                    $discussion1reply2->parent,
+                ),
                 'edit' => null,
                 'delete' => null,
                 'split' => null,
@@ -624,7 +642,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'html' => [
                 'rating' => null,
                 'taglist' => null,
-                'authorsubheading' => $digestforumgenerator->get_author_subheading_html((object)$exporteduser2, $discussion1reply1->created),
+                'authorsubheading' => $digestforumgenerator->get_author_subheading_html(
+                    (object)$exporteduser2,
+                    $discussion1reply1->created,
+                ),
             ],
             'capabilities' => [
                 'view' => 1,
@@ -640,7 +661,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             'urls' => [
                 'view' => $urlfactory->get_view_post_url_from_post_id($discussion1reply1->discussion, $discussion1reply1->id),
                 'viewisolated' => $isolatedurl->out(false),
-                'viewparent' => $urlfactory->get_view_post_url_from_post_id($discussion1reply1->discussion, $discussion1reply1->parent),
+                'viewparent' => $urlfactory->get_view_post_url_from_post_id(
+                    $discussion1reply1->discussion,
+                    $discussion1reply1->parent,
+                ),
                 'edit' => null,
                 'delete' => null,
                 'split' => null,
@@ -1065,7 +1089,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         ];
         // Call the external function passing digestforum id.
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         $expectedreturn = [
             'discussions' => [$expecteddiscussions],
             'warnings' => [],
@@ -1088,7 +1115,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $t = mod_digestforum_external::toggle_favourite_state($discussion1->id, 1);
         $expectedreturn['discussions'][0]['starred'] = true;
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         $this->assertEquals($expectedreturn, $discussions);
 
         // Call without required view discussion capability.
@@ -1113,7 +1143,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         $this->setAdminUser();
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         $this->assertTrue($discussions['discussions'][0]['canlock']);
     }
 
@@ -1233,7 +1266,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Call the external function passing digestforum id.
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by last post date in descending order by default.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion3->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion2->id);
@@ -1243,40 +1279,70 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussionlistvault = $vaultfactory->get_discussions_in_digestforum_vault();
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_LASTPOST_ASC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_LASTPOST_ASC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by last post date in ascending order.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion1->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion2->id);
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion3->id);
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_CREATED_DESC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_CREATED_DESC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by discussion creation date in descending order.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion3->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion2->id);
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion1->id);
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_CREATED_ASC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_CREATED_ASC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by discussion creation date in ascending order.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion1->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion2->id);
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion3->id);
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_REPLIES_DESC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_REPLIES_DESC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by the number of replies in descending order.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion1->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion3->id);
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion2->id);
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_REPLIES_ASC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_REPLIES_ASC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by the number of replies in ascending order.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion2->id);
         $this->assertEquals($discussions['discussions'][1]['discussion'], $discussion3->id);
@@ -1290,7 +1356,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Call the external function passing digestforum id.
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by last post date in descending order by default.
         // Pinned discussions should be at the top of the list.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion2->id);
@@ -1298,8 +1367,14 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $this->assertEquals($discussions['discussions'][2]['discussion'], $discussion1->id);
 
         // Call the external function passing digestforum id and sort order parameter.
-        $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum1->id, $discussionlistvault::SORTORDER_LASTPOST_ASC);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_digestforum_discussions(
+            $digestforum1->id,
+            $discussionlistvault::SORTORDER_LASTPOST_ASC,
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         // Discussions should be ordered by last post date in ascending order.
         // Pinned discussions should be at the top of the list.
         $this->assertEquals($discussions['discussions'][0]['discussion'], $discussion2->id);
@@ -1603,10 +1678,16 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         self::setAdminUser();
         $createddiscussion = mod_digestforum_external::add_discussion($digestforum->id, 'the subject', 'some text here...');
-        $createddiscussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $createddiscussion);
+        $createddiscussion = external_api::clean_returnvalue(
+            mod_digestforum_external::add_discussion_returns(),
+            $createddiscussion,
+        );
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(1, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -1626,7 +1707,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         );
         $discussion3 = mod_digestforum_external::add_discussion($digestforum->id, 'the non pinnedsubject', 'some 3 text here...');
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
         $this->assertCount(3, $discussions['discussions']);
         $this->assertEquals($discussion2pinned['discussionid'], $discussions['discussions'][0]['discussion']);
 
@@ -1673,10 +1757,16 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
             -1,
             $options
         );
-        $createddiscussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $createddiscussion);
+        $createddiscussion = external_api::clean_returnvalue(
+            mod_digestforum_external::add_discussion_returns(),
+            $createddiscussion,
+        );
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(4, $discussions['discussions']);
         $this->assertCount(0, $createddiscussion['warnings']);
@@ -1760,7 +1850,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $discussion);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(1, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -1772,7 +1865,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $discussion);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(2, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -1788,7 +1884,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion = external_api::clean_returnvalue(mod_digestforum_external::add_discussion_returns(), $discussion);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(3, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -1927,7 +2026,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $user = self::getDataGenerator()->create_user();
 
         // Create a digestforum with cutoff date set to a past date.
-        $digestforum = self::getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'cutoffdate' => time() - 1]);
+        $digestforum = self::getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id, 'cutoffdate' => time() - 1],
+        );
 
         // User with no mod/digestforum:canoverridecutoff capability.
         self::setUser($user);
@@ -2220,7 +2322,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($discussionrecord);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(2, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -2281,7 +2386,10 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         $discussion2 = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($discussionrecord);
 
         $discussions = mod_digestforum_external::get_digestforum_discussions($digestforum->id);
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_digestforum_discussions_returns(), $discussions);
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_digestforum_discussions_returns(),
+            $discussions,
+        );
 
         $this->assertCount(2, $discussions['discussions']);
         $this->assertCount(0, $discussions['warnings']);
@@ -2905,8 +3013,16 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Test discussions with one additional post each (total 2 posts).
         // Also testing that we get the parent posts too.
-        $discussions = mod_digestforum_external::get_discussion_posts_by_userid($user2->id, $digestforum1->cmid, 'modified', 'DESC');
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_discussion_posts_by_userid_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_discussion_posts_by_userid(
+            $user2->id,
+            $digestforum1->cmid,
+            'modified',
+            'DESC',
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_discussion_posts_by_userid_returns(),
+            $discussions,
+        );
 
         $this->assertEquals(2, count($discussions['discussions']));
 
@@ -2932,8 +3048,16 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
         self::getDataGenerator()->enrol_user($teacher->id, $course1->id, $role->id);
         groups_add_member($group2->id, $teacher->id);
         self::setUser($teacher);
-        $discussions = mod_digestforum_external::get_discussion_posts_by_userid($user2->id, $digestforum1->cmid, 'modified', 'DESC');
-        $discussions = external_api::clean_returnvalue(mod_digestforum_external::get_discussion_posts_by_userid_returns(), $discussions);
+        $discussions = mod_digestforum_external::get_discussion_posts_by_userid(
+            $user2->id,
+            $digestforum1->cmid,
+            'modified',
+            'DESC',
+        );
+        $discussions = external_api::clean_returnvalue(
+            mod_digestforum_external::get_discussion_posts_by_userid_returns(),
+            $discussions,
+        );
         // Discussion is only 1 record (group 2).
         $this->assertEquals(1, count($discussions['discussions']));
         $this->assertEquals($expectedposts['discussions'][1], $discussions['discussions'][0]);
@@ -3098,7 +3222,12 @@ final class externallib_test extends \core_external\tests\externallib_testcase {
 
         // Keep only certain files in the area.
         $filestokeep = [['filename' => $filename, 'filepath' => '/']];
-        $result = mod_digestforum_external::prepare_draft_area_for_post($post->id, 'attachment', $result['draftitemid'], $filestokeep);
+        $result = mod_digestforum_external::prepare_draft_area_for_post(
+            $post->id,
+            'attachment',
+            $result['draftitemid'],
+            $filestokeep,
+        );
         $result = external_api::clean_returnvalue(mod_digestforum_external::prepare_draft_area_for_post_returns(), $result);
         $this->assertCount(1, $result['files']);
         $this->assertEquals($filename, $result['files'][0]['filename']);

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\search;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum activities search area.
  *

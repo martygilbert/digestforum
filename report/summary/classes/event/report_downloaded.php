@@ -23,7 +23,6 @@
  */
 
 namespace digestforumreport_summary\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The digestforum summary report downloaded event class.

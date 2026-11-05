@@ -22,8 +22,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Helpers for running the digestforum cron, and checking what it queued and sent.
+ *
+ * @package    mod_digestforum
+ * @copyright  2018 Andrew Nicols <andrew@nicols.co.uk>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 trait mod_digestforum_tests_cron_trait {
     /**
      * Run the main cron task to queue all tasks, and ensure that posts

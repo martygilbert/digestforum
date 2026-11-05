@@ -268,7 +268,8 @@ class discussion_list {
     }
 
     /**
-     * Get the mod_digestforum_post_form. This is the default boiler plate from mod_digestforum/post_form.php with the inpage flag caveat
+     * Get the mod_digestforum_post_form. This is the default boiler plate from mod_digestforum/post_form.php
+     * with the inpage flag caveat
      *
      * @param stdClass $user The user the form is being generated for
      * @param \cm_info $cm
@@ -314,7 +315,12 @@ class discussion_list {
         ];
         $posturl = new \moodle_url('/mod/digestforum/post.php');
         $mformpost = new \mod_digestforum_post_form($posturl, $formparams, 'post', '', ['id' => 'mformdigestforum']);
-        $discussionsubscribe = \mod_digestforum\subscriptions::get_user_default_subscription($digestforumrecord, $coursecontext, $cm, null);
+        $discussionsubscribe = \mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforumrecord,
+            $coursecontext,
+            $cm,
+            null,
+        );
 
         $params = ['reply' => 0, 'digestforum' => $digestforumrecord->id, 'edit' => 0] +
             (isset($post->groupid) ? ['groupid' => $post->groupid] : []) +

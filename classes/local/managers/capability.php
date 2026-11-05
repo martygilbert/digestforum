@@ -109,7 +109,7 @@ class capability {
      * @return bool
      */
     public function can_create_discussions(stdClass $user, ?int $groupid = null): bool {
-        if (isguestuser($user) or !isloggedin()) {
+        if (isguestuser($user) || !isloggedin()) {
             return false;
         }
 
@@ -119,7 +119,8 @@ class capability {
             }
         }
 
-        // If the user reaches the number of posts equal to warning/blocking setting then return the value of canpost in $warningobj.
+        // If the user reaches the number of posts equal to warning/blocking setting then return the value of canpost
+        // in $warningobj.
         $cmrecord = $this->digestforum->get_course_module_record();
         if ($warningobj = digestforum_check_throttling($this->digestforumrecord, $cmrecord)) {
             return $warningobj->canpost;
@@ -233,7 +234,11 @@ class capability {
      */
     public function can_split_discussions(stdClass $user): bool {
         $digestforum = $this->get_digestforum();
-        return $digestforum->get_type() !== 'single' && has_capability('mod/digestforum:splitdiscussions', $this->get_context(), $user);
+        return $digestforum->get_type() !== 'single' && has_capability(
+            'mod/digestforum:splitdiscussions',
+            $this->get_context(),
+            $user,
+        );
     }
 
     /**
@@ -387,7 +392,14 @@ class capability {
         $discussionrecord = $this->get_discussion_record($discussion);
         $postrecord = $this->get_post_record($post);
         $coursemodule = $digestforum->get_course_module_record();
-        $canviewpost = digestforum_user_can_see_post($digestforumrecord, $discussionrecord, $postrecord, $user, $coursemodule, false);
+        $canviewpost = digestforum_user_can_see_post(
+            $digestforumrecord,
+            $discussionrecord,
+            $postrecord,
+            $user,
+            $coursemodule,
+            false,
+        );
 
         // Then cache the result before returning.
         $this->canviewpostcache[$user->id][$post->get_id()] = $canviewpost;
@@ -699,11 +711,11 @@ class capability {
         $canstart = false;
 
         if ($this->digestforum->get_type() != 'news') {
-            if (isguestuser($user) or !isloggedin()) {
+            if (isguestuser($user) || !isloggedin()) {
                 $canstart = true;
             }
 
-            if (!is_enrolled($this->context) and !is_viewing($this->context)) {
+            if (!is_enrolled($this->context) && !is_viewing($this->context)) {
                  // Allow guests and not-logged-in to see the button - they are prompted to log in after clicking the link,
                  // Normal users with temporary guest access see this button too, they are asked to enrol instead,
                  // Do not show the button to users with suspended enrolments here.

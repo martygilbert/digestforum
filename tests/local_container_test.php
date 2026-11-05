@@ -29,7 +29,10 @@ final class local_container_test extends \advanced_testcase {
      * Ensure that a renderer factory is returned.
      */
     public function test_get_renderer_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\renderer::class, \mod_digestforum\local\container::get_renderer_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\renderer::class,
+            \mod_digestforum\local\container::get_renderer_factory(),
+        );
     }
 
     /**
@@ -46,35 +49,50 @@ final class local_container_test extends \advanced_testcase {
      * Ensure that a exporter factory is returned.
      */
     public function test_get_exporter_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\exporter::class, \mod_digestforum\local\container::get_exporter_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\exporter::class,
+            \mod_digestforum\local\container::get_exporter_factory(),
+        );
     }
 
     /**
      * Ensure that a vault factory is returned.
      */
     public function test_get_vault_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\vault::class, \mod_digestforum\local\container::get_vault_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\vault::class,
+            \mod_digestforum\local\container::get_vault_factory(),
+        );
     }
 
     /**
      * Ensure that a manager factory is returned.
      */
     public function test_get_manager_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\manager::class, \mod_digestforum\local\container::get_manager_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\manager::class,
+            \mod_digestforum\local\container::get_manager_factory(),
+        );
     }
 
     /**
      * Ensure that a entity factory is returned.
      */
     public function test_get_entity_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\entity::class, \mod_digestforum\local\container::get_entity_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\entity::class,
+            \mod_digestforum\local\container::get_entity_factory(),
+        );
     }
 
     /**
      * Ensure that a builder factory is returned.
      */
     public function test_get_builder_factory(): void {
-        $this->assertInstanceOf(\mod_digestforum\local\factories\builder::class, \mod_digestforum\local\container::get_builder_factory());
+        $this->assertInstanceOf(
+            \mod_digestforum\local\factories\builder::class,
+            \mod_digestforum\local\container::get_builder_factory(),
+        );
     }
 
     /**

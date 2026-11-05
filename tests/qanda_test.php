@@ -33,6 +33,8 @@ require_once(__DIR__ . '/generator_trait.php');
  * @copyright  2013 Andrew Nicols
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\cron_task::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\task\send_user_digests::class)]
 final class qanda_test extends \advanced_testcase {
     // Make use of the cron tester trait.
     use mod_digestforum_tests_cron_trait;

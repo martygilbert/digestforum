@@ -347,8 +347,9 @@ class discussion {
                 $digestforumidcompare = $digestforumcm->instance != $digestforum->get_id();
                 $digestforumtypecheck = $digestforumcheck[$digestforumcm->instance]->type !== 'single';
 
-                if ($digestforumidcompare and $digestforumtypecheck) {
-                    $url = "/mod/digestforum/discuss.php?d={$discussion->get_id()}&move=$digestforumcm->instance&sesskey=" . sesskey();
+                if ($digestforumidcompare && $digestforumtypecheck) {
+                    $url = "/mod/digestforum/discuss.php?d={$discussion->get_id()}&move=$digestforumcm->instance" .
+                        "&sesskey=" . sesskey();
                     $digestforummenu[$section][$sectionname][$url] = format_string($digestforumcm->name);
                 }
             }
@@ -363,7 +364,10 @@ class discussion {
                 $select = new url_select(
                     $digestforummenu,
                     '',
-                    ['/mod/digestforum/discuss.php?d=' . $discussion->get_id() => get_string("movethisdiscussionto", "digestforum")],
+                    ['/mod/digestforum/discuss.php?d=' . $discussion->get_id() => get_string(
+                        "movethisdiscussionto",
+                        "digestforum",
+                    )],
                     'digestforummenu',
                     $movebutton
                 );
@@ -393,7 +397,11 @@ class discussion {
         }
 
         $button = new \portfolio_add_button();
-        $button->set_callback_options('digestforum_portfolio_caller', ['discussionid' => $this->discussion->get_id()], 'mod_digestforum');
+        $button->set_callback_options(
+            'digestforum_portfolio_caller',
+            ['discussionid' => $this->discussion->get_id()],
+            'mod_digestforum',
+        );
         $button = $button->to_html(PORTFOLIO_ADD_FULL_FORM, get_string('exportdiscussion', 'mod_digestforum'));
         return $button ?: null;
     }
