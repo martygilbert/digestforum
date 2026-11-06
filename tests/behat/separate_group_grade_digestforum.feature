@@ -103,6 +103,8 @@ Feature: Digest forum: I can grade a students by group with separate groups
     Then I am on the "Test Forum 1" "digestforum activity" page logged in as teacher2
     And I select "Group C" from the "Separate groups" singleselect
     And I click on "Grade users" "button"
+    # The counter appears once the grader has loaded.
+    And I should see "1 out of 3"
     And I should see "Student 1"
     And I should see "Discussion subject C"
     And I should not see "Discussion subject A"
