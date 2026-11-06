@@ -219,7 +219,8 @@ if (!empty($digestforum)) {
 
     if (!$capabilitymanager->can_reply_to_post($USER, $discussionentity, $parententity)) {
         if (!isguestuser()) {
-            if (!is_enrolled($coursecontext)) {  // User is a guest here!
+            if (!is_enrolled($coursecontext)) {
+                // User is a guest here!
                 $SESSION->wantsurl = qualified_me();
                 $SESSION->enrolcancel = get_local_referer(false);
                 redirect(
@@ -704,7 +705,8 @@ file_prepare_draft_area($draftitemid, $modcontext->id, 'mod_digestforum', 'attac
 
 // Load data into form NOW!
 
-if ($USER->id != $post->userid) {   // Not the original author, so add a message to the end.
+if ($USER->id != $post->userid) {
+    // Not the original author, so add a message to the end.
     $data = new stdClass();
     $data->date = userdate($post->created);
     if ($post->messageformat == FORMAT_HTML) {

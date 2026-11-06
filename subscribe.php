@@ -94,7 +94,8 @@ if ($groupmode && !$issubscribed && !has_capability('moodle/site:accessallgroups
 
 require_login($course, false, $cm);
 
-if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled.
+if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {
+    // Guests and visitors can't subscribe - only enrolled.
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     if (isguestuser()) {
@@ -240,7 +241,8 @@ if ($issubscribed) {
             throw new \moodle_exception('cannotunsubscribe', 'digestforum', get_local_referer(false));
         }
     }
-} else {  // Subscribe.
+} else {
+    // Subscribe.
     if (
         \mod_digestforum\subscriptions::subscription_disabled($digestforum) && !has_capability(
             'mod/digestforum:managesubscriptions',

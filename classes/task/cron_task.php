@@ -21,6 +21,7 @@
  * @copyright  2014 Dan Poltawski <dan@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_digestforum\task;
 
 defined('MOODLE_INTERNAL') || die();

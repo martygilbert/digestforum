@@ -64,7 +64,8 @@ if (null === $return) {
     $returnto = new moodle_url($return);
 }
 
-if (isguestuser()) {   // Guests can't change digestforum.
+if (isguestuser()) {
+    // Guests can't change digestforum.
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();

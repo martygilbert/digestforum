@@ -126,9 +126,11 @@ function digestforum_rss_newstuff($digestforum, $cm, $time) {
  * @return string the SQL query to be used to get the Discussion/Post details from the digestforum table of the database
  */
 function digestforum_rss_get_sql($digestforum, $cm, $time = 0) {
-    if ($digestforum->rsstype == 1) { // Discussion RSS.
+    if ($digestforum->rsstype == 1) {
+        // Discussion RSS.
         return digestforum_rss_feed_discussions_sql($digestforum, $cm, $time);
-    } else { // Post RSS.
+    } else {
+        // Post RSS.
         return digestforum_rss_feed_posts_sql($digestforum, $cm, $time);
     }
 }
@@ -153,7 +155,8 @@ function digestforum_rss_feed_discussions_sql($digestforum, $cm, $newsince = 0) 
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!empty($CFG->digestforum_enabletimedposts)) { // Users must fulfill timed posts.
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        // Users must fulfill timed posts.
         if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= :now1 AND (d.timeend = 0 OR d.timeend > :now2))";
             $params['now1'] = $now;

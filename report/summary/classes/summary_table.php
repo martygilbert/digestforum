@@ -23,6 +23,7 @@
  */
 
 namespace digestforumreport_summary;
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/tablelib.php');

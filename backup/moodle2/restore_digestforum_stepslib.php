@@ -85,7 +85,8 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $data->cutoffdate = $this->apply_date_offset($data->cutoffdate);
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);
-        if ($data->scale < 0) { // Scale found, get mapping.
+        if ($data->scale < 0) {
+            // Scale found, get mapping.
             $data->scale = -($this->get_mappingid('scale', abs($data->scale)));
         }
 
@@ -157,7 +158,8 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
     protected function process_digestforum_tag($data) {
         $data = (object)$data;
 
-        if (!core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) { // Tags disabled in server, nothing to process.
+        if (!core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
+            // Tags disabled in server, nothing to process.
             return;
         }
 
@@ -184,7 +186,8 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         // Cannot use ratings API, cause, it's missing the ability to specify times (modified/created).
         $data->contextid = $this->task->get_contextid();
         $data->itemid    = $this->get_new_parentid('digestforum_post');
-        if ($data->scaleid < 0) { // Scale found, get mapping.
+        if ($data->scaleid < 0) {
+            // Scale found, get mapping.
             $data->scaleid = -($this->get_mappingid('scale', abs($data->scaleid)));
         }
         $data->rating = $data->value;

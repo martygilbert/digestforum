@@ -221,7 +221,8 @@ class mod_digestforum_post_form extends moodleform {
 
         // -------------------------------------------------------------------------------
         // Buttons.
-        if (isset($post->edit)) { // Hack alert.
+        if (isset($post->edit)) {
+            // Hack alert.
             $submitstring = get_string('savechanges');
         } else {
             $submitstring = get_string('posttodigestforum', 'digestforum');

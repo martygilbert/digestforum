@@ -67,7 +67,8 @@ if (digestforum_tp_is_tracked($digestforum)) {
     } else {
         throw new \moodle_exception('cannottrack', '', get_local_referer(false));
     }
-} else { // Subscribe.
+} else {
+    // Start tracking.
     if (digestforum_tp_start_tracking($digestforum->id)) {
         $event = \mod_digestforum\event\readtracking_enabled::create($eventparams);
         $event->trigger();

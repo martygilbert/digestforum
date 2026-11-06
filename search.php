@@ -185,7 +185,8 @@ $PAGE->set_url(new moodle_url('/mod/digestforum/search.php', $params));
 $PAGE->add_body_class('path-mod-forum');
 $PAGE->set_secondary_active_tab("coursehome");
 
-if (empty($search)) {   // Check the other parameters instead.
+if (empty($search)) {
+    // Check the other parameters instead.
     if (!empty($words)) {
         $search .= ' ' . $words;
     }

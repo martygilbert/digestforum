@@ -21,6 +21,7 @@
  * @copyright 2019 Michael Hawkins <michaelh@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace mod_digestforum\plugininfo;
 
 use core\plugininfo\base;

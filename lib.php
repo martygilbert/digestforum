@@ -108,7 +108,8 @@ function digestforum_add_instance($digestforum, $mform = null) {
     $digestforum->id = $DB->insert_record('digestforum', $digestforum);
     $modcontext = context_module::instance($digestforum->coursemodule);
 
-    if ($digestforum->type == 'single') {  // Create related discussion.
+    if ($digestforum->type == 'single') {
+        // Create related discussion.
         $discussion = new stdClass();
         $discussion->course        = $digestforum->course;
         $discussion->digestforum         = $digestforum->id;
@@ -227,7 +228,8 @@ function digestforum_update_instance($digestforum, $mform) {
         digestforum_update_grades($digestforum); // Recalculate grades for the digestforum.
     }
 
-    if ($digestforum->type == 'single') {  // Update related discussion and post.
+    if ($digestforum->type == 'single') {
+        // Update related discussion and post.
         $discussions = $DB->get_records('digestforum_discussions', ['digestforum' => $digestforum->id], 'timemodified ASC');
         if (!empty($discussions)) {
             if (count($discussions) > 1) {
@@ -608,6 +610,7 @@ function digestforum_print_recent_activity($course, $viewfullnames, $timestart) 
 
     $userfieldsapi = \core_user\fields::for_userpic();
     $allnamefields = $userfieldsapi->get_sql('u', false, '', 'duserid', false)->selects;
+    // Order by initial posting date.
     if (
         !$posts = $DB->get_records_sql("SELECT p.*,
                                               f.course, f.type AS digestforumtype, f.name AS digestforumname, f.intro,
@@ -630,7 +633,7 @@ function digestforum_print_recent_activity($course, $viewfullnames, $timestart) 
                                               JOIN {user} u              ON u.id = p.userid
                                         WHERE p.created > ? AND f.course = ? AND p.deleted <> 1
                                      ORDER BY p.id ASC", [$timestart, $course->id])
-    ) { // Order by initial posting date.
+    ) {
          return false;
     }
 
@@ -1675,11 +1678,13 @@ function digestforum_get_discussions(
 
     $modcontext = context_module::instance($cm->id);
 
-    if (!has_capability('mod/digestforum:viewdiscussion', $modcontext)) { // User must have perms to view discussions.
+    if (!has_capability('mod/digestforum:viewdiscussion', $modcontext)) {
+        // User must have perms to view discussions.
         return [];
     }
 
-    if (!empty($CFG->digestforum_enabletimedposts)) { // Users must fulfill timed posts.
+    if (!empty($CFG->digestforum_enabletimedposts)) {
+        // Users must fulfill timed posts.
         if (!has_capability('mod/digestforum:viewhiddentimedposts', $modcontext)) {
             $timelimit = " AND ((d.timestart <= ? AND (d.timeend = 0 OR d.timeend > ?))";
             $params[] = $now;
@@ -1769,7 +1774,8 @@ function digestforum_get_discussions(
 
     $userfieldsapi = \core_user\fields::for_name();
 
-    if (empty($userlastmodified)) {  // We don't need to know this.
+    if (empty($userlastmodified)) {
+        // We don't need to know this.
         $umfields = "";
         $umtable  = "";
     } else {
@@ -2310,8 +2316,10 @@ function digestforum_rating_validate($params) {
     }
 
     // Make sure groups allow this user to see the item they're rating.
-    if ($discussion->groupid > 0 && $groupmode = groups_get_activity_groupmode($cm, $course)) {   // Groups are being used.
-        if (!groups_group_exists($discussion->groupid)) { // Can't find group.
+    if ($discussion->groupid > 0 && $groupmode = groups_get_activity_groupmode($cm, $course)) {
+        // Groups are being used.
+        if (!groups_group_exists($discussion->groupid)) {
+            // Can't find group.
             throw new rating_exception('cannotfindgroup'); // Something is wrong.
         }
 
@@ -2693,7 +2701,8 @@ function digestforum_print_attachments($post, $cm, $type) {
                 $output .= "<br />";
             } else if ($type == 'text') {
                 $output .= "$strattachment " . s($filename) . ":\n$path\n";
-            } else { // Type is 'returnimages'.
+            } else {
+                // Type is 'returnimages'.
                 if (in_array($mimetype, ['image/gif', 'image/jpeg', 'image/png'])) {
                     // Image attachments don't get printed as links.
                     $imagereturn .= "<br /><img src=\"$path\" alt=\"\" />";
@@ -3110,7 +3119,8 @@ function digestforum_update_post($newpost, $mform, $unused = null) {
     }
     $post->modified = time();
 
-    if (!$post->parent) {   // Post is a discussion starter - update discussion title and times too.
+    if (!$post->parent) {
+        // Post is a discussion starter - update discussion title and times too.
         $discussion->name      = $post->subject;
         $discussion->timestart = $post->timestart;
         $discussion->timeend   = $post->timeend;
@@ -3202,7 +3212,8 @@ function digestforum_add_discussion($discussion, $mform = null, $unused = null, 
     $post->id = $DB->insert_record("digestforum_posts", $post);
 
     // Ideally the calling code would always pass a $cm to this function.
-    if (!empty($cm->id) && !empty($discussion->itemid)) {   // In "single simple discussions" this may not exist yet.
+    if (!empty($cm->id) && !empty($discussion->itemid)) {
+        // In "single simple discussions" this may not exist yet.
         $context = context_module::instance($cm->id);
         $text = file_save_draft_area_files(
             $discussion->itemid,
@@ -4087,6 +4098,7 @@ function digestforum_get_recent_mod_activity(&$activities, &$index, $timestart, 
 
     $userfieldsapi = \core_user\fields::for_name();
     $allnames = $userfieldsapi->get_sql('u', false, '', '', false)->selects;
+    // Order by initial posting date.
     if (
         !$posts = $DB->get_records_sql("SELECT p.*, f.type AS digestforumtype, d.digestforum, d.groupid,
                                               d.timestart, d.timeend, d.userid AS duserid,
@@ -4098,7 +4110,7 @@ function digestforum_get_recent_mod_activity(&$activities, &$index, $timestart, 
                                         WHERE p.created > ? AND f.id = ?
                                               $userselect $groupselect
                                      ORDER BY p.id ASC", $params)
-    ) { // Order by initial posting date.
+    ) {
          return;
     }
 

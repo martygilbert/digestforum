@@ -153,7 +153,8 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             } else if (!empty($this->singlefile)) {
                 $this->keyedfiles[$this->post->id] = [$this->singlefile];
             }
-        } else { // Whole thread.
+        } else {
+            // Whole thread.
             $fs = get_file_storage();
             $this->posts = digestforum_get_all_discussion_posts($this->discussion->id, 'p.created ASC');
             $this->multifiles = [];
@@ -231,9 +232,11 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
             $leapwriter = $this->exporter->get('format')->leap2a_writer();
             $writingleap = true;
         }
-        if ($this->attachment) { // Simplest case first - single file attachment.
+        if ($this->attachment) {
+            // Simplest case first - single file attachment.
             $this->copy_files([$this->singlefile], $this->attachment);
-            if ($writingleap) { // If we're writing leap, make the manifest to go along with the file.
+            if ($writingleap) {
+                // If we're writing leap, make the manifest to go along with the file.
                 $entry = new portfolio_format_leap2a_file($this->singlefile->get_filename(), $this->singlefile);
                 $leapwriter->add_entry($entry);
                 return $this->exporter->write_new_file(
@@ -242,7 +245,8 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
                     true,
                 );
             }
-        } else if (empty($this->post)) {  // Exporting whole discussion.
+        } else if (empty($this->post)) {
+            // Exporting whole discussion.
             $content = ''; // If we're just writing HTML, start a string to add each post to.
             $ids = []; // If we're writing leap2a, keep track of all entryids so we can add a selection element.
             foreach ($this->posts as $post) {
@@ -269,7 +273,8 @@ class digestforum_portfolio_caller extends portfolio_module_caller_base {
                 $name = $this->get('exporter')->get('format')->manifest_name();
             }
             $this->get('exporter')->write_new_file($content, $name, $manifest);
-        } else { // Exporting a single post.
+        } else {
+            // Exporting a single post.
             $posthtml = $this->prepare_post($this->post);
 
             $content = $posthtml;

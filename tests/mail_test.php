@@ -1117,7 +1117,8 @@ final class mail_test extends \advanced_testcase {
             // If we have found the expectation and have contents to match, let's do it.
             if (isset($foundexpectation) && isset($foundexpectation['contents'])) {
                 $mail->body = quoted_printable_decode($mail->body);
-                if (!is_array($foundexpectation['contents'])) { // Accept both string and array.
+                if (!is_array($foundexpectation['contents'])) {
+                    // Accept both string and array.
                     $foundexpectation['contents'] = [$foundexpectation['contents']];
                 }
                 foreach ($foundexpectation['contents'] as $content) {
