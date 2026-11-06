@@ -55,7 +55,7 @@ Feature: Digest forum: A user can navigate to previous and next discussions
     # because there is a bug in the digestforum_get_discussion_neighbours() when all the discussion
     # last modified times are the same. See MDL-79247 for more details.
     And I wait "1" seconds
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I should not see "Discussion 2"
     And I should see "Discussion 3"
     And I follow "Discussion 3"
@@ -173,10 +173,9 @@ Feature: Digest forum: A user can navigate to previous and next discussions
 
   Scenario: Navigation is not shown in experimental nested view
     Given I am logged in as "student1"
-    And I follow "Preferences" in the user menu
-    And I click on "Forum preferences" "link"
-    And I set the field "Use experimental nested discussion view" to "Yes"
-    And I press "Save changes"
+    And the following "user preferences" exist:
+      | user     | preference                    | value |
+      | student1 | digestforum_useexperimentalui | 1     |
     And the following "activity" exists:
       | activity   | digestforum                    |
       | course     | C1                       |

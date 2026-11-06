@@ -19,8 +19,8 @@ Feature: Add digestforum activities and discussions
       | student1 | C1 | student |
     And I log in as "teacher1"
     And I add a digestforum activity to course "Course 1" section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Forum type | Standard digestforum for general use |
+      | Digest forum name | Test digestforum name |
+      | Digest forum type | Standard digest forum for general use |
       | Description | Test digestforum description |
     And I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Forum post 1 |
@@ -52,8 +52,8 @@ Feature: Add digestforum activities and discussions
       | Course 1 | C1        | 0        |
     And I log in as "admin"
     And I add a digestforum activity to course "Course 1" section "0" and I fill the form with:
-      | Forum name | Test digestforum |
-      | Forum type | single     |
+      | Digest forum name | Test digestforum |
+      | Digest forum type | single     |
       | Group mode | 1          |
     When I press "Save and display"
     Then I should see "Separate groups can't be used with a single simple discussion."

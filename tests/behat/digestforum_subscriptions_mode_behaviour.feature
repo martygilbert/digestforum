@@ -27,7 +27,7 @@ Feature: Changes to the subscription mode of a digestforum can change subcribers
     Given I am on the "Test digestforum name" "digestforum activity" page logged in as teacher
     And I navigate to "Subscriptions" in current page administration
     When I select "Auto subscription" from the "Subscription mode" singleselect
-    Then I should not see "There are no subscribers yet for this digestforum."
+    Then I should not see "There are no subscribers yet for this digest forum."
     And I navigate to "Subscriptions" in current page administration
     And the following should exist in the "subscribers-table" table:
       | Full name | Email address |

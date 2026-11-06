@@ -41,7 +41,7 @@ Feature: Display the course linear navigation in the digestforum pages
     And the course linear navigation should not be visible
     And I set the field "Subject" to "New message subject."
     And I set the field "Message" to "My new message content."
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And the course linear navigation should be visible
     And I follow "Post two"
     And the course linear navigation should be visible
@@ -50,12 +50,12 @@ Feature: Display the course linear navigation in the digestforum pages
     And I click on "Advanced" "button"
     And the course linear navigation should not be visible
     And I set the field "Message" to "This is the reply text."
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And the course linear navigation should be visible
 
   @javascript
   Scenario: As a teacher I should see the course linear navigation in digestforum pages that allow it
-    # The "Grade users" button that is displayed when Whole digestforum grading is enabled, opens a page in a fullscreen popup, so the
+    # The "Grade users" button that is displayed when Whole digest forum grading is enabled, opens a page in a fullscreen popup, so the
     # course linear navigation is still there, but it's not visible nor clickable. We decided to exclude this page from these tests
     # because we were expecting this popup to replace the content of the discussions page instead of opening it in a popup.
     Given I am on the "Forum1" "digestforum activity" page logged in as "teacher"
@@ -86,7 +86,7 @@ Feature: Display the course linear navigation in the digestforum pages
     And I set the following fields to these values:
       | Subject | student3 discussion |
       | Message | posted by student3  |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I navigate to "Logs" in current page administration
     And the course linear navigation should not be visible
     And I follow "Discussion subscription created"

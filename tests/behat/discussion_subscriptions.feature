@@ -44,7 +44,7 @@ Feature: Digest forum: A user can control their own subscription preferences for
     And I can subscribe to this digestforum
     And "Unsubscribe from this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
-    And I click on "Subscribe to digestforum" "field"
+    And I click on "Subscribe to digest forum" "field"
     And I can unsubscribe from this digestforum
     And "Unsubscribe from this discussion" "field" should exist in the "Test post subject one" "table_row"
     And "Unsubscribe from this discussion" "field" should exist in the "Test post subject two" "table_row"
@@ -89,7 +89,7 @@ Feature: Digest forum: A user can control their own subscription preferences for
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
     And I subscribe to this digestforum
-    And I should see "You will be notified of new posts in the digestforum 'Test digestforum name'"
+    And I should see "You will be notified of new posts in the digest forum 'Test digestforum name'"
     And I can unsubscribe from this digestforum
     And "Unsubscribe from this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Unsubscribe from this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
@@ -142,7 +142,7 @@ Feature: Digest forum: A user can control their own subscription preferences for
       | admin | digestforum1 | Test post subject one | Test post message one |
       | admin | digestforum1 | Test post subject two | Test post message two |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I should see "Subscribe to digestforum"
+    And I should see "Subscribe to digest forum"
     And I reply "Test post subject one" post from "Test digestforum name" digestforum with:
       | Subject | Reply 1 to discussion 1 |
       | Message | Discussion contents 1, second message |
@@ -183,8 +183,8 @@ Feature: Digest forum: A user can control their own subscription preferences for
       | user     | course | role    |
       | student2 | C1     | student |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student2
-    And I should see "Subscribe to digestforum"
-    And the field "Subscribe to digestforum" matches value "1"
+    And I should see "Subscribe to digest forum"
+    And the field "Subscribe to digest forum" matches value "1"
     And I reply "Test post subject one" post from "Test digestforum name" digestforum with:
       | Subject                 | Reply 1 to discussion 1               |
       | Message                 | Discussion contents 1, second message |
@@ -253,7 +253,7 @@ Feature: Digest forum: A user can control their own subscription preferences for
     Then I follow "Test post subject one"
     And "You are not subscribed to this discussion. Click to subscribe" "link" should exist
     And I follow "You are not subscribed to this discussion. Click to subscribe"
-    And I should see "You will be notified of new posts in 'Test post subject one' in the digestforum 'Test digestforum name'."
+    And I should see "You will be notified of new posts in 'Test post subject one' in the digest forum 'Test digestforum name'."
     And I am on the "Test digestforum name" "digestforum activity" page
     And I follow "Test post subject one"
     And "You are subscribed to this discussion. Click to unsubscribe" "link" should exist

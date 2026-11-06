@@ -39,7 +39,7 @@ Feature: Digest forum: Forums in 'No groups' mode allow posting to All participa
     And I set the following fields to these values:
       | Subject | Teacher 1 -> Forum  |
       | Message | Teacher 1 -> Forum  |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher 1 -> Forum"
 
@@ -53,6 +53,6 @@ Feature: Digest forum: Forums in 'No groups' mode allow posting to All participa
     And I set the following fields to these values:
       | Subject | Student 1 -> Forum  |
       | Message | Student 1 -> Forum  |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Student 1 -> Forum"

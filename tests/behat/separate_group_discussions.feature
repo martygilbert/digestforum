@@ -100,7 +100,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
       | Message | Teacher 1 -> Group B  |
       # Change the group in the post form.
       | Group   | Group B               |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     # We should be redirected to the group that we selected when posting.
     And the field "Separate groups" matches value "Group B"
@@ -128,7 +128,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
       | Subject | Teacher 1 -> Group C  |
       | Message | Teacher 1 -> Group C  |
       | Group   | Group C               |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     # We should be redirected to the group that we selected when posting.
     And the field "Separate groups" matches value "Group C"
@@ -155,7 +155,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
       | Subject                   | Teacher 1 -> Post to all  |
       | Message                   | Teacher 1 -> Post to all  |
       | Post a copy to all groups | 1                       |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     # Posting to all groups means that we should be redirected to the page we started from.
     And the field "Separate groups" matches value "All participants"
@@ -184,7 +184,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
     And I set the following fields to these values:
       | Subject | Student -> B |
       | Message | Student -> B |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Group A" in the "Student -> B" "table_row"
     And I should not see "Group B" in the "Student -> B" "table_row"
@@ -217,7 +217,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
       | Subject | Student -> B  |
       | Message | Student -> B  |
       | Group   | Group B       |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     # We should be redirected to the group that we selected when posting.
     And the field "Separate groups" matches value "Group B"
@@ -238,7 +238,7 @@ Feature: Digest forum: Posting to all groups in a separate group discussion is r
       | Subject | Student -> A  |
       | Message | Student -> A  |
       | Group   | Group A       |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     # We should be redirected to the group that we selected when posting.
     And the field "Separate groups" matches value "Group A"

@@ -41,9 +41,9 @@ Feature: Digest forum: I can grade a students by group with separate groups
     And I am on the "Test Forum 1" "digestforum activity editing" page
     And I expand all fieldsets
     And I set the following fields to these values:
-      | Forum name | Test Forum 1 |
+      | Digest forum name | Test Forum 1 |
       | Description | Test |
-    And I set the field "Whole digestforum grading > Type" to "Point"
+    And I set the field "Whole digest forum grading > Type" to "Point"
     And I set the field "Common module settings > Group mode" to "Separate groups"
     And I press "Save and display"
 
@@ -93,13 +93,13 @@ Feature: Digest forum: I can grade a students by group with separate groups
     And I set the following fields to these values:
       | Subject  | Discussion subject A |
       | Message | Discussion message A |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I select "Group C" from the "Separate groups" singleselect
     And I click on "Add discussion topic" "link"
     And I set the following fields to these values:
       | Subject  | Discussion subject C |
       | Message | Discussion message C |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     Then I am on the "Test Forum 1" "digestforum activity" page logged in as teacher2
     And I select "Group C" from the "Separate groups" singleselect
     And I click on "Grade users" "button"

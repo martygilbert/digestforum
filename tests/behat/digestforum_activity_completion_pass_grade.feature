@@ -24,13 +24,13 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     And I am on the "Music history" "digestforum activity editing" page logged in as teacher1
     And I expand all fieldsets
     And I set the following fields to these values:
-      | Whole digestforum grading > Type            | Point       |
-      | Whole digestforum grading > Grade to pass   | 50          |
+      | Whole digest forum grading > Type            | Point       |
+      | Whole digest forum grading > Grade to pass   | 50          |
       | Add requirements                      | 1           |
       | View the activity                     | 1           |
       | Receive a grade                       | 1           |
       | Passing grade                         | 1           |
-      | completiongradeitemnumber             | Whole digestforum |
+      | completiongradeitemnumber             | Whole digest forum |
       | completionpostsenabled                | 1           |
       | completionposts                       | 2           |
       | completiondiscussionsenabled          | 1           |
@@ -43,7 +43,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     Given I am on the "Music history" "digestforum activity" page logged in as teacher1
     Then "Music history" should have the "View" completion condition
     And "Music history" should have the "Start discussions: 1" completion condition
-    And "Music history" should have the "Make digestforum posts: 2" completion condition
+    And "Music history" should have the "Make digest forum posts: 2" completion condition
     And "Music history" should have the "Post replies: 1" completion condition
     And "Music history" should have the "Receive a grade" completion condition
     And "Music history" should have the "Receive a passing grade" completion condition
@@ -53,7 +53,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     Given I am on the "Music history" "digestforum activity" page logged in as student1
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "todo"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "todo"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "todo"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "todo"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -63,7 +63,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     And I am on the "Music history" "digestforum activity" page
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "todo"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "todo"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "todo"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -73,7 +73,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     And I am on the "Music history" "digestforum activity" page
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "done"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "done"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "done"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -87,7 +87,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     When I am on the "Music history" "digestforum activity" page logged in as student1
     Then the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "done"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "done"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "done"
     And the "Receive a grade" completion condition of "Music history" is displayed as "done"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "failed"
@@ -97,7 +97,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     Given I am on the "Music history" "digestforum activity" page logged in as student1
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "todo"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "todo"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "todo"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "todo"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -107,7 +107,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     And I am on the "Music history" "digestforum activity" page
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "todo"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "todo"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "todo"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -117,7 +117,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     And I am on the "Music history" "digestforum activity" page
     And the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "done"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "done"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "done"
     And the "Receive a grade" completion condition of "Music history" is displayed as "todo"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "todo"
@@ -131,7 +131,7 @@ Feature: Completion pass grade  view activity completion in the digestforum acti
     When I am on the "Music history" "digestforum activity" page logged in as student1
     Then the "View" completion condition of "Music history" is displayed as "done"
     And the "Start discussions: 1" completion condition of "Music history" is displayed as "done"
-    And the "Make digestforum posts: 2" completion condition of "Music history" is displayed as "done"
+    And the "Make digest forum posts: 2" completion condition of "Music history" is displayed as "done"
     And the "Post replies: 1" completion condition of "Music history" is displayed as "done"
     And the "Receive a grade" completion condition of "Music history" is displayed as "done"
     And the "Receive a passing grade" completion condition of "Music history" is displayed as "done"

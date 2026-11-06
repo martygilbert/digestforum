@@ -67,12 +67,12 @@ Feature: Course level digestforum summary report
     And the following should not exist in the "digestforumreport_summary_table" table:
       | First name           |
       | Student 3            |
-    And the "Forum selected" select box should contain "All digestforums in course"
-    And the "Forum selected" select box should contain "digestforum1"
-    And the "Forum selected" select box should contain "digestforum2"
-    And the "Forum selected" select box should contain "digestforum3"
-    And the "Forum selected" select box should not contain "digestforum4"
-    Then I select "All digestforums in course" from the "Forum selected" singleselect
+    And the "Digest forum selected" select box should contain "All digest forums in course"
+    And the "Digest forum selected" select box should contain "digestforum1"
+    And the "Digest forum selected" select box should contain "digestforum2"
+    And the "Digest forum selected" select box should contain "digestforum3"
+    And the "Digest forum selected" select box should not contain "digestforum4"
+    Then I select "All digest forums in course" from the "Digest forum selected" singleselect
     And I should not see "Export posts"
     And the following should exist in the "digestforumreport_summary_table" table:
     # |                      | Discussions | Replies |                                 |                                  |
@@ -94,7 +94,7 @@ Feature: Course level digestforum summary report
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "F-Eng"
     And I navigate to "Reports" in current page administration
-    Then the "Forum selected" select box should contain "F-Eng"
+    Then the "Digest forum selected" select box should contain "F-Eng"
 
   Scenario: Students given the view capability can view their own course report data
     Given the following "permission overrides" exist:
@@ -111,12 +111,12 @@ Feature: Course level digestforum summary report
       | Student 2            |
       | Student 3            |
       | Teacher 1            |
-    And the "Forum selected" select box should contain "All digestforums in course"
-    And the "Forum selected" select box should contain "digestforum1"
-    And the "Forum selected" select box should contain "digestforum2"
-    And the "Forum selected" select box should contain "digestforum3"
-    And the "Forum selected" select box should not contain "digestforum4"
-    Then I select "All digestforums in course" from the "Forum selected" singleselect
+    And the "Digest forum selected" select box should contain "All digest forums in course"
+    And the "Digest forum selected" select box should contain "digestforum1"
+    And the "Digest forum selected" select box should contain "digestforum2"
+    And the "Digest forum selected" select box should contain "digestforum3"
+    And the "Digest forum selected" select box should not contain "digestforum4"
+    Then I select "All digest forums in course" from the "Digest forum selected" singleselect
     And the following should exist in the "digestforumreport_summary_table" table:
     # |                      | Discussions | Replies |                                 |                                  |
       | First name           | -2-         | -3-     | Earliest post                   | Most recent post                 |

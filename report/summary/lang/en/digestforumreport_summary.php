@@ -24,7 +24,7 @@
 
 $string['attachmentcount'] = 'Number of attachments';
 $string['charcount'] = 'Character count';
-$string['digestforumselectcourseoption'] = 'All digestforums in course';
+$string['digestforumselectcourseoption'] = 'All digest forums in course';
 $string['digestforumselectlabel'] = 'Digest forum selected';
 $string['earliestpost'] = 'Earliest post';
 $string['eventreportdownloaded'] = 'Digest forum summary report downloaded';
@@ -47,8 +47,8 @@ $string['pluginname'] = 'Digest forum summary report';
 $string['postcount'] = 'Number of discussions posted';
 $string['privacy:metadata'] = 'The Digest forum summary report plugin does not store any personal data.';
 $string['replycount'] = 'Number of replies posted';
-$string['summary:view'] = 'Access summary report within a given digestforum or digestforums';
-$string['summary:viewall'] = 'Access summary report data for each user within a given digestforum or digestforums';
+$string['summary:view'] = 'Access summary report within a given digest forum or digest forums';
+$string['summary:viewall'] = 'Access summary report data for each user within a given digest forum or digest forums';
 $string['summarytitle'] = 'Digest forum summary report - {$a}';
 $string['viewcount'] = 'Number of views';
 $string['viewsdisclaimer'] = 'Number of views column is not filtered by group';

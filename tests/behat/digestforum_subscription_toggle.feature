@@ -25,8 +25,8 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 0               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    Then "Subscribe to digestforum" "field" should exist
-    And the field "Subscribe to digestforum" matches value "0"
+    Then "Subscribe to digest forum" "field" should exist
+    And the field "Subscribe to digest forum" matches value "0"
 
   @javascript
   Scenario: The subscription toggle is shown checked when a user is auto-subscribed to a digestforum
@@ -38,8 +38,8 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 2               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    Then "Subscribe to digestforum" "field" should exist
-    And the field "Subscribe to digestforum" matches value "1"
+    Then "Subscribe to digest forum" "field" should exist
+    And the field "Subscribe to digest forum" matches value "1"
 
   Scenario: The subscription toggle is not shown when subscriptions are forced
     Given the following "activity" exists:
@@ -50,7 +50,7 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 1               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    Then "Subscribe to digestforum" "field" should not exist
+    Then "Subscribe to digest forum" "field" should not exist
 
   Scenario: The subscription toggle is not shown when subscriptions are disabled
     Given the following "activity" exists:
@@ -61,7 +61,7 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 3               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    Then "Subscribe to digestforum" "field" should not exist
+    Then "Subscribe to digest forum" "field" should not exist
 
   @javascript
   Scenario: Subscribing via the digestforum action bar toggle shows a visible toast notification
@@ -73,8 +73,8 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 0               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I click on "Subscribe to digestforum" "field"
-    Then I should see "You will be notified of new posts in the digestforum 'Test digestforum name'."
+    And I click on "Subscribe to digest forum" "field"
+    Then I should see "You will be notified of new posts in the digest forum 'Test digestforum name'."
 
   @javascript
   Scenario: Unsubscribing via the digestforum action bar toggle shows a visible toast notification
@@ -86,7 +86,7 @@ Feature: Forum subscription toggle in the digestforum action bar
       | type           | general         |
       | forcesubscribe | 2               |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I click on "Subscribe to digestforum" "field"
+    And I click on "Subscribe to digest forum" "field"
     Then I should see "Student One will NOT be notified of new posts in 'Test digestforum name'"
 
   @javascript
@@ -105,7 +105,7 @@ Feature: Forum subscription toggle in the digestforum action bar
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     Then "Subscribe to this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
-    When I click on "Subscribe to digestforum" "field"
+    When I click on "Subscribe to digest forum" "field"
     Then "Unsubscribe from this discussion" "field" should exist in the "Test post subject one" "table_row"
     And "Unsubscribe from this discussion" "field" should exist in the "Test post subject two" "table_row"
 
@@ -125,7 +125,7 @@ Feature: Forum subscription toggle in the digestforum action bar
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     Then "Subscribe to this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
-    When I click on "Subscribe to digestforum" "field"
+    When I click on "Subscribe to digest forum" "field"
     And "Unsubscribe from this discussion" "field" should exist in the "Test post subject one" "table_row"
     And "Unsubscribe from this discussion" "field" should exist in the "Test post subject two" "table_row"
     When I click on "Unsubscribe from this discussion" "field" in the "Test post subject one" "table_row"
@@ -148,6 +148,6 @@ Feature: Forum subscription toggle in the digestforum action bar
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     Then "Unsubscribe from this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Unsubscribe from this discussion" "checkbox" should exist in the "Test post subject two" "table_row"
-    When I click on "Subscribe to digestforum" "field"
+    When I click on "Subscribe to digest forum" "field"
     Then "Subscribe to this discussion" "checkbox" should exist in the "Test post subject one" "table_row"
     And "Subscribe to this discussion" "checkbox" should exist in the "Test post subject two" "table_row"

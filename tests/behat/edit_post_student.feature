@@ -54,7 +54,7 @@ Feature: Students can edit or delete their digestforum posts within a set time l
       | user     | digestforum | name               | message          | timemodified       |
       | student1 | digestforum | Forum post subject | This is the body | ##now +1 second##  |
     And I am on the "Course 1" course page logged in as student1
-    And I should see "New digestforum posts:" in the "Recent activity" "block"
+    And I should see "New digest forum posts:" in the "Recent activity" "block"
     And I should see "Forum post subject" in the "Recent activity" "block"
     When I wait "2" seconds
     And I follow "Forum post subject"

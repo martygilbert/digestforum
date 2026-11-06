@@ -37,36 +37,36 @@ Feature: I can grade a students interaction across a digestforum
     And I expand all fieldsets
 
     # Fields should be hidden when grading is not set.
-    When I set the field "Whole digestforum grading > Type" to "None"
-    Then "Whole digestforum grading > Grade to pass" "field" should not be visible
-    And "Whole digestforum grading > Grade category" "field" should not be visible
-    And "Whole digestforum grading > Maximum grade" "field" should not be visible
+    When I set the field "Whole digest forum grading > Type" to "None"
+    Then "Whole digest forum grading > Grade to pass" "field" should not be visible
+    And "Whole digest forum grading > Grade category" "field" should not be visible
+    And "Whole digest forum grading > Maximum grade" "field" should not be visible
     And "Ratings > Grade to pass" "field" should not be visible
     And "Ratings > Grade category" "field" should not be visible
     And "Ratings > Maximum grade" "field" should not be visible
 
-    # Only Whole digestforum grading fields should be visible.
-    When I set the field "Whole digestforum grading > Type" to "Point"
-    Then "Whole digestforum grading > Grade to pass" "field" should be visible
-    And "Whole digestforum grading > Grade category" "field" should be visible
-    And "Whole digestforum grading > Maximum grade" "field" should be visible
+    # Only Whole digest forum grading fields should be visible.
+    When I set the field "Whole digest forum grading > Type" to "Point"
+    Then "Whole digest forum grading > Grade to pass" "field" should be visible
+    And "Whole digest forum grading > Grade category" "field" should be visible
+    And "Whole digest forum grading > Maximum grade" "field" should be visible
     But "Ratings > Grade to pass" "field" should not be visible
     And "Ratings > Grade category" "field" should not be visible
     And "Ratings > Maximum grade" "field" should not be visible
 
     # Save some values.
-    Given I set the field "Whole digestforum grading > Maximum grade" to "10"
-    And I set the field "Whole digestforum grading > Grade category" to "Tutor"
-    And I set the field "Whole digestforum grading > Grade to pass" to "4"
+    Given I set the field "Whole digest forum grading > Maximum grade" to "10"
+    And I set the field "Whole digest forum grading > Grade category" to "Tutor"
+    And I set the field "Whole digest forum grading > Grade to pass" to "4"
     When I press "Save and return to course"
     And I navigate to "View > Grader report" in the course gradebook
 
     # There shouldn't be any Ratings grade item.
-    Then I should see "Test Forum 1 whole digestforum"
+    Then I should see "Test Forum 1 whole digest forum"
     But I should not see "Test Forum 1 rating"
 
     # The values saved should be reflected here.
-    And I click on grade item menu "Test Forum 1 whole digestforum" of type "gradeitem" on "grader" page
+    And I click on grade item menu "Test Forum 1 whole digest forum" of type "gradeitem" on "grader" page
     And I choose "Edit grade item" in the open action menu
     When I click on "Show more..." "link" in the ".modal-dialog" "css_element"
     Then the field "Maximum grade" matches value "10"
@@ -83,9 +83,9 @@ Feature: I can grade a students interaction across a digestforum
     And "Ratings > Grade to pass" "field" should not be visible
     And "Ratings > Grade category" "field" should not be visible
     And "Ratings > Maximum grade" "field" should not be visible
-    And "Whole digestforum grading > Grade to pass" "field" should not be visible
-    And "Whole digestforum grading > Grade category" "field" should not be visible
-    And "Whole digestforum grading > Maximum grade" "field" should not be visible
+    And "Whole digest forum grading > Grade to pass" "field" should not be visible
+    And "Whole digest forum grading > Grade category" "field" should not be visible
+    And "Whole digest forum grading > Maximum grade" "field" should not be visible
 
     # Set to "Count of ratings"
     When I set the field "Ratings > Aggregate type" to "Count of ratings"
@@ -94,18 +94,18 @@ Feature: I can grade a students interaction across a digestforum
     Then "Ratings > Grade to pass" "field" should not be visible
     And "Ratings > Grade category" "field" should not be visible
     And "Ratings > Maximum grade" "field" should not be visible
-    And "Whole digestforum grading > Grade to pass" "field" should not be visible
-    And "Whole digestforum grading > Grade category" "field" should not be visible
-    And "Whole digestforum grading > Maximum grade" "field" should not be visible
+    And "Whole digest forum grading > Grade to pass" "field" should not be visible
+    And "Whole digest forum grading > Grade category" "field" should not be visible
+    And "Whole digest forum grading > Maximum grade" "field" should not be visible
 
     # Use point grading
     When I set the field "Ratings > Type" to "Point"
     Then "Ratings > Grade to pass" "field" should be visible
     And "Ratings > Grade category" "field" should be visible
     And "Ratings > Maximum grade" "field" should be visible
-    And "Whole digestforum grading > Grade to pass" "field" should not be visible
-    And "Whole digestforum grading > Grade category" "field" should not be visible
-    And "Whole digestforum grading > Maximum grade" "field" should not be visible
+    And "Whole digest forum grading > Grade to pass" "field" should not be visible
+    And "Whole digest forum grading > Grade category" "field" should not be visible
+    And "Whole digest forum grading > Maximum grade" "field" should not be visible
 
     # Save some values.
     Given I set the field "Ratings > Maximum grade" to "10"
@@ -114,9 +114,9 @@ Feature: I can grade a students interaction across a digestforum
     When I press "Save and return to course"
     And I navigate to "View > Grader report" in the course gradebook
 
-    # There shouldn't be any Whole digestforum grade gradeitem.
+    # There shouldn't be any Whole digest forum grade gradeitem.
     Then I should see "Test Forum 1 rating"
-    But I should not see "Test Forum 1 whole digestforum"
+    But I should not see "Test Forum 1 whole digest forum"
 
     # The values saved should be reflected here.
     And I click on grade item menu "Test Forum 1 rating" of type "gradeitem" on "grader" page
@@ -135,16 +135,16 @@ Feature: I can grade a students interaction across a digestforum
     And I set the field "Ratings > Maximum grade" to "100"
     And I set the field "Ratings > Grade category" to "Peers"
     And I set the field "Ratings > Grade to pass" to "40"
-    And I set the field "Whole digestforum grading > Type" to "Point"
-    And I set the field "Whole digestforum grading > Maximum grade" to "10"
-    And I set the field "Whole digestforum grading > Grade category" to "Tutor"
-    And I set the field "Whole digestforum grading > Grade to pass" to "4"
+    And I set the field "Whole digest forum grading > Type" to "Point"
+    And I set the field "Whole digest forum grading > Maximum grade" to "10"
+    And I set the field "Whole digest forum grading > Grade category" to "Tutor"
+    And I set the field "Whole digest forum grading > Grade to pass" to "4"
     And I press "Save and return to course"
     And I navigate to "View > Grader report" in the course gradebook
 
-    # There shouldn't be any Whole digestforum grade gradeitem.
+    # There shouldn't be any Whole digest forum grade gradeitem.
     Then I should see "Test Forum 1 rating"
-    And I should see "Test Forum 1 whole digestforum"
+    And I should see "Test Forum 1 whole digest forum"
 
     # The values saved should be reflected here.
     And I click on grade item menu "Test Forum 1 rating" of type "gradeitem" on "grader" page
@@ -155,7 +155,7 @@ Feature: I can grade a students interaction across a digestforum
     And I should see "Peers" in the "Parent category" "fieldset"
     And I press "Cancel"
 
-    And I click on grade item menu "Test Forum 1 whole digestforum" of type "gradeitem" on "grader" page
+    And I click on grade item menu "Test Forum 1 whole digest forum" of type "gradeitem" on "grader" page
     And I choose "Edit grade item" in the open action menu
     When I click on "Show more..." "link" in the ".modal-dialog" "css_element"
     Then the field "Maximum grade" matches value "10"
@@ -165,9 +165,9 @@ Feature: I can grade a students interaction across a digestforum
   Scenario: Ensure that only gradable users are available in digestforum grading interface
     Given I am on the "Test Forum 1" "digestforum activity editing" page logged in as "admin"
     And I expand all fieldsets
-    When I set the field "Whole digestforum grading > Type" to "Point"
-    And I set the field "Whole digestforum grading > Maximum grade" to "10"
-    And I set the field "Whole digestforum grading > Grade to pass" to "4"
+    When I set the field "Whole digest forum grading > Type" to "Point"
+    And I set the field "Whole digest forum grading > Maximum grade" to "10"
+    And I set the field "Whole digest forum grading > Grade to pass" to "4"
     And I press "Save and display"
     And I press "Grade users"
     Then I should see "1 out of 1"
@@ -181,8 +181,8 @@ Feature: I can grade a students interaction across a digestforum
   Scenario: The grade viewing dialogue has a valid heading structure
     Given I am on the "Test Forum 1" "digestforum activity editing" page logged in as "admin"
     And I expand all fieldsets
-    And I set the field "Whole digestforum grading > Type" to "Point"
-    And I set the field "Whole digestforum grading > Maximum grade" to "10"
+    And I set the field "Whole digest forum grading > Type" to "Point"
+    And I set the field "Whole digest forum grading > Maximum grade" to "10"
     And I press "Save and display"
     And I press "Grade users"
     And I set the field "grade" to "7"

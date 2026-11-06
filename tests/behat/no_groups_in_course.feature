@@ -26,7 +26,7 @@ Feature: Posting to digestforums in a course with no groups behaves correctly
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
@@ -37,7 +37,7 @@ Feature: Posting to digestforums in a course with no groups behaves correctly
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
@@ -48,7 +48,7 @@ Feature: Posting to digestforums in a course with no groups behaves correctly
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
@@ -59,7 +59,7 @@ Feature: Posting to digestforums in a course with no groups behaves correctly
     And I set the following fields to these values:
       | Subject | Student -> All participants |
       | Message | Student -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Student -> All participants"
 

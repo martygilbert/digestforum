@@ -20,7 +20,7 @@ Feature: Digest forum: A teacher or admin when changes the subscription mode sho
     Given I am on the "Test digestforum name" "digestforum activity" page logged in as teacher
     And I navigate to "Subscriptions" in current page administration
     When I select "Forced subscription" from the "Subscription mode" singleselect
-    And I should see "Everyone is now subscribed to this digestforum"
+    And I should see "Everyone is now subscribed to this digest forum"
     Then I should see "Forced subscription"
     And I should not see "View subscribers"
     And I should not see "Manage subscribers"

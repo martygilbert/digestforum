@@ -29,12 +29,12 @@ Feature: Each person posts one discussion digestforum type
       | student2 | digestforum1 | student2 discussion | posted by student2 |
     When I am on the "Forum 1" "digestforum activity" page logged in as student3
     # Only 1 discussion can be added to digestforum.
-    And I should see "This digestforum allows each person to start one discussion topic."
+    And I should see "This digest forum allows each person to start one discussion topic."
     And I click on "Add discussion topic" "link"
     And I set the following fields to these values:
       | Subject | student3 discussion |
       | Message | posted by student3  |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     # Confirm 2nd discussion topic cannot be added.
     Then "Add discussion topic" "link" should not exist
     # Confirm user can reply to other posts.
@@ -42,16 +42,16 @@ Feature: Each person posts one discussion digestforum type
     And I click on "Reply" "link"
     And I set the following fields to these values:
       | Message | Reply to student1 discussion |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I am on the "Forum 1" "digestforum activity" page
     And I click on "student2 discussion" "link"
     And I click on "Reply" "link"
     And I set the following fields to these values:
       | Message | Reply to student2 discussion |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I am on the "Forum 1" "digestforum activity" page
     And I click on "student3 discussion" "link"
     And I click on "Reply" "link"
     And I set the following fields to these values:
       | Message | Reply to student3 discussion |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"

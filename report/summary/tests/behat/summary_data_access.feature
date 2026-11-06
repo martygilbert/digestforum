@@ -56,7 +56,7 @@ Feature: Digest forum: Report relevant content availability
 
   Scenario: Students cannot access the summary report by default
     Given I am on the "digestforum1" "digestforum activity" page logged in as student1
-    Then "Forum summary report" "link" should not exist in current page administration
+    Then "Digest forum summary report" "link" should not exist in current page administration
 
   @javascript
   Scenario: Students given the view capability can only view their own report data

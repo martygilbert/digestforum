@@ -25,10 +25,10 @@ Feature: Digest forum: A user can view their posts and discussions
       | student1 | Forum discussion 1        | Actually, I've seen better. | Actually, I've seen better. |
     And I log in as "student1"
     When I follow "Profile" in the user menu
-    And I follow "Forum posts"
+    And I follow "Digest forum posts"
     Then I should see "How awesome is this digestforum discussion?"
     And I should see "Actually, I've seen better."
     And I follow "Profile" in the user menu
-    And I follow "Forum discussions"
+    And I follow "Digest Forum discussions"
     And I should see "How awesome is this digestforum discussion?"
     And I should not see "Actually, I've seen better."

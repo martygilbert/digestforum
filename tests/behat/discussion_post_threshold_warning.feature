@@ -58,10 +58,9 @@ Feature: Digest forum: An admin or teacher sets the post threshold for blocking 
       | Message | Test post message two |
     And I should see "Add discussion topic"
     #Now verify that when "Use experimental nested discussion view" is set, the user should see same warning in the Reply.
-    And I follow "Preferences" in the user menu
-    And I click on "Forum preferences" "link"
-    And I set the field "Use experimental nested discussion view" to "Yes"
-    And I press "Save changes"
+    And the following "user preferences" exist:
+      | user     | preference                    | value |
+      | student1 | digestforum_useexperimentalui | 1     |
     And I am on the "Test digestforum name" "digestforum activity" page
     And I click on "Test post subject two" "link"
     When I press "Reply"
@@ -73,7 +72,7 @@ Feature: Digest forum: An admin or teacher sets the post threshold for blocking 
       | capability                        | permission | role      | contextlevel | reference |
       | mod/digestforum:postwithoutthrottling   | Allow      | student   | Course       | C1        |
     And I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I should see "This digestforum has a limit to the number of digestforum postings you can make in a given time period - this is currently set at 3 posting(s) in 2 days"
+    And I should see "This digest forum has a limit to the number of digest forum postings you can make in a given time period - this is currently set at 3 posting(s) in 2 days"
     When I add a new discussion to "Test digestforum name" digestforum with:
       | Subject | Test post subject one |
       | Message | Test post message one |

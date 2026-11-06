@@ -216,7 +216,7 @@ Feature: Digest forum: Groups report filter is available if groups exist
   Scenario: Course digestforum summary report can be filtered by group
     When I am on the "c1digestforum2" "digestforum activity" page logged in as teacher1
     And I navigate to "Reports" in current page administration
-    And I select "All digestforums in course" from the "Forum selected" singleselect
+    And I select "All digest forums in course" from the "Digest forum selected" singleselect
     And I click on "Groups" "button"
     And I click on "Clear" "button" in the "filter-groups-popover" "region"
     And I click on "Group A" "checkbox" in the "filter-groups-popover" "region"

@@ -21,13 +21,13 @@ Feature: Digest forum: A teacher or admin can view subscriptions tab
     When I navigate to "Subscriptions" in current page administration
     Then "View subscribers" "text" should exist in the "nav.tertiary-navigation-selector > div.dropdown.select-menu" "css_element"
     And I should see "Subscribers"
-    And I should see "There are no subscribers yet for this digestforum."
+    And I should see "There are no subscribers yet for this digest forum."
 
   Scenario: A teacher selects forced subscription and subscribers selector is not visible
     Given I am on the "Test digestforum name" "digestforum activity" page logged in as teacher
     And I navigate to "Subscriptions" in current page administration
     When I select "Forced subscription" from the "Subscription mode" singleselect
-    And I should see "Everyone is now subscribed to this digestforum"
+    And I should see "Everyone is now subscribed to this digest forum"
     Then I should not see "View subscribers"
     And I should not see "Manage subscribers"
     And I should not see "Manage subscribers"
@@ -51,7 +51,7 @@ Feature: Digest forum: A teacher or admin can view subscriptions tab
 
   Scenario: A teacher selects reports tab and verify the heading
     Given I am on the "Test digestforum name" "digestforum activity" page logged in as teacher
-    And I should see "There are no discussion topics yet in this digestforum." in the "//div[contains(@class, 'alert-info')]" "xpath_element"
+    And I should see "There are no discussion topics yet in this digest forum." in the "//div[contains(@class, 'alert-info')]" "xpath_element"
     And I navigate to "Reports" in current page administration
-    And I should see "Forum summary report"
+    And I should see "Digest forum summary report"
     And I should see "Nothing to display" in the "//div[contains(@class, 'alert-info')]" "xpath_element"

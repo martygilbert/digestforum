@@ -50,6 +50,6 @@ Feature: A teacher can control the subscription to a digestforum
     Examples:
       | initialmode | updatedmode           | updatedmodeconfirmed                     |
       | 1           | Optional subscription | Everyone can now choose to be subscribed |
-      | 0           | Forced subscription   | Everyone is now subscribed to this digestforum |
-      | 0           | Auto subscription     | Everyone is now subscribed to this digestforum |
+      | 0           | Forced subscription   | Everyone is now subscribed to this digest forum |
+      | 0           | Auto subscription     | Everyone is now subscribed to this digest forum |
       | 0           | Subscription disabled | Subscriptions are now disallowed         |

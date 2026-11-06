@@ -1130,7 +1130,7 @@ function digestforum_get_readable_digestforums($userid, $courseid = 0) {
  * @param int $courseid if 0, we search through the whole site
  * @param int $limitfrom
  * @param int $limitnum
- * @param int &$totalcount
+ * @param int $totalcount
  * @param string $extrasql
  * @return array|bool Array of posts found or false
  */

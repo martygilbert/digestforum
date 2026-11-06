@@ -59,11 +59,9 @@ Feature: Digest forum: As a teacher, you can manually lock individual discussion
     And I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     # Check discussion list accessibility with danger pill shown when discussion is locked.
     And the page should meet accessibility standards with "wcag143" extra tests
-    And I follow "Preferences" in the user menu
-    And I click on "Forum preferences" "link"
-    And I set the following fields to these values:
-      | Use experimental nested discussion view | Yes |
-    And I press "Save changes"
+    And the following "user preferences" exist:
+      | user     | preference                    | value |
+      | student1 | digestforum_useexperimentalui | 1     |
     And I am on "Course 1" course homepage
     And I navigate to post "Discussion 1" in "Test digestforum name" digestforum
     # Check experimental discussion view accessibility with danger pill shown when discussion is locked.

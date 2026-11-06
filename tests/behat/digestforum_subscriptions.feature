@@ -48,11 +48,11 @@ Feature: A user can control their own subscription preferences for a digestforum
       | Subscription mode | Optional subscription |
     And I press "Save and return to course"
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    Then I should see "Subscribe to digestforum"
-    And I click on "Subscribe to digestforum" "field"
-    And the field "Subscribe to digestforum" matches value "1"
+    Then I should see "Subscribe to digest forum"
+    And I click on "Subscribe to digest forum" "field"
+    And the field "Subscribe to digest forum" matches value "1"
     And I am on the "Course 1" "course > activities > digestforum" page
-    And "Unsubscribe from digestforum" "field" should exist in the "Test digestforum name" "table_row"
+    And "Unsubscribe from digest forum" "field" should exist in the "Test digestforum name" "table_row"
 
   @javascript
   Scenario: An Automatic digestforum can be unsubscribed from
@@ -60,8 +60,8 @@ Feature: A user can control their own subscription preferences for a digestforum
       | Subscription mode | Auto subscription |
     And I press "Save and return to course"
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
-    And I should see "Subscribe to digestforum"
-    And I click on "Subscribe to digestforum" "field"
-    And the field "Subscribe to digestforum" matches value "0"
+    And I should see "Subscribe to digest forum"
+    And I click on "Subscribe to digest forum" "field"
+    And the field "Subscribe to digest forum" matches value "0"
     And I am on the "Course 1" "course > activities > digestforum" page
-    And "Subscribe to digestforum" "field" should exist in the "Test digestforum name" "table_row"
+    And "Subscribe to digest forum" "field" should exist in the "Test digestforum name" "table_row"
