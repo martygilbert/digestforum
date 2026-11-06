@@ -186,6 +186,8 @@ if ($form->is_cancelled()) {
 
 $PAGE->set_context($context);
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 $PAGE->set_title($pagetitle);
 $PAGE->set_pagelayout('admin');
 $PAGE->add_body_class('limitedwidth');

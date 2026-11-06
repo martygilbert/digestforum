@@ -41,6 +41,8 @@ if ($edit === 1) {
 }
 
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 
 $digestforum = $DB->get_record('digestforum', ['id' => $id], '*', MUST_EXIST);
 $course = $DB->get_record('course', ['id' => $digestforum->course], '*', MUST_EXIST);

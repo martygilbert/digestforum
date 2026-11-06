@@ -32,7 +32,7 @@
 }}
 <article
     id="p{{id}}"
-    class="digestforum-post-container mb-3"
+    class="forum-post-container digestforum-post-container mb-3"
     data-post-id="{{id}}"
     data-region="post"
     data-target="{{id}}-target"
@@ -42,7 +42,7 @@
 >
     {{! The firstpost and starter classes below aren't used for anything other than to identify the first post in behat. }}
     <div
-        class="d-flex border rounded-4 p-3 mb-3 digestforumpost focus-target {{#unread}}unread{{/unread}} {{#firstpost}}firstpost starter{{/firstpost}}"
+        class="d-flex border rounded-4 p-3 mb-3 forumpost digestforumpost focus-target {{#unread}}unread{{/unread}} {{#firstpost}}firstpost starter{{/firstpost}}"
         aria-label="{{label}}"
         data-post-id="{{id}}" data-content="digestforum-post"
     >

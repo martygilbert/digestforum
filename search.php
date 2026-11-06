@@ -181,6 +181,8 @@ if ($starredonly) {
 
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url(new moodle_url('/mod/digestforum/search.php', $params));
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 $PAGE->set_secondary_active_tab("coursehome");
 
 if (empty($search)) {   // Check the other parameters instead.

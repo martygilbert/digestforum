@@ -51,6 +51,8 @@ $PAGE->set_url('/mod/digestforum/post.php', [
     'confirm' => $confirm,
     'groupid' => $groupid,
 ]);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 // These page_params will be passed as hidden variables later in the form.
 $pageparams = ['reply' => $reply, 'digestforum' => $digestforum, 'edit' => $edit];
 

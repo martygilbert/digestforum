@@ -38,6 +38,8 @@ if ($parent !== 0) {
     $url->param('parent', $parent);
 }
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 
 $vaultfactory = mod_digestforum\local\container::get_vault_factory();
 $discussionvault = $vaultfactory->get_discussion_vault();

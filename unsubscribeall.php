@@ -28,6 +28,8 @@ require_once("lib.php");
 $confirm = optional_param('confirm', false, PARAM_BOOL);
 
 $PAGE->set_url('/mod/digestforum/unsubscribeall.php');
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 
 // Do not autologin guest. Only proper users can have digestforum subscriptions.
 require_login(null, false);

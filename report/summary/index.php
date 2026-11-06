@@ -104,6 +104,8 @@ if ($digestforumid) {
 $pageurl = new moodle_url('/mod/digestforum/report/summary/index.php', $pageurlparams);
 
 $PAGE->set_url($pageurl);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 $PAGE->set_pagelayout('report');
 $PAGE->set_title($title);
 $PAGE->set_heading($course->fullname);

@@ -38,6 +38,8 @@ if (null !== $return) {
     $url->param('return', $return);
 }
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 
 if (! $digestforum = $DB->get_record("digestforum", ["id" => $f])) {
     throw new \moodle_exception('invaliddigestforumid', 'digestforum');

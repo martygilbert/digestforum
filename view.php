@@ -71,6 +71,8 @@ $capabilitymanager = $managerfactory->get_capability_manager($digestforum);
 
 $url = $urlfactory->get_digestforum_view_url_from_digestforum($digestforum);
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 
 $course = $digestforum->get_course_record();
 $coursemodule = $digestforum->get_course_module_record();

@@ -53,6 +53,8 @@ if ($discussionsonly) {
 }
 
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
 $PAGE->set_pagelayout('standard');
 
 if ($page != 0) {
