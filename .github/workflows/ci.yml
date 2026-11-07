@@ -36,10 +36,10 @@ jobs:
         # Both supported PHP versions and both databases, in two jobs.
         include:
           - php: '8.3'
-            moodle-branch: 'MOODLE_503_STABLE'
+            moodle-branch: 'MOODLE_502_STABLE'
             database: 'mariadb'
           - php: '8.4'
-            moodle-branch: 'MOODLE_503_STABLE'
+            moodle-branch: 'MOODLE_502_STABLE'
             database: 'pgsql'
 
     steps:

@@ -60,7 +60,6 @@ if (!is_null($discussionid)) {
 $PAGE->set_url($url);
 // Core Boost styles forums through this body class.
 $PAGE->add_body_class('path-mod-forum');
-$PAGE->set_show_navigation_footer(false);
 
 $digestforum   = $DB->get_record('digestforum', ['id' => $id], '*', MUST_EXIST);
 $course  = $DB->get_record('course', ['id' => $digestforum->course], '*', MUST_EXIST);

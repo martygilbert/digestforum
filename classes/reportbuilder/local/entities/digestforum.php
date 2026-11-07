@@ -74,8 +74,10 @@ class digestforum extends course_module_base {
             new lang_string('name'),
             $this->get_entity_name(),
         ))
+            ->add_joins($this->get_joins())
             ->add_field("{$digestforumalias}.name")
             ->add_fields(context_helper::get_preload_record_columns_sql($contextalias))
+            ->set_is_sortable(true)
             ->set_callback(static function (?string $name, stdClass $digestforum): string {
                 if ($name === null || $digestforum->ctxid === null) {
                     return '';
@@ -93,8 +95,10 @@ class digestforum extends course_module_base {
             new lang_string('description'),
             $this->get_entity_name(),
         ))
+            ->add_joins($this->get_joins())
             ->add_fields("{$digestforumalias}.intro, {$digestforumalias}.introformat")
             ->add_fields(context_helper::get_preload_record_columns_sql($contextalias))
+            ->set_is_sortable(true)
             ->set_callback(static function (?string $intro, stdClass $digestforum): string {
                 if ($intro === null || $digestforum->ctxid === null) {
                     return '';
@@ -114,7 +118,9 @@ class digestforum extends course_module_base {
             new lang_string('digestforumtype', 'mod_digestforum'),
             $this->get_entity_name(),
         ))
+            ->add_joins($this->get_joins())
             ->add_fields("{$digestforumalias}.type")
+            ->set_is_sortable(true)
             ->set_callback(static function (?string $type): string {
                 global $CFG;
                 require_once("{$CFG->dirroot}/mod/digestforum/lib.php");
@@ -132,8 +138,10 @@ class digestforum extends course_module_base {
             new lang_string('duedate', 'mod_digestforum'),
             $this->get_entity_name(),
         ))
+            ->add_joins($this->get_joins())
             ->set_type(column::TYPE_TIMESTAMP)
             ->add_fields("{$digestforumalias}.duedate")
+            ->set_is_sortable(true)
             ->set_callback([format::class, 'userdate']);
 
         // Cut-off date.
@@ -142,8 +150,10 @@ class digestforum extends course_module_base {
             new lang_string('cutoffdate', 'mod_digestforum'),
             $this->get_entity_name(),
         ))
+            ->add_joins($this->get_joins())
             ->set_type(column::TYPE_TIMESTAMP)
             ->add_fields("{$digestforumalias}.cutoffdate")
+            ->set_is_sortable(true)
             ->set_callback([format::class, 'userdate']);
 
         return $columns;
@@ -164,7 +174,8 @@ class digestforum extends course_module_base {
             new lang_string('name'),
             $this->get_entity_name(),
             "{$digestforumalias}.name",
-        ));
+        ))
+            ->add_joins($this->get_joins());
 
         // Description.
         $filters[] = (new filter(
@@ -173,7 +184,8 @@ class digestforum extends course_module_base {
             new lang_string('description'),
             $this->get_entity_name(),
             "{$digestforumalias}.intro",
-        ));
+        ))
+            ->add_joins($this->get_joins());
 
         // Type.
         $filters[] = (new filter(
@@ -183,6 +195,7 @@ class digestforum extends course_module_base {
             $this->get_entity_name(),
             "{$digestforumalias}.type",
         ))
+            ->add_joins($this->get_joins())
             ->set_options_callback(static function (): array {
                 global $CFG;
                 require_once("{$CFG->dirroot}/mod/digestforum/lib.php");
@@ -197,7 +210,8 @@ class digestforum extends course_module_base {
             new lang_string('duedate', 'mod_digestforum'),
             $this->get_entity_name(),
             "{$digestforumalias}.duedate",
-        ));
+        ))
+            ->add_joins($this->get_joins());
 
         // Cut-off date.
         $filters[] = (new filter(
@@ -206,7 +220,8 @@ class digestforum extends course_module_base {
             new lang_string('cutoffdate', 'mod_digestforum'),
             $this->get_entity_name(),
             "{$digestforumalias}.cutoffdate",
-        ));
+        ))
+            ->add_joins($this->get_joins());
 
         return $filters;
     }

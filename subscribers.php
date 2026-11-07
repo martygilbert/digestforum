@@ -105,7 +105,6 @@ $strsubscribers = get_string("subscribers", "digestforum");
 $PAGE->navbar->add($strsubscribers, $url);
 $PAGE->set_title($strsubscribers);
 $PAGE->set_heading($COURSE->fullname);
-$PAGE->set_show_navigation_footer(false);
 
 // Activate the secondary nav tab.
 $PAGE->set_secondary_active_tab("digestforumsubscriptions");

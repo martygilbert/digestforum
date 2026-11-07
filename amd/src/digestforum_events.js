@@ -22,7 +22,6 @@
  */
 define([], function() {
     return {
-        ALL_SUBSCRIPTION_TOGGLED: 'mod_digestforum/subscription_toggle:allSubscriptionToggled',
         SUBSCRIPTION_TOGGLED: 'mod_digestforum/subscription_toggle:subscriptionToggled',
     };
 });

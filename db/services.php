@@ -226,12 +226,4 @@ $functions = [
         'capabilities' => 'mod/digestforum:viewdiscussion',
         'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
-
-    'mod_digestforum_set_read_state' => [
-        'classname' => 'mod_digestforum\external\set_read_state',
-        'methodname' => 'execute',
-        'description' => 'Set the read or unread state for a digestforum post for the current user.',
-        'type' => 'write',
-        'services' => [MOODLE_OFFICIAL_MOBILE_SERVICE],
-    ],
 ];

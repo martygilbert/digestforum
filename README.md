@@ -9,6 +9,11 @@ Modified by Marty Gilbert (martygilbert at gmail)
 ## Moodle 5.3
 Total rewrite to support Moodle 5.3. Started with the mod_forum code, and "digested" it.
 
+## Moodle 5.2
+DIGEST_52_STABLE is the 5.3 rewrite with core mod_forum's 5.3 changes taken back out, so it
+matches the Moodle 5.2 forum. Keep its version numbers below DIGEST_53_STABLE's, so a site can
+upgrade from Moodle 5.2 to 5.3.
+
 ## Moodle 3.6
 CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digestforumed it. 
 

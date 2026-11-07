@@ -19,7 +19,6 @@ Feature: A teacher can control the subscription to a digestforum
       | student1 | C1     | student        |
       | student2 | C1     | student        |
 
-  @javascript
   Scenario: A teacher can change toggle subscription editing on and off
     Given the following "activity" exists:
       | activity         | digestforum                  |
@@ -28,11 +27,11 @@ Feature: A teacher can control the subscription to a digestforum
       | name             | Test digestforum name        |
     When I am on the "Test digestforum name" "digestforum activity" page logged in as teacher
     And I navigate to "Subscriptions" in current page administration
-    Then I set the field "Subscribers" to "Manage subscribers"
+    Then I select "Manage subscribers" from the "Subscribers" singleselect
     And "Add" "button" should exist
     And "Remove" "button" should exist
-    And I set the field "Subscribers" to "View subscribers"
-    And "View subscribers" "text" should exist in the "nav.tertiary-navigation-selector > div.dropdown.select-menu" "css_element"
+    And I select "View subscribers" from the "Subscribers" singleselect
+    And the "Subscribers" select box should contain "View subscribers"
 
   @javascript
   Scenario Outline: Toggle digestforum subscription mode via settings navigation

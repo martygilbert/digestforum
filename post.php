@@ -104,7 +104,6 @@ if (!isloggedin() || isguestuser()) {
     $PAGE->set_context($modcontext);
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
-    $PAGE->set_show_navigation_footer(false);
     $referer = get_local_referer(false);
 
     echo $OUTPUT->header();
@@ -460,7 +459,6 @@ if (!empty($digestforum)) {
         $PAGE->set_title($course->shortname);
         $PAGE->set_heading($course->fullname);
         $PAGE->set_secondary_active_tab('modulepage');
-        $PAGE->set_show_navigation_footer(false);
         $PAGE->activityheader->disable();
 
         if ($replycount) {
@@ -567,7 +565,6 @@ if (!empty($digestforum)) {
     $PAGE->set_cm($cm);
     $PAGE->set_context($modcontext);
     $PAGE->set_secondary_active_tab('modulepage');
-    $PAGE->set_show_navigation_footer(false);
     $PAGE->activityheader->disable();
 
     $prunemform = new mod_digestforum_prune_form(null, ['prune' => $prune, 'confirm' => $prune]);
@@ -652,7 +649,6 @@ if (!empty($digestforum)) {
         $PAGE->navbar->add(get_string("prunediscussion", "digestforum"));
         $PAGE->set_title(format_string($discussion->name) . ": " . format_string($post->subject));
         $PAGE->set_heading($course->fullname);
-        $PAGE->set_show_navigation_footer(false);
         echo $OUTPUT->header();
         if (!$PAGE->has_secondary_navigation()) {
             echo $OUTPUT->heading(format_string($digestforum->name), 2);
@@ -1118,7 +1114,6 @@ if ($edit) {
 $PAGE->set_title("{$course->shortname}: {$strdiscussionname}{$titlesubject}");
 $PAGE->set_heading($course->fullname);
 $PAGE->set_secondary_active_tab("modulepage");
-$PAGE->set_show_navigation_footer(false);
 $activityheaderconfig['hidecompletion'] = true;
 $activityheaderconfig['description'] = '';
 

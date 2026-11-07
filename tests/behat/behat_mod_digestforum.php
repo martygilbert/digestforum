@@ -39,23 +39,6 @@ use Behat\Gherkin\Node\TableNode;
  */
 class behat_mod_digestforum extends behat_base {
     /**
-     * Return the list of exact named selectors.
-     *
-     * @return behat_component_named_selector[]
-     */
-    public static function get_exact_named_selectors(): array {
-        return [
-            new behat_component_named_selector(
-                'Discussion navigation link',
-                [
-                    ".//nav[contains(concat(' ', normalize-space(@class), ' '), ' discussion-nav ')]" .
-                    "//*[self::a or self::span][@aria-label=%locator% or @data-type=%locator%]",
-                ]
-            ),
-        ];
-    }
-
-    /**
      * Reset digestforum caches between tests.
      *
      * @BeforeScenario @mod_digestforum
@@ -310,7 +293,7 @@ class behat_mod_digestforum extends behat_base {
      * @Given /^I can subscribe to this digestforum$/
      */
     public function i_can_subscribe_to_this_digestforum() {
-        $this->execute('behat_forms::the_field_matches_value', [get_string('subscribe', 'mod_digestforum'), '0']);
+        $this->execute('behat_general::assert_page_contains_text', [get_string('subscribe', 'mod_digestforum')]);
     }
 
     /**
@@ -319,7 +302,7 @@ class behat_mod_digestforum extends behat_base {
      * @Given /^I can unsubscribe from this digestforum$/
      */
     public function i_can_unsubscribe_from_this_digestforum() {
-        $this->execute('behat_forms::the_field_matches_value', [get_string('subscribe', 'mod_digestforum'), '1']);
+        $this->execute('behat_general::assert_page_contains_text', [get_string('unsubscribe', 'mod_digestforum')]);
     }
 
     /**
@@ -328,7 +311,7 @@ class behat_mod_digestforum extends behat_base {
      * @Given /^I subscribe to this digestforum$/
      */
     public function i_subscribe_to_this_digestforum() {
-        $this->execute('behat_general::i_click_on', [get_string('subscribe', 'mod_digestforum'), 'field']);
+        $this->execute('behat_general::click_link', [get_string('subscribe', 'mod_digestforum')]);
     }
 
     /**
@@ -337,7 +320,7 @@ class behat_mod_digestforum extends behat_base {
      * @Given /^I unsubscribe from this digestforum$/
      */
     public function i_unsubscribe_from_this_digestforum() {
-        $this->i_subscribe_to_this_digestforum();
+        $this->execute('behat_general::click_link', [get_string('unsubscribe', 'mod_digestforum')]);
     }
 
     /**

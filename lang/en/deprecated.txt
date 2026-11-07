@@ -3,5 +3,3 @@ privacy:request:delete:post:message,mod_digestforum
 privacy:request:delete:post:subject,mod_digestforum
 tagsdeleted,mod_digestforum
 re,mod_digestforum
-nonextdiscussion,mod_digestforum
-noprevdiscussion,mod_digestforum

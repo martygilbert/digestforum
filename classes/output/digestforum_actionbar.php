@@ -116,27 +116,19 @@ class digestforum_actionbar implements renderable, templatable {
         $cansubscribe = $activeenrolled && !($this->digestforum->get_subscription_mode() === DFORUM_FORCESUBSCRIBE) &&
             (!($this->digestforum->get_subscription_mode() === DFORUM_DISALLOWSUBSCRIBE) || $canmanage);
         if ($cansubscribe) {
-            $subscribed = \mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforumobject);
-            $label = get_string('subscribe', 'mod_digestforum');
-            // No aria-label here: the toggle's own <label> already gives it an accessible name that is
-            // consistent for sighted and screen reader users, and the checked state conveys subscription
-            // status (WCAG SC 2.5.3 Label in Name).
-            $extraattributes = [
-                ['name' => 'data-type', 'value' => 'digestforum-subscription-toggle'],
-                ['name' => 'data-action', 'value' => 'toggle'],
-                ['name' => 'data-digestforumid', 'value' => $digestforumobject->id],
-                ['name' => 'data-digestforumname', 'value' => $digestforumobject->name],
-                ['name' => 'data-username', 'value' => fullname($USER)],
-                ['name' => 'data-targetstate', 'value' => !$subscribed],
-            ];
-
-            $data['subscribetoggle'] = [
-                'id' => 'digestforum-subscription-toggle-' . $digestforumobject->id,
-                'checked' => $subscribed,
-                'extraattributes' => $extraattributes,
-                'label' => $label,
-                'extraclasses' => 'd-flex flex-row-reverse align-items-center gap-6',
-            ];
+            $cm = $this->digestforum->get_course_module_record();
+            $returnurl = (new moodle_url('/mod/digestforum/view.php', ['id' => $cm->id]))->out(false);
+            if (!\mod_digestforum\subscriptions::is_subscribed($USER->id, $digestforumobject, null, $cm)) {
+                $data['subscribetodigestforum'] = (new moodle_url(
+                    '/mod/digestforum/subscribe.php',
+                    ['id' => $digestforumobject->id, 'sesskey' => sesskey(), 'returnurl' => $returnurl]
+                ))->out(false);
+            } else {
+                $data['unsubscribefromdigestforum'] = (new moodle_url(
+                    '/mod/digestforum/subscribe.php',
+                    ['id' => $digestforumobject->id, 'sesskey' => sesskey(), 'returnurl' => $returnurl]
+                ))->out(false);
+            }
         }
         return $data;
     }

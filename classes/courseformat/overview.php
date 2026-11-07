@@ -280,7 +280,6 @@ class overview extends \core_courseformat\activityoverviewbase {
             ['name' => 'data-action', 'value' => 'toggle'],
             ['name' => 'data-digestforumid', 'value' => $this->digestforum->id],
             ['name' => 'data-digestforumname', 'value' => $this->digestforum->name],
-            ['name' => 'data-username', 'value' => fullname($this->user)],
             ['name' => 'data-targetstate', 'value' => !$subscribed],
             ['name' => 'aria-label', 'value' => $arialabel],
         ];

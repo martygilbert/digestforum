@@ -91,9 +91,6 @@ function xmldb_digestforum_upgrade($oldversion) {
     // Automatically generated Moodle v5.2.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Automatically generated Moodle v5.3.0 release upgrade line.
-    // Put any upgrade step following this.
-
     if ($oldversion < 2026110400) {
         // Bring a digestforum upgraded from the 3.6 version up to the 5.3 schema. The mod_forum upgrade steps that
         // made these changes (3.7 - 4.x) are no longer in this file. Every change is conditional, so sites that

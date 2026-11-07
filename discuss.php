@@ -79,14 +79,6 @@ $discussionviewurl = $urlfactory->get_discussion_view_url_from_discussion($discu
 // Set the activity record, to avoid additional calls to the db if the page getter is called.
 $PAGE->set_activity_record($digestforumrecord);
 
-// Add link to all discussions as supplementary content to go to the main digestforum page.
-$PAGE->set_supplementary_content(
-    new action_link(
-        $urlfactory->get_digestforum_view_url_from_course_module_id($cm->id),
-        get_string('gotoalldiscussions', 'mod_digestforum'),
-    )
-);
-
 // Move this down fix for MDL-6926.
 require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
@@ -345,27 +337,18 @@ if ($isnestedv2displaymode) {
 }
 
 echo $OUTPUT->header();
-
-$rendererfactory = mod_digestforum\local\container::get_renderer_factory();
-$discussionrenderer = $rendererfactory->get_discussion_renderer($digestforum, $discussion, $displaymode);
-$orderpostsby = $displaymode == DFORUM_MODE_FLATNEWEST ? 'created DESC' : 'created ASC';
-$replies = $postvault->get_replies_to_post($USER, $post, $capabilitymanager->can_view_any_private_reply($USER), $orderpostsby);
-
 if (!$isnestedv2displaymode) {
     if (!$PAGE->has_secondary_navigation()) {
         echo $OUTPUT->heading(format_string($digestforum->get_name()), 2);
     }
     $headinglevel = $PAGE->activityheader->get_heading_level();
-
-    // Output discussion name and discussion navigation buttons.
-    echo $OUTPUT->container_start('discussionheader d-flex align-items-end pb-3 mb-5 border-bottom');
-    echo $OUTPUT->heading(format_string($discussion->get_name()), $headinglevel, 'discussionname me-auto');
-    echo $OUTPUT->render_from_template(
-        'mod_digestforum/digestforum_discussion_navigation',
-        $discussionrenderer->get_discussion_navigation_buttons(),
-    );
-    echo $OUTPUT->container_end();
+    echo $OUTPUT->heading(format_string($discussion->get_name()), $headinglevel, 'discussionname');
 }
+
+$rendererfactory = mod_digestforum\local\container::get_renderer_factory();
+$discussionrenderer = $rendererfactory->get_discussion_renderer($digestforum, $discussion, $displaymode);
+$orderpostsby = $displaymode == DFORUM_MODE_FLATNEWEST ? 'created DESC' : 'created ASC';
+$replies = $postvault->get_replies_to_post($USER, $post, $capabilitymanager->can_view_any_private_reply($USER), $orderpostsby);
 
 if ($move == -1 && confirm_sesskey()) {
     $digestforumname = format_string($digestforum->get_name(), true);

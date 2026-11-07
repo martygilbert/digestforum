@@ -22,7 +22,7 @@ Feature: Ensure only users with appropriate permissions can export digestforum d
     And the following config values are set as admin:
       | enableportfolios | 1 |
     And I navigate to "Plugins > Portfolios > Manage portfolios" in site administration
-    And I set the portfolio instance "File download" to "Enabled and visible"
+    And I set portfolio instance "File download" to "Enabled and visible"
     And I click on "Save" "button"
     When I am on the "Test digestforum 1" "digestforum activity" page logged in as student1
     And I add a new discussion to "Test digestforum 1" digestforum with:

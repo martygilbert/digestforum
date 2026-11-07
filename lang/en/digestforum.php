@@ -358,7 +358,6 @@ $string['forcesubscribed'] = 'This digest forum forces everyone to be subscribed
 $string['forcesubscribed_help'] = 'This digest forum has been configured so that you cannot unsubscribe from discussions.';
 $string['generaldigestforum'] = 'Standard digest forum for general use';
 $string['generaldigestforums'] = 'General digest forums';
-$string['gotoalldiscussions'] = 'Go to all discussions';
 $string['grade_digestforum_header'] = 'Whole digest forum grading';
 $string['grade_digestforum_name'] = 'Whole digest forum';
 $string['grade_digestforum_title'] = 'Grade';
@@ -477,7 +476,6 @@ $string['namenews_help'] = 'The course announcements digest forum is a special d
 $string['namesocial'] = 'Social digest forum';
 $string['nameteacher'] = 'Teacher digest forum';
 $string['newdigestforumposts'] = 'New digest forum posts';
-$string['nextdiscussion'] = 'Next discussion';
 $string['nextdiscussiona'] = 'Next discussion: {$a}';
 $string['nextuser'] = 'Save changes and proceed to the next user';
 $string['noattachments'] = 'There are no attachments to this post';
@@ -558,7 +556,6 @@ $string['posttomygroups'] = 'Post a copy to all groups';
 $string['posttomygroups_help'] = 'Posts a copy of this message to all groups you have access to. Participants in groups you do not have access to will not see this post';
 $string['postupdated'] = 'Your post was updated';
 $string['potentialsubscribers'] = 'Potential subscribers';
-$string['prevdiscussion'] = 'Previous discussion';
 $string['prevdiscussiona'] = 'Previous discussion: {$a}';
 $string['previoususer'] = 'Save changes and proceed to the previous user';
 $string['privacy:digesttypenone'] = 'We do not hold any data relating to a preferred digest forum digest type for this digest forum.';
@@ -802,7 +799,3 @@ $string['tagsdeleted'] = 'Digest forum tags have been deleted';
 
 // Deprecated since Moodle 5.0.
 $string['re'] = 'Re:';
-
-// Deprecated since Moodle 5.3.
-$string['nonextdiscussion'] = 'No next discussion available';
-$string['noprevdiscussion'] = 'No previous discussion available';

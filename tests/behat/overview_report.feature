@@ -63,7 +63,7 @@ Feature: Testing overview integration in mod_digestforum
     And I am on the "Course 1" "course > activities > digestforum" page
     And I click on "input[data-type=digestforum-subscription-toggle]" "css_element" in the "No discussions" "table_row"
     And I follow "No discussions"
-    And the field "Subscribe to digest forum" matches value "1"
+    And I should see "Unsubscribe from digest forum"
     # Check Tracking toggle works.
     And I am on the "Course 1" "course > activities > digestforum" page
     And I click on "input[data-type=digestforum-track-toggle]" "css_element" in the "Unread posts" "table_row"
@@ -88,13 +88,12 @@ Feature: Testing overview integration in mod_digestforum
     And I should not see "Digest forum type" in the "digestforum_overview_collapsible" "region"
     # Check Subscribe toggle works.
     And I click on "input[data-type=digestforum-subscription-toggle]" "css_element" in the "No discussions" "table_row"
-    And I should see "Username 1 will NOT be notified of new posts in 'No discussions'"
     And I follow "No discussions"
     And I should see "Subscribe to digest forum"
     And I am on the "Course 1" "course > activities > digestforum" page
     And I click on "input[data-type=digestforum-subscription-toggle]" "css_element" in the "No discussions" "table_row"
     And I follow "No discussions"
-    And the field "Subscribe to digest forum" matches value "1"
+    And I should see "Unsubscribe from digest forum"
     # Check Tracking toggle works.
     And I am on the "Course 1" "course > activities > digestforum" page
     And I click on "input[data-type=digestforum-track-toggle]" "css_element" in the "Unread posts" "table_row"

@@ -42,26 +42,26 @@ Feature: A user can control their own subscription preferences for a digestforum
     And "You are subscribed to this discussion. Click to unsubscribe." "link" should not exist in the "Test post subject" "table_row"
     And "You are not subscribed to this discussion. Click to subscribe." "link" should not exist in the "Test post subject" "table_row"
 
-  @javascript
   Scenario: An optional digestforum can be subscribed to
     Given I set the following fields to these values:
       | Subscription mode | Optional subscription |
     And I press "Save and return to course"
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     Then I should see "Subscribe to digest forum"
-    And I click on "Subscribe to digest forum" "field"
-    And the field "Subscribe to digest forum" matches value "1"
-    And I am on the "Course 1" "course > activities > digestforum" page
-    And "Unsubscribe from digest forum" "field" should exist in the "Test digestforum name" "table_row"
+    And I should not see "Unsubscribe from digest forum"
+    And I follow "Subscribe to digest forum"
+    And I should see "You will be notified of new posts in the digest forum 'Test digestforum name'"
+    And I should see "Unsubscribe from digest forum"
+    And I should not see "Subscribe to digest forum"
 
-  @javascript
   Scenario: An Automatic digestforum can be unsubscribed from
     Given I set the following fields to these values:
       | Subscription mode | Auto subscription |
     And I press "Save and return to course"
     When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
+    Then I should see "Unsubscribe from digest forum"
+    And I should not see "Subscribe to digest forum"
+    And I follow "Unsubscribe from digest forum"
+    And I should see "Student One will NOT be notified of new posts in 'Test digestforum name'"
     And I should see "Subscribe to digest forum"
-    And I click on "Subscribe to digest forum" "field"
-    And the field "Subscribe to digest forum" matches value "0"
-    And I am on the "Course 1" "course > activities > digestforum" page
-    And "Subscribe to digest forum" "field" should exist in the "Test digestforum name" "table_row"
+    And I should not see "Unsubscribe from digest forum"
