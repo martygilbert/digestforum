@@ -110,7 +110,7 @@ Feature: Testing overview integration in mod_digestforum
     When I log in as "admin"
     And I am on "Course 1" course homepage with editing mode on
     And I add the "Activities" block
-    And I click on "Digest forums" "link" in the "Activities" "block"
+    And I click on "Digest Forums" "link" in the "Activities" "block"
     Then I should see "An overview of all activities in the course"
     And I should see "Name" in the "digestforum_overview_collapsible" "region"
     And I should see "Discussions" in the "digestforum_overview_collapsible" "region"
