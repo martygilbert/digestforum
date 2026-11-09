@@ -14,6 +14,11 @@ DIGEST_52_STABLE is the 5.3 rewrite with core mod_forum's 5.3 changes taken back
 matches the Moodle 5.2 forum. Keep its version numbers below DIGEST_53_STABLE's, so a site can
 upgrade from Moodle 5.2 to 5.3.
 
+## Moodle 5.1
+DIGEST_51_STABLE is DIGEST_52_STABLE with core mod_forum's 5.2 API changes taken back out,
+mainly the report builder entities and a few test helpers, so it runs on Moodle 5.1. Keep its
+version numbers at or below DIGEST_52_STABLE's, so a site can upgrade from Moodle 5.1 to 5.2.
+
 ## Moodle 3.6
 CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digestforumed it. 
 

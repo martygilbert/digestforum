@@ -7,7 +7,6 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
   Background:
     Given the following config values are set as admin:
       | enrol_guest | Yes |
-      | guestloginbutton | 1 |
     And the following "users" exist:
       | username | firstname | lastname | email                |
       | teacher  | Teacher   | 1        | teacher@example.com |
@@ -29,7 +28,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | teacher | digestforum | Forum discussion 1 | How awesome is this digestforum discussion? |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum" "digestforum activity" page
     Then I should not see "Add discussion topic"
     And I should see "Forum discussion 1"
@@ -48,7 +47,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | digestforum    | Forum (single discussion) | C1     | digestforum    | single |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum (single discussion)" "digestforum activity" page
     Then I should not see "Add discussion topic"
     And I should see "Forum (single discussion)"
@@ -63,7 +62,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | teacher | digestforum | Forum discussion 1 | How awesome is this digestforum discussion? |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum" "digestforum activity" page
     Then I should not see "Add discussion topic"
     And I should see "Forum discussion 1"
@@ -80,7 +79,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | teacher | digestforum | Forum discussion 1 | How awesome is this digestforum discussion? |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum" "digestforum activity" page
     Then I should see "Add discussion topic"
     And I click on "Add discussion topic" "link"
@@ -108,7 +107,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | digestforum    | Forum (single discussion) | C1     | digestforum    | single |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum (single discussion)" "digestforum activity" page
     And I should see "Forum (single discussion)"
     Then I should see "Reply"
@@ -131,7 +130,7 @@ Feature: Digest forum: Guest and not logged users could see the option to add ne
       | teacher | digestforum | Forum discussion 1 | How awesome is this digestforum discussion? |
     And I log out
     And I am on "Course 1" course homepage
-    When I press "Log in as guest"
+    When I press "Access as a guest"
     And I am on the "Forum" "digestforum activity" page
     Then I should see "Add discussion topic"
     And I click on "Add discussion topic" "link"

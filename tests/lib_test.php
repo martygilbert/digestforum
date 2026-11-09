@@ -3462,8 +3462,7 @@ final class lib_test extends \advanced_testcase {
         );
 
         // Set sections 0 as hidden.
-        $sectioninfo = get_fast_modinfo($course->id)->get_section_info(0);
-        \core_courseformat\formatactions::section($course->id)->set_visibility($sectioninfo, false);
+        set_section_visible($course->id, 0, 0);
 
         // Now, log out.
         $CFG->forcelogin = true; // We don't want to be logged in as guest, as guest users might still have some capabilities.

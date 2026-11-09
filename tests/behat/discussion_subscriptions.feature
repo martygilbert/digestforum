@@ -224,9 +224,6 @@ Feature: Digest forum: A user can control their own subscription preferences for
     And the following "mod_digestforum > discussions" exist:
       | user  | digestforum  | name                  | message               |
       | admin | digestforum1 | Test post subject one | Test post message one |
-    And the following config values are set as admin:
-      | forcelogin   | 0 |
-      | enablemyhome | 1 |
     When I am on site homepage
     And I follow "Test digestforum name"
     Then "Subscribe to this discussion" "checkbox" should not exist in the "Test post subject one" "table_row"

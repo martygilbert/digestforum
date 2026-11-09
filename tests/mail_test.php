@@ -45,16 +45,16 @@ final class mail_test extends \advanced_testcase {
     use mod_digestforum_tests_generator_trait;
 
     /**
-     * @var \core\test\phpunit\message_sink
+     * @var \phpunit_message_sink
      */
     protected $messagesink;
 
     /**
-     * @var \core\test\phpunit\phpmailer_sink
+     * @var \phpunit_mailer_sink
      */
     protected $mailsink;
 
-    /** @var \core\test\phpunit\event_sink */
+    /** @var \phpunit_event_sink */
     protected $eventsink;
 
     public function setUp(): void {
