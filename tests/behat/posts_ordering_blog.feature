@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Blog posts are always displayed in reverse chronological order
+Feature: Digest forum: Blog posts are always displayed in reverse chronological order
   In order to use digestforum as a blog
   As a user
   I need to see most recent blog posts first
@@ -16,13 +16,11 @@ Feature: Blog posts are always displayed in reverse chronological order
       | user      | course    | role            |
       | teacher1  | C1        | editingteacher  |
       | student1  | C1        | student         |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name  | Course blog digestforum                               |
-      | Description | Single discussion digestforum description             |
-      | Forum type  | Standard digestforum displayed in a blog-like format  |
-    And I log out
+    And the following "activity" exists:
+      | course   | C1                |
+      | activity | digestforum             |
+      | name     | Course blog digestforum |
+      | type     | blog              |
 
   #
   # We need javascript/wait to prevent creation of the posts in the same second. The threads
@@ -31,9 +29,7 @@ Feature: Blog posts are always displayed in reverse chronological order
   #
   @javascript
   Scenario: Replying to a blog post or editing it does not affect its display order
-    Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Course blog digestforum"
+    Given I am on the "Course blog digestforum" "digestforum activity" page logged in as student1
     #
     # Add three posts into the blog.
     #
@@ -58,17 +54,11 @@ Feature: Blog posts are always displayed in reverse chronological order
     #
     # Reply to another blog post.
     #
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Course blog digestforum"
+    And I am on the "Course blog digestforum" "digestforum activity" page logged in as teacher1
     And I click on "Discuss this topic" "link" in the "//div[@aria-label='Blog post 1 by Student 1']" "xpath_element"
-    And I click on "Reply" "link" in the "//div[@aria-label='Blog post 1 by Student 1']" "xpath_element"
-    And I set the following fields to these values:
+    And I reply "Blog post 1" post from "Course blog digestforum" digestforum with:
       | Message | Reply to the first post |
-    And I press "Post to digestforum"
-    And I wait to be redirected
-    And I am on "Course 1" course homepage
-    And I follow "Course blog digestforum"
+    And I am on the "Course blog digestforum" "digestforum activity" page
     #
     # Make sure the order of the blog posts is still reverse chronological.
     #

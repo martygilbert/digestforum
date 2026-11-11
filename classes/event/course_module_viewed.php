@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum course module viewed event class.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_module_viewed extends \core\event\course_module_viewed {
-
     /**
      * Init method.
      *
@@ -53,21 +50,11 @@ class course_module_viewed extends \core\event\course_module_viewed {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/view.php', array('f' => $this->objectid));
+        return new \moodle_url('/mod/digestforum/view.php', ['f' => $this->objectid]);
     }
 
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'view digestforum', 'view.php?f=' . $this->objectid,
-            $this->objectid, $this->contextinstanceid);
-    }
-
+    #[\Override]
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum', 'restore' => 'digestforum');
+        return ['db' => 'digestforum', 'restore' => 'digestforum'];
     }
 }
-

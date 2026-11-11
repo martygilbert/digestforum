@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -33,7 +32,6 @@ require_once($CFG->dirroot . '/mod/digestforum/backup/moodle2/backup_digestforum
  * Provides the steps to perform one complete backup of the Forum instance
  */
 class backup_digestforum_activity_task extends backup_activity_task {
-
     /**
      * No specific settings for this activity
      */
@@ -53,34 +51,34 @@ class backup_digestforum_activity_task extends backup_activity_task {
      * @param string $content some HTML text that eventually contains URLs to the activity instance scripts
      * @return string the content with the URLs encoded
      */
-    static public function encode_content_links($content) {
+    public static function encode_content_links($content) {
         global $CFG;
 
-        $base = preg_quote($CFG->wwwroot,"/");
+        $base = preg_quote($CFG->wwwroot, "/");
 
-        // Link to the list of digestforums
-        $search="/(".$base."\/mod\/digestforum\/index.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMINDEX*$2@$', $content);
+        // Link to the list of digestforums.
+        $search = "/(" . $base . "\/mod\/digestforum\/index.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMINDEX*$2@$', $content);
 
-        // Link to digestforum view by moduleid
-        $search="/(".$base."\/mod\/digestforum\/view.php\?id\=)([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMVIEWBYID*$2@$', $content);
+        // Link to digestforum view by moduleid.
+        $search = "/(" . $base . "\/mod\/digestforum\/view.php\?id\=)([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMVIEWBYID*$2@$', $content);
 
-        // Link to digestforum view by digestforumid
-        $search="/(".$base."\/mod\/digestforum\/view.php\?f\=)([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMVIEWBYF*$2@$', $content);
+        // Link to digestforum view by digestforumid.
+        $search = "/(" . $base . "\/mod\/digestforum\/view.php\?f\=)([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMVIEWBYF*$2@$', $content);
 
-        // Link to digestforum discussion with parent syntax
-        $search = "/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
+        // Link to digestforum discussion with parent syntax.
+        $search = "/(" . $base . "\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)(?:\&amp;|\&)parent\=([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMDISCUSSIONVIEWPARENT*$2*$3@$', $content);
 
-        // Link to digestforum discussion with relative syntax
-        $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
+        // Link to digestforum discussion with relative syntax.
+        $search = "/(" . $base . "\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)\#([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMDISCUSSIONVIEWINSIDE*$2*$3@$', $content);
 
-        // Link to digestforum discussion by discussionid
-        $search="/(".$base."\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)/";
-        $content= preg_replace($search, '$@DFORUMDISCUSSIONVIEW*$2@$', $content);
+        // Link to digestforum discussion by discussionid.
+        $search = "/(" . $base . "\/mod\/digestforum\/discuss.php\?d\=)([0-9]+)/";
+        $content = preg_replace($search, '$@DFORUMDISCUSSIONVIEW*$2@$', $content);
 
         return $content;
     }

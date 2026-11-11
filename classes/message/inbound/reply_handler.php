@@ -38,7 +38,6 @@ require_once($CFG->libdir . '/completionlib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class reply_handler extends \core\message\inbound\handler {
-
     /**
      * Return a description for the current handler.
      *
@@ -62,30 +61,30 @@ class reply_handler extends \core\message\inbound\handler {
      * Process a message received and validated by the Inbound Message processor.
      *
      * @throws \core\message\inbound\processing_failed_exception
-     * @param \stdClass $messagedata The Inbound Message record
+     * @param \stdClass $record The Inbound Message record
      * @param \stdClass $messagedata The message data packet
      * @return bool Whether the message was successfully processed.
      */
     public function process_message(\stdClass $record, \stdClass $messagedata) {
-        global $DB, $USER;
+        global $CFG, $DB, $USER;
 
         // Load the post being replied to.
-        $post = $DB->get_record('digestforum_posts', array('id' => $record->datavalue));
+        $post = $DB->get_record('digestforum_posts', ['id' => $record->datavalue]);
         if (!$post) {
             mtrace("--> Unable to find a post matching with id {$record->datavalue}");
             return false;
         }
 
         // Load the discussion that this post is in.
-        $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion));
+        $discussion = $DB->get_record('digestforum_discussions', ['id' => $post->discussion]);
         if (!$post) {
             mtrace("--> Unable to find the discussion for post {$record->datavalue}");
             return false;
         }
 
         // Load the other required data.
-        $digestforum = $DB->get_record('digestforum', array('id' => $discussion->digestforum));
-        $course = $DB->get_record('course', array('id' => $digestforum->course));
+        $digestforum = $DB->get_record('digestforum', ['id' => $discussion->digestforum]);
+        $course = $DB->get_record('course', ['id' => $digestforum->course]);
         $cm = get_fast_modinfo($course->id)->instances['digestforum'][$digestforum->id];
         $modcontext = \context_module::instance($cm->id);
         $usercontext = \context_user::instance($USER->id);
@@ -101,7 +100,7 @@ class reply_handler extends \core\message\inbound\handler {
         } else {
             $groupmode = $course->groupmode;
         }
-        if ($groupmode == SEPARATEGROUPS and !has_capability('moodle/site:accessallgroups', $modcontext)) {
+        if ($groupmode == SEPARATEGROUPS && !has_capability('moodle/site:accessallgroups', $modcontext)) {
             if ($discussion->groupid == -1) {
                 $canpost = false;
             } else {
@@ -114,14 +113,22 @@ class reply_handler extends \core\message\inbound\handler {
         if (!$canpost) {
             $data = new \stdClass();
             $data->digestforum = $digestforum;
-            throw new \core\message\inbound\processing_failed_exception('messageinboundnopostdigestforum', 'mod_digestforum', $data);
+            throw new \core\message\inbound\processing_failed_exception(
+                'messageinboundnopostdigestforum',
+                'mod_digestforum',
+                $data,
+            );
         }
 
         // And check the availability.
         if (!\core_availability\info_module::is_user_visible($cm)) {
             $data = new \stdClass();
             $data->digestforum = $digestforum;
-            throw new \core\message\inbound\processing_failed_exception('messageinbounddigestforumhidden', 'mod_digestforum', $data);
+            throw new \core\message\inbound\processing_failed_exception(
+                'messageinbounddigestforumhidden',
+                'mod_digestforum',
+                $data,
+            );
         }
 
         // Before we add this we must check that the user will not exceed the blocking threshold.
@@ -135,23 +142,16 @@ class reply_handler extends \core\message\inbound\handler {
         }
 
         $subject = clean_param($messagedata->envelope->subject, PARAM_TEXT);
-        $restring = get_string('re', 'digestforum');
         if (strpos($subject, $discussion->name)) {
             // The discussion name is mentioned in the e-mail subject. This is probably just the standard reply. Use the
             // standard reply subject instead.
-            $newsubject = $restring . ' ' . $discussion->name;
-            mtrace("--> Note: Post subject matched discussion name. Optimising from {$subject} to {$newsubject}");
-            $subject = $newsubject;
+            mtrace("--> Note: Post subject matched discussion name. Optimising from {$subject} to {$discussion->name}");
+            $subject = $discussion->name;
         } else if (strpos($subject, $post->subject)) {
             // The replied-to post's subject is mentioned in the e-mail subject.
             // Use the previous post's subject instead of the e-mail subject.
-            $newsubject = $post->subject;
-            if (!strpos($restring, $post->subject)) {
-                // The previous post did not contain a re string, add it.
-                $newsubject = $restring . ' ' . $newsubject;
-            }
-            mtrace("--> Note: Post subject matched original post subject. Optimising from {$subject} to {$newsubject}");
-            $subject = $newsubject;
+            mtrace("--> Note: Post subject matched original post subject. Optimising from {$subject} to {$post->subject}");
+            $subject = $post->subject;
         }
 
         $addpost = new \stdClass();
@@ -164,7 +164,7 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->itemid       = file_get_unused_draft_itemid();
         $addpost->deleted      = 0;
 
-        list ($message, $format) = self::remove_quoted_text($messagedata);
+         [$message, $format] = self::remove_quoted_text($messagedata);
         $addpost->message = $message;
         $addpost->messageformat = $format;
 
@@ -192,7 +192,11 @@ class reply_handler extends \core\message\inbound\handler {
                 $data = new \stdClass();
                 $data->digestforum = $digestforum;
                 $data->attachmentcount = $attachmentcount;
-                throw new \core\message\inbound\processing_failed_exception('messageinboundattachmentdisallowed', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundattachmentdisallowed',
+                    'mod_digestforum',
+                    $data,
+                );
             }
 
             if ($digestforum->maxattachments < $attachmentcount) {
@@ -203,7 +207,11 @@ class reply_handler extends \core\message\inbound\handler {
                 $data = new \stdClass();
                 $data->digestforum = $digestforum;
                 $data->attachmentcount = $attachmentcount;
-                throw new \core\message\inbound\processing_failed_exception('messageinboundfilecountexceeded', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundfilecountexceeded',
+                    'mod_digestforum',
+                    $data,
+                );
             }
 
             $filesize = 0;
@@ -214,15 +222,19 @@ class reply_handler extends \core\message\inbound\handler {
                 $filesize += $attachment->filesize;
             }
 
-            if ($digestforum->maxbytes < $filesize) {
+            $maxbytes = get_user_max_upload_file_size($modcontext, $CFG->maxbytes, $course->maxbytes, $digestforum->maxbytes);
+            if ($maxbytes < $filesize) {
                 // Too many attachments.
-                mtrace("--> User attached {$filesize} bytes of files when only {$digestforum->maxbytes} where allowed. "
-                     . "Rejecting e-mail.");
+                mtrace("--> User attached {$filesize} bytes of files when only {$maxbytes} were allowed. Rejecting e-mail.");
                 $data = new \stdClass();
                 $data->digestforum = $digestforum;
-                $data->maxbytes = display_size($digestforum->maxbytes);
+                $data->maxbytes = display_size($maxbytes);
                 $data->filesize = display_size($filesize);
-                throw new \core\message\inbound\processing_failed_exception('messageinboundfilesizeexceeded', 'mod_digestforum', $data);
+                throw new \core\message\inbound\processing_failed_exception(
+                    'messageinboundfilesizeexceeded',
+                    'mod_digestforum',
+                    $data,
+                );
             }
         }
 
@@ -242,15 +254,15 @@ class reply_handler extends \core\message\inbound\handler {
         $addpost->id = digestforum_add_new_post($addpost, true);
 
         // Log the new post creation.
-        $params = array(
+        $params = [
             'context' => $modcontext,
             'objectid' => $addpost->id,
-            'other' => array(
+            'other' => [
                 'discussionid'  => $discussion->id,
                 'digestforumid'       => $digestforum->id,
                 'digestforumtype'     => $digestforum->type,
-            )
-        );
+            ],
+        ];
         $event = \mod_digestforum\event\post_created::create($params);
         $event->add_record_snapshot('digestforum_posts', $addpost);
         $event->add_record_snapshot('digestforum_discussions', $discussion);
@@ -261,7 +273,8 @@ class reply_handler extends \core\message\inbound\handler {
         if ($completion->is_enabled($cm) && ($digestforum->completionreplies || $digestforum->completionposts)) {
             $completion->update_state($cm, COMPLETION_COMPLETE);
 
-            mtrace("--> Updating completion status for user {$USER->id} in digestforum {$digestforum->id} for post {$addpost->id}.");
+            mtrace("--> Updating completion status for user {$USER->id} in digestforum {$digestforum->id} " .
+                "for post {$addpost->id}.");
         }
 
         mtrace("--> Created a post {$addpost->id} in {$discussion->id}.");
@@ -315,7 +328,7 @@ class reply_handler extends \core\message\inbound\handler {
     public function get_success_message(\stdClass $messagedata, $handlerresult) {
         $a = new \stdClass();
         $a->subject = $handlerresult->subject;
-        $discussionurl = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $handlerresult->discussion));
+        $discussionurl = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $handlerresult->discussion]);
         $discussionurl->set_anchor('p' . $handlerresult->id);
         $a->discussionurl = $discussionurl->out();
 

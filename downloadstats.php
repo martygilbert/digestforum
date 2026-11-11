@@ -15,12 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Download the digest open stats as a CSV file.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(__DIR__.'/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 
 $limit = optional_param('limit', 0, PARAM_INT);
 
@@ -38,42 +40,41 @@ $PAGE->set_heading($title);
 require_login();
 
 if (!has_capability('moodle/site:config', $sitecontext, ($USER->id))) {
-	echo "No capability ERROR";
-	echo "about to redirect";
-	$index = new moodle_url($CFG->wwwroot);
-	redirect($index, 'You do not have permission to generate this
+    echo "No capability ERROR";
+    echo "about to redirect";
+    $index = new moodle_url($CFG->wwwroot);
+    redirect($index, 'You do not have permission to generate this
 			report.', null, \core\output\notification::NOTIFY_ERROR);
 } else {
-	$filename = date("Y_m_d", time()).'_DigestForumData.csv';
-	header('Content-type: application/ms-excel');
-	header('Content-Disposition: attachment; filename='.$filename);
+    $filename = date("Y_m_d", time()) . '_DigestForumData.csv';
+    header('Content-type: application/ms-excel');
+    header('Content-Disposition: attachment; filename=' . $filename);
 
-	echo "Date,Forum,Num Opened,Not Opened,% Opened\n";
-	$digestforums = $DB->get_records('digestforum', null, '', 'id, name');
+    echo "Date,Forum,Num Opened,Not Opened,% Opened\n";
+    $digestforums = $DB->get_records('digestforum', null, '', 'id, name');
 
 
-	foreach ($digestforums as $forum) {
-		$sql = 
-			'SELECT digestdate, digestforumid,
-			COUNT(case when numviews > 0 then 1 end) AS NumOpened, 
-			COUNT(case when numviews = 0 then 1 end) AS NotOpened 
-				FROM {digestforum_tracker} 
+    foreach ($digestforums as $forum) {
+        $sql =
+            'SELECT digestdate, digestforumid,
+			COUNT(case when numviews > 0 then 1 end) AS NumOpened,
+			COUNT(case when numviews = 0 then 1 end) AS NotOpened
+				FROM {digestforum_tracker}
 		WHERE digestforumid = ?
 			GROUP BY digestdate
 			ORDER BY digestdate DESC';
 
-		$opened = $DB->get_records_sql($sql, [$forum->id], 0, $limit);
-		//$opened = $DB->get_records_sql($sql, [$forum->id]);
+        $opened = $DB->get_records_sql($sql, [$forum->id], 0, $limit);
 
-		foreach ($opened as $value) {
-			$name = preg_replace('/Daily Announcements for /', '', $forum->name);
-			$name = preg_replace('/Daily Announcements Only for /', '', $name);
-			$pctOpened =  100 * ($value->numopened) / ($value->numopened + $value->notopened);
-			echo $value->digestdate.",".
-				$name.",".
-				$value->numopened.",".
-				$value->notopened.",".
-				round($pctOpened, 2)."%\n";
-		}
-	}
+        foreach ($opened as $value) {
+            $name = preg_replace('/Daily Announcements for /', '', $forum->name);
+            $name = preg_replace('/Daily Announcements Only for /', '', $name);
+            $pctopened = 100 * ($value->numopened) / ($value->numopened + $value->notopened);
+            echo $value->digestdate . "," .
+                $name . "," .
+                $value->numopened . "," .
+                $value->notopened . "," .
+                round($pctopened, 2) . "%\n";
+        }
+    }
 }

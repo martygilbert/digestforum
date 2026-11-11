@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$handlers = array(
-    array(
+$handlers = [
+    [
         'classname' => '\mod_digestforum\message\inbound\reply_handler',
-    ),
-);
+    ],
+];

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum read tracking enabled event class.
  *
@@ -76,17 +74,7 @@ class readtracking_enabled extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'start tracking', 'view.php?f=' . $this->other['digestforumid'],
-            $this->other['digestforumid'], $this->contextinstanceid);
+        return new \moodle_url('/mod/digestforum/view.php', ['f' => $this->other['digestforumid']]);
     }
 
     /**
@@ -111,9 +99,10 @@ class readtracking_enabled extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

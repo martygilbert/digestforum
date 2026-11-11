@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion deleted event class.
  *
@@ -41,7 +39,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class discussion_deleted extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,17 +75,7 @@ class discussion_deleted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/view.php', array('id' => $this->contextinstanceid));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'delete discussion', 'view.php?id=' . $this->contextinstanceid,
-            $this->other['digestforumid'], $this->contextinstanceid);
+        return new \moodle_url('/mod/digestforum/view.php', ['id' => $this->contextinstanceid]);
     }
 
     /**
@@ -108,15 +95,16 @@ class discussion_deleted extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }
 }
-

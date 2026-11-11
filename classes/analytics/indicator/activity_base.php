@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\analytics\indicator;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Activity base class.
  *
@@ -34,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class activity_base extends \core_analytics\local\indicator\community_of_inquiry_activity {
-
     /**
      * feedback_viewed_events
      *
@@ -42,8 +39,8 @@ abstract class activity_base extends \core_analytics\local\indicator\community_o
      */
     protected function feedback_viewed_events() {
         // We could add any digestforum event, but it will make feedback_post_action slower.
-        return array('\mod_digestforum\event\assessable_uploaded', '\mod_digestforum\event\course_module_viewed',
-            '\mod_digestforum\event\discussion_viewed');
+        return ['\mod_digestforum\event\assessable_uploaded', '\mod_digestforum\event\course_module_viewed',
+            '\mod_digestforum\event\discussion_viewed'];
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Restore steps for the digestforum activity.
+ *
  * @package    mod_digestforum
  * @subpackage backup-moodle2
  * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
@@ -30,10 +31,10 @@
  * Structure step to restore one digestforum activity
  */
 class restore_digestforum_activity_structure_step extends restore_activity_structure_step {
-
+    #[\Override]
     protected function define_structure() {
 
-        $paths = array();
+        $paths = [];
         $userinfo = $this->get_setting_value('userinfo');
 
         $paths[] = new restore_path_element('digestforum', '/activity/digestforum');
@@ -41,18 +42,30 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
             $paths[] = new restore_path_element('digestforum_discussion', '/activity/digestforum/discussions/discussion');
             $paths[] = new restore_path_element('digestforum_post', '/activity/digestforum/discussions/discussion/posts/post');
             $paths[] = new restore_path_element('digestforum_tag', '/activity/digestforum/poststags/tag');
-            $paths[] = new restore_path_element('digestforum_discussion_sub', '/activity/digestforum/discussions/discussion/discussion_subs/discussion_sub');
-            $paths[] = new restore_path_element('digestforum_rating', '/activity/digestforum/discussions/discussion/posts/post/ratings/rating');
+            $paths[] = new restore_path_element(
+                'digestforum_discussion_sub',
+                '/activity/digestforum/discussions/discussion/discussion_subs/discussion_sub',
+            );
+            $paths[] = new restore_path_element(
+                'digestforum_rating',
+                '/activity/digestforum/discussions/discussion/posts/post/ratings/rating',
+            );
             $paths[] = new restore_path_element('digestforum_subscription', '/activity/digestforum/subscriptions/subscription');
             $paths[] = new restore_path_element('digestforum_digest', '/activity/digestforum/digests/digest');
             $paths[] = new restore_path_element('digestforum_read', '/activity/digestforum/readposts/read');
             $paths[] = new restore_path_element('digestforum_track', '/activity/digestforum/trackedprefs/track');
+            $paths[] = new restore_path_element('digestforum_grade', '/activity/digestforum/grades/grade');
         }
 
-        // Return the paths wrapped into standard activity structure
+        // Return the paths wrapped into standard activity structure.
         return $this->prepare_activity_structure($paths);
     }
 
+    /**
+     * Restore the digestforum instance.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum($data) {
         global $DB;
 
@@ -62,9 +75,18 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
 
         // Any changes to the list of dates that needs to be rolled should be same during course restore and course reset.
         // See MDL-9367.
+        if (!isset($data->duedate)) {
+            $data->duedate = 0;
+        }
+        $data->duedate = $this->apply_date_offset($data->duedate);
+        if (!isset($data->cutoffdate)) {
+            $data->cutoffdate = 0;
+        }
+        $data->cutoffdate = $this->apply_date_offset($data->cutoffdate);
         $data->assesstimestart = $this->apply_date_offset($data->assesstimestart);
         $data->assesstimefinish = $this->apply_date_offset($data->assesstimefinish);
-        if ($data->scale < 0) { // scale found, get mapping
+        if ($data->scale < 0) {
+            // Scale found, get mapping.
             $data->scale = -($this->get_mappingid('scale', abs($data->scale)));
         }
 
@@ -77,6 +99,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         digestforum_instance_created($ctx, $data);
     }
 
+    /**
+     * Restore a discussion.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_discussion($data) {
         global $DB;
 
@@ -95,6 +122,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $this->set_mapping('digestforum_discussion', $oldid, $newitemid);
     }
 
+    /**
+     * Restore a post.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_post($data) {
         global $DB;
 
@@ -103,24 +135,31 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
 
         $data->discussion = $this->get_new_parentid('digestforum_discussion');
         $data->userid = $this->get_mappingid('user', $data->userid);
-        // If post has parent, map it (it has been already restored)
+        // If post has parent, map it (it has been already restored).
         if (!empty($data->parent)) {
             $data->parent = $this->get_mappingid('digestforum_post', $data->parent);
         }
 
+        \mod_digestforum\local\entities\post::add_message_counts($data);
         $newitemid = $DB->insert_record('digestforum_posts', $data);
         $this->set_mapping('digestforum_post', $oldid, $newitemid, true);
 
-        // If !post->parent, it's the 1st post. Set it in discussion
+        // If !post->parent, it's the 1st post. Set it in discussion.
         if (empty($data->parent)) {
-            $DB->set_field('digestforum_discussions', 'firstpost', $newitemid, array('id' => $data->discussion));
+            $DB->set_field('digestforum_discussions', 'firstpost', $newitemid, ['id' => $data->discussion]);
         }
     }
 
+    /**
+     * Restore a post tag.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_tag($data) {
         $data = (object)$data;
 
-        if (!core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) { // Tags disabled in server, nothing to process.
+        if (!core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
+            // Tags disabled in server, nothing to process.
             return;
         }
 
@@ -134,15 +173,21 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         core_tag_tag::add_item_tag('mod_digestforum', 'digestforum_posts', $itemid, $context, $tag);
     }
 
+    /**
+     * Restore a post rating.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_rating($data) {
         global $DB;
 
         $data = (object)$data;
 
-        // Cannot use ratings API, cause, it's missing the ability to specify times (modified/created)
+        // Cannot use ratings API, cause, it's missing the ability to specify times (modified/created).
         $data->contextid = $this->task->get_contextid();
         $data->itemid    = $this->get_new_parentid('digestforum_post');
-        if ($data->scaleid < 0) { // scale found, get mapping
+        if ($data->scaleid < 0) {
+            // Scale found, get mapping.
             $data->scaleid = -($this->get_mappingid('scale', abs($data->scaleid)));
         }
         $data->rating = $data->value;
@@ -159,6 +204,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $newitemid = $DB->insert_record('rating', $data);
     }
 
+    /**
+     * Restore a digestforum subscription.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_subscription($data) {
         global $DB;
 
@@ -169,16 +219,24 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         // Create only a new subscription if it does not already exist (see MDL-59854).
-        if ($subscription = $DB->get_record('digestforum_subscriptions',
-                array('digestforum' => $data->digestforum, 'userid' => $data->userid))) {
+        if (
+            $subscription = $DB->get_record(
+                'digestforum_subscriptions',
+                ['digestforum' => $data->digestforum, 'userid' => $data->userid]
+            )
+        ) {
             $this->set_mapping('digestforum_subscription', $oldid, $subscription->id, true);
         } else {
             $newitemid = $DB->insert_record('digestforum_subscriptions', $data);
             $this->set_mapping('digestforum_subscription', $oldid, $newitemid, true);
         }
-
     }
 
+    /**
+     * Restore a discussion subscription.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_discussion_sub($data) {
         global $DB;
 
@@ -193,6 +251,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $this->set_mapping('digestforum_discussion_sub', $oldid, $newitemid, true);
     }
 
+    /**
+     * Restore a user's digest preference.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_digest($data) {
         global $DB;
 
@@ -205,6 +268,37 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $newitemid = $DB->insert_record('digestforum_digests', $data);
     }
 
+    /**
+     * Restore a whole-forum grade.
+     *
+     * @param array|object $data The backed up data
+     */
+    protected function process_digestforum_grade($data) {
+        global $DB;
+
+        $data = (object)$data;
+        $oldid = $data->id;
+
+        $data->digestforum = $this->get_new_parentid('digestforum');
+
+        $data->userid = $this->get_mappingid('user', $data->userid);
+
+        // We want to ensure the current user has an ID that we can associate to a grade.
+        if ($data->userid != 0) {
+            $newitemid = $DB->insert_record('digestforum_grades', $data);
+
+            // Note - the old contextid is required in order to be able to restore files stored in
+            // sub plugin file areas attached to the gradeid.
+            $this->set_mapping('grade', $oldid, $newitemid, false, null, $this->task->get_old_contextid());
+            $this->set_mapping(restore_gradingform_plugin::itemid_mapping('digestforum'), $oldid, $newitemid);
+        }
+    }
+
+    /**
+     * Restore a read post record.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_read($data) {
         global $DB;
 
@@ -219,6 +313,11 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $newitemid = $DB->insert_record('digestforum_read', $data);
     }
 
+    /**
+     * Restore a read tracking preference.
+     *
+     * @param array|object $data The backed up data
+     */
     protected function process_digestforum_track($data) {
         global $DB;
 
@@ -231,15 +330,17 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         $newitemid = $DB->insert_record('digestforum_track_prefs', $data);
     }
 
+    #[\Override]
     protected function after_execute() {
-        // Add digestforum related files, no need to match by itemname (just internally handled context)
+        // Add digestforum related files, no need to match by itemname (just internally handled context).
         $this->add_related_files('mod_digestforum', 'intro', null);
 
-        // Add post related files, matching by itemname = 'digestforum_post'
+        // Add post related files, matching by itemname = 'digestforum_post'.
         $this->add_related_files('mod_digestforum', 'post', 'digestforum_post');
         $this->add_related_files('mod_digestforum', 'attachment', 'digestforum_post');
     }
 
+    #[\Override]
     protected function after_restore() {
         global $DB;
 
@@ -247,9 +348,14 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
         // (non-userinfo backup/restore) create the discussion here, using digestforum
         // information as base for the initial post.
         $digestforumid = $this->task->get_activityid();
-        $digestforumrec = $DB->get_record('digestforum', array('id' => $digestforumid));
-        if ($digestforumrec->type == 'single' && !$DB->record_exists('digestforum_discussions', array('digestforum' => $digestforumid))) {
-            // Create single discussion/lead post from digestforum data
+        $digestforumrec = $DB->get_record('digestforum', ['id' => $digestforumid]);
+        if (
+            $digestforumrec->type == 'single' && !$DB->record_exists(
+                'digestforum_discussions',
+                ['digestforum' => $digestforumid],
+            )
+        ) {
+            // Create single discussion/lead post from digestforum data.
             $sd = new stdClass();
             $sd->course   = $digestforumrec->course;
             $sd->digestforum    = $digestforumrec->id;
@@ -260,15 +366,15 @@ class restore_digestforum_activity_structure_step extends restore_activity_struc
             $sd->messagetrust  = true;
             $sd->mailnow  = false;
             $sdid = digestforum_add_discussion($sd, null, null, $this->task->get_userid());
-            // Mark the post as mailed
-            $DB->set_field ('digestforum_posts','mailed', '1', array('discussion' => $sdid));
-            // Copy all the files from mod_foum/intro to mod_digestforum/post
+            // Mark the post as mailed.
+            $DB->set_field('digestforum_posts', 'mailed', '1', ['discussion' => $sdid]);
+            // Copy all the files from mod_foum/intro to mod_digestforum/post.
             $fs = get_file_storage();
             $files = $fs->get_area_files($this->task->get_contextid(), 'mod_digestforum', 'intro');
             foreach ($files as $file) {
                 $newfilerecord = new stdClass();
                 $newfilerecord->filearea = 'post';
-                $newfilerecord->itemid   = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $sdid));
+                $newfilerecord->itemid   = $DB->get_field('digestforum_discussions', 'firstpost', ['id' => $sdid]);
                 $fs->create_file_from_storedfile($newfilerecord, $file);
             }
         }

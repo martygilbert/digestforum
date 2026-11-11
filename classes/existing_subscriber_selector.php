@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/user/selector/lib.php');
+require_once($CFG->dirroot . '/user/selector/lib.php');
 
 /**
  * User selector control for removing subscribed users
@@ -33,7 +33,6 @@ require_once($CFG->dirroot.'/user/selector/lib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_digestforum_existing_subscriber_selector extends mod_digestforum_subscriber_selector_base {
-
     /**
      * Finds all subscribed users
      *
@@ -42,13 +41,13 @@ class mod_digestforum_existing_subscriber_selector extends mod_digestforum_subsc
      */
     public function find_users($search) {
         global $DB;
-        list($wherecondition, $params) = $this->search_sql($search, 'u');
+        [$wherecondition, $params] = $this->search_sql($search, 'u');
         $params['digestforumid'] = $this->digestforumid;
 
-        // only active enrolled or everybody on the frontpage
-        list($esql, $eparams) = get_enrolled_sql($this->context, '', $this->currentgroup, true);
+        // Only active enrolled or everybody on the frontpage.
+        [$esql, $eparams] = get_enrolled_sql($this->context, '', $this->currentgroup, true);
         $fields = $this->required_fields_sql('u');
-        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        [$sort, $sortparams] = users_order_by_sql('u', $search, $this->accesscontext);
         $params = array_merge($params, $eparams, $sortparams);
 
         $subscribers = $DB->get_records_sql("SELECT $fields
@@ -63,7 +62,6 @@ class mod_digestforum_existing_subscriber_selector extends mod_digestforum_subsc
         $info = new \core_availability\info_module($modinfo->get_cm($cm->id));
         $subscribers = $info->filter_user_list($subscribers);
 
-        return array(get_string("existingsubscribers", 'digestforum') => $subscribers);
+        return [get_string("existingsubscribers", 'digestforum') => $subscribers];
     }
-
 }

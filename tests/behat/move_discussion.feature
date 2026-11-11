@@ -19,19 +19,13 @@ Feature: A teacher can move discussions between digestforums
 
   Scenario: A teacher can move discussions
     Given the following "activities" exist:
-      | activity   | name                   | intro             | course | idnumber     | groupmode |
-      | digestforum      | Test digestforum 1           | Test digestforum 2      | C1     | digestforum        | 0         |
-      | digestforum      | Test digestforum 2           | Test digestforum 1      | C1     | digestforum        | 0         |
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Test digestforum 1"
-    And I add a new discussion to "Test digestforum 1" digestforum with:
-      | Subject | Discussion 1 |
-      | Message | Test post message |
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Test digestforum 1"
+      | activity | name         | course | idnumber | groupmode |
+      | digestforum    | Test digestforum 1 | C1     | digestforum1   | 0         |
+      | digestforum    | Test digestforum 2 | C1     | digestforum2   | 0         |
+    And the following "mod_digestforum > discussions" exist:
+      | user     | digestforum  | name         | message           |
+      | student1 | digestforum1 | Discussion 1 | Test post message |
+    And I am on the "Test digestforum 1" "digestforum activity" page logged in as teacher1
     And I follow "Discussion 1"
     When I set the field "jump" to "Test digestforum 2"
     And I press "Move"

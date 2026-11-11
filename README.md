@@ -1,11 +1,15 @@
-digestdigestforum
-===========
+# digestforum
 
 A fork of the Moodle forum code, this digestforum will require that all posts be added to a digest, 
-regardless of the users' settings.
+regardless of the users' settings. One email per day, per forum will be sent to
+subscribers.
 
 Modified by Marty Gilbert (martygilbert at gmail)
 
+## Moodle 5.3
+Total rewrite to support Moodle 5.3. Started with the mod_forum code, and "digested" it.
+
+## Moodle 3.6
 CHANGE FOR DIGEST_36 - Forked the Moodle 3.6 forum code and re-digestforumed it. 
 
 ```

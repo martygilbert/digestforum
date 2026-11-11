@@ -23,7 +23,6 @@
  */
 
 namespace mod_digestforum\output;
-defined('MOODLE_INTERNAL') || die();
 
 use help_icon;
 use moodle_url;
@@ -39,7 +38,6 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class quick_search_form implements renderable, templatable {
-
     /** @var int The course ID. */
     protected $courseid;
     /** @var string Current query. */
@@ -62,14 +60,19 @@ class quick_search_form implements renderable, templatable {
         $this->helpicon = new help_icon('search', 'core');
     }
 
+    #[\Override]
     public function export_for_template(renderer_base $output) {
+        $hiddenfields = [
+            (object) ['name' => 'id', 'value' => $this->courseid],
+        ];
         $data = [
-            'actionurl' => $this->actionurl->out(false),
-            'courseid' => $this->courseid,
+            'action' => $this->actionurl->out(false),
+            'hiddenfields' => $hiddenfields,
             'query' => $this->query,
             'helpicon' => $this->helpicon->export_for_template($output),
+            'inputname' => 'search',
+            'searchstring' => get_string('searchdigestforums', 'mod_digestforum'),
         ];
         return $data;
     }
-
 }

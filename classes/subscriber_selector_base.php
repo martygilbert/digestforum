@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/user/selector/lib.php');
+require_once($CFG->dirroot . '/user/selector/lib.php');
 
 /**
  * Abstract class used by digestforum subscriber selection controls
@@ -33,7 +33,6 @@ require_once($CFG->dirroot.'/user/selector/lib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class mod_digestforum_subscriber_selector_base extends user_selector_base {
-
     /**
      * The id of the digestforum this selector is being used for
      * @var int
@@ -77,11 +76,10 @@ abstract class mod_digestforum_subscriber_selector_base extends user_selector_ba
     protected function get_options() {
         global $CFG;
         $options = parent::get_options();
-        $options['file'] =  substr(__FILE__, strlen($CFG->dirroot.'/'));
+        $options['file'] = substr(__FILE__, strlen($CFG->dirroot . '/'));
         $options['context'] = $this->context;
         $options['currentgroup'] = $this->currentgroup;
         $options['digestforumid'] = $this->digestforumid;
         return $options;
     }
-
 }

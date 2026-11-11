@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -32,7 +31,6 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  **/
 class mod_digestforum_renderer extends plugin_renderer_base {
-
     /**
      * Returns the navigation to the previous and next discussion.
      *
@@ -43,24 +41,35 @@ class mod_digestforum_renderer extends plugin_renderer_base {
     public function neighbouring_discussion_navigation($prev, $next) {
         $html = '';
         if ($prev || $next) {
-            $html .= html_writer::start_tag('div', array('class' => 'discussion-nav clearfix'));
+            $html .= html_writer::start_tag('nav', [
+                'class' => 'discussion-nav clearfix',
+                'aria-label' => get_string('browsediscussions', 'mod_digestforum'),
+            ]);
             $html .= html_writer::start_tag('ul');
             if ($prev) {
-                $url = new moodle_url('/mod/digestforum/discuss.php', array('d' => $prev->id));
-                $html .= html_writer::start_tag('li', array('class' => 'prev-discussion'));
-                $html .= html_writer::link($url, format_string($prev->name),
-                    array('aria-label' => get_string('prevdiscussiona', 'mod_digestforum', format_string($prev->name))));
+                $url = new moodle_url('/mod/digestforum/discuss.php', ['d' => $prev->id]);
+                $html .= html_writer::start_tag('li', ['class' => 'prev-discussion']);
+                $html .= html_writer::link(
+                    $url,
+                    $this->output->larrow() . ' ' . format_string($prev->name),
+                    ['aria-label' => get_string('prevdiscussiona', 'mod_digestforum', format_string($prev->name)),
+                    'class' => 'btn btn-link']
+                );
                 $html .= html_writer::end_tag('li');
             }
             if ($next) {
-                $url = new moodle_url('/mod/digestforum/discuss.php', array('d' => $next->id));
-                $html .= html_writer::start_tag('li', array('class' => 'next-discussion'));
-                $html .= html_writer::link($url, format_string($next->name),
-                    array('aria-label' => get_string('nextdiscussiona', 'mod_digestforum', format_string($next->name))));
+                $url = new moodle_url('/mod/digestforum/discuss.php', ['d' => $next->id]);
+                $html .= html_writer::start_tag('li', ['class' => 'next-discussion']);
+                $html .= html_writer::link(
+                    $url,
+                    format_string($next->name) . ' ' . $this->output->rarrow(),
+                    ['aria-label' => get_string('nextdiscussiona', 'mod_digestforum', format_string($next->name)),
+                    'class' => 'btn btn-link']
+                );
                 $html .= html_writer::end_tag('li');
             }
             $html .= html_writer::end_tag('ul');
-            $html .= html_writer::end_tag('div');
+            $html .= html_writer::end_tag('nav');
         }
         return $html;
     }
@@ -75,31 +84,58 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      */
     public function subscriber_selection_form(user_selector_base $existinguc, user_selector_base $potentialuc) {
         $output = '';
-        $formattributes = array();
+        $formattributes = [];
         $formattributes['id'] = 'subscriberform';
         $formattributes['action'] = '';
         $formattributes['method'] = 'post';
         $output .= html_writer::start_tag('form', $formattributes);
-        $output .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'sesskey', 'value'=>sesskey()));
+        $output .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()]);
 
-        $existingcell = new html_table_cell();
-        $existingcell->text = $existinguc->display(true);
-        $existingcell->attributes['class'] = 'existing';
-        $actioncell = new html_table_cell();
-        $actioncell->text  = html_writer::start_tag('div', array());
-        $actioncell->text .= html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'subscribe', 'value'=>$this->page->theme->larrow.' '.get_string('add'), 'class'=>'actionbutton'));
-        $actioncell->text .= html_writer::empty_tag('br', array());
-        $actioncell->text .= html_writer::empty_tag('input', array('type'=>'submit', 'name'=>'unsubscribe', 'value'=>$this->page->theme->rarrow.' '.get_string('remove'), 'class'=>'actionbutton'));
-        $actioncell->text .= html_writer::end_tag('div', array());
-        $actioncell->attributes['class'] = 'actions';
-        $potentialcell = new html_table_cell();
-        $potentialcell->text = $potentialuc->display(true);
-        $potentialcell->attributes['class'] = 'potential';
+        // Existing subscribers column.
+        $existingsubslabel = html_writer::label(
+            get_string('existingsubscribers', 'digestforum'),
+            'existingsubscribers',
+            false,
+            ['class' => 'visually-hidden']
+        );
+        $existingsubscol = html_writer::div($existingsubslabel . $existinguc->display(true), 'col-sm-5 px-0 existing');
 
-        $table = new html_table();
-        $table->attributes['class'] = 'subscribertable boxaligncenter';
-        $table->data = array(new html_table_row(array($existingcell, $actioncell, $potentialcell)));
-        $output .= html_writer::table($table);
+        // Actions column.
+        $subscribeaction = html_writer::tag(
+            'button',
+            html_writer::span($this->page->theme->larrow, '', ['aria-hidden' => 'true']) . ' ' . get_string('add'),
+            [
+                'type' => 'submit',
+                'name' => 'subscribe',
+                'class' => 'actionbutton btn btn-secondary w-100 my-1 py-2',
+                'value' => 'subscribe',
+            ]
+        );
+        $subscribeaction = html_writer::div($subscribeaction);
+        $unsubscribeaction = html_writer::tag(
+            'button',
+            get_string('remove') . ' ' . html_writer::span($this->page->theme->rarrow, '', ['aria-hidden' => 'true']),
+            [
+                'type' => 'submit',
+                'name' => 'unsubscribe',
+                'class' => 'actionbutton btn btn-secondary w-100 my-1 py-2',
+                'value' => 'unsubscribe',
+            ]
+        );
+        $unsubscribeaction = html_writer::div($unsubscribeaction);
+        $actionscol = html_writer::div($subscribeaction . $unsubscribeaction, 'col-sm-2 actions py-6');
+
+        // Potential subscribers column.
+        $potentialsubslabel = html_writer::label(
+            get_string('potentialsubscribers', 'digestforum'),
+            'potentialsubscribers',
+            false,
+            ['class' => 'visually-hidden']
+        );
+        $potentialsubscol = html_writer::div($potentialsubslabel . $potentialuc->display(true), 'col-sm-5 px-0 potential');
+
+        $row = html_writer::div($existingsubscol . $actionscol . $potentialsubscol, 'row');
+        $output .= html_writer::div($row, 'container-fluid');
 
         $output .= html_writer::end_tag('form');
         return $output;
@@ -114,27 +150,39 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      * @param object $course
      * @return string
      */
-    public function subscriber_overview($users, $digestforum , $course) {
+    public function subscriber_overview($users, $digestforum, $course) {
         $output = '';
         $modinfo = get_fast_modinfo($course);
-        if (!$users || !is_array($users) || count($users)===0) {
-            $output .= $this->output->heading(get_string("nosubscribers", "digestforum"));
+        if (!$users || !is_array($users) || count($users) === 0) {
+            $output .= $this->output->notification(
+                get_string("nosubscribers", "digestforum"),
+                \core\output\notification::NOTIFY_INFO,
+                false
+            );
         } else if (!isset($modinfo->instances['digestforum'][$digestforum->id])) {
             $output .= $this->output->heading(get_string("invalidmodule", "error"));
         } else {
             $cm = $modinfo->instances['digestforum'][$digestforum->id];
-            $canviewemail = in_array('email', get_extra_user_fields(context_module::instance($cm->id)));
+            // TODO Does not support custom user profile fields (MDL-70456).
+            $canviewemail = in_array('email', \core_user\fields::get_identity_fields(context_module::instance($cm->id), false));
             $strparams = new stdclass();
             $strparams->name = format_string($digestforum->name);
             $strparams->count = count($users);
             $output .= $this->output->heading(get_string("subscriberstowithcount", "digestforum", $strparams));
             $table = new html_table();
+            $table->id = 'subscribers-table';
+            $table->head = [];
+            $table->head[] = get_string('pictureofuser');
+            $table->head[] = get_string('fullname');
+            if ($canviewemail) {
+                $table->head[] = get_string('email');
+            }
             $table->cellpadding = 5;
             $table->cellspacing = 5;
             $table->tablealign = 'center';
-            $table->data = array();
+            $table->data = [];
             foreach ($users as $user) {
-                $info = array($this->output->user_picture($user, array('courseid'=>$course->id)), fullname($user));
+                $info = [$this->output->user_picture($user, ['courseid' => $course->id]), fullname($user)];
                 if ($canviewemail) {
                     array_push($info, $user->email);
                 }
@@ -169,25 +217,25 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      * @return string
      */
     public function timed_discussion_tooltip($discussion, $visiblenow) {
-        $dates = array();
+        $dates = [];
         if ($discussion->timestart) {
-            $dates[] = get_string('displaystart', 'mod_digestforum').': '.userdate($discussion->timestart);
+            $dates[] = get_string('displaystart', 'mod_digestforum') . ': ' . userdate($discussion->timestart);
         }
         if ($discussion->timeend) {
-            $dates[] = get_string('displayend', 'mod_digestforum').': '.userdate($discussion->timeend);
+            $dates[] = get_string('displayend', 'mod_digestforum') . ': ' . userdate($discussion->timeend);
         }
 
         $str = $visiblenow ? 'timedvisible' : 'timedhidden';
         $dates[] = get_string($str, 'mod_digestforum');
 
         $tooltip = implode("\n", $dates);
-        return $this->pix_icon('i/calendar', $tooltip, 'moodle', array('class' => 'smallicon timedpost'));
+        return $this->pix_icon('i/calendar', $tooltip, 'moodle', ['class' => 'smallicon timedpost']);
     }
 
     /**
      * Display a digestforum post in the relevant context.
      *
-     * @param \mod_digestforum\output\digestforum_post $post The post to display.
+     * @param \mod_digestforum\output\digestforum_post_email $post The post to display.
      * @return string
      */
     public function render_digestforum_post_email(\mod_digestforum\output\digestforum_post_email $post) {
@@ -231,10 +279,40 @@ class mod_digestforum_renderer extends plugin_renderer_base {
      * Render quick search form.
      *
      * @param \mod_digestforum\output\quick_search_form $form The renderable.
-     * @return string
+     * @return string rendered HTML string from the template.
      */
     public function render_quick_search_form(\mod_digestforum\output\quick_search_form $form) {
-        return $this->render_from_template('mod_digestforum/quick_search_form', $form->export_for_template($this));
+        if (strpos($this->page->url->get_path(), "index.php")) {
+            return $this->render_from_template('mod_digestforum/quick_search_form', $form->export_for_template($this));
+        }
+
+        return $this->render_from_template(
+            'mod_digestforum/digestforum_new_discussion_actionbar',
+            $form->export_for_template($this),
+        );
+    }
+
+    /**
+     * Render the view action area.
+     *
+     * @param \mod_digestforum\output\digestforum_actionbar $actionbar digestforum_actionbar object.
+     * @return string rendered HTML string
+     */
+    public function render_activity_actionbar(\mod_digestforum\output\digestforum_actionbar $actionbar): string {
+        return $this->render_from_template('mod_digestforum/digestforum_actionbar', $actionbar->export_for_template($this));
+    }
+
+    /**
+     * Render the subscription action area.
+     *
+     * @param \mod_digestforum\output\subscription_actionbar $subscriptionactionbar subscription_actionbar object.
+     * @return bool|string rendered HTML string.
+     */
+    public function subscription_actionbar(\mod_digestforum\output\subscription_actionbar $subscriptionactionbar): string {
+        return $this->render_from_template(
+            'mod_digestforum/digestforum_subscription_action',
+            $subscriptionactionbar->export_for_template($this)
+        );
     }
 
     /**

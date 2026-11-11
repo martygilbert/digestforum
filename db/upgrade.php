@@ -40,112 +40,171 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Upgrade the digestforum module.
+ *
+ * @param int $oldversion The version being upgraded from
+ * @return bool
+ */
 function xmldb_digestforum_upgrade($oldversion) {
-    global $CFG, $DB;
+    global $DB;
+    $dbman = $DB->get_manager();
 
-    $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
+    // Automatically generated Moodle v4.4.0 release upgrade line.
+    // Put any upgrade step following this.
 
-    if ($oldversion < 2016091200) {
+    // Automatically generated Moodle v4.5.0 release upgrade line.
+    // Put any upgrade step following this.
 
-        // Define field lockdiscussionafter to be added to digestforum.
+    // Automatically generated Moodle v5.0.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v5.1.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2025110500) {
+        // Define field showimmediately to be added to digestforum.
         $table = new xmldb_table('digestforum');
-        $field = new xmldb_field('lockdiscussionafter', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'displaywordcount');
+        $field = new xmldb_field('showimmediately', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'lockdiscussionafter');
 
-        // Conditionally launch add field lockdiscussionafter.
+        // Conditionally launch add field showimmediately.
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
 
         // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2016091200, 'digestforum');
+        upgrade_mod_savepoint(true, 2025110500, 'digestforum');
     }
 
-    // Automatically generated Moodle v3.2.0 release upgrade line.
+    if ($oldversion < 2026022300) {
+        // Changing precision of field name on table digestforum to (1333).
+        $table = new xmldb_table('digestforum');
+        $field = new xmldb_field('name', XMLDB_TYPE_CHAR, '1333', null, XMLDB_NOTNULL, null, null, 'type');
+
+        // Launch change of precision for field name.
+        $dbman->change_field_precision($table, $field);
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2026022300, 'digestforum');
+    }
+
+    // Automatically generated Moodle v5.2.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Automatically generated Moodle v3.3.0 release upgrade line.
+    // Automatically generated Moodle v5.3.0 release upgrade line.
     // Put any upgrade step following this.
 
-    if ($oldversion < 2017092200) {
+    if ($oldversion < 2026110400) {
+        // Bring a digestforum upgraded from the 3.6 version up to the 5.3 schema. The mod_forum upgrade steps that
+        // made these changes (3.7 - 4.x) are no longer in this file. Every change is conditional, so sites that
+        // already have the 5.3 schema are unaffected.
 
-        // Remove duplicate entries from digestforum_subscriptions.
-        // Find records with multiple userid/digestforum combinations and find the highest ID.
-        // Later we will remove all those entries.
-        $sql = "
-            SELECT MIN(id) as minid, userid, digestforum
-            FROM {digestforum_subscriptions}
-            GROUP BY userid, digestforum
-            HAVING COUNT(id) > 1";
-
-        if ($duplicatedrows = $DB->get_recordset_sql($sql)) {
-            foreach ($duplicatedrows as $row) {
-                $DB->delete_records_select('digestforum_subscriptions',
-                    'userid = :userid AND digestforum = :digestforum AND id <> :minid', (array)$row);
+        // Fields added to digestforum.
+        $table = new xmldb_table('digestforum');
+        $fields = [
+            new xmldb_field('duedate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'introformat'),
+            new xmldb_field('cutoffdate', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'duedate'),
+            new xmldb_field('grade_digestforum', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'scale'),
+            new xmldb_field(
+                'grade_digestforum_notify',
+                XMLDB_TYPE_INTEGER,
+                '4',
+                null,
+                XMLDB_NOTNULL,
+                null,
+                '0',
+                'grade_digestforum'
+            ),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
             }
         }
-        $duplicatedrows->close();
 
-        // Define key useriddigestforum (primary) to be added to digestforum_subscriptions.
-        $table = new xmldb_table('digestforum_subscriptions');
-        $key = new xmldb_key('useriddigestforum', XMLDB_KEY_UNIQUE, array('userid', 'digestforum'));
-
-        // Launch add key useriddigestforum.
-        $dbman->add_key($table, $key);
-
-        // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2017092200, 'digestforum');
-    }
-
-    // Automatically generated Moodle v3.4.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2018032900) {
-
-        // Define field deleted to be added to digestforum_posts.
-        $table = new xmldb_table('digestforum_posts');
-        $field = new xmldb_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'mailnow');
-
-        // Conditionally launch add field deleted.
+        // Discussion locking, and the usermodified foreign key.
+        $table = new xmldb_table('digestforum_discussions');
+        $field = new xmldb_field('timelocked', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'pinned');
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-
-        // Forum savepoint reached.
-        upgrade_mod_savepoint(true, 2018032900, 'digestforum');
-    }
-
-    // Automatically generated Moodle v3.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    // Automatically generated Moodle v3.6.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2022101101) {
-        // Define field id to be added to changeme.
-        $table = new xmldb_table('digestforum_tracker');
-
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null);
-        $table->add_field('mdluserid',  XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'id');
-        $table->add_field('digestforumid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'mdluserid');
-        $table->add_field('digestdate', XMLDB_TYPE_CHAR, '25', null, null, null, null, 'digestforumid');
-        $table->add_field('numviews', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'digestdate');
-        $table->add_field('firstviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'numviews');
-        $table->add_field('lastviewed', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'firstviewed');
-
-
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('digestforumid', XMLDB_KEY_FOREIGN, ['digestforumid'], 'digestforum', ['id']);
-        $table->add_key('mdluserid', XMLDB_KEY_FOREIGN, ['mdluserid'], 'user', ['id']);
-
-        // Conditionally launch add field timeviewed.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
+        $index = new xmldb_index('usermodified', XMLDB_INDEX_NOTUNIQUE, ['usermodified']);
+        if (!$dbman->index_exists($table, $index)) {
+            $key = new xmldb_key('usermodified', XMLDB_KEY_FOREIGN, ['usermodified'], 'user', ['id']);
+            $dbman->add_key($table, $key);
         }
 
-        // Digestforum savepoint reached.
-        upgrade_mod_savepoint(true, 2022101101, 'digestforum');
+        // Private replies and word counts on posts.
+        $table = new xmldb_table('digestforum_posts');
+        $fields = [
+            new xmldb_field('privatereplyto', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0', 'deleted'),
+            new xmldb_field('wordcount', XMLDB_TYPE_INTEGER, '20', null, null, null, null, 'privatereplyto'),
+            new xmldb_field('charcount', XMLDB_TYPE_INTEGER, '20', null, null, null, null, 'wordcount'),
+        ];
+        foreach ($fields as $field) {
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+        $index = new xmldb_index('privatereplyto', XMLDB_INDEX_NOTUNIQUE, ['privatereplyto']);
+        if (!$dbman->index_exists($table, $index)) {
+            $dbman->add_index($table, $index);
+        }
+
+        // Read tracking indexes: replace the old userid-first indexes.
+        $table = new xmldb_table('digestforum_read');
+        $oldindexes = [
+            new xmldb_index('userid-digestforumid', XMLDB_INDEX_NOTUNIQUE, ['userid', 'digestforumid']),
+            new xmldb_index('userid-discussionid', XMLDB_INDEX_NOTUNIQUE, ['userid', 'discussionid']),
+        ];
+        foreach ($oldindexes as $index) {
+            if ($dbman->index_exists($table, $index)) {
+                $dbman->drop_index($table, $index);
+            }
+        }
+        $newindexes = [
+            new xmldb_index('digestforumid-userid', XMLDB_INDEX_NOTUNIQUE, ['digestforumid', 'userid']),
+            new xmldb_index('discussionid-userid', XMLDB_INDEX_NOTUNIQUE, ['discussionid', 'userid']),
+            new xmldb_index('userid', XMLDB_INDEX_NOTUNIQUE, ['userid']),
+        ];
+        foreach ($newindexes as $index) {
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+
+        // Whole-forum grading.
+        if (!$dbman->table_exists('digestforum_grades')) {
+            $dbman->install_one_table_from_xmldb_file(__DIR__ . '/install.xml', 'digestforum_grades');
+        }
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2026110400, 'digestforum');
+    }
+
+    if ($oldversion < 2026110401) {
+        // Digests are sent by email only. The defaults in db/messages.php only apply when the provider is first
+        // registered, so lock every output for existing sites: email on, everything else off.
+        $base = 'mod_digestforum_digests';
+        foreach ($DB->get_fieldset_select('message_processors', 'name', '1 = 1') as $processorname) {
+            set_config("{$processorname}_provider_{$base}_locked", 1, 'message');
+        }
+        set_config("message_provider_{$base}_enabled", 'email', 'message');
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2026110401, 'digestforum');
+    }
+
+    if ($oldversion < 2026110402) {
+        // Individual post notifications are never sent, so lock every output off for them.
+        $base = 'mod_digestforum_posts';
+        foreach ($DB->get_fieldset_select('message_processors', 'name', '1 = 1') as $processorname) {
+            set_config("{$processorname}_provider_{$base}_locked", 1, 'message');
+        }
+        set_config("message_provider_{$base}_enabled", '', 'message');
+
+        // Forum savepoint reached.
+        upgrade_mod_savepoint(true, 2026110402, 'digestforum');
     }
 
     return true;

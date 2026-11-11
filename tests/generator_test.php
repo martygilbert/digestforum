@@ -14,41 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * PHPUnit data generator tests
- *
- * @package    mod_digestforum
- * @category   phpunit
- * @copyright  2012 Petr Skoda {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
+namespace mod_digestforum;
 
 /**
  * PHPUnit data generator testcase
  *
  * @package    mod_digestforum
- * @category   phpunit
+ * @category   test
  * @copyright  2012 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class mod_digestforum_generator_testcase extends advanced_testcase {
-
-    public function setUp() {
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum_generator::class)]
+final class generator_test extends \advanced_testcase {
+    public function setUp(): void {
+        parent::setUp();
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
+        parent::tearDown();
     }
 
-    public function test_generator() {
+    public function test_generator(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -62,9 +54,9 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $this->assertInstanceOf('mod_digestforum_generator', $generator);
         $this->assertEquals('digestforum', $generator->get_modulename());
 
-        $generator->create_instance(array('course'=>$course->id));
-        $generator->create_instance(array('course'=>$course->id));
-        $digestforum = $generator->create_instance(array('course'=>$course->id));
+        $generator->create_instance(['course' => $course->id]);
+        $generator->create_instance(['course' => $course->id]);
+        $digestforum = $generator->create_instance(['course' => $course->id]);
         $this->assertEquals(3, $DB->count_records('digestforum'));
 
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
@@ -72,12 +64,15 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $this->assertEquals('digestforum', $cm->modname);
         $this->assertEquals($course->id, $cm->course);
 
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
         $this->assertEquals($digestforum->cmid, $context->instanceid);
 
-        // test gradebook integration using low level DB access - DO NOT USE IN PLUGIN CODE!
-        $digestforum = $generator->create_instance(array('course'=>$course->id, 'assessed'=>1, 'scale'=>100));
-        $gitem = $DB->get_record('grade_items', array('courseid'=>$course->id, 'itemtype'=>'mod', 'itemmodule'=>'digestforum', 'iteminstance'=>$digestforum->id));
+        // Test gradebook integration using low level DB access - DO NOT USE IN PLUGIN CODE.
+        $digestforum = $generator->create_instance(['course' => $course->id, 'assessed' => 1, 'scale' => 100]);
+        $gitem = $DB->get_record(
+            'grade_items',
+            ['courseid' => $course->id, 'itemtype' => 'mod', 'itemmodule' => 'digestforum', 'iteminstance' => $digestforum->id]
+        );
         $this->assertNotEmpty($gitem);
         $this->assertEquals(100, $gitem->grademax);
         $this->assertEquals(0, $gitem->grademin);
@@ -87,7 +82,7 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
     /**
      * Test create_discussion.
      */
-    public function test_create_discussion() {
+    public function test_create_discussion(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -99,12 +94,12 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $course = self::getDataGenerator()->create_course();
 
         // The digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $digestforum = self::getDataGenerator()->create_module('digestforum', $record);
 
         // Add a few discussions.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user->id;
@@ -115,24 +110,29 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Check the discussions were correctly created.
-        $this->assertEquals(3, $DB->count_records_select('digestforum_discussions', 'digestforum = :digestforum',
-            array('digestforum' => $digestforum->id)));
+        $this->assertEquals(3, $DB->count_records_select(
+            'digestforum_discussions',
+            'digestforum = :digestforum',
+            ['digestforum' => $digestforum->id]
+        ));
 
-        $record['tags'] = array('Cats', 'mice');
+        $record['tags'] = ['Cats', 'mice'];
         $record = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-        $this->assertEquals(array('Cats', 'mice'),
-            array_values(core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $record->firstpost)));
+        $this->assertEquals(
+            ['Cats', 'mice'],
+            array_values(\core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $record->firstpost))
+        );
     }
 
     /**
      * Test create_post.
      */
-    public function test_create_post() {
+    public function test_create_post(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
-        // Create a bunch of users
+        // Create a bunch of users.
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
         $user3 = self::getDataGenerator()->create_user();
@@ -142,7 +142,7 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $course = self::getDataGenerator()->create_course();
 
         // The digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $digestforum = self::getDataGenerator()->create_module('digestforum', $record);
 
@@ -152,7 +152,7 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $discussion = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add a bunch of replies, changing the userid.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->discussion = $discussion->id;
         $record->userid = $user2->id;
         self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
@@ -163,21 +163,26 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
 
         // Check the posts were correctly created, remember, when creating a discussion a post
         // is generated as well, so we should have 4 posts, not 3.
-        $this->assertEquals(4, $DB->count_records_select('digestforum_posts', 'discussion = :discussion',
-            array('discussion' => $discussion->id)));
+        $this->assertEquals(4, $DB->count_records_select(
+            'digestforum_posts',
+            'discussion = :discussion',
+            ['discussion' => $discussion->id]
+        ));
 
-        $record->tags = array('Cats', 'mice');
+        $record->tags = ['Cats', 'mice'];
         $record = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
-        $this->assertEquals(array('Cats', 'mice'),
-            array_values(core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $record->id)));
+        $this->assertEquals(
+            ['Cats', 'mice'],
+            array_values(\core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $record->id))
+        );
     }
 
-    public function test_create_content() {
+    public function test_create_content(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
-        // Create a bunch of users
+        // Create a bunch of users.
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
         $user3 = self::getDataGenerator()->create_user();
@@ -187,22 +192,22 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
 
         // Create course and digestforum.
         $course = self::getDataGenerator()->create_course();
-        $digestforum = self::getDataGenerator()->create_module('digestforum', array('course' => $course));
+        $digestforum = self::getDataGenerator()->create_module('digestforum', ['course' => $course]);
 
         $generator = self::getDataGenerator()->get_plugin_generator('mod_digestforum');
         // This should create discussion.
         $post1 = $generator->create_content($digestforum);
         // This should create posts in the discussion.
-        $post2 = $generator->create_content($digestforum, array('parent' => $post1->id));
-        $post3 = $generator->create_content($digestforum, array('discussion' => $post1->discussion));
+        $post2 = $generator->create_content($digestforum, ['parent' => $post1->id]);
+        $post3 = $generator->create_content($digestforum, ['discussion' => $post1->discussion]);
         // This should create posts answering another post.
-        $post4 = $generator->create_content($digestforum, array('parent' => $post2->id));
+        $post4 = $generator->create_content($digestforum, ['parent' => $post2->id]);
         // This should create post with tags.
-        $post5 = $generator->create_content($digestforum, array('parent' => $post2->id, 'tags' => array('Cats', 'mice')));
+        $post5 = $generator->create_content($digestforum, ['parent' => $post2->id, 'tags' => ['Cats', 'mice']]);
 
-        $discussionrecords = $DB->get_records('digestforum_discussions', array('digestforum' => $digestforum->id));
+        $discussionrecords = $DB->get_records('digestforum_discussions', ['digestforum' => $digestforum->id]);
         $postrecords = $DB->get_records('digestforum_posts');
-        $postrecords2 = $DB->get_records('digestforum_posts', array('discussion' => $post1->discussion));
+        $postrecords2 = $DB->get_records('digestforum_posts', ['discussion' => $post1->discussion]);
         $this->assertEquals(1, count($discussionrecords));
         $this->assertEquals(5, count($postrecords));
         $this->assertEquals(5, count($postrecords2));
@@ -211,7 +216,72 @@ class mod_digestforum_generator_testcase extends advanced_testcase {
         $this->assertEquals($post1->id, $postrecords[$post3->id]->parent);
         $this->assertEquals($post2->id, $postrecords[$post4->id]->parent);
 
-        $this->assertEquals(array('Cats', 'mice'),
-            array_values(core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $post5->id)));
+        $this->assertEquals(
+            ['Cats', 'mice'],
+            array_values(\core_tag_tag::get_item_tags_array('mod_digestforum', 'digestforum_posts', $post5->id))
+        );
+    }
+
+    public function test_create_post_time_system(): void {
+        $this->resetAfterTest(true);
+
+        $user = self::getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = self::getDataGenerator()->create_module('digestforum', (object) [
+            'course' => $course->id,
+        ]);
+
+        $starttime = time();
+
+        // Add a discussion.
+        $discussion = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion((object) [
+            'course' => $course->id,
+            'digestforum' => $digestforum->id,
+            'userid' => $user->id,
+        ]);
+
+        // Add a post.
+        $post = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post((object) [
+            'discussion' => $discussion->id,
+            'userid' => $user->id,
+        ]);
+
+        $this->assertGreaterThanOrEqual($starttime, $discussion->timemodified);
+        $this->assertGreaterThanOrEqual($starttime, $post->created);
+
+        // The fallback behavior is to add the number of created posts to the current time to avoid duplicates.
+        $this->assertLessThanOrEqual(time() + 1, $discussion->timemodified);
+        $this->assertLessThanOrEqual(time() + 2, $post->created);
+    }
+
+    public function test_create_post_time_frozen(): void {
+        $this->resetAfterTest(true);
+
+        $clock = $this->mock_clock_with_frozen(100);
+
+        $user = self::getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = self::getDataGenerator()->create_module('digestforum', (object) [
+            'course' => $course->id,
+        ]);
+
+        $starttime = time();
+
+        // Add a discussion.
+        $discussion = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion((object) [
+            'course' => $course->id,
+            'digestforum' => $digestforum->id,
+            'userid' => $user->id,
+        ]);
+        $this->assertEquals(100, $discussion->timemodified);
+
+        // Add a post.
+        $clock->set_to(200);
+        $post = self::getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post((object) [
+            'discussion' => $discussion->id,
+            'userid' => $user->id,
+        ]);
+
+        $this->assertEquals(200, $post->created);
     }
 }

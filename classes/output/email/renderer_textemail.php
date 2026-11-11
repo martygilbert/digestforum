@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output\email;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer_textemail extends renderer {
-
     /**
      * The template name for this renderer.
      *
@@ -53,9 +50,14 @@ class renderer_textemail extends renderer {
      * @return string
      */
     public function format_message_text($cm, $post) {
-        $message = file_rewrite_pluginfile_urls($post->message, 'pluginfile.php',
+        $message = file_rewrite_pluginfile_urls(
+            $post->message,
+            'pluginfile.php',
             \context_module::instance($cm->id)->id,
-            'mod_digestforum', 'post', $post->id);
+            'mod_digestforum',
+            'post',
+            $post->id
+        );
         return format_text_email($message, $post->messageformat);
     }
 

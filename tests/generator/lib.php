@@ -15,18 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * mod_digestforum data generator
- *
- * @package    mod_digestforum
- * @category   test
- * @copyright  2012 Petr Skoda {@link http://skodak.org}
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
-
-
-/**
  * Forum module data generator class
  *
  * @package    mod_digestforum
@@ -35,7 +23,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_digestforum_generator extends testing_module_generator {
-
     /**
      * @var int keep track of how many digestforum discussions have been created.
      */
@@ -52,6 +39,15 @@ class mod_digestforum_generator extends testing_module_generator {
     protected $digestforumsubscriptionscount = 0;
 
     /**
+     * Get the clock implementation to use when generating data.
+     *
+     * @return \core\clock
+     */
+    protected function get_clock(): \core\clock {
+        return \core\di::get(\core\clock::class);
+    }
+
+    /**
      * To be called from data reset code only,
      * do not use in tests.
      * @return void
@@ -64,9 +60,10 @@ class mod_digestforum_generator extends testing_module_generator {
         parent::reset();
     }
 
-    public function create_instance($record = null, array $options = null) {
+    #[\Override]
+    public function create_instance($record = null, ?array $options = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+        require_once($CFG->dirroot . '/mod/digestforum/lib.php');
         $record = (object)(array)$record;
 
         if (!isset($record->type)) {
@@ -80,6 +77,9 @@ class mod_digestforum_generator extends testing_module_generator {
         }
         if (!isset($record->forcesubscribe)) {
             $record->forcesubscribe = DFORUM_CHOOSESUBSCRIBE;
+        }
+        if (!isset($record->grade_digestforum)) {
+            $record->grade_digestforum = 0;
         }
 
         return parent::create_instance($record, (array)$options);
@@ -185,12 +185,22 @@ class mod_digestforum_generator extends testing_module_generator {
             $record['mailnow'] = "0";
         }
 
+        if (!isset($record['timecreated'])) {
+            $record['timecreated'] = $this->get_clock()->now()->getTimestamp();
+        }
+
         if (isset($record['timemodified'])) {
             $timemodified = $record['timemodified'];
+        } else {
+            $timemodified = $record['timecreated'];
         }
 
         if (!isset($record['pinned'])) {
             $record['pinned'] = DFORUM_DISCUSSION_UNPINNED;
+        }
+
+        if (!isset($record['timelocked'])) {
+            $record['timelocked'] = 0;
         }
 
         if (isset($record['mailed'])) {
@@ -202,7 +212,7 @@ class mod_digestforum_generator extends testing_module_generator {
         // Add the discussion.
         $record->id = digestforum_add_discussion($record, null, null, $record->userid);
 
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $record->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $record->id]);
 
         if (isset($timemodified) || isset($mailed)) {
             if (isset($mailed)) {
@@ -224,8 +234,13 @@ class mod_digestforum_generator extends testing_module_generator {
             $cm = get_coursemodule_from_instance('digestforum', $record->digestforum);
             $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
 
-            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $post->id,
-                context_module::instance($cm->id), $tags);
+            core_tag_tag::set_item_tags(
+                'mod_digestforum',
+                'digestforum_posts',
+                $post->id,
+                context_module::instance($cm->id),
+                $tags
+            );
         }
 
         return $record;
@@ -244,7 +259,7 @@ class mod_digestforum_generator extends testing_module_generator {
         $this->digestforumpostcount++;
 
         // Variable to store time.
-        $time = time() + $this->digestforumpostcount;
+        $time = time();
 
         $record = (array) $record;
 
@@ -269,11 +284,19 @@ class mod_digestforum_generator extends testing_module_generator {
         }
 
         if (!isset($record['created'])) {
-            $record['created'] = $time;
+            // If we are using the system clock, then revert to the time + count approach.
+            // Unfortunately a lot of Forum code relies on things not happening at the same time.
+            // See MDL-80838 for more information on this issue.
+
+            if ($this->get_clock() instanceof \core\system_clock) {
+                $record['created'] = $time;
+            } else {
+                $record['created'] = $this->get_clock()->now()->getTimestamp();
+            }
         }
 
         if (!isset($record['modified'])) {
-            $record['modified'] = $time;
+            $record['modified'] = $record['created'];
         }
 
         if (!isset($record['mailed'])) {
@@ -300,7 +323,16 @@ class mod_digestforum_generator extends testing_module_generator {
             $record['mailnow'] = 0;
         }
 
+        if (!isset($record['deleted'])) {
+            $record['deleted'] = 0;
+        }
+
+        if (!isset($record['privatereplyto'])) {
+            $record['privatereplyto'] = 0;
+        }
+
         $record = (object) $record;
+        \mod_digestforum\local\entities\post::add_message_counts($record);
 
         // Add the post.
         $record->id = $DB->insert_record('digestforum_posts', $record);
@@ -310,8 +342,13 @@ class mod_digestforum_generator extends testing_module_generator {
             $cm = get_coursemodule_from_instance('digestforum', $discussion->digestforum);
             $tags = is_array($record->tags) ? $record->tags : preg_split('/,/', $record->tags);
 
-            core_tag_tag::set_item_tags('mod_digestforum', 'digestforum_posts', $record->id,
-                context_module::instance($cm->id), $tags);
+            core_tag_tag::set_item_tags(
+                'mod_digestforum',
+                'digestforum_posts',
+                $record->id,
+                context_module::instance($cm->id),
+                $tags
+            );
         }
 
         // Update the last post.
@@ -320,26 +357,49 @@ class mod_digestforum_generator extends testing_module_generator {
         return $record;
     }
 
-    public function create_content($instance, $record = array()) {
+    #[\Override]
+    public function create_content($instance, $record = []) {
         global $USER, $DB;
-        $record = (array)$record + array(
+        $record = (array)$record + [
             'digestforum' => $instance->id,
             'userid' => $USER->id,
-            'course' => $instance->course
-        );
+            'course' => $instance->course,
+        ];
         if (empty($record['discussion']) && empty($record['parent'])) {
             // Create discussion.
             $discussion = $this->create_discussion($record);
-            $post = $DB->get_record('digestforum_posts', array('id' => $discussion->firstpost));
+            $post = $DB->get_record('digestforum_posts', ['id' => $discussion->firstpost]);
         } else {
             // Create post.
             if (empty($record['parent'])) {
-                $record['parent'] = $DB->get_field('digestforum_discussions', 'firstpost', array('id' => $record['discussion']), MUST_EXIST);
+                $record['parent'] = $DB->get_field(
+                    'digestforum_discussions',
+                    'firstpost',
+                    ['id' => $record['discussion']],
+                    MUST_EXIST,
+                );
             } else if (empty($record['discussion'])) {
-                $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', array('id' => $record['parent']), MUST_EXIST);
+                $record['discussion'] = $DB->get_field('digestforum_posts', 'discussion', ['id' => $record['parent']], MUST_EXIST);
             }
             $post = $this->create_post($record);
         }
         return $post;
+    }
+
+    /**
+     * Extracted from exporter/post.php
+     *
+     * Get the HTML to display as a subheading in a post.
+     *
+     * @param stdClass $exportedauthor The exported author object
+     * @param int $timecreated The post time created timestamp if it's to be displayed
+     * @return string
+     */
+    public function get_author_subheading_html(stdClass $exportedauthor, int $timecreated): string {
+        $fullname = $exportedauthor->fullname;
+        $profileurl = $exportedauthor->urls['profile'] ?? null;
+        $name = $profileurl ? "<a href=\"{$profileurl}\">{$fullname}</a>" : $fullname;
+        $date = userdate_htmltime($timecreated, get_string('strftimedaydatetime', 'core_langconfig'));
+        return get_string('bynameondate', 'mod_digestforum', ['name' => $name, 'date' => $date]);
     }
 }

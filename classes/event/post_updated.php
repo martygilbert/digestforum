@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum post updated event class.
  *
@@ -83,24 +81,12 @@ class post_updated extends \core\event\base {
             // Single discussion digestforums are an exception. We show
             // the digestforum itself since it only has one discussion
             // thread.
-            $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $this->other['digestforumid']));
+            $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $this->other['digestforumid']]);
         } else {
-            $url = new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->other['discussionid']));
+            $url = new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->other['discussionid']]);
         }
-        $url->set_anchor('p'.$this->objectid);
+        $url->set_anchor('p' . $this->objectid);
         return $url;
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
-
-        return array($this->courseid, 'digestforum', 'update post', $logurl, $this->objectid, $this->contextinstanceid);
     }
 
     /**
@@ -129,14 +115,16 @@ class post_updated extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_posts', 'restore' => 'digestforum_post');
+        return ['db' => 'digestforum_posts', 'restore' => 'digestforum_post'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
-        $othermapped['discussionid'] = array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
+        $othermapped['discussionid'] = ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
 
         return $othermapped;
     }

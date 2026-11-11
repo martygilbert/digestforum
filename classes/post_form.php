@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -35,7 +34,6 @@ require_once($CFG->dirroot . '/repository/lib.php');
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class mod_digestforum_post_form extends moodleform {
-
     /**
      * Returns the options array to use in filemanager for digestforum attachments
      *
@@ -45,13 +43,13 @@ class mod_digestforum_post_form extends moodleform {
     public static function attachment_options($digestforum) {
         global $COURSE, $PAGE, $CFG;
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes, $digestforum->maxbytes);
-        return array(
+        return [
             'subdirs' => 0,
             'maxbytes' => $maxbytes,
             'maxfiles' => $digestforum->maxattachments,
             'accepted_types' => '*',
-            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK
-        );
+            'return_types' => FILE_INTERNAL | FILE_CONTROLLED_LINK,
+        ];
     }
 
     /**
@@ -63,15 +61,15 @@ class mod_digestforum_post_form extends moodleform {
      */
     public static function editor_options(context_module $context, $postid) {
         global $COURSE, $PAGE, $CFG;
-        // TODO: add max files and max size support
+        // Max files and max size are not supported yet.
         $maxbytes = get_user_max_upload_file_size($PAGE->context, $CFG->maxbytes, $COURSE->maxbytes);
-        return array(
+        return [
             'maxfiles' => EDITOR_UNLIMITED_FILES,
             'maxbytes' => $maxbytes,
-            'trusttext'=> true,
-            'return_types'=> FILE_INTERNAL | FILE_EXTERNAL,
-            'subdirs' => file_area_contains_subdirs($context, 'mod_digestforum', 'post', $postid)
-        );
+            'trusttext' => true,
+            'return_types' => FILE_INTERNAL | FILE_EXTERNAL,
+            'subdirs' => file_area_contains_subdirs($context, 'mod_digestforum', 'post', $postid),
+        ];
     }
 
     /**
@@ -79,13 +77,11 @@ class mod_digestforum_post_form extends moodleform {
      *
      * @return void
      */
-    function definition() {
+    public function definition() {
         global $CFG, $OUTPUT;
 
         $mform =& $this->_form;
 
-        $course = $this->_customdata['course'];
-        $cm = $this->_customdata['cm'];
         $coursecontext = $this->_customdata['coursecontext'];
         $modcontext = $this->_customdata['modcontext'];
         $digestforum = $this->_customdata['digestforum'];
@@ -93,15 +89,21 @@ class mod_digestforum_post_form extends moodleform {
         $subscribe = $this->_customdata['subscribe'];
         $edit = $this->_customdata['edit'];
         $thresholdwarning = $this->_customdata['thresholdwarning'];
+        $canreplyprivately = array_key_exists('canreplyprivately', $this->_customdata) ?
+            $this->_customdata['canreplyprivately'] : false;
+        $inpagereply = $this->_customdata['inpagereply'] ?? false;
 
-        $mform->addElement('header', 'general', '');//fill in the data depending on page params later using set_data
+        if (!$inpagereply) {
+            // Fill in the data depending on page params later using set_data.
+            $mform->addElement('header', 'general', '');
+        }
 
         // If there is a warning message and we are not editing a post we need to handle the warning.
         if (!empty($thresholdwarning) && !$edit) {
             // Here we want to display a warning if they can still post but have reached the warning threshold.
             if ($thresholdwarning->canpost) {
                 $message = get_string($thresholdwarning->errorcode, $thresholdwarning->module, $thresholdwarning->additional);
-                $mform->addElement('html', $OUTPUT->notification($message));
+                $mform->addElement('html', $OUTPUT->notification($message, \core\output\notification::NOTIFY_INFO));
             }
         }
 
@@ -110,150 +112,153 @@ class mod_digestforum_post_form extends moodleform {
         $mform->addRule('subject', get_string('required'), 'required', null, 'client');
         $mform->addRule('subject', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
 
-        $mform->addElement('editor', 'message', get_string('message', 'digestforum'), null, self::editor_options($modcontext, (empty($post->id) ? null : $post->id)));
+        $mform->addElement(
+            'editor',
+            'message',
+            get_string('message', 'digestforum'),
+            null,
+            self::editor_options($modcontext, (empty($post->id) ? null : $post->id)),
+        );
         $mform->setType('message', PARAM_RAW);
         $mform->addRule('message', get_string('required'), 'required', null, 'client');
 
-        $manageactivities = has_capability('moodle/course:manageactivities', $coursecontext);
-
-        if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
-            $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
-            $mform->freeze('discussionsubscribe');
-            $mform->setDefaults('discussionsubscribe', 0);
-            $mform->addHelpButton('discussionsubscribe', 'forcesubscribed', 'digestforum');
-
-        } else if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !$manageactivities) {
-            $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
-            $mform->freeze('discussionsubscribe');
-            $mform->setDefaults('discussionsubscribe', 0);
-            $mform->addHelpButton('discussionsubscribe', 'disallowsubscription', 'digestforum');
-
+        if ($inpagereply) {
+            $this->add_group_elements_if_applicable($mform);
         } else {
-            $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
-            $mform->addHelpButton('discussionsubscribe', 'discussionsubscription', 'digestforum');
-        }
+            $manageactivities = has_capability('moodle/course:manageactivities', $coursecontext);
 
-        if (digestforum_can_create_attachment($digestforum, $modcontext)) {
-            $mform->addElement('filemanager', 'attachments', get_string('attachment', 'digestforum'), null, self::attachment_options($digestforum));
-            $mform->addHelpButton('attachments', 'attachment', 'digestforum');
-        }
-
-        if (!$post->parent && has_capability('mod/digestforum:pindiscussions', $modcontext)) {
-            $mform->addElement('checkbox', 'pinned', get_string('discussionpinned', 'digestforum'));
-            $mform->addHelpButton('pinned', 'discussionpinned', 'digestforum');
-        }
-
-        if (empty($post->id) && $manageactivities) {
-            $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'digestforum'));
-        }
-
-        if ($groupmode = groups_get_activity_groupmode($cm, $course)) {
-            $groupdata = groups_get_activity_allowed_groups($cm);
-
-            $groupinfo = array();
-            foreach ($groupdata as $groupid => $group) {
-                // Check whether this user can post in this group.
-                // We must make this check because all groups are returned for a visible grouped activity.
-                if (digestforum_user_can_post_discussion($digestforum, $groupid, null, $cm, $modcontext)) {
-                    // Build the data for the groupinfo select.
-                    $groupinfo[$groupid] = $group->name;
-                } else {
-                    unset($groupdata[$groupid]);
-                }
-            }
-            $groupcount = count($groupinfo);
-
-            // Check whether a user can post to all of their own groups.
-
-            // Posts to all of my groups are copied to each group that the user is a member of. Certain conditions must be met.
-            // 1) It only makes sense to allow this when a user is in more than one group.
-            // Note: This check must come before we consider adding accessallgroups, because that is not a real group.
-            $canposttoowngroups = empty($post->edit) && $groupcount > 1;
-
-            // 2) Important: You can *only* post to multiple groups for a top level post. Never any reply.
-            $canposttoowngroups = $canposttoowngroups && empty($post->parent);
-
-            // 3) You also need the canposttoowngroups capability.
-            $canposttoowngroups = $canposttoowngroups && has_capability('mod/digestforum:canposttomygroups', $modcontext);
-            if ($canposttoowngroups) {
-                // This user is in multiple groups, and can post to all of their own groups.
-                // Note: This is not the same as accessallgroups. This option will copy a post to all groups that a
-                // user is a member of.
-                $mform->addElement('checkbox', 'posttomygroups', get_string('posttomygroups', 'digestforum'));
-                $mform->addHelpButton('posttomygroups', 'posttomygroups', 'digestforum');
-                $mform->disabledIf('groupinfo', 'posttomygroups', 'checked');
-            }
-
-            // Check whether this user can post to all groups.
-            // Posts to the 'All participants' group go to all groups, not to each group in a list.
-            // It makes sense to allow this, even if there currently aren't any groups because there may be in the future.
-            if (digestforum_user_can_post_discussion($digestforum, -1, null, $cm, $modcontext)) {
-                // Note: We must reverse in this manner because array_unshift renumbers the array.
-                $groupinfo = array_reverse($groupinfo, true );
-                $groupinfo[-1] = get_string('allparticipants');
-                $groupinfo = array_reverse($groupinfo, true );
-                $groupcount++;
-            }
-
-            // Determine whether the user can select a group from the dropdown. The dropdown is available for several reasons.
-            // 1) This is a new post (not an edit), and there are at least two groups to choose from.
-            $canselectgroupfornew = empty($post->edit) && $groupcount > 1;
-
-            // 2) This is editing of an existing post and the user is allowed to movediscussions.
-            // We allow this because the post may have been moved from another digestforum where groups are not available.
-            // We show this even if no groups are available as groups *may* have been available but now are not.
-            $canselectgroupformove = $groupcount && !empty($post->edit) && has_capability('mod/digestforum:movediscussions', $modcontext);
-
-            // Important: You can *only* change the group for a top level post. Never any reply.
-            $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
-
-            if ($canselectgroup) {
-                $mform->addElement('select','groupinfo', get_string('group'), $groupinfo);
-                $mform->setDefault('groupinfo', $post->groupid);
-                $mform->setType('groupinfo', PARAM_INT);
+            if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
+                $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
+                $mform->freeze('discussionsubscribe');
+                $mform->setDefaults('discussionsubscribe', 0);
+                $mform->addHelpButton('discussionsubscribe', 'forcesubscribed', 'digestforum');
+            } else if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !$manageactivities) {
+                $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
+                $mform->freeze('discussionsubscribe');
+                $mform->setDefaults('discussionsubscribe', 0);
+                $mform->addHelpButton('discussionsubscribe', 'disallowsubscription', 'digestforum');
             } else {
-                if (empty($post->groupid)) {
-                    $groupname = get_string('allparticipants');
-                } else {
-                    $groupname = format_string($groupdata[$post->groupid]->name);
+                $mform->addElement('checkbox', 'discussionsubscribe', get_string('discussionsubscription', 'digestforum'));
+                $mform->addHelpButton('discussionsubscribe', 'discussionsubscription', 'digestforum');
+            }
+
+            if (digestforum_can_create_attachment($digestforum, $modcontext)) {
+                $mform->addElement(
+                    'filemanager',
+                    'attachments',
+                    get_string('attachment', 'digestforum'),
+                    null,
+                    self::attachment_options($digestforum)
+                );
+                $mform->addHelpButton('attachments', 'attachment', 'digestforum');
+            }
+
+            if (!$post->parent && has_capability('mod/digestforum:pindiscussions', $modcontext)) {
+                $mform->addElement('checkbox', 'pinned', get_string('discussionpinned', 'digestforum'));
+                $mform->addHelpButton('pinned', 'discussionpinned', 'digestforum');
+            }
+
+            if (
+                empty($post->id) && ($manageactivities ||
+                    ($digestforum->type == 'qanda' && has_capability('mod/digestforum:canmailnow', $modcontext)))
+            ) {
+                $mform->addElement('checkbox', 'mailnow', get_string('mailnow', 'digestforum'));
+            }
+
+            if ((empty($post->id) && $canreplyprivately) || (!empty($post) && !empty($post->privatereplyto))) {
+                // Only show the option to change private reply settings if this is a new post and the user can reply
+                // privately, or if this is already private reply, in which case the state is shown but is not editable.
+                $mform->addElement('checkbox', 'isprivatereply', get_string('privatereply', 'digestforum'));
+                $mform->addHelpButton('isprivatereply', 'privatereply', 'digestforum');
+                if (!empty($post->privatereplyto)) {
+                    $mform->setDefault('isprivatereply', 1);
+                    $mform->freeze('isprivatereply');
                 }
-                $mform->addElement('static', 'groupinfo', get_string('group'), $groupname);
+            }
+
+            $this->add_group_elements_if_applicable($mform);
+
+            if (
+                !empty($CFG->digestforum_enabletimedposts) && !$post->parent &&
+                has_capability('mod/digestforum:viewhiddentimedposts', $coursecontext)
+            ) {
+                $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'digestforum'));
+
+                $mform->addElement(
+                    'date_time_selector',
+                    'timestart',
+                    get_string('displaystart', 'digestforum'),
+                    ['optional' => true]
+                );
+                $mform->addHelpButton('timestart', 'displaystart', 'digestforum');
+
+                $mform->addElement(
+                    'date_time_selector',
+                    'timeend',
+                    get_string('displayend', 'digestforum'),
+                    ['optional' => true]
+                );
+                $mform->addHelpButton('timeend', 'displayend', 'digestforum');
+            } else {
+                $mform->addElement('hidden', 'timestart');
+                $mform->setType('timestart', PARAM_INT);
+                $mform->addElement('hidden', 'timeend');
+                $mform->setType('timeend', PARAM_INT);
+                $mform->setConstants(['timestart' => 0, 'timeend' => 0]);
+            }
+
+            if (core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
+                $mform->addElement('header', 'tagshdr', get_string('tags', 'tag'));
+
+                $mform->addElement(
+                    'tags',
+                    'tags',
+                    get_string('tags'),
+                    ['itemtype' => 'digestforum_posts', 'component' => 'mod_digestforum']
+                );
             }
         }
 
-        if (!empty($CFG->digestforum_enabletimedposts) && !$post->parent && has_capability('mod/digestforum:viewhiddentimedposts', $coursecontext)) {
-            $mform->addElement('header', 'displayperiod', get_string('displayperiod', 'digestforum'));
-
-            $mform->addElement('date_time_selector', 'timestart', get_string('displaystart', 'digestforum'), array('optional' => true));
-            $mform->addHelpButton('timestart', 'displaystart', 'digestforum');
-
-            $mform->addElement('date_time_selector', 'timeend', get_string('displayend', 'digestforum'), array('optional' => true));
-            $mform->addHelpButton('timeend', 'displayend', 'digestforum');
-
+        // -------------------------------------------------------------------------------
+        // Buttons.
+        if (isset($post->edit)) {
+            // Hack alert.
+            $submitstring = get_string('savechanges');
         } else {
-            $mform->addElement('hidden', 'timestart');
-            $mform->setType('timestart', PARAM_INT);
-            $mform->addElement('hidden', 'timeend');
-            $mform->setType('timeend', PARAM_INT);
-            $mform->setConstants(array('timestart' => 0, 'timeend' => 0));
+            $submitstring = get_string('posttodigestforum', 'digestforum');
         }
 
-        if (core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts')) {
-            $mform->addElement('header', 'tagshdr', get_string('tags', 'tag'));
+        // Always register a no submit button so it can be picked up if redirecting to the original post form.
+        $mform->registerNoSubmitButton('advancedadddiscussion');
 
-            $mform->addElement('tags', 'tags', get_string('tags'),
-                array('itemtype' => 'digestforum_posts', 'component' => 'mod_digestforum'));
-        }
+        // This is an inpage add discussion which requires custom buttons.
+        if ($inpagereply) {
+            $mform->addElement('hidden', 'discussionsubscribe');
+            $mform->setType('discussionsubscribe', PARAM_INT);
 
-        //-------------------------------------------------------------------------------
-        // buttons
-        if (isset($post->edit)) { // hack alert
-            $submit_string = get_string('savechanges');
+            $buttonarray = [];
+            $buttonarray[] = &$mform->createElement('submit', 'submitbutton', $submitstring);
+            $buttonarray[] = &$mform->createElement(
+                'button',
+                'cancelbtn',
+                get_string('cancel', 'core'),
+                // Additional attribs to handle collapsible div.
+                ['data-bs-toggle' => 'collapse', 'data-bs-target' => "#collapseAddForm"]
+            );
+            $buttonarray[] = &$mform->createElement(
+                'submit',
+                'advancedadddiscussion',
+                get_string('showadvancededitor'),
+                null,
+                null,
+                ['customclassoverride' => 'btn-link']
+            );
+
+            $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
+            $mform->closeHeaderBefore('buttonar');
         } else {
-            $submit_string = get_string('posttodigestforum', 'digestforum');
+            $this->add_action_buttons(true, $submitstring);
         }
-
-        $this->add_action_buttons(true, $submit_string);
 
         $mform->addElement('hidden', 'course');
         $mform->setType('course', PARAM_INT);
@@ -284,9 +289,9 @@ class mod_digestforum_post_form extends moodleform {
      * @param array $files files uploaded.
      * @return array of errors.
      */
-    function validation($data, $files) {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (($data['timeend']!=0) && ($data['timestart']!=0) && $data['timeend'] <= $data['timestart']) {
+        if (($data['timeend'] != 0) && ($data['timestart'] != 0) && $data['timeend'] <= $data['timestart']) {
             $errors['timeend'] = get_string('timestartenderror', 'digestforum');
         }
         if (empty($data['message']['text'])) {
@@ -296,5 +301,96 @@ class mod_digestforum_post_form extends moodleform {
             $errors['subject'] = get_string('erroremptysubject', 'digestforum');
         }
         return $errors;
+    }
+
+    /**
+     * Adds elements to control what groups will have access to the post or exits when no relevant group mode is set.
+     *
+     * @param MoodleQuickForm $mform
+     */
+    private function add_group_elements_if_applicable(MoodleQuickForm $mform): void {
+        global $CFG;
+
+        $course = $this->_customdata['course'];
+        $cm = $this->_customdata['cm'];
+        $digestforum = $this->_customdata['digestforum'];
+        $modcontext = $this->_customdata['modcontext'];
+        $post = $this->_customdata['post'];
+
+        if (!groups_get_activity_groupmode($cm, $course)) {
+            return;
+        }
+
+        $groupdata = groups_get_activity_allowed_groups($cm);
+        $groupinfo = [];
+        foreach ($groupdata as $groupid => $group) {
+            // Check whether this user can post in this group.
+            // We must make this check because all groups are returned for a visible grouped activity.
+            if (digestforum_user_can_post_discussion($digestforum, $groupid, null, $cm, $modcontext)) {
+                // Build the data for the groupinfo select.
+                $groupinfo[$groupid] = format_string($group->name, true, ['context' => $modcontext]);
+            } else {
+                unset($groupdata[$groupid]);
+            }
+        }
+        $groupcount = count($groupinfo);
+
+        // Check whether a user can post to all of their own groups.
+
+        // Posts to all of my groups are copied to each group that the user is a member of. Certain conditions must be met.
+        // 1) It only makes sense to allow this when a user is in more than one group.
+        // Note: This check must come before we consider adding accessallgroups, because that is not a real group.
+        $canposttoowngroups = empty($post->edit) && $groupcount > 1;
+
+        // 2) Important: You can *only* post to multiple groups for a top level post. Never any reply.
+        $canposttoowngroups = $canposttoowngroups && empty($post->parent);
+
+        // 3) You also need the canposttoowngroups capability.
+        $canposttoowngroups = $canposttoowngroups && has_capability('mod/digestforum:canposttomygroups', $modcontext);
+        if ($canposttoowngroups) {
+            // This user is in multiple groups, and can post to all of their own groups.
+            // Note: This is not the same as accessallgroups. This option will copy a post to all groups that a
+            // user is a member of.
+            $mform->addElement('checkbox', 'posttomygroups', get_string('posttomygroups', 'digestforum'));
+            $mform->addHelpButton('posttomygroups', 'posttomygroups', 'digestforum');
+            $mform->disabledIf('groupinfo', 'posttomygroups', 'checked');
+        }
+
+        // Check whether this user can post to all groups.
+        // Posts to the 'All participants' group go to all groups, not to each group in a list.
+        // It makes sense to allow this, even if there currently aren't any groups because there may be in the future.
+        if (digestforum_user_can_post_discussion($digestforum, -1, null, $cm, $modcontext)) {
+            // Note: We must reverse in this manner because array_unshift renumbers the array.
+            $groupinfo = array_reverse($groupinfo, true);
+            $groupinfo[-1] = get_string('allparticipants');
+            $groupinfo = array_reverse($groupinfo, true);
+            $groupcount++;
+        }
+
+        // Determine whether the user can select a group from the dropdown. The dropdown is available for several reasons.
+        // 1) This is a new post (not an edit), and there are at least two groups to choose from.
+        $canselectgroupfornew = empty($post->edit) && $groupcount > 1;
+
+        // 2) This is editing of an existing post and the user is allowed to movediscussions.
+        // We allow this because the post may have been moved from another digestforum where groups are not available.
+        // We show this even if no groups are available as groups *may* have been available but now are not.
+        $canselectgroupformove =
+            $groupcount && !empty($post->edit) && has_capability('mod/digestforum:movediscussions', $modcontext);
+
+        // Important: You can *only* change the group for a top level post. Never any reply.
+        $canselectgroup = empty($post->parent) && ($canselectgroupfornew || $canselectgroupformove);
+
+        if ($canselectgroup) {
+            $mform->addElement('select', 'groupinfo', get_string('group'), $groupinfo);
+            $mform->setDefault('groupinfo', $post->groupid);
+            $mform->setType('groupinfo', PARAM_INT);
+        } else {
+            if (empty($post->groupid)) {
+                $groupname = get_string('allparticipants');
+            } else {
+                $groupname = format_string($groupdata[$post->groupid]->name);
+            }
+            $mform->addElement('static', 'groupinfo', get_string('group'), $groupname);
+        }
     }
 }

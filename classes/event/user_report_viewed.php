@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum user report viewed event class.
  *
@@ -41,7 +39,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class user_report_viewed extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,26 +75,14 @@ class user_report_viewed extends \core\event\base {
      */
     public function get_url() {
 
-        $url = new \moodle_url('/mod/digestforum/user.php', array('id' => $this->relateduserid,
-            'mode' => $this->other['reportmode']));
+        $url = new \moodle_url('/mod/digestforum/user.php', ['id' => $this->relateduserid,
+            'mode' => $this->other['reportmode']]);
 
         if ($this->courseid != SITEID) {
             $url->param('course', $this->courseid);
         }
 
         return $url;
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
-
-        return array($this->courseid, 'digestforum', 'user report', $logurl, $this->relateduserid);
     }
 
     /**
@@ -115,8 +100,7 @@ class user_report_viewed extends \core\event\base {
             throw new \coding_exception('The \'reportmode\' value must be set in other.');
         }
 
-        switch ($this->contextlevel)
-        {
+        switch ($this->contextlevel) {
             case CONTEXT_COURSE:
             case CONTEXT_SYSTEM:
             case CONTEXT_USER:
@@ -128,8 +112,8 @@ class user_report_viewed extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         return false;
     }
 }
-

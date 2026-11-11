@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/user/selector/lib.php');
+require_once($CFG->dirroot . '/user/selector/lib.php');
 
 /**
  * A user selector control for potential subscribers to the selected digestforum
@@ -40,9 +40,11 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
     protected $forcesubscribed = false;
     /**
      * Can be used to store existing subscribers so that they can be removed from
-     * the potential subscribers list
+     * the potential subscribers list.
+     *
+     * @var array
      */
-    protected $existingsubscribers = array();
+    protected $existingsubscribers = [];
 
     /**
      * Constructor method
@@ -52,7 +54,7 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
     public function __construct($name, $options) {
         parent::__construct($name, $options);
         if (isset($options['forcesubscribed'])) {
-            $this->forcesubscribed=true;
+            $this->forcesubscribed = true;
         }
     }
 
@@ -62,8 +64,8 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
      */
     protected function get_options() {
         $options = parent::get_options();
-        if ($this->forcesubscribed===true) {
-            $options['forcesubscribed']=1;
+        if ($this->forcesubscribed === true) {
+            $options['forcesubscribed'] = 1;
         }
         return $options;
     }
@@ -79,22 +81,26 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
     public function find_users($search) {
         global $DB;
 
-        $whereconditions = array();
-        list($wherecondition, $params) = $this->search_sql($search, 'u');
+        $whereconditions = [];
+        [$wherecondition, $params] = $this->search_sql($search, 'u');
         if ($wherecondition) {
             $whereconditions[] = $wherecondition;
         }
 
         if (!$this->forcesubscribed) {
-            $existingids = array();
+            $existingids = [];
             foreach ($this->existingsubscribers as $group) {
                 foreach ($group as $user) {
                     $existingids[$user->id] = 1;
                 }
             }
             if ($existingids) {
-                list($usertest, $userparams) = $DB->get_in_or_equal(
-                        array_keys($existingids), SQL_PARAMS_NAMED, 'existing', false);
+                [$usertest, $userparams] = $DB->get_in_or_equal(
+                    array_keys($existingids),
+                    SQL_PARAMS_NAMED,
+                    'existing',
+                    false
+                );
                 $whereconditions[] = 'u.id ' . $usertest;
                 $params = array_merge($params, $userparams);
             }
@@ -104,7 +110,7 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
             $wherecondition = 'WHERE ' . implode(' AND ', $whereconditions);
         }
 
-        list($esql, $eparams) = get_enrolled_sql($this->context, '', $this->currentgroup, true);
+        [$esql, $eparams] = get_enrolled_sql($this->context, '', $this->currentgroup, true);
         $params = array_merge($params, $eparams);
 
         $fields      = 'SELECT ' . $this->required_fields_sql('u');
@@ -113,7 +119,7 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
                  JOIN ($esql) je ON je.id = u.id
                       $wherecondition";
 
-        list($sort, $sortparams) = users_order_by_sql('u', $search, $this->accesscontext);
+        [$sort, $sortparams] = users_order_by_sql('u', $search, $this->accesscontext);
         $order = ' ORDER BY ' . $sort;
 
         $availableusers = $DB->get_records_sql($fields . $sql . $order, array_merge($params, $sortparams));
@@ -124,7 +130,7 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
         $availableusers = $info->filter_user_list($availableusers);
 
         if (empty($availableusers)) {
-            return array();
+            return [];
         }
 
         // Check to see if there are too many to show sensibly.
@@ -136,9 +142,9 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
         }
 
         if ($this->forcesubscribed) {
-            return array(get_string("existingsubscribers", 'digestforum') => $availableusers);
+            return [get_string("existingsubscribers", 'digestforum') => $availableusers];
         } else {
-            return array(get_string("potentialsubscribers", 'digestforum') => $availableusers);
+            return [get_string("potentialsubscribers", 'digestforum') => $availableusers];
         }
     }
 
@@ -152,8 +158,10 @@ class mod_digestforum_potential_subscriber_selector extends mod_digestforum_subs
 
     /**
      * Sets this digestforum as force subscribed or not
+     *
+     * @param bool $setting Whether the digestforum is force subscribed
      */
-    public function set_force_subscribed($setting=true) {
+    public function set_force_subscribed($setting = true) {
         $this->forcesubscribed = true;
     }
 }

@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum discussion moved event class.
  *
@@ -60,7 +58,8 @@ class discussion_moved extends \core\event\base {
      */
     public function get_description() {
         return "The user with id '$this->userid' has moved the discussion with id '$this->objectid' from the " .
-            "digestforum with id '{$this->other['fromdigestforumid']}' to the digestforum with id '{$this->other['todigestforumid']}'.";
+            "digestforum with id '{$this->other['fromdigestforumid']}' to the digestforum with id " .
+            "'{$this->other['todigestforumid']}'.";
     }
 
     /**
@@ -78,17 +77,7 @@ class discussion_moved extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'move discussion', 'discuss.php?d=' . $this->objectid,
-            $this->objectid, $this->contextinstanceid);
+        return new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->objectid]);
     }
 
     /**
@@ -112,14 +101,16 @@ class discussion_moved extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['fromdigestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
-        $othermapped['todigestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['fromdigestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
+        $othermapped['todigestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

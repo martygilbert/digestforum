@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,35 +15,44 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Settings form for the digestforum module.
+ *
  * @package   mod_digestforum
  * @copyright Jamie Pratt <me@jamiep.org>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
-}
+defined('MOODLE_INTERNAL') || die();
 
-require_once ($CFG->dirroot.'/course/moodleform_mod.php');
+require_once($CFG->dirroot . '/course/moodleform_mod.php');
 
+use core_grades\component_gradeitems;
+
+/**
+ * Settings form for the digestforum module.
+ *
+ * @package   mod_digestforum
+ * @copyright Jamie Pratt <me@jamiep.org>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class mod_digestforum_mod_form extends moodleform_mod {
-
-    function definition() {
+    #[\Override]
+    public function definition() {
         global $CFG, $COURSE, $DB;
 
         $mform    =& $this->_form;
 
-//-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
-        $mform->addElement('text', 'name', get_string('digestforumname', 'digestforum'), array('size'=>'64'));
+        $mform->addElement('text', 'name', get_string('digestforumname', 'digestforum'), ['size' => '64']);
         if (!empty($CFG->formatstringstriptags)) {
             $mform->setType('name', PARAM_TEXT);
         } else {
             $mform->setType('name', PARAM_CLEANHTML);
         }
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->addRule('name', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+        $mform->addRule('name', get_string('maximumchars', '', 1333), 'maxlength', 1333, 'client');
 
         $this->standard_intro_elements(get_string('digestforumintro', 'digestforum'));
 
@@ -53,6 +61,21 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addElement('select', 'type', get_string('digestforumtype', 'digestforum'), $digestforumtypes);
         $mform->addHelpButton('type', 'digestforumtype', 'digestforum');
         $mform->setDefault('type', 'general');
+
+        $mform->addElement('advcheckbox', 'showimmediately', get_string('showimmediately', 'digestforum'));
+        $mform->addHelpButton('showimmediately', 'showimmediately', 'digestforum', '', false, $CFG->maxeditingtime / 60);
+        $mform->setDefault('showimmediately', 0);
+        $mform->hideIf('showimmediately', 'type', 'neq', 'qanda');
+
+        $mform->addElement('header', 'availability', get_string('availability', 'digestforum'));
+
+        $name = get_string('duedate', 'digestforum');
+        $mform->addElement('date_time_selector', 'duedate', $name, ['optional' => true]);
+        $mform->addHelpButton('duedate', 'duedate', 'digestforum');
+
+        $name = get_string('cutoffdate', 'digestforum');
+        $mform->addElement('date_time_selector', 'cutoffdate', $name, ['optional' => true]);
+        $mform->addHelpButton('cutoffdate', 'cutoffdate', 'digestforum');
 
         // Attachments and word count.
         $mform->addElement('header', 'attachmentswordcounthdr', get_string('attachmentswordcount', 'digestforum'));
@@ -63,7 +86,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->addHelpButton('maxbytes', 'maxattachmentsize', 'digestforum');
         $mform->setDefault('maxbytes', $CFG->digestforum_maxbytes);
 
-        $choices = array(
+        $choices = [
             0 => 0,
             1 => 1,
             2 => 2,
@@ -77,8 +100,8 @@ class mod_digestforum_mod_form extends moodleform_mod {
             10 => 10,
             20 => 20,
             50 => 50,
-            100 => 100
-        );
+            100 => 100,
+        ];
         $mform->addElement('select', 'maxattachments', get_string('maxattachments', 'digestforum'), $choices);
         $mform->addHelpButton('maxattachments', 'maxattachments', 'digestforum');
         $mform->setDefault('maxattachments', $CFG->digestforum_maxattachments);
@@ -100,7 +123,7 @@ class mod_digestforum_mod_form extends moodleform_mod {
         }
         $mform->setDefault('forcesubscribe', $defaultdigestforumsubscription);
 
-        $options = array();
+        $options = [];
         $options[DFORUM_TRACKING_OPTIONAL] = get_string('trackingoptional', 'digestforum');
         $options[DFORUM_TRACKING_OFF] = get_string('trackingoff', 'digestforum');
         if ($CFG->digestforum_allowforcedreadtracking) {
@@ -115,19 +138,19 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->setDefault('trackingtype', $default);
 
         if ($CFG->enablerssfeeds && isset($CFG->digestforum_enablerssfeeds) && $CFG->digestforum_enablerssfeeds) {
-//-------------------------------------------------------------------------------
+            // -------------------------------------------------------------------------------
             $mform->addElement('header', 'rssheader', get_string('rss'));
-            $choices = array();
+            $choices = [];
             $choices[0] = get_string('none');
             $choices[1] = get_string('discussions', 'digestforum');
             $choices[2] = get_string('posts', 'digestforum');
-            $mform->addElement('select', 'rsstype', get_string('rsstype'), $choices);
+            $mform->addElement('select', 'rsstype', get_string('rsstype', 'digestforum'), $choices);
             $mform->addHelpButton('rsstype', 'rsstype', 'digestforum');
             if (isset($CFG->digestforum_rsstype)) {
                 $mform->setDefault('rsstype', $CFG->digestforum_rsstype);
             }
 
-            $choices = array();
+            $choices = [];
             $choices[0] = '0';
             $choices[1] = '1';
             $choices[2] = '2';
@@ -143,39 +166,31 @@ class mod_digestforum_mod_form extends moodleform_mod {
             $choices[50] = '50';
             $mform->addElement('select', 'rssarticles', get_string('rssarticles'), $choices);
             $mform->addHelpButton('rssarticles', 'rssarticles', 'digestforum');
-            $mform->disabledIf('rssarticles', 'rsstype', 'eq', '0');
+            $mform->hideIf('rssarticles', 'rsstype', 'eq', '0');
             if (isset($CFG->digestforum_rssarticles)) {
                 $mform->setDefault('rssarticles', $CFG->digestforum_rssarticles);
             }
         }
 
         $mform->addElement('header', 'discussionlocking', get_string('discussionlockingheader', 'digestforum'));
-        $options = [
-            0               => get_string('discussionlockingdisabled', 'digestforum'),
-            1   * DAYSECS   => get_string('numday', 'core', 1),
-            1   * WEEKSECS  => get_string('numweek', 'core', 1),
-            2   * WEEKSECS  => get_string('numweeks', 'core', 2),
-            30  * DAYSECS   => get_string('nummonth', 'core', 1),
-            60  * DAYSECS   => get_string('nummonths', 'core', 2),
-            90  * DAYSECS   => get_string('nummonths', 'core', 3),
-            180 * DAYSECS   => get_string('nummonths', 'core', 6),
-            1   * YEARSECS  => get_string('numyear', 'core', 1),
-        ];
-        $mform->addElement('select', 'lockdiscussionafter', get_string('lockdiscussionafter', 'digestforum'), $options);
+        $mform->addElement('duration', 'lockdiscussionafter', get_string('lockdiscussionafter', 'digestforum'), [
+            'optional' => true,
+            'defaultunit' => DAYSECS,
+        ]);
         $mform->addHelpButton('lockdiscussionafter', 'lockdiscussionafter', 'digestforum');
         $mform->disabledIf('lockdiscussionafter', 'type', 'eq', 'single');
 
-//-------------------------------------------------------------------------------
+        // -------------------------------------------------------------------------------
         $mform->addElement('header', 'blockafterheader', get_string('blockafter', 'digestforum'));
-        $options = array();
-        $options[0] = get_string('blockperioddisabled','digestforum');
-        $options[60*60*24]   = '1 '.get_string('day');
-        $options[60*60*24*2] = '2 '.get_string('days');
-        $options[60*60*24*3] = '3 '.get_string('days');
-        $options[60*60*24*4] = '4 '.get_string('days');
-        $options[60*60*24*5] = '5 '.get_string('days');
-        $options[60*60*24*6] = '6 '.get_string('days');
-        $options[60*60*24*7] = '1 '.get_string('week');
+        $options = [];
+        $options[0] = get_string('blockperioddisabled', 'digestforum');
+        $options[60 * 60 * 24]   = '1 ' . get_string('day');
+        $options[60 * 60 * 24 * 2] = '2 ' . get_string('days');
+        $options[60 * 60 * 24 * 3] = '3 ' . get_string('days');
+        $options[60 * 60 * 24 * 4] = '4 ' . get_string('days');
+        $options[60 * 60 * 24 * 5] = '5 ' . get_string('days');
+        $options[60 * 60 * 24 * 6] = '6 ' . get_string('days');
+        $options[60 * 60 * 24 * 7] = '1 ' . get_string('week');
         $mform->addElement('select', 'blockperiod', get_string('blockperiod', 'digestforum'), $options);
         $mform->addHelpButton('blockperiod', 'blockperiod', 'digestforum');
 
@@ -184,75 +199,242 @@ class mod_digestforum_mod_form extends moodleform_mod {
         $mform->setDefault('blockafter', '0');
         $mform->addRule('blockafter', null, 'numeric', null, 'client');
         $mform->addHelpButton('blockafter', 'blockafter', 'digestforum');
-        $mform->disabledIf('blockafter', 'blockperiod', 'eq', 0);
+        $mform->hideIf('blockafter', 'blockperiod', 'eq', 0);
 
         $mform->addElement('text', 'warnafter', get_string('warnafter', 'digestforum'));
         $mform->setType('warnafter', PARAM_INT);
         $mform->setDefault('warnafter', '0');
         $mform->addRule('warnafter', null, 'numeric', null, 'client');
         $mform->addHelpButton('warnafter', 'warnafter', 'digestforum');
-        $mform->disabledIf('warnafter', 'blockperiod', 'eq', 0);
+        $mform->hideIf('warnafter', 'blockperiod', 'eq', 0);
 
-        $coursecontext = context_course::instance($COURSE->id);
-        plagiarism_get_form_elements_module($mform, $coursecontext, 'mod_digestforum');
+        // -------------------------------------------------------------------------------
 
-//-------------------------------------------------------------------------------
-
-        $this->standard_grading_coursemodule_elements();
+        // Add the whole digestforum grading options.
+        $this->add_digestforum_grade_settings($mform, 'digestforum');
 
         $this->standard_coursemodule_elements();
-//-------------------------------------------------------------------------------
-// buttons
+        // -------------------------------------------------------------------------------
+        // Buttons.
         $this->add_action_buttons();
-
     }
 
-    function definition_after_data() {
+    /**
+     * Add the whole digestforum grade settings to the mform.
+     *
+     * @param   \mform $mform
+     * @param   string $itemname
+     */
+    private function add_digestforum_grade_settings($mform, string $itemname) {
+        global $COURSE;
+
+        $component = "mod_{$this->_modname}";
+        $defaultgradingvalue = 0;
+
+        $itemnumber = component_gradeitems::get_itemnumber_from_itemname($component, $itemname);
+        $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradecatfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradecat');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'gradepass');
+
+        // The advancedgradingmethod is different in that it is suffixed with an area name... which is not the
+        // itemnumber.
+        $methodfieldname = "advancedgradingmethod_{$itemname}";
+
+        $headername = "{$gradefieldname}_header";
+        $mform->addElement('header', $headername, get_string("grade_{$itemname}_header", $component));
+
+        $isupdate = !empty($this->_cm);
+        $gradeoptions = [
+            'isupdate' => $isupdate,
+            'currentgrade' => false,
+            'hasgrades' => false,
+            'canrescale' => false,
+            'useratings' => false,
+        ];
+
+        if ($isupdate) {
+            $gradeitem = grade_item::fetch([
+                'itemtype' => 'mod',
+                'itemmodule' => $this->_cm->modname,
+                'iteminstance' => $this->_cm->instance,
+                'itemnumber' => $itemnumber,
+                'courseid' => $COURSE->id,
+            ]);
+            if ($gradeitem) {
+                $gradeoptions['currentgrade'] = $gradeitem->grademax;
+                $gradeoptions['currentgradetype'] = $gradeitem->gradetype;
+                $gradeoptions['currentscaleid'] = $gradeitem->scaleid;
+                $gradeoptions['hasgrades'] = $gradeitem->has_grades();
+            }
+        }
+        $mform->addElement(
+            'modgrade',
+            $gradefieldname,
+            get_string("{$gradefieldname}_title", $component),
+            $gradeoptions
+        );
+        $mform->addHelpButton($gradefieldname, 'modgrade', 'grades');
+        $mform->setDefault($gradefieldname, $defaultgradingvalue);
+
+        if (!empty($this->current->_advancedgradingdata['methods']) && !empty($this->current->_advancedgradingdata['areas'])) {
+            $areadata = $this->current->_advancedgradingdata['areas'][$itemname];
+            $mform->addElement(
+                'select',
+                $methodfieldname,
+                get_string('gradingmethod', 'core_grading'),
+                $this->current->_advancedgradingdata['methods']
+            );
+            $mform->addHelpButton($methodfieldname, 'gradingmethod', 'core_grading');
+            $mform->hideIf($methodfieldname, "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+        }
+
+        // Grade category.
+        $mform->addElement(
+            'select',
+            $gradecatfieldname,
+            get_string('gradecategoryonmodform', 'grades'),
+            grade_get_categories_menu($COURSE->id, $this->_outcomesused)
+        );
+        $mform->addHelpButton($gradecatfieldname, 'gradecategoryonmodform', 'grades');
+        $mform->hideIf($gradecatfieldname, "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+
+        // Grade to pass.
+        $mform->addElement('text', $gradepassfieldname, get_string('gradepass', 'grades'));
+        $mform->addHelpButton($gradepassfieldname, 'gradepass', 'grades');
+        $mform->setDefault($gradepassfieldname, '');
+        $mform->setType($gradepassfieldname, PARAM_RAW);
+        $mform->hideIf($gradepassfieldname, "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+
+        $mform->addElement('selectyesno', 'grade_digestforum_notify', get_string('sendstudentnotificationsdefault', 'digestforum'));
+        $mform->addHelpButton('grade_digestforum_notify', 'sendstudentnotificationsdefault', 'digestforum');
+        $mform->hideIf('grade_digestforum_notify', "{$gradefieldname}[modgrade_type]", 'eq', 'none');
+    }
+
+    #[\Override]
+    public function definition_after_data() {
         parent::definition_after_data();
         $mform     =& $this->_form;
         $type      =& $mform->getElement('type');
         $typevalue = $mform->getElementValue('type');
 
-        //we don't want to have these appear as possible selections in the form but
-        //we want the form to display them if they are set.
-        if ($typevalue[0]=='news') {
+        // We don't want to have these appear as possible selections in the form but
+        // we want the form to display them if they are set.
+        if ($typevalue[0] == 'news') {
             $type->addOption(get_string('namenews', 'digestforum'), 'news');
             $mform->addHelpButton('type', 'namenews', 'digestforum');
             $type->freeze();
             $type->setPersistantFreeze(true);
         }
-        if ($typevalue[0]=='social') {
+        if ($typevalue[0] == 'social') {
             $type->addOption(get_string('namesocial', 'digestforum'), 'social');
             $type->freeze();
             $type->setPersistantFreeze(true);
         }
-
     }
 
-    function data_preprocessing(&$default_values) {
-        parent::data_preprocessing($default_values);
+    #[\Override]
+    public function validation($data, $files) {
+        $errors = parent::validation($data, $files);
+
+        if ($data['type'] === 'single' && $data['groupmode'] == SEPARATEGROUPS) {
+            $errors['type'] = get_string('cannotusesingletopicandseperategroups', 'digestforum');
+            $errors['groupmode'] = get_string('cannotuseseperategroupsandsingletopic', 'digestforum');
+        }
+
+        if ($data['duedate'] && $data['cutoffdate']) {
+            if ($data['duedate'] > $data['cutoffdate']) {
+                $errors['cutoffdate'] = get_string('cutoffdatevalidation', 'digestforum');
+            }
+        }
+
+        $this->validation_digestforum_grade($data, $files, $errors);
+
+        return $errors;
+    }
+
+    /**
+     * Handle definition after data for grade settings.
+     *
+     * @param array $data
+     * @param array $files
+     * @param array $errors
+     */
+    private function validation_digestforum_grade(array $data, array $files, array $errors) {
+        global $COURSE;
+
+        $mform =& $this->_form;
+
+        $component = "mod_digestforum";
+        $itemname = 'digestforum';
+        $itemnumber = component_gradeitems::get_itemnumber_from_itemname($component, $itemname);
+        $gradefieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+        $gradepassfieldname = component_gradeitems::get_field_name_for_itemnumber($component, $itemnumber, 'grade');
+
+        $gradeitem = grade_item::fetch([
+            'itemtype' => 'mod',
+            'itemmodule' => $data['modulename'],
+            'iteminstance' => $data['instance'],
+            'itemnumber' => $itemnumber,
+            'courseid' => $COURSE->id,
+        ]);
+
+        if ($mform->elementExists('cmidnumber') && $this->_cm) {
+            if (!grade_verify_idnumber($data['cmidnumber'], $COURSE->id, $gradeitem, $this->_cm)) {
+                $errors['cmidnumber'] = get_string('idnumbertaken');
+            }
+        }
+
+        // Check that the grade pass is a valid number.
+        $gradepassvalid = false;
+        if (isset($data[$gradepassfieldname])) {
+            if (unformat_float($data[$gradepassfieldname], true) === false) {
+                $errors[$gradepassfieldname] = get_string('err_numeric', 'form');
+            } else {
+                $gradepassvalid = true;
+            }
+        }
+
+        // Grade to pass: ensure that the grade to pass is valid for points and scales.
+        // If we are working with a scale, convert into a positive number for validation.
+        if ($gradepassvalid && isset($data[$gradepassfieldname]) && (!empty($data[$gradefieldname]))) {
+            $grade = $data[$gradefieldname];
+            if (unformat_float($data[$gradepassfieldname]) > $grade) {
+                $errors[$gradepassfieldname] = get_string('gradepassgreaterthangrade', 'grades', $grade);
+            }
+        }
+    }
+
+    #[\Override]
+    public function data_preprocessing(&$defaultvalues) {
+        parent::data_preprocessing($defaultvalues);
+
+        $suffix = $this->get_suffix();
+        $completiondiscussionsenabledel = 'completiondiscussionsenabled' . $suffix;
+        $completiondiscussionsel = 'completiondiscussions' . $suffix;
+        $completionrepliesenabledel = 'completionrepliesenabled' . $suffix;
+        $completionrepliesel = 'completionreplies' . $suffix;
+        $completionpostsel = 'completionposts' . $suffix;
+        $completionpostsenabledel = 'completionpostsenabled' . $suffix;
 
         // Set up the completion checkboxes which aren't part of standard data.
         // We also make the default value (if you turn on the checkbox) for those
         // numbers to be 1, this will not apply unless checkbox is ticked.
-        $default_values['completiondiscussionsenabled']=
-            !empty($default_values['completiondiscussions']) ? 1 : 0;
-        if (empty($default_values['completiondiscussions'])) {
-            $default_values['completiondiscussions']=1;
+        $defaultvalues[$completiondiscussionsenabledel] = !empty($defaultvalues[$completiondiscussionsel]) ? 1 : 0;
+        if (empty($defaultvalues[$completiondiscussionsel])) {
+            $defaultvalues[$completiondiscussionsel] = 1;
         }
-        $default_values['completionrepliesenabled']=
-            !empty($default_values['completionreplies']) ? 1 : 0;
-        if (empty($default_values['completionreplies'])) {
-            $default_values['completionreplies']=1;
+        $defaultvalues[$completionrepliesenabledel] = !empty($defaultvalues[$completionrepliesel]) ? 1 : 0;
+        if (empty($defaultvalues[$completionrepliesel])) {
+            $defaultvalues[$completionrepliesel] = 1;
         }
         // Tick by default if Add mode or if completion posts settings is set to 1 or more.
-        if (empty($this->_instance) || !empty($default_values['completionposts'])) {
-            $default_values['completionpostsenabled'] = 1;
+        if (empty($this->_instance) || !empty($defaultvalues[$completionpostsel])) {
+            $defaultvalues[$completionpostsenabledel] = 1;
         } else {
-            $default_values['completionpostsenabled'] = 0;
+            $defaultvalues[$completionpostsenabledel] = 0;
         }
-        if (empty($default_values['completionposts'])) {
-            $default_values['completionposts']=1;
+        if (empty($defaultvalues[$completionpostsel])) {
+            $defaultvalues[$completionpostsel] = 1;
         }
     }
 
@@ -262,36 +444,85 @@ class mod_digestforum_mod_form extends moodleform_mod {
      * @return array Array of string IDs of added items, empty array if none
      */
     public function add_completion_rules() {
-        $mform =& $this->_form;
+        $mform = $this->_form;
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionpostsenabled', '', get_string('completionposts','digestforum'));
-        $group[] =& $mform->createElement('text', 'completionposts', '', array('size'=>3));
-        $mform->setType('completionposts',PARAM_INT);
-        $mform->addGroup($group, 'completionpostsgroup', get_string('completionpostsgroup','digestforum'), array(' '), false);
-        $mform->disabledIf('completionposts','completionpostsenabled','notchecked');
+        $suffix = $this->get_suffix();
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completiondiscussionsenabled', '', get_string('completiondiscussions','digestforum'));
-        $group[] =& $mform->createElement('text', 'completiondiscussions', '', array('size'=>3));
-        $mform->setType('completiondiscussions',PARAM_INT);
-        $mform->addGroup($group, 'completiondiscussionsgroup', get_string('completiondiscussionsgroup','digestforum'), array(' '), false);
-        $mform->disabledIf('completiondiscussions','completiondiscussionsenabled','notchecked');
+        $group = [];
+        $completionpostsenabledel = 'completionpostsenabled' . $suffix;
+        $group[] =& $mform->createElement('checkbox', $completionpostsenabledel, '', get_string('completionposts', 'digestforum'));
+        $completionpostsel = 'completionposts' . $suffix;
+        $group[] =& $mform->createElement('text', $completionpostsel, '', ['size' => 3]);
+        $mform->setType($completionpostsel, PARAM_INT);
+        $completionpostsgroupel = 'completionpostsgroup' . $suffix;
+        $mform->addGroup($group, $completionpostsgroupel, '', ' ', false);
+        $mform->hideIf($completionpostsel, $completionpostsenabledel, 'notchecked');
 
-        $group=array();
-        $group[] =& $mform->createElement('checkbox', 'completionrepliesenabled', '', get_string('completionreplies','digestforum'));
-        $group[] =& $mform->createElement('text', 'completionreplies', '', array('size'=>3));
-        $mform->setType('completionreplies',PARAM_INT);
-        $mform->addGroup($group, 'completionrepliesgroup', get_string('completionrepliesgroup','digestforum'), array(' '), false);
-        $mform->disabledIf('completionreplies','completionrepliesenabled','notchecked');
+        $group = [];
+        $completiondiscussionsenabledel = 'completiondiscussionsenabled' . $suffix;
+        $group[] =& $mform->createElement(
+            'checkbox',
+            $completiondiscussionsenabledel,
+            '',
+            get_string('completiondiscussions', 'digestforum')
+        );
+        $completiondiscussionsel = 'completiondiscussions' . $suffix;
+        $group[] =& $mform->createElement('text', $completiondiscussionsel, '', ['size' => 3]);
+        $mform->setType($completiondiscussionsel, PARAM_INT);
+        $completiondiscussionsgroupel = 'completiondiscussionsgroup' . $suffix;
+        $mform->addGroup($group, $completiondiscussionsgroupel, '', ' ', false);
+        $mform->hideIf($completiondiscussionsel, $completiondiscussionsenabledel, 'notchecked');
 
-        return array('completiondiscussionsgroup','completionrepliesgroup','completionpostsgroup');
+        $group = [];
+        $completionrepliesenabledel = 'completionrepliesenabled' . $suffix;
+        $group[] =& $mform->createElement(
+            'checkbox',
+            $completionrepliesenabledel,
+            '',
+            get_string('completionreplies', 'digestforum'),
+        );
+        $completionrepliesel = 'completionreplies' . $suffix;
+        $group[] =& $mform->createElement('text', $completionrepliesel, '', ['size' => 3]);
+        $mform->setType($completionrepliesel, PARAM_INT);
+        $completionrepliesgroupel = 'completionrepliesgroup' . $suffix;
+        $mform->addGroup($group, $completionrepliesgroupel, '', ' ', false);
+        $mform->hideIf($completionrepliesel, $completionrepliesenabledel, 'notchecked');
+
+        return [$completiondiscussionsgroupel, $completionrepliesgroupel, $completionpostsgroupel];
     }
 
-    function completion_rule_enabled($data) {
-        return (!empty($data['completiondiscussionsenabled']) && $data['completiondiscussions']!=0) ||
-            (!empty($data['completionrepliesenabled']) && $data['completionreplies']!=0) ||
-            (!empty($data['completionpostsenabled']) && $data['completionposts']!=0);
+    #[\Override]
+    public function completion_rule_enabled($data) {
+        $suffix = $this->get_suffix();
+        return (!empty($data['completiondiscussionsenabled' . $suffix]) && $data['completiondiscussions' . $suffix] != 0) ||
+            (!empty($data['completionrepliesenabled' . $suffix]) && $data['completionreplies' . $suffix] != 0) ||
+            (!empty($data['completionpostsenabled' . $suffix]) && $data['completionposts' . $suffix] != 0);
+    }
+
+    /**
+     * Return submitted data if properly submitted or returns NULL if validation fails or
+     * if there is no submitted data.
+     *
+     * Do not override this method, override data_postprocessing() instead.
+     *
+     * @return object submitted data; NULL if not valid or not submitted or cancelled
+     */
+    public function get_data() {
+        $data = parent::get_data();
+        if ($data) {
+            $itemname = 'digestforum';
+            $component = 'mod_digestforum';
+            $gradepassfieldname = component_gradeitems::get_field_name_for_itemname($component, $itemname, 'gradepass');
+
+            // Convert the grade pass value - we may be using a language which uses commas,
+            // rather than decimal points, in numbers. These need to be converted so that
+            // they can be added to the DB.
+            if (isset($data->{$gradepassfieldname})) {
+                $data->{$gradepassfieldname} = unformat_float($data->{$gradepassfieldname});
+            }
+        }
+
+        return $data;
     }
 
     /**
@@ -304,19 +535,20 @@ class mod_digestforum_mod_form extends moodleform_mod {
      */
     public function data_postprocessing($data) {
         parent::data_postprocessing($data);
-        // Turn off completion settings if the checkboxes aren't ticked
+        // Turn off completion settings if the checkboxes aren't ticked.
         if (!empty($data->completionunlocked)) {
-            $autocompletion = !empty($data->completion) && $data->completion==COMPLETION_TRACKING_AUTOMATIC;
-            if (empty($data->completiondiscussionsenabled) || !$autocompletion) {
-                $data->completiondiscussions = 0;
+            $suffix = $this->get_suffix();
+            $completion = $data->{'completion' . $suffix};
+            $autocompletion = !empty($completion) && $completion == COMPLETION_TRACKING_AUTOMATIC;
+            if (empty($data->{'completiondiscussionsenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completiondiscussions' . $suffix} = 0;
             }
-            if (empty($data->completionrepliesenabled) || !$autocompletion) {
-                $data->completionreplies = 0;
+            if (empty($data->{'completionrepliesenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completionreplies' . $suffix} = 0;
             }
-            if (empty($data->completionpostsenabled) || !$autocompletion) {
-                $data->completionposts = 0;
+            if (empty($data->{'completionpostsenabled' . $suffix}) || !$autocompletion) {
+                $data->{'completionposts' . $suffix} = 0;
             }
         }
     }
 }
-

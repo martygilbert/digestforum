@@ -1,0 +1,8 @@
+{
+    "subplugintypes": {
+        "digestforumreport": "report"
+    },
+    "plugintypes": {
+        "digestforumreport": "mod/digestforum/report"
+    }
+}

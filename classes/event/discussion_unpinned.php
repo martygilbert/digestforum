@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
  * The mod_digestforum discussion unpinned event.
  *
@@ -22,7 +23,6 @@
  */
 
 namespace mod_digestforum\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * The mod_digestforum discussion unpinned event.
@@ -49,7 +49,8 @@ class discussion_unpinned extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the digestforum {$this->other['digestforumid']}";
+        return "The user {$this->userid} has unpinned the discussion {$this->objectid} in the digestforum " .
+            "{$this->other['digestforumid']}";
     }
 
     /**
@@ -67,18 +68,7 @@ class discussion_unpinned extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $this->objectid));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
-        return array($this->courseid, 'digestforum', 'unpin discussion', $logurl, $this->objectid, $this->contextinstanceid);
+        return new \moodle_url('/mod/digestforum/discuss.php', ['d' => $this->objectid]);
     }
 
     /**
@@ -106,7 +96,7 @@ class discussion_unpinned extends \core\event\base {
      * @return array
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion');
+        return ['db' => 'digestforum_discussions', 'restore' => 'digestforum_discussion'];
     }
 
     /**
@@ -115,8 +105,8 @@ class discussion_unpinned extends \core\event\base {
      * @return array
      */
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

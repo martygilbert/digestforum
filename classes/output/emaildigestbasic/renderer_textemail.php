@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output\emaildigestbasic;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer_textemail extends \mod_digestforum\output\email\renderer_textemail {
-
     /**
      * The template name for this renderer.
      *
@@ -63,7 +60,8 @@ class renderer_textemail extends \mod_digestforum\output\email\renderer_textemai
             $post->id,
             [
                 'includetoken' => true,
-            ]);
+            ]
+        );
         return format_text_email($message, $post->messageformat);
     }
 }

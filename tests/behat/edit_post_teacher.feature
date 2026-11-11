@@ -16,26 +16,18 @@ Feature: Teachers can edit or delete any digestforum post
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Description | Test digestforum description |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Teacher post subject |
-      | Message | Teacher post message |
-    And I log out
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I reply "Teacher post subject" post from "Test digestforum name" digestforum with:
-      | Subject | Student post subject |
-      | Message | Student post message |
+    And the following "activities" exist:
+      | activity   | name              | course | idnumber |
+      | digestforum      | Test digestforum name   | C1     | digestforum1   |
+    And the following "mod_digestforum > discussions" exist:
+      | digestforum  | course | user     | name                 | message              |
+      | digestforum1 | C1     | teacher1 | Teacher post subject | Teacher post message |
+    And the following "mod_digestforum > posts" exist:
+      | user     | parentsubject        | subject              | message              |
+      | student1 | Teacher post subject | Student post subject | Student post message |
 
   Scenario: A teacher can delete another user's posts
-    Given I log out
-    And I log in as "teacher1"
-    When I am on "Course 1" course homepage
-    And I follow "Test digestforum name"
+    When I am on the "Test digestforum name" "digestforum activity" page logged in as teacher1
     And I follow "Teacher post subject"
     And I click on "Delete" "link" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ')][contains(., 'Student post subject')]" "xpath_element"
     And I press "Continue"
@@ -43,10 +35,7 @@ Feature: Teachers can edit or delete any digestforum post
     And I should not see "Student post message"
 
   Scenario: A teacher can edit another user's posts
-    Given I log out
-    And I log in as "teacher1"
-    When I am on "Course 1" course homepage
-    And I follow "Test digestforum name"
+    When I am on the "Test digestforum name" "digestforum activity" page logged in as teacher1
     And I follow "Teacher post subject"
     And I click on "Edit" "link" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ')][contains(., 'Student post subject')]" "xpath_element"
     And I set the following fields to these values:
@@ -57,6 +46,7 @@ Feature: Teachers can edit or delete any digestforum post
     And I should see "Edited by Teacher 1 - original submission"
 
   Scenario: A student can't edit or delete another user's posts
-    When I follow "Teacher post subject"
+    When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
+    And I follow "Teacher post subject"
     Then I should not see "Edit" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ')][contains(., 'Teacher post subject')]" "xpath_element"
     And I should not see "Delete" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ')][contains(., 'Teacher post subject')]" "xpath_element"

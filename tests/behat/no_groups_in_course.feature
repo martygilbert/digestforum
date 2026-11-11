@@ -14,73 +14,61 @@ Feature: Posting to digestforums in a course with no groups behaves correctly
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
     And the following "activities" exist:
-      | activity   | name                   | intro                         | course | idnumber     | groupmode |
-      | digestforum      | Standard digestforum         | Standard digestforum description    | C1     | nogroups     | 0         |
-      | digestforum      | Visible digestforum          | Visible digestforum description     | C1     | visgroups    | 2         |
-      | digestforum      | Separate digestforum         | Separate digestforum description    | C1     | sepgroups    | 1         |
+      | activity   | name                   | course | idnumber     | groupmode |
+      | digestforum      | Standard digestforum         | C1     | nogroups     | 0         |
+      | digestforum      | Visible digestforum          | C1     | visgroups    | 2         |
+      | digestforum      | Separate digestforum         | C1     | sepgroups    | 1         |
 
   Scenario: Teachers can post in standard digestforum
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Standard digestforum"
-    When I click on "Add a new discussion topic" "button"
+    Given I am on the "Standard digestforum" "digestforum activity" page logged in as teacher1
+    When I click on "Add discussion topic" "link"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
   Scenario: Teachers can post in digestforum with separate groups
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Separate digestforum"
-    When I click on "Add a new discussion topic" "button"
+    Given I am on the "Separate digestforum" "digestforum activity" page logged in as teacher1
+    When I click on "Add discussion topic" "link"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
   Scenario: Teachers can post in digestforum with visible groups
-    Given I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Visible digestforum"
-    When I click on "Add a new discussion topic" "button"
+    Given I am on the "Visible digestforum" "digestforum activity" page logged in as teacher1
+    When I click on "Add discussion topic" "link"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Teacher -> All participants |
       | Message | Teacher -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Teacher -> All participants"
 
   Scenario: Students can post in standard digestforum
-    Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I follow "Standard digestforum"
-    When I click on "Add a new discussion topic" "button"
+    Given I am on the "Standard digestforum" "digestforum activity" page logged in as student1
+    When I click on "Add discussion topic" "link"
     Then I should not see "Post a copy to all groups"
     And I set the following fields to these values:
       | Subject | Student -> All participants |
       | Message | Student -> All participants |
-    And I press "Post to digestforum"
+    And I press "Post to digest forum"
     And I wait to be redirected
     And I should see "Student -> All participants"
 
   Scenario: Students cannot post in digestforum with separate groups
-    Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    When I follow "Separate digestforum"
+    When I am on the "Separate digestforum" "digestforum activity" page logged in as student1
     Then I should see "You are not able to create a discussion because you are not a member of any group."
-    And I should not see "Add a new discussion topic"
+    And I should not see "Add discussion topic"
 
   Scenario: Students cannot post in digestforum with visible groups
-    Given I log in as "student1"
-    And I am on "Course 1" course homepage
-    When I follow "Visible digestforum"
+    When I am on the "Visible digestforum" "digestforum activity" page logged in as student1
     Then I should see "You are not able to create a discussion because you are not a member of any group."
-    And I should not see "Add a new discussion topic"
+    And I should not see "Add discussion topic"

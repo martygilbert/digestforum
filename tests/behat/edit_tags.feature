@@ -16,41 +16,36 @@ Feature: Edited digestforum posts handle tags correctly
       | user | course | role |
       | teacher1 | C1 | editingteacher |
       | student1 | C1 | student |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Description | Test digestforum description |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Teacher post subject |
-      | Message | Teacher post message |
-    And I log out
+    And the following "activity" exists:
+      | course   | C1              |
+      | activity | digestforum           |
+      | name     | Test digestforum name |
+      | idnumber | digestforum1          |
+    And the following "mod_digestforum > discussions" exist:
+      | user     | digestforum  | name                 | message              |
+      | teacher1 | digestforum1 | Teacher post subject | Teacher post message |
 
   @javascript
   Scenario: Forum post edition of custom tags works as expected
-    Given I log in as "student1"
-    And I am on "Course 1" course homepage
+    Given I am on the "Course 1" Course page logged in as student1
     And I reply "Teacher post subject" post from "Test digestforum name" digestforum with:
       | Subject | Student post subject |
       | Message | Student post message |
       | Tags    | Tag1                 |
-    Then I should see "Tag1" in the ".digestforum-tags" "css_element"
+    Then I should see "Tag1" in the ".tag_list" "css_element"
     And I click on "Edit" "link" in the "//div[@aria-label='Student post subject by Student 1']" "xpath_element"
     Then I should see "Tag1" in the ".form-autocomplete-selection" "css_element"
 
   @javascript
   Scenario: Forum post edition of standard tags works as expected
-    Given I log in as "admin"
-    And I navigate to "Appearance > Manage tags" in site administration
-    And I follow "Default collection"
-    And I follow "Add standard tags"
-    And I set the field "Enter comma-separated list of new tags" to "OT1, OT2, OT3"
-    And I press "Continue"
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I follow "Test digestforum"
-    And I click on "Add a new discussion topic" "button"
+    Given the following "tags" exist:
+      | name | isstandard |
+      | OT1  | 1          |
+      | OT2  | 1          |
+      | OT3  | 1          |
+    And I am on the "Test digestforum name" "digestforum activity" page logged in as teacher1
+    And I click on "Add discussion topic" "link"
+    And I click on "Advanced" "button"
     And I expand all fieldsets
     And I open the autocomplete suggestions list
     And I should see "OT1" in the ".form-autocomplete-suggestions" "css_element"
@@ -60,9 +55,9 @@ Feature: Edited digestforum posts handle tags correctly
       | Subject | Student post subject |
       | Message | Student post message |
       | Tags | OT1, OT3 |
-    Then I should see "OT1" in the ".digestforum-tags" "css_element"
-    And I should see "OT3" in the ".digestforum-tags" "css_element"
-    And I should not see "OT2" in the ".digestforum-tags" "css_element"
+    Then I should see "OT1" in the ".tag_list" "css_element"
+    And I should see "OT3" in the ".tag_list" "css_element"
+    And I should not see "OT2" in the ".tag_list" "css_element"
     And I click on "Edit" "link" in the "//div[@aria-label='Student post subject by Teacher 1']" "xpath_element"
     And I should see "OT1" in the ".form-autocomplete-selection" "css_element"
     And I should see "OT3" in the ".form-autocomplete-selection" "css_element"

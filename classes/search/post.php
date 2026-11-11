@@ -36,21 +36,20 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class post extends \core_search\base_mod {
+    /**
+     * @var array Internal quick static cache.
+     */
+    protected $digestforumsdata = [];
 
     /**
      * @var array Internal quick static cache.
      */
-    protected $digestforumsdata = array();
+    protected $discussionsdata = [];
 
     /**
      * @var array Internal quick static cache.
      */
-    protected $discussionsdata = array();
-
-    /**
-     * @var array Internal quick static cache.
-     */
-    protected $postsdata = array();
+    protected $postsdata = [];
 
     /**
      * Returns recordset containing required data for indexing digestforum posts.
@@ -59,11 +58,14 @@ class post extends \core_search\base_mod {
      * @param \context|null $context Optional context to restrict scope of returned results
      * @return moodle_recordset|null Recordset (or null if no results)
      */
-    public function get_document_recordset($modifiedfrom = 0, \context $context = null) {
+    public function get_document_recordset($modifiedfrom = 0, ?\context $context = null) {
         global $DB;
 
-        list ($contextjoin, $contextparams) = $this->get_context_restriction_sql(
-                $context, 'digestforum', 'f');
+         [$contextjoin, $contextparams] = $this->get_context_restriction_sql(
+             $context,
+             'digestforum',
+             'f'
+         );
         if ($contextjoin === null) {
             return null;
         }
@@ -84,7 +86,7 @@ class post extends \core_search\base_mod {
      * @param array    $options
      * @return \core_search\document
      */
-    public function get_document($record, $options = array()) {
+    public function get_document($record, $options = []) {
 
         try {
             $cm = $this->get_cm('digestforum', $record->digestforumid, $record->courseid);
@@ -140,10 +142,10 @@ class post extends \core_search\base_mod {
      * @return array
      */
     public function get_search_fileareas() {
-        $fileareas = array(
+        $fileareas = [
             'attachment',
-            'post'
-        );
+            'post',
+        ];
 
         return $fileareas;
     }
@@ -163,7 +165,7 @@ class post extends \core_search\base_mod {
             $post = $this->get_post($postid);
         } catch (\dml_missing_record_exception $e) {
             unset($this->postsdata[$postid]);
-            debugging('Could not get record to attach files to '.$document->get('id'), DEBUG_DEVELOPER);
+            debugging('Could not get record to attach files to ' . $document->get('id'), DEBUG_DEVELOPER);
             return;
         }
 
@@ -232,7 +234,7 @@ class post extends \core_search\base_mod {
     public function get_doc_url(\core_search\document $doc) {
         // The post is already in static cache, we fetch it in self::search_access.
         $post = $this->get_post($doc->get('itemid'));
-        return new \moodle_url('/mod/digestforum/discuss.php', array('d' => $post->discussion));
+        return new \moodle_url('/mod/digestforum/discuss.php', ['d' => $post->discussion]);
     }
 
     /**
@@ -243,7 +245,7 @@ class post extends \core_search\base_mod {
      */
     public function get_context_url(\core_search\document $doc) {
         $contextmodule = \context::instance_by_id($doc->get('contextid'));
-        return new \moodle_url('/mod/digestforum/view.php', array('id' => $contextmodule->instanceid));
+        return new \moodle_url('/mod/digestforum/view.php', ['id' => $contextmodule->instanceid]);
     }
 
     /**
@@ -276,7 +278,7 @@ class post extends \core_search\base_mod {
         global $DB;
 
         if (empty($this->digestforumsdata[$digestforumid])) {
-            $this->digestforumsdata[$digestforumid] = $DB->get_record('digestforum', array('id' => $digestforumid), '*', MUST_EXIST);
+            $this->digestforumsdata[$digestforumid] = $DB->get_record('digestforum', ['id' => $digestforumid], '*', MUST_EXIST);
         }
         return $this->digestforumsdata[$digestforumid];
     }
@@ -292,8 +294,12 @@ class post extends \core_search\base_mod {
         global $DB;
 
         if (empty($this->discussionsdata[$discussionid])) {
-            $this->discussionsdata[$discussionid] = $DB->get_record('digestforum_discussions',
-                array('id' => $discussionid), '*', MUST_EXIST);
+            $this->discussionsdata[$discussionid] = $DB->get_record(
+                'digestforum_discussions',
+                ['id' => $discussionid],
+                '*',
+                MUST_EXIST
+            );
         }
         return $this->discussionsdata[$discussionid];
     }
@@ -307,7 +313,7 @@ class post extends \core_search\base_mod {
     protected function get_contexts_to_reindex_extra_sql() {
         return [
             'JOIN {digestforum_discussions} fd ON fd.course = cm.course AND fd.digestforum = cm.instance',
-            'MAX(fd.timemodified) DESC'
+            'MAX(fd.timemodified) DESC',
         ];
     }
 

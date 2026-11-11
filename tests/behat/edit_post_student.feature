@@ -15,16 +15,15 @@ Feature: Students can edit or delete their digestforum posts within a set time l
       | user | course | role |
       | student1 | C1 | student |
     And the following "activities" exist:
-      | activity   | name                   | intro                   | course  | idnumber  |
-      | digestforum      | Test digestforum name        | Test digestforum description  | C1      | digestforum     |
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Forum post subject |
-      | Message | This is the body |
+      | activity   | name                   | course  | idnumber  |
+      | digestforum      | Test digestforum name        | C1      | digestforum     |
 
   Scenario: Edit digestforum post
-    Given I follow "Forum post subject"
+    Given the following "mod_digestforum > discussions" exist:
+      | user     | digestforum | name               | message          |
+      | student1 | digestforum | Forum post subject | This is the body |
+    And I am on the "Test digestforum name" "digestforum activity" page logged in as "student1"
+    And I follow "Forum post subject"
     And I follow "Edit"
     When I set the following fields to these values:
       | Subject | Edited post subject |
@@ -35,26 +34,29 @@ Feature: Students can edit or delete their digestforum posts within a set time l
     And I should see "Edited post body"
 
   Scenario: Delete digestforum post
-    Given I follow "Forum post subject"
+    Given the following "mod_digestforum > discussions" exist:
+      | user     | digestforum | name               | message          |
+      | student1 | digestforum | Forum post subject | This is the body |
+    And I am on the "Test digestforum name" "digestforum activity" page logged in as "student1"
+    And I follow "Forum post subject"
     When I follow "Delete"
     And I press "Continue"
     Then I should not see "Forum post subject"
 
-  @javascript @block_recent_activity
+  @block_recent_activity
   Scenario: Time limit expires
-    Given I log out
-    And I log in as "admin"
-    And I navigate to "Security > Site security settings" in site administration
-    And I set the field "Maximum time to edit posts" to "1 minutes"
-    And I press "Save changes"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add the "Recent activity" block
-    And I log out
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
-    And I should see "New digestforum posts:" in the "Recent activity" "block"
+    Given the following "blocks" exist:
+      | blockname       | contextlevel | reference | pagetypepattern | defaultregion |
+      | recent_activity | Course       | C1        | course-view-*   | side-pre      |
+    And the following config values are set as admin:
+      | maxeditingtime | 1 |
+    And the following "mod_digestforum > discussions" exist:
+      | user     | digestforum | name               | message          | timemodified       |
+      | student1 | digestforum | Forum post subject | This is the body | ##now +1 second##  |
+    And I am on the "Course 1" course page logged in as student1
+    And I should see "New digest forum posts:" in the "Recent activity" "block"
     And I should see "Forum post subject" in the "Recent activity" "block"
-    When I wait "61" seconds
+    When I wait "2" seconds
     And I follow "Forum post subject"
     Then I should not see "Edit" in the "region-main" "region"
     And I should not see "Delete" in the "region-main" "region"

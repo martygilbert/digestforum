@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum subscription created event class.
  *
@@ -77,17 +75,7 @@ class subscription_created extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/subscribers.php', array('id' => $this->other['digestforumid']));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'digestforum', 'subscribe', 'view.php?f=' . $this->other['digestforumid'],
-            $this->other['digestforumid'], $this->contextinstanceid);
+        return new \moodle_url('/mod/digestforum/subscribers.php', ['id' => $this->other['digestforumid']]);
     }
 
     /**
@@ -112,13 +100,15 @@ class subscription_created extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_objectid_mapping() {
-        return array('db' => 'digestforum_subscriptions', 'restore' => 'digestforum_subscription');
+        return ['db' => 'digestforum_subscriptions', 'restore' => 'digestforum_subscription'];
     }
 
+    #[\Override]
     public static function get_other_mapping() {
-        $othermapped = array();
-        $othermapped['digestforumid'] = array('db' => 'digestforum', 'restore' => 'digestforum');
+        $othermapped = [];
+        $othermapped['digestforumid'] = ['db' => 'digestforum', 'restore' => 'digestforum'];
 
         return $othermapped;
     }

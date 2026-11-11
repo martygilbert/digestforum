@@ -23,7 +23,6 @@
  */
 
 namespace mod_digestforum\output;
-defined('MOODLE_INTERNAL') || die();
 
 use html_writer;
 use moodle_url;
@@ -40,40 +39,57 @@ use templatable;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class big_search_form implements renderable, templatable {
-
+    /** @var \stdClass The course being searched. */
     public $course;
+    /** @var int Only find posts made from this time. */
     public $datefrom;
+    /** @var int Only find posts made up to this time. */
     public $dateto;
+    /** @var array The digestforums that can be searched, for the select menu. */
     public $digestforumoptions;
+    /** @var string Whole words to search for. */
     public $fullwords;
+    /** @var string Words that must not be in the posts. */
     public $notwords;
+    /** @var string An exact phrase to search for. */
     public $phrase;
+    /** @var bool Whether the whole words option is shown. */
     public $showfullwords;
+    /** @var string Text to search for in the post subjects. */
     public $subject;
+    /** @var string The name of the author to search for. */
     public $user;
+    /** @var string Words to search for. */
     public $words;
+    /** @var array Tags to search for. */
     public $tags;
     /** @var string The URL of the search form. */
     public $actionurl;
+    /** @var bool Is the user a guest user? */
+    public $guestuser;
+    /** @var bool Whether the include starredonly checkbox is checked. */
+    public $starredonly;
+    /** @var int digestforum ID. */
+    public $digestforumid;
 
     /**
      * Constructor.
      *
      * @param object $course The course.
-     * @param object $user The user.
      */
     public function __construct($course) {
-        global $DB;
+        global $DB, $USER;
         $this->course = $course;
         $this->tags = [];
+        $this->guestuser = !isloggedin() || isguestuser($USER);
         $this->showfullwords = $DB->get_dbfamily() == 'mysql' || $DB->get_dbfamily() == 'postgres';
         $this->actionurl = new moodle_url('/mod/digestforum/search.php');
 
         $digestforumoptions = ['' => get_string('alldigestforums', 'digestforum')] + digestforum_menu_list($course);
-        $this->digestforumoptions = array_map(function($option) use ($digestforumoptions) {
+        $this->digestforumoptions = array_map(function ($option) use ($digestforumoptions) {
             return [
                 'value' => $option,
-                'name' => $digestforumoptions[$option]
+                'name' => $digestforumoptions[$option],
             ];
         }, array_keys($digestforumoptions));
     }
@@ -160,6 +176,15 @@ class big_search_form implements renderable, templatable {
     }
 
     /**
+     * Set starred only value.
+     *
+     * @param mixed $value Bool.
+     */
+    public function set_starredonly($value) {
+        $this->starredonly = $value;
+    }
+
+    /**
      * Forum ID setter search criteria.
      *
      * @param int $digestforumid The digestforum ID.
@@ -168,6 +193,7 @@ class big_search_form implements renderable, templatable {
         $this->digestforumid = $digestforumid;
     }
 
+    #[\Override]
     public function export_for_template(renderer_base $output) {
         global $DB, $CFG, $PAGE;
         $data = new stdClass();
@@ -182,25 +208,30 @@ class big_search_form implements renderable, templatable {
         $data->subject = $this->subject;
         $data->user = $this->user;
         $data->showfullwords = $this->showfullwords;
+        $data->guestuser = $this->guestuser;
+        $data->starredonly = $this->starredonly;
         $data->actionurl = $this->actionurl->out(false);
 
         $tagtypestoshow = \core_tag_area::get_showstandard('mod_digestforum', 'digestforum_posts');
         $showstandard = ($tagtypestoshow != \core_tag_tag::HIDE_STANDARD);
         $typenewtags = ($tagtypestoshow != \core_tag_tag::STANDARD_ONLY);
 
-        $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = array('#tags', $typenewtags, '',
-                              get_string('entertags', 'tag'), false, $showstandard, get_string('noselection', 'form')));
+        $PAGE->requires->js_call_amd('core/form-autocomplete', 'enhance', $params = ['#tags', $typenewtags, '',
+                              get_string('entertags', 'tag'), false, $showstandard, get_string('noselection', 'form')]);
 
         $data->tagsenabled = \core_tag_tag::is_enabled('mod_digestforum', 'digestforum_posts');
         $namefield = empty($CFG->keeptagnamecase) ? 'name' : 'rawname';
-        $tags = $DB->get_records('tag',
-            array('isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_digestforum', 'digestforum_posts')),
-            $namefield, 'rawname,' . $namefield . ' as fieldname');
+        $tags = $DB->get_records(
+            'tag',
+            ['isstandard' => 1, 'tagcollid' => \core_tag_area::get_collection('mod_digestforum', 'digestforum_posts')],
+            $namefield,
+            'rawname,' . $namefield . ' as fieldname'
+        );
         $data->tags = [];
         foreach ($tags as $tag) {
             $data->tagoptions[] = ['value'    => $tag->rawname,
                                    'text'     => $tag->fieldname,
-                                   'selected' => in_array($tag->rawname, $this->tags)
+                                   'selected' => in_array($tag->rawname, $this->tags),
             ];
         }
 
@@ -214,17 +245,23 @@ class big_search_form implements renderable, templatable {
             $dateto = time() + HOURSECS;
         }
 
-        $data->datefromfields = html_writer::select_time('days', 'fromday', $datefrom)
-                              . html_writer::select_time('months', 'frommonth', $datefrom)
-                              . html_writer::select_time('years', 'fromyear', $datefrom)
-                              . html_writer::select_time('hours', 'fromhour', $datefrom)
-                              . html_writer::select_time('minutes', 'fromminute', $datefrom);
+        $data->datefromfields = html_writer::div(html_writer::select_time('days', 'fromday', $datefrom), 'mb-3 fitem ms-2')
+                              . html_writer::div(
+                                  html_writer::select_time('months', 'frommonth', $datefrom),
+                                  'mb-3 fitem ms-2'
+                              )
+                              . html_writer::div(html_writer::select_time('years', 'fromyear', $datefrom), 'mb-3 fitem ms-2')
+                              . html_writer::div(html_writer::select_time('hours', 'fromhour', $datefrom), 'mb-3 fitem ms-2')
+                              . html_writer::div(
+                                  html_writer::select_time('minutes', 'fromminute', $datefrom),
+                                  'mb-3 fitem ms-2'
+                              );
 
-        $data->datetofields = html_writer::select_time('days', 'today', $dateto)
-                            . html_writer::select_time('months', 'tomonth', $dateto)
-                            . html_writer::select_time('years', 'toyear', $dateto)
-                            . html_writer::select_time('hours', 'tohour', $dateto)
-                            . html_writer::select_time('minutes', 'tominute', $dateto);
+        $data->datetofields = html_writer::div(html_writer::select_time('days', 'today', $dateto), 'mb-3 fitem ms-2')
+                            . html_writer::div(html_writer::select_time('months', 'tomonth', $dateto), 'mb-3 fitem ms-2')
+                            . html_writer::div(html_writer::select_time('years', 'toyear', $dateto), 'mb-3 fitem ms-2')
+                            . html_writer::div(html_writer::select_time('hours', 'tohour', $dateto), 'mb-3 fitem ms-2')
+                            . html_writer::div(html_writer::select_time('minutes', 'tominute', $dateto), 'mb-3 fitem ms-2');
 
         if ($this->digestforumid && !empty($this->digestforumoptions)) {
             foreach ($this->digestforumoptions as $index => $option) {
@@ -239,5 +276,4 @@ class big_search_form implements renderable, templatable {
 
         return $data;
     }
-
 }

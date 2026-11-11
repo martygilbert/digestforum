@@ -1,5 +1,5 @@
 @mod @mod_digestforum
-Feature: Users can choose to set start and end time for display of their discussions
+Feature: Digest forum: Users can choose to set start and end time for display of their discussions
   In order to temporarly hide discussions to students
   As a teacher
   I need to set a discussion time start and time end
@@ -14,35 +14,22 @@ Feature: Users can choose to set start and end time for display of their discuss
     And the following "course enrolments" exist:
       | user | course | role |
       | student1 | C1 | student |
-    And I log in as "admin"
+    And the following "activities" exist:
+      | activity   | name            | course | idnumber | type    |
+      | digestforum      | Test digestforum name | C1     | digestforump1  | general |
+    And the following "mod_digestforum > discussions" exist:
+      | user     | digestforum   | name                           | message                              | timeend              | timestart |
+      | admin    | digestforump1 | Discussion 1                   | Discussion contents 1, first message |                      |           |
+      | admin    | digestforump1 | Discussion 2 timed not visible | Discussion contents 2, first message | ##1 Jan 2014 08:00## |           |
+      | admin    | digestforump1 | Discussion 3 timed visible now | Discussion contents 3, first message |                      | 1         |
     And the following config values are set as admin:
       | digestforum_enabletimedposts | 1 |
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Description | Test digestforum description |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Discussion 1 |
-      | Message | Discussion contents 1, first message |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject          | Discussion 2 timed not visible       |
-      | Message          | Discussion contents 2, first message |
-      | timeend[enabled] | 1 |
-      | timeend[year]    | 2014 |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject            | Discussion 3 timed visible now       |
-      | Message            | Discussion contents 3, first message |
-      | timestart[enabled] | 1 |
-    And I am on "Course 1" course homepage
-    And I follow "Test digestforum name"
+    And I am on the "Test digestforum name" "digestforum activity" page logged in as admin
     And I should see "Discussion 2 timed"
     And I should see "Discussion 3 timed"
-    And ".timedpost" "css_element" should exist
-    And I log out
-    And I log in as "student1"
-    When I am on "Course 1" course homepage
-    And I follow "Test digestforum name"
+    And "[data-region=timed-label]" "css_element" should exist
+    When I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     Then I should see "Discussion 1"
     And I should not see "Discussion 2 timed"
-    And ".timedpost" "css_element" should not exist
+    And "[data-region=timed-label]" "css_element" should not exist
     And I should see "Discussion 3 timed"

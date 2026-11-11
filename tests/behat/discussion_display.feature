@@ -1,5 +1,5 @@
-@mod @mod_digestforum
-Feature: Students can choose from 4 discussion display options and their choice is remembered
+@mod @mod_digestforum @javascript
+Feature: Digest forum: Students can choose from 4 discussion display options and their choice is remembered
   In order to read digestforum posts in a suitable view
   As a user
   I need to select which display method I want to use
@@ -14,29 +14,23 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And the following "course enrolments" exist:
       | user | course | role |
       | student1 | C1 | student |
-    And I log in as "admin"
-    And I am on "Course 1" course homepage with editing mode on
-    And I add a "Forum" to section "1" and I fill the form with:
-      | Forum name | Test digestforum name |
-      | Description | Test digestforum description |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Discussion 1 |
-      | Message | Discussion contents 1, first message |
-    And I reply "Discussion 1" post from "Test digestforum name" digestforum with:
-      | Subject | Reply 1 to discussion 1 |
-      | Message | Discussion contents 1, second message |
-    And I add a new discussion to "Test digestforum name" digestforum with:
-      | Subject | Discussion 2 |
-      | Message | Discussion contents 2, first message |
-    And I reply "Discussion 2" post from "Test digestforum name" digestforum with:
-      | Subject | Reply 1 to discussion 2 |
-      | Message | Discussion contents 2, second message |
-    And I log out
-    And I log in as "student1"
-    And I am on "Course 1" course homepage
+    And the following "activity" exists:
+      | course   | C1              |
+      | activity | digestforum           |
+      | name     | Test digestforum name |
+      | idnumber | digestforum           |
+    And the following "mod_digestforum > discussions" exist:
+      | digestforum | name | subject | message |
+      | digestforum | Discussion 1 | Discussion 1 | Discussion contents 1, first message |
+      | digestforum | Discussion 2 | Discussion 2 | Discussion contents 2, first message |
+    And the following "mod_digestforum > posts" exist:
+      | parentsubject | subject | message |
+      | Discussion 1 | Reply 1 to discussion 1 | Discussion contents 1, second message |
+      | Discussion 2 | Reply 1 to discussion 2 | Discussion contents 2, second message |
 
   Scenario: Display replies flat, with oldest first
-    Given I reply "Discussion 1" post from "Test digestforum name" digestforum with:
+    Given I am on the "Course 1" course page logged in as student1
+    And I reply "Discussion 1" post from "Test digestforum name" digestforum with:
       | Subject | Reply 2 to discussion 1 |
       | Message | Discussion contents 1, third message |
     When I select "Display replies flat, with oldest first" from the "mode" singleselect
@@ -50,7 +44,8 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And I should see "Discussion contents 2, second message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
 
   Scenario: Display replies flat, with newest first
-    Given I reply "Discussion 1" post from "Test digestforum name" digestforum with:
+    Given I am on the "Course 1" course page logged in as student1
+    And I reply "Discussion 1" post from "Test digestforum name" digestforum with:
       | Subject | Reply 2 to discussion 1 |
       | Message | Discussion contents 1, third message |
     When I select "Display replies flat, with newest first" from the "mode" singleselect
@@ -64,24 +59,24 @@ Feature: Students can choose from 4 discussion display options and their choice 
     And I should see "Discussion contents 2, third message" in the "//div[contains(concat(' ', normalize-space(@class), ' '), ' digestforumpost ') and not(contains(@class, 'starter'))]" "xpath_element"
 
   Scenario: Display replies in threaded form
-    Given I follow "Test digestforum name"
+    Given I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     And I follow "Discussion 1"
     When I select "Display replies in threaded form" from the "mode" singleselect
     Then I should see "Discussion contents 1, first message"
-    And I should see "Reply 1 to discussion 1" in the "span.digestforumthread" "css_element"
-    And I follow "Test digestforum name"
+    And I should see "Reply 1 to discussion 1" in the "div.digestforumthread" "css_element"
+    And I click on "Test digestforum name" "link" in the "page-header" "region"
     And I follow "Discussion 2"
     And the field "Display mode" matches value "Display replies in threaded form"
     And I should see "Discussion contents 2, first message"
-    And I should see "Reply 1 to discussion 2" in the "span.digestforumthread" "css_element"
+    And I should see "Reply 1 to discussion 2" in the "div.digestforumthread" "css_element"
 
   Scenario: Display replies in nested form
-    Given I follow "Test digestforum name"
+    Given I am on the "Test digestforum name" "digestforum activity" page logged in as student1
     And I follow "Discussion 1"
     When I select "Display replies in nested form" from the "mode" singleselect
     Then I should see "Discussion contents 1, first message" in the "div.firstpost.starter" "css_element"
     And I should see "Discussion contents 1, second message" in the "div.indent div.digestforumpost" "css_element"
-    And I follow "Test digestforum name"
+    And I click on "Test digestforum name" "link" in the "page-header" "region"
     And I follow "Discussion 2"
     And the field "Display mode" matches value "Display replies in nested form"
     And I should see "Discussion contents 2, first message" in the "div.firstpost.starter" "css_element"

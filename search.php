@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -16,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Search the posts in the digestforums of a course.
+ *
  * @package   mod_digestforum
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,86 +25,203 @@
 require_once('../../config.php');
 require_once('lib.php');
 
-$id = required_param('id', PARAM_INT);                  // course id
-$search = trim(optional_param('search', '', PARAM_NOTAGS));  // search string
-$page = optional_param('page', 0, PARAM_INT);   // which page to show
-$perpage = optional_param('perpage', 10, PARAM_INT);   // how many per page
-$showform = optional_param('showform', 0, PARAM_INT);   // Just show the form
+$id = required_param('id', PARAM_INT);                  // Course id.
+$search = trim(optional_param('search', '', PARAM_NOTAGS));  // Search string.
+$page = optional_param('page', 0, PARAM_INT);   // Which page to show.
+$perpage = optional_param('perpage', 10, PARAM_INT);   // How many per page.
+$showform = optional_param('showform', 0, PARAM_INT);   // Just show the form.
 
-$user    = trim(optional_param('user', '', PARAM_NOTAGS));    // Names to search for
-$userid  = trim(optional_param('userid', 0, PARAM_INT));      // UserID to search for
-$digestforumid = trim(optional_param('digestforumid', 0, PARAM_INT));      // ForumID to search for
-$subject = trim(optional_param('subject', '', PARAM_NOTAGS)); // Subject
-$phrase  = trim(optional_param('phrase', '', PARAM_NOTAGS));  // Phrase
-$words   = trim(optional_param('words', '', PARAM_NOTAGS));   // Words
-$fullwords = trim(optional_param('fullwords', '', PARAM_NOTAGS)); // Whole words
-$notwords = trim(optional_param('notwords', '', PARAM_NOTAGS));   // Words we don't want
+$user    = trim(optional_param('user', '', PARAM_NOTAGS));    // Names to search for.
+$userid  = trim(optional_param('userid', 0, PARAM_INT));      // UserID to search for.
+$digestforumid = trim(optional_param('digestforumid', 0, PARAM_INT));      // ForumID to search for.
+$subject = trim(optional_param('subject', '', PARAM_NOTAGS)); // Subject.
+$phrase  = trim(optional_param('phrase', '', PARAM_NOTAGS));  // Phrase.
+$words   = trim(optional_param('words', '', PARAM_NOTAGS));   // Words.
+$fullwords = trim(optional_param('fullwords', '', PARAM_NOTAGS)); // Whole words.
+$notwords = trim(optional_param('notwords', '', PARAM_NOTAGS));   // Words we don't want.
 $tags = optional_param_array('tags', [], PARAM_TEXT);
 
-$timefromrestrict = optional_param('timefromrestrict', 0, PARAM_INT); // Use starting date
-$fromday = optional_param('fromday', 0, PARAM_INT);      // Starting date
-$frommonth = optional_param('frommonth', 0, PARAM_INT);      // Starting date
-$fromyear = optional_param('fromyear', 0, PARAM_INT);      // Starting date
-$fromhour = optional_param('fromhour', 0, PARAM_INT);      // Starting date
-$fromminute = optional_param('fromminute', 0, PARAM_INT);      // Starting date
+$timefromrestrict = optional_param('timefromrestrict', 0, PARAM_INT); // Use starting date.
+$fromday = optional_param('fromday', 0, PARAM_INT);      // Starting date.
+$frommonth = optional_param('frommonth', 0, PARAM_INT);      // Starting date.
+$fromyear = optional_param('fromyear', 0, PARAM_INT);      // Starting date.
+$fromhour = optional_param('fromhour', 0, PARAM_INT);      // Starting date.
+$fromminute = optional_param('fromminute', 0, PARAM_INT);      // Starting date.
 if ($timefromrestrict) {
     $calendartype = \core_calendar\type_factory::get_calendar_instance();
     $gregorianfrom = $calendartype->convert_to_gregorian($fromyear, $frommonth, $fromday);
     $datefrom = make_timestamp($gregorianfrom['year'], $gregorianfrom['month'], $gregorianfrom['day'], $fromhour, $fromminute);
 } else {
-    $datefrom = optional_param('datefrom', 0, PARAM_INT);      // Starting date
+    $datefrom = optional_param('datefrom', 0, PARAM_INT);      // Starting date.
 }
 
-$timetorestrict = optional_param('timetorestrict', 0, PARAM_INT); // Use ending date
-$today = optional_param('today', 0, PARAM_INT);      // Ending date
-$tomonth = optional_param('tomonth', 0, PARAM_INT);      // Ending date
-$toyear = optional_param('toyear', 0, PARAM_INT);      // Ending date
-$tohour = optional_param('tohour', 0, PARAM_INT);      // Ending date
-$tominute = optional_param('tominute', 0, PARAM_INT);      // Ending date
+$timetorestrict = optional_param('timetorestrict', 0, PARAM_INT); // Use ending date.
+$today = optional_param('today', 0, PARAM_INT);      // Ending date.
+$tomonth = optional_param('tomonth', 0, PARAM_INT);      // Ending date.
+$toyear = optional_param('toyear', 0, PARAM_INT);      // Ending date.
+$tohour = optional_param('tohour', 0, PARAM_INT);      // Ending date.
+$tominute = optional_param('tominute', 0, PARAM_INT);      // Ending date.
 if ($timetorestrict) {
     $calendartype = \core_calendar\type_factory::get_calendar_instance();
     $gregorianto = $calendartype->convert_to_gregorian($toyear, $tomonth, $today);
     $dateto = make_timestamp($gregorianto['year'], $gregorianto['month'], $gregorianto['day'], $tohour, $tominute);
 } else {
-    $dateto = optional_param('dateto', 0, PARAM_INT);      // Ending date
+    $dateto = optional_param('dateto', 0, PARAM_INT);      // Ending date.
+}
+$starredonly = optional_param('starredonly', false, PARAM_BOOL); // Include only favourites.
+
+$params = [
+    'id' => $id,
+    'perpage' => $perpage,
+];
+
+if ($search !== '') {
+    $params['search'] = $search;
+}
+
+if ($page) {
+    $params['page'] = $page;
+}
+
+if ($showform) {
+    $params['showform'] = $showform;
+}
+
+if ($user !== '') {
+    $params['user'] = $user;
+}
+
+if ($userid) {
+    $params['userid'] = $userid;
+}
+
+if ($digestforumid) {
+    $params['digestforumid'] = $digestforumid;
+}
+
+if ($subject !== '') {
+    $params['subject'] = $subject;
+}
+
+if ($phrase !== '') {
+    $params['phrase'] = $phrase;
+}
+
+if ($words !== '') {
+    $params['words'] = $words;
+}
+
+if ($fullwords !== '') {
+    $params['fullwords'] = $fullwords;
+}
+
+if ($notwords !== '') {
+    $params['notwords'] = $notwords;
+}
+
+if ($timefromrestrict) {
+    $params['timefromrestrict'] = $timefromrestrict;
+}
+
+if ($fromday) {
+    $params['fromday'] = $fromday;
+}
+
+if ($fromhour) {
+    $params['fromhour'] = $fromhour;
+}
+
+if ($fromminute) {
+    $params['fromminute'] = $fromminute;
+}
+
+if ($frommonth) {
+    $params['frommonth'] = $frommonth;
+}
+
+if ($fromyear) {
+    $params['fromyear'] = $fromyear;
+}
+
+if ($datefrom) {
+    $params['datefrom'] = $datefrom;
+}
+
+if ($timetorestrict) {
+    $params['timetorestrict'] = $timetorestrict;
+}
+
+if ($today) {
+    $params['today'] = $today;
+}
+
+if ($tohour) {
+    $params['tohour'] = $tohour;
+}
+
+if ($tominute) {
+    $params['tominute'] = $tominute;
+}
+
+if ($tomonth) {
+    $params['tomonth'] = $tomonth;
+}
+
+if ($toyear) {
+    $params['toyear'] = $toyear;
+}
+
+if ($dateto) {
+    $params['dateto'] = $dateto;
+}
+
+if ($starredonly) {
+    $params['starredonly'] = $starredonly;
 }
 
 $PAGE->set_pagelayout('standard');
-$PAGE->set_url($FULLME); //TODO: this is very sloppy --skodak
+$PAGE->set_url(new moodle_url('/mod/digestforum/search.php', $params));
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
+$PAGE->set_secondary_active_tab("coursehome");
 
-if (empty($search)) {   // Check the other parameters instead
+if (empty($search)) {
+    // Check the other parameters instead.
     if (!empty($words)) {
-        $search .= ' '.$words;
+        $search .= ' ' . $words;
     }
     if (!empty($userid)) {
-        $search .= ' userid:'.$userid;
+        $search .= ' userid:' . $userid;
     }
     if (!empty($digestforumid)) {
-        $search .= ' digestforumid:'.$digestforumid;
+        $search .= ' digestforumid:' . $digestforumid;
     }
     if (!empty($user)) {
-        $search .= ' '.digestforum_clean_search_terms($user, 'user:');
+        $search .= ' ' . digestforum_clean_search_terms($user, 'user:');
     }
     if (!empty($subject)) {
-        $search .= ' '.digestforum_clean_search_terms($subject, 'subject:');
+        $search .= ' ' . digestforum_clean_search_terms($subject, 'subject:');
     }
     if (!empty($fullwords)) {
-        $search .= ' '.digestforum_clean_search_terms($fullwords, '+');
+        $search .= ' ' . digestforum_clean_search_terms($fullwords, '+');
     }
     if (!empty($notwords)) {
-        $search .= ' '.digestforum_clean_search_terms($notwords, '-');
+        $search .= ' ' . digestforum_clean_search_terms($notwords, '-');
     }
     if (!empty($phrase)) {
-        $search .= ' "'.$phrase.'"';
+        $search .= ' "' . $phrase . '"';
     }
     if (!empty($datefrom)) {
-        $search .= ' datefrom:'.$datefrom;
+        $search .= ' datefrom:' . $datefrom;
     }
     if (!empty($dateto)) {
-        $search .= ' dateto:'.$dateto;
+        $search .= ' dateto:' . $dateto;
     }
     if (!empty($tags)) {
         $search .= ' tags:' . implode(',', $tags);
+    }
+    if (!empty($starredonly)) {
+        $search .= ' starredonly:on';
     }
     $individualparams = true;
 } else {
@@ -114,16 +232,16 @@ if ($search) {
     $search = digestforum_clean_search_terms($search);
 }
 
-if (!$course = $DB->get_record('course', array('id'=>$id))) {
-    print_error('invalidcourseid');
+if (!$course = $DB->get_record('course', ['id' => $id])) {
+    throw new \moodle_exception('invalidcourseid');
 }
 
 require_course_login($course);
 
-$params = array(
+$params = [
     'context' => $PAGE->context,
-    'other' => array('searchterm' => $search)
-);
+    'other' => ['searchterm' => $search],
+];
 
 $event = \mod_digestforum\event\course_searched::create($params);
 $event->trigger();
@@ -134,9 +252,10 @@ $strsearchresults = get_string("searchresults", "digestforum");
 $strpage = get_string("page");
 
 if (!$search || $showform) {
-
-    $PAGE->navbar->add($strdigestforums, new moodle_url('/mod/digestforum/index.php', array('id'=>$course->id)));
-    $PAGE->navbar->add(get_string('advancedsearch', 'digestforum'));
+    $url = new moodle_url('/mod/digestforum/index.php', ['id' => $course->id]);
+    $PAGE->navbar->add($strdigestforums, $url);
+    $url = new moodle_url('/mod/digestforum/search.php', ['id' => $course->id]);
+    $PAGE->navbar->add(get_string('advancedsearch', 'digestforum'), $url);
 
     $PAGE->set_title($strsearch);
     $PAGE->set_heading($course->fullname);
@@ -147,22 +266,26 @@ if (!$search || $showform) {
     exit;
 }
 
-/// We need to do a search now and print results
+// We need to do a search now and print results.
 
 $searchterms = str_replace('digestforumid:', 'instance:', $search);
 $searchterms = explode(' ', $searchterms);
 
 $searchform = digestforum_search_form($course, $search);
 
-$PAGE->navbar->add($strsearch, new moodle_url('/mod/digestforum/search.php', array('id'=>$course->id)));
+$PAGE->navbar->add($strsearch, new moodle_url('/mod/digestforum/search.php', ['id' => $course->id]));
 $PAGE->navbar->add($strsearchresults);
-if (!$posts = digestforum_search_posts($searchterms, $course->id, $page*$perpage, $perpage, $totalcount)) {
+if (!$posts = digestforum_search_posts($searchterms, $course->id, $page * $perpage, $perpage, $totalcount)) {
     $PAGE->set_title($strsearchresults);
     $PAGE->set_heading($course->fullname);
     echo $OUTPUT->header();
-    echo $OUTPUT->heading($strdigestforums, 2);
-    echo $OUTPUT->heading($strsearchresults, 3);
-    echo $OUTPUT->heading(get_string("noposts", "digestforum"), 4);
+    if (!$PAGE->has_secondary_navigation()) {
+        echo $OUTPUT->heading($strdigestforums, 2);
+    }
+    $PAGE->activityheader->set_title($strsearchresults);
+    $searchresultsheadinglevel = $PAGE->activityheader->get_heading_level();
+    echo $OUTPUT->heading($strsearchresults, $searchresultsheadinglevel);
+    echo $OUTPUT->heading(get_string("noposts", "digestforum"), $searchresultsheadinglevel + 1);
 
     if (!$individualparams) {
         $words = $search;
@@ -174,10 +297,10 @@ if (!$posts = digestforum_search_posts($searchterms, $course->id, $page*$perpage
     exit;
 }
 
-//including this here to prevent it being included if there are no search results
-require_once($CFG->dirroot.'/rating/lib.php');
+// Including this here to prevent it being included if there are no search results.
+require_once($CFG->dirroot . '/rating/lib.php');
 
-//set up the ratings information that will be the same for all posts
+// Set up the ratings information that will be the same for all posts.
 $ratingoptions = new stdClass();
 $ratingoptions->component = 'mod_digestforum';
 $ratingoptions->ratingarea = 'post';
@@ -187,7 +310,7 @@ $rm = new rating_manager();
 
 $PAGE->set_title($strsearchresults);
 $PAGE->set_heading($course->fullname);
-$PAGE->set_button($searchform);
+$PAGE->add_header_action($searchform);
 echo $OUTPUT->header();
 echo '<div class="reportlink">';
 
@@ -203,120 +326,109 @@ $params = [
     'notwords'  => $notwords,
     'dateto'    => $dateto,
     'datefrom'  => $datefrom,
-    'showform'  => 1
+    'showform'  => 1,
+    'starredonly' => $starredonly,
 ];
 $url    = new moodle_url("/mod/digestforum/search.php", $params);
 foreach ($tags as $tag) {
     $url .= "&tags[]=$tag";
 }
-echo html_writer::link($url, get_string('advancedsearch', 'digestforum').'...');
+echo html_writer::link($url, get_string('advancedsearch', 'digestforum') . '...');
 
 echo '</div>';
 
 echo $OUTPUT->heading($strdigestforums, 2);
+
 echo $OUTPUT->heading("$strsearchresults: $totalcount", 3);
 
-$url = new moodle_url('search.php', array('search' => $search, 'id' => $course->id, 'perpage' => $perpage));
+$url = new moodle_url('search.php', ['search' => $search, 'id' => $course->id, 'perpage' => $perpage]);
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
-//added to implement highlighting of search terms found only in HTML markup
-//fiedorow - 9/2/2005
-$strippedsearch = str_replace('user:','',$search);
-$strippedsearch = str_replace('subject:','',$strippedsearch);
-$strippedsearch = str_replace('&quot;','',$strippedsearch);
-$searchterms = explode(' ', $strippedsearch);    // Search for words independently
+// Added to implement highlighting of search terms found only in HTML markup
+// fiedorow - 9/2/2005.
+$strippedsearch = str_replace('user:', '', $search);
+$strippedsearch = str_replace('subject:', '', $strippedsearch);
+$strippedsearch = str_replace('&quot;', '', $strippedsearch);
+$searchterms = explode(' ', $strippedsearch);    // Search for words independently.
 foreach ($searchterms as $key => $searchterm) {
-    if (preg_match('/^\-/',$searchterm)) {
+    if (preg_match('/^\-/', $searchterm)) {
         unset($searchterms[$key]);
     } else {
-        $searchterms[$key] = preg_replace('/^\+/','',$searchterm);
+        $searchterms[$key] = preg_replace('/^\+/', '', $searchterm);
     }
 }
-$strippedsearch = implode(' ', $searchterms);    // Rebuild the string
+$strippedsearch = implode(' ', $searchterms);    // Rebuild the string.
+$entityfactory = mod_digestforum\local\container::get_entity_factory();
+$vaultfactory = mod_digestforum\local\container::get_vault_factory();
+$rendererfactory = mod_digestforum\local\container::get_renderer_factory();
+$managerfactory = mod_digestforum\local\container::get_manager_factory();
+$legacydatamapperfactory = mod_digestforum\local\container::get_legacy_data_mapper_factory();
+$digestforumdatamapper = $legacydatamapperfactory->get_digestforum_data_mapper();
+
+$discussionvault = $vaultfactory->get_discussion_vault();
+$discussionids = array_keys(array_reduce($posts, function ($carry, $post) {
+    $carry[$post->discussion] = true;
+    return $carry;
+}, []));
+$discussions = $discussionvault->get_from_ids($discussionids);
+$discussionsbyid = array_reduce($discussions, function ($carry, $discussion) {
+    $carry[$discussion->get_id()] = $discussion;
+    return $carry;
+}, []);
+
+$digestforumvault = $vaultfactory->get_digestforum_vault();
+$digestforumids = array_keys(array_reduce($discussions, function ($carry, $discussion) {
+    $carry[$discussion->get_digestforum_id()] = true;
+    return $carry;
+}, []));
+$digestforums = $digestforumvault->get_from_ids($digestforumids);
+$digestforumsbyid = array_reduce($digestforums, function ($carry, $digestforum) {
+    $carry[$digestforum->get_id()] = $digestforum;
+    return $carry;
+}, []);
+
+$postids = array_map(function ($post) {
+    return $post->id;
+}, $posts);
+
+$poststorender = [];
 
 foreach ($posts as $post) {
-
     // Replace the simple subject with the three items digestforum name -> thread name -> subject
     // (if all three are appropriate) each as a link.
-    if (! $discussion = $DB->get_record('digestforum_discussions', array('id' => $post->discussion))) {
-        print_error('invaliddiscussionid', 'digestforum');
-    }
-    if (! $digestforum = $DB->get_record('digestforum', array('id' => "$discussion->digestforum"))) {
-        print_error('invaliddigestforumid', 'digestforum');
+    if (!isset($discussionsbyid[$post->discussion])) {
+        throw new \moodle_exception('invaliddiscussionid', 'digestforum');
     }
 
-    if (!$cm = get_coursemodule_from_instance('digestforum', $digestforum->id)) {
-        print_error('invalidcoursemodule');
+    $discussion = $discussionsbyid[$post->discussion];
+    if (!isset($digestforumsbyid[$discussion->get_digestforum_id()])) {
+        throw new \moodle_exception('invaliddigestforumid', 'digestforum');
     }
 
-    $post->subject = highlight($strippedsearch, $post->subject);
-    $discussion->name = highlight($strippedsearch, $discussion->name);
+    $digestforum = $digestforumsbyid[$discussion->get_digestforum_id()];
+    $capabilitymanager = $managerfactory->get_capability_manager($digestforum);
+    $postentity = $entityfactory->get_post_from_stdclass($post);
 
-    $fullsubject = "<a href=\"view.php?f=$digestforum->id\">".format_string($digestforum->name,true)."</a>";
-    if ($digestforum->type != 'single') {
-        $fullsubject .= " -> <a href=\"discuss.php?d=$discussion->id\">".format_string($discussion->name,true)."</a>";
-        if ($post->parent != 0) {
-            $fullsubject .= " -> <a href=\"discuss.php?d=$post->discussion&amp;parent=$post->id\">".format_string($post->subject,true)."</a>";
-        }
+    if (!$capabilitymanager->can_view_post($USER, $discussion, $postentity)) {
+        // Don't render posts that the user can't view.
+        continue;
     }
 
-    $post->subject = $fullsubject;
-    $post->subjectnoformat = true;
-
-    //add the ratings information to the post
-    //Unfortunately seem to have do this individually as posts may be from different digestforums
-    if ($digestforum->assessed != RATING_AGGREGATE_NONE) {
-        $modcontext = context_module::instance($cm->id);
-        $ratingoptions->context = $modcontext;
-        $ratingoptions->items = array($post);
-        $ratingoptions->aggregate = $digestforum->assessed;//the aggregation method
-        $ratingoptions->scaleid = $digestforum->scale;
-        $ratingoptions->assesstimestart = $digestforum->assesstimestart;
-        $ratingoptions->assesstimefinish = $digestforum->assesstimefinish;
-        $postswithratings = $rm->get_ratings($ratingoptions);
-
-        if ($postswithratings && count($postswithratings)==1) {
-            $post = $postswithratings[0];
-        }
+    if ($postentity->is_deleted()) {
+        // Don't render deleted posts.
+        continue;
     }
 
-    // Identify search terms only found in HTML markup, and add a warning about them to
-    // the start of the message text. However, do not do the highlighting here. digestforum_print_post
-    // will do it for us later.
-    $missing_terms = "";
-
-    $options = new stdClass();
-    $options->trusted = $post->messagetrust;
-    $post->message = highlight($strippedsearch,
-                    format_text($post->message, $post->messageformat, $options, $course->id),
-                    0, '<fgw9sdpq4>', '</fgw9sdpq4>');
-
-    foreach ($searchterms as $searchterm) {
-        if (preg_match("/$searchterm/i",$post->message) && !preg_match('/<fgw9sdpq4>'.$searchterm.'<\/fgw9sdpq4>/i',$post->message)) {
-            $missing_terms .= " $searchterm";
-        }
-    }
-
-    $post->message = str_replace('<fgw9sdpq4>', '<span class="highlight">', $post->message);
-    $post->message = str_replace('</fgw9sdpq4>', '</span>', $post->message);
-
-    if ($missing_terms) {
-        $strmissingsearchterms = get_string('missingsearchterms','digestforum');
-        $post->message = '<p class="highlight2">'.$strmissingsearchterms.' '.$missing_terms.'</p>'.$post->message;
-    }
-
-    // Prepare a link to the post in context, to be displayed after the digestforum post.
-    $fulllink = "<a href=\"discuss.php?d=$post->discussion#p$post->id\">".get_string("postincontext", "digestforum")."</a>";
-
-    // Message is now html format.
-    if ($post->messageformat != FORMAT_HTML) {
-        $post->messageformat = FORMAT_HTML;
-    }
-
-    // Now pring the post.
-    digestforum_print_post($post, $discussion, $digestforum, $cm, $course, false, false, false,
-            $fulllink, '', -99, false);
+    $poststorender[] = $postentity;
 }
+
+$renderer = $rendererfactory->get_posts_search_results_renderer($searchterms);
+echo $renderer->render(
+    $USER,
+    $digestforumsbyid,
+    $discussionsbyid,
+    $poststorender
+);
 
 echo $OUTPUT->paging_bar($totalcount, $page, $perpage, $url);
 
@@ -330,7 +442,8 @@ echo $OUTPUT->footer();
   * @return void The function prints the form.
   */
 function digestforum_print_big_search_form($course) {
-    global $PAGE, $words, $subject, $phrase, $user, $fullwords, $notwords, $datefrom, $dateto, $digestforumid, $tags;
+    global $PAGE, $words, $subject, $phrase, $user, $fullwords, $notwords, $datefrom,
+           $dateto, $digestforumid, $tags, $starredonly;
 
     $renderable = new \mod_digestforum\output\big_search_form($course, $user);
     $renderable->set_words($words);
@@ -343,6 +456,7 @@ function digestforum_print_big_search_form($course) {
     $renderable->set_user($user);
     $renderable->set_digestforumid($digestforumid);
     $renderable->set_tags($tags);
+    $renderable->set_starredonly($starredonly);
 
     $output = $PAGE->get_renderer('mod_digestforum');
     echo $output->render($renderable);
@@ -351,20 +465,19 @@ function digestforum_print_big_search_form($course) {
 /**
  * This function takes each word out of the search string, makes sure they are at least
  * two characters long and returns an string of the space-separated search
- * terms.
+ * terms. The two character minimum is hardcoded.
  *
  * @param string $words String containing space-separated strings to search for.
  * @param string $prefix String to prepend to the each token taken out of $words.
  * @return string The filtered search terms, separated by spaces.
- * @todo Take the hardcoded limit out of this function and put it into a user-specified parameter.
  */
-function digestforum_clean_search_terms($words, $prefix='') {
+function digestforum_clean_search_terms($words, $prefix = '') {
     $searchterms = explode(' ', $words);
     foreach ($searchterms as $key => $searchterm) {
         if (strlen($searchterm) < 2) {
             unset($searchterms[$key]);
         } else if ($prefix) {
-            $searchterms[$key] = $prefix.$searchterm;
+            $searchterms[$key] = $prefix . $searchterm;
         }
     }
     return trim(implode(' ', $searchterms));
@@ -376,8 +489,8 @@ function digestforum_clean_search_terms($words, $prefix='') {
   * @param stdClass $course The Course to use.
   * @return array A set of formatted digestforum names stored against the digestforum id.
   */
-function digestforum_menu_list($course)  {
-    $menu = array();
+function digestforum_menu_list($course) {
+    $menu = [];
 
     $modinfo = get_fast_modinfo($course);
     if (empty($modinfo->instances['digestforum'])) {

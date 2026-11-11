@@ -14,13 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * The module digestforums tests
- *
- * @package    mod_digestforum
- * @copyright  2013 Frédéric Massart
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace mod_digestforum;
+
+use mod_digestforum_generator;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -29,44 +25,58 @@ require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 require_once($CFG->dirroot . '/mod/digestforum/locallib.php');
 require_once($CFG->dirroot . '/rating/lib.php');
 
-class mod_digestforum_lib_testcase extends advanced_testcase {
-
-    public function setUp() {
+/**
+ * The mod_digestforum lib.php tests.
+ *
+ * @package    mod_digestforum
+ * @copyright  2013 Frédéric Massart
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_tp_get_course_unread_posts')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_tp_count_digestforum_unread_posts')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_get_user_posted_mailnow')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_check_throttling')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_count_discussions')]
+#[\PHPUnit\Framework\Attributes\CoversFunction('digestforum_reset_userdata')]
+final class lib_test extends \advanced_testcase {
+    public function setUp(): void {
+        parent::setUp();
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
+        parent::tearDown();
     }
 
-    public function test_digestforum_trigger_content_uploaded_event() {
+    public function test_digestforum_trigger_content_uploaded_event(): void {
         $this->resetAfterTest();
 
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
-        $context = context_module::instance($digestforum->cmid);
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $context = \context_module::instance($digestforum->cmid);
 
         $this->setUser($user->id);
-        $fakepost = (object) array('id' => 123, 'message' => 'Yay!', 'discussion' => 100);
+        $fakepost = (object) ['id' => 123, 'message' => 'Yay!', 'discussion' => 100];
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         $fs = get_file_storage();
-        $dummy = (object) array(
+        $dummy = (object) [
             'contextid' => $context->id,
             'component' => 'mod_digestforum',
             'filearea' => 'attachment',
             'itemid' => $fakepost->id,
             'filepath' => '/',
-            'filename' => 'myassignmnent.pdf'
-        );
+            'filename' => 'myassignmnent.pdf',
+        ];
         $fi = $fs->create_file_from_string($dummy, 'Content of ' . $dummy->filename);
 
-        $data = new stdClass();
+        $data = new \stdClass();
         $sink = $this->redirectEvents();
         digestforum_trigger_content_uploaded_event($fakepost, $cm, 'some triggered from value');
         $events = $sink->get_events();
@@ -80,7 +90,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($fakepost->discussion, $event->other['discussionid']);
         $this->assertCount(1, $event->other['pathnamehashes']);
         $this->assertEquals($fi->get_pathnamehash(), $event->other['pathnamehashes'][0]);
-        $expected = new stdClass();
+        $expected = new \stdClass();
         $expected->modulename = 'digestforum';
         $expected->name = 'some triggered from value';
         $expected->cmid = $digestforum->cmid;
@@ -88,12 +98,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $expected->courseid = $course->id;
         $expected->userid = $user->id;
         $expected->content = $fakepost->message;
-        $expected->pathnamehashes = array($fi->get_pathnamehash());
-        $this->assertEventLegacyData($expected, $event);
+        $expected->pathnamehashes = [$fi->get_pathnamehash()];
         $this->assertEventContextNotUsed($event);
     }
 
-    public function test_digestforum_get_courses_user_posted_in() {
+    public function test_digestforum_get_courses_user_posted_in(): void {
         $this->resetAfterTest();
 
         $user1 = $this->getDataGenerator()->create_user();
@@ -105,52 +114,52 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $course3 = $this->getDataGenerator()->create_course();
 
         // Create 3 digestforums, one in each course.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $digestforum1 = $this->getDataGenerator()->create_module('digestforum', $record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course2->id;
         $digestforum2 = $this->getDataGenerator()->create_module('digestforum', $record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $digestforum3 = $this->getDataGenerator()->create_module('digestforum', $record);
 
         // Add a second digestforum in course 1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $digestforum4 = $this->getDataGenerator()->create_module('digestforum', $record);
 
         // Add discussions to course 1 started by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum1->id;
         $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course1->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum4->id;
         $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add discussions to course2 started by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course2->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum2->id;
         $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add discussions to course 3 started by user2.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $record->userid = $user2->id;
         $record->digestforum = $digestforum3->id;
         $discussion3 = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add post to course 3 by user1.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course3->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum3->id;
@@ -172,39 +181,38 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $user1courses = digestforum_get_courses_user_posted_in($user1);
         $this->assertCount(3, $user1courses);
         foreach ($user1courses as $course) {
-            $this->assertContains($course->id, array($course1->id, $course2->id, $course3->id));
-            $this->assertContains($course->shortname, array($course1->shortname, $course2->shortname,
-                $course3->shortname));
-
+            $this->assertContains($course->id, [$course1->id, $course2->id, $course3->id]);
+            $this->assertContains($course->shortname, [$course1->shortname, $course2->shortname,
+                $course3->shortname]);
         }
 
         // User 1 has only started a discussion in course 1 and 2 though.
         $user1courses = digestforum_get_courses_user_posted_in($user1, true);
         $this->assertCount(2, $user1courses);
         foreach ($user1courses as $course) {
-            $this->assertContains($course->id, array($course1->id, $course2->id));
-            $this->assertContains($course->shortname, array($course1->shortname, $course2->shortname));
+            $this->assertContains($course->id, [$course1->id, $course2->id]);
+            $this->assertContains($course->shortname, [$course1->shortname, $course2->shortname]);
         }
     }
 
     /**
      * Test the logic in the digestforum_tp_can_track_digestforums() function.
      */
-    public function test_digestforum_tp_can_track_digestforums() {
+    public function test_digestforum_tp_can_track_digestforums(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
-        $useron = $this->getDataGenerator()->create_user(array('trackforums' => 1));
-        $useroff = $this->getDataGenerator()->create_user(array('trackforums' => 0));
+        $useron = $this->getDataGenerator()->create_user(['trackforums' => 1]);
+        $useroff = $this->getDataGenerator()->create_user(['trackforums' => 0]);
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF); // Off.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF]; // Off.
         $digestforumoff = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED); // On.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED]; // On.
         $digestforumforce = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL); // Optional.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL]; // Optional.
         $digestforumoptional = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Allow force.
@@ -260,27 +268,27 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // User off, digestforum optional, should be off.
         $result = digestforum_tp_can_track_digestforums($digestforumoptional, $useroff);
         $this->assertEquals(false, $result);
-
     }
 
     /**
      * Test the logic in the test_digestforum_tp_is_tracked() function.
      */
-    public function test_digestforum_tp_is_tracked() {
+    public function test_digestforum_tp_is_tracked(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
-        $useron = $this->getDataGenerator()->create_user(array('trackforums' => 1));
-        $useroff = $this->getDataGenerator()->create_user(array('trackforums' => 0));
+        $cache = \cache::make('mod_digestforum', 'digestforum_is_tracked');
+        $useron = $this->getDataGenerator()->create_user(['trackforums' => 1]);
+        $useroff = $this->getDataGenerator()->create_user(['trackforums' => 0]);
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF); // Off.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF]; // Off.
         $digestforumoff = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED); // On.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED]; // On.
         $digestforumforce = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL); // Optional.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL]; // Optional.
         $digestforumoptional = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Allow force.
@@ -310,6 +318,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $result = digestforum_tp_is_tracked($digestforumoptional, $useroff);
         $this->assertEquals(false, $result);
 
+        $cache->purge();
         // Don't allow force.
         $CFG->digestforum_allowforcedreadtracking = 0;
 
@@ -343,6 +352,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         digestforum_tp_stop_tracking($digestforumforce->id, $useroff->id);
         digestforum_tp_stop_tracking($digestforumoptional->id, $useroff->id);
 
+        $cache->purge();
         // Allow force.
         $CFG->digestforum_allowforcedreadtracking = 1;
 
@@ -362,6 +372,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $result = digestforum_tp_is_tracked($digestforumoptional, $useroff);
         $this->assertEquals(false, $result);
 
+        $cache->purge();
         // Don't allow force.
         $CFG->digestforum_allowforcedreadtracking = 0;
 
@@ -385,39 +396,39 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test the logic in the digestforum_tp_get_course_unread_posts() function.
      */
-    public function test_digestforum_tp_get_course_unread_posts() {
+    public function test_digestforum_tp_get_course_unread_posts(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
-        $useron = $this->getDataGenerator()->create_user(array('trackforums' => 1));
-        $useroff = $this->getDataGenerator()->create_user(array('trackforums' => 0));
+        $useron = $this->getDataGenerator()->create_user(['trackforums' => 1]);
+        $useroff = $this->getDataGenerator()->create_user(['trackforums' => 0]);
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF); // Off.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF]; // Off.
         $digestforumoff = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED); // On.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED]; // On.
         $digestforumforce = $this->getDataGenerator()->create_module('digestforum', $options);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL); // Optional.
+        $options = ['course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL]; // Optional.
         $digestforumoptional = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Add discussions to the tracking off digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $useron->id;
         $record->digestforum = $digestforumoff->id;
         $discussionoff = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add discussions to the tracking forced digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $useron->id;
         $record->digestforum = $digestforumforce->id;
         $discussionforce = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
 
         // Add post to the tracking forced discussion.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $useroff->id;
         $record->digestforum = $digestforumforce->id;
@@ -425,7 +436,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_post($record);
 
         // Add discussions to the tracking optional digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $useron->id;
         $record->digestforum = $digestforumoptional->id;
@@ -506,104 +517,377 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     }
 
     /**
-     * Test the logic in the test_digestforum_tp_get_untracked_digestforums() function.
+     * Test the logic in the digestforum_tp_get_course_unread_posts() function when private replies are present.
      */
-    public function test_digestforum_tp_get_untracked_digestforums() {
-        global $CFG;
+    public function test_digestforum_tp_get_course_unread_posts_with_private_replies(): void {
+        global $DB;
 
         $this->resetAfterTest();
 
-        $useron = $this->getDataGenerator()->create_user(array('trackforums' => 1));
-        $useroff = $this->getDataGenerator()->create_user(array('trackforums' => 0));
-        $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OFF); // Off.
-        $digestforumoff = $this->getDataGenerator()->create_module('digestforum', $options);
+        $generator = $this->getDataGenerator();
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_FORCED); // On.
-        $digestforumforce = $this->getDataGenerator()->create_module('digestforum', $options);
+        // Create 3 students.
+        $s1 = $generator->create_user(['trackforums' => 1]);
+        $s2 = $generator->create_user(['trackforums' => 1]);
+        $s3 = $generator->create_user(['trackforums' => 1]);
+        // Editing teacher.
+        $t1 = $generator->create_user(['trackforums' => 1]);
+        // Non-editing teacher.
+        $t2 = $generator->create_user(['trackforums' => 1]);
 
-        $options = array('course' => $course->id, 'trackingtype' => DFORUM_TRACKING_OPTIONAL); // Optional.
-        $digestforumoptional = $this->getDataGenerator()->create_module('digestforum', $options);
+        // Create our course.
+        $course = $generator->create_course();
 
-        // Allow force.
-        $CFG->digestforum_allowforcedreadtracking = 1;
+        // Enrol editing and non-editing teachers.
+        $generator->enrol_user($t1->id, $course->id, 'editingteacher');
+        $generator->enrol_user($t2->id, $course->id, 'teacher');
 
-        // On user with force on.
-        $result = digestforum_tp_get_untracked_digestforums($useron->id, $course->id);
-        $this->assertEquals(1, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
+        // Create digestforums.
+        $digestforum1 = $generator->create_module('digestforum', ['course' => $course->id]);
+        $digestforum2 = $generator->create_module('digestforum', ['course' => $course->id]);
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
 
-        // Off user with force on.
-        $result = digestforum_tp_get_untracked_digestforums($useroff->id, $course->id);
-        $this->assertEquals(2, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
+        // Prevent the non-editing teacher from reading private replies in digestforum 2.
+        $teacherroleid = $DB->get_field('role', 'id', ['shortname' => 'teacher']);
+        $digestforum2cm = get_coursemodule_from_instance('digestforum', $digestforum2->id);
+        $digestforum2context = \context_module::instance($digestforum2cm->id);
+        role_change_permission($teacherroleid, $digestforum2context, 'mod/digestforum:readprivatereplies', CAP_PREVENT);
 
-        // Don't allow force.
-        $CFG->digestforum_allowforcedreadtracking = 0;
+        // Create discussion by s1.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'userid' => $s1->id,
+        ];
+        $discussion1 = $digestforumgenerator->create_discussion($discussiondata);
 
-        // On user with force off.
-        $result = digestforum_tp_get_untracked_digestforums($useron->id, $course->id);
-        $this->assertEquals(1, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
+        // Create discussion by s2.
+        $discussiondata->userid = $s2->id;
+        $discussion2 = $digestforumgenerator->create_discussion($discussiondata);
 
-        // Off user with force off.
-        $result = digestforum_tp_get_untracked_digestforums($useroff->id, $course->id);
-        $this->assertEquals(3, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
-        $this->assertEquals(true, isset($result[$digestforumforce->id]));
+        // Create discussion by s3.
+        $discussiondata->userid = $s3->id;
+        $discussion3 = $digestforumgenerator->create_discussion($discussiondata);
 
-        // Stop tracking so we can test again.
-        digestforum_tp_stop_tracking($digestforumforce->id, $useron->id);
-        digestforum_tp_stop_tracking($digestforumoptional->id, $useron->id);
-        digestforum_tp_stop_tracking($digestforumforce->id, $useroff->id);
-        digestforum_tp_stop_tracking($digestforumoptional->id, $useroff->id);
+        // Post a normal reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'discussion' => $discussion1->id,
+            'userid' => $t1->id,
+        ];
+        $digestforumgenerator->create_post($replydata);
 
-        // Allow force.
-        $CFG->digestforum_allowforcedreadtracking = 1;
+        // Post a normal reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $digestforumgenerator->create_post($replydata);
 
-        // On user with force on.
-        $result = digestforum_tp_get_untracked_digestforums($useron->id, $course->id);
-        $this->assertEquals(2, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
+        // Post a normal reply to s3's discussion as the editing teacher.
+        $replydata->discussion = $discussion3->id;
+        $digestforumgenerator->create_post($replydata);
 
-        // Off user with force on.
-        $result = digestforum_tp_get_untracked_digestforums($useroff->id, $course->id);
-        $this->assertEquals(2, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
+        // Post a private reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata->discussion = $discussion1->id;
+        $replydata->userid = $t1->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+        // Post another private reply to s1 as the teacher.
+        $digestforumgenerator->create_post($replydata);
 
-        // Don't allow force.
-        $CFG->digestforum_allowforcedreadtracking = 0;
+        // Post a private reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $replydata->privatereplyto = $s2->id;
+        $digestforumgenerator->create_post($replydata);
 
-        // On user with force off.
-        $result = digestforum_tp_get_untracked_digestforums($useron->id, $course->id);
-        $this->assertEquals(3, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
-        $this->assertEquals(true, isset($result[$digestforumforce->id]));
+        // Create discussion by s1 in digestforum 2.
+        $discussiondata->digestforum = $digestforum2->id;
+        $discussiondata->userid = $s1->id;
+        $discussion21 = $digestforumgenerator->create_discussion($discussiondata);
 
-        // Off user with force off.
-        $result = digestforum_tp_get_untracked_digestforums($useroff->id, $course->id);
-        $this->assertEquals(3, count($result));
-        $this->assertEquals(true, isset($result[$digestforumoff->id]));
-        $this->assertEquals(true, isset($result[$digestforumoptional->id]));
-        $this->assertEquals(true, isset($result[$digestforumforce->id]));
+        // Post a private reply to s1's discussion in digestforum 2 as the editing teacher.
+        $replydata->discussion = $discussion21->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Let's count!
+        // S1 should see 8 unread posts 3 discussions posts + 2 private replies + 3 normal replies.
+        $result = digestforum_tp_get_course_unread_posts($s1->id, $course->id);
+        $unreadcounts = $result[$digestforum1->id];
+        $this->assertEquals(8, $unreadcounts->unread);
+
+        // S2 should see 7 unread posts 3 discussions posts + 1 private reply + 3 normal replies.
+        $result = digestforum_tp_get_course_unread_posts($s2->id, $course->id);
+        $unreadcounts = $result[$digestforum1->id];
+        $this->assertEquals(7, $unreadcounts->unread);
+
+        // S3 should see 6 unread posts 3 discussions posts + 3 normal replies. No private replies.
+        $result = digestforum_tp_get_course_unread_posts($s3->id, $course->id);
+        $unreadcounts = $result[$digestforum1->id];
+        $this->assertEquals(6, $unreadcounts->unread);
+
+        // The editing teacher should see 9 unread posts in digestforum 1:
+        // 3 discussions posts + 3 normal replies + 3 private replies.
+        $result = digestforum_tp_get_course_unread_posts($t1->id, $course->id);
+        $unreadcounts = $result[$digestforum1->id];
+        $this->assertEquals(9, $unreadcounts->unread);
+
+        // Same with the non-editing teacher, since they can read private replies by default.
+        $result = digestforum_tp_get_course_unread_posts($t2->id, $course->id);
+        $unreadcounts = $result[$digestforum1->id];
+        $this->assertEquals(9, $unreadcounts->unread);
+
+        // But for digestforum 2, the non-editing teacher should only see 1 unread which is s1's discussion post.
+        $unreadcounts = $result[$digestforum2->id];
+        $this->assertEquals(1, $unreadcounts->unread);
+    }
+
+    /**
+     * Test the logic in the digestforum_tp_count_digestforum_unread_posts() function when private replies are present but without
+     * separate group mode. This should yield the same results returned by digestforum_tp_get_course_unread_posts().
+     */
+    public function test_digestforum_tp_count_digestforum_unread_posts_with_private_replies(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+
+        // Create 3 students.
+        $s1 = $generator->create_user(['username' => 's1', 'trackforums' => 1]);
+        $s2 = $generator->create_user(['username' => 's2', 'trackforums' => 1]);
+        $s3 = $generator->create_user(['username' => 's3', 'trackforums' => 1]);
+        // Editing teacher.
+        $t1 = $generator->create_user(['username' => 't1', 'trackforums' => 1]);
+        // Non-editing teacher.
+        $t2 = $generator->create_user(['username' => 't2', 'trackforums' => 1]);
+
+        // Create our course.
+        $course = $generator->create_course();
+
+        // Enrol editing and non-editing teachers.
+        $generator->enrol_user($t1->id, $course->id, 'editingteacher');
+        $generator->enrol_user($t2->id, $course->id, 'teacher');
+
+        // Create digestforums.
+        $digestforum1 = $generator->create_module('digestforum', ['course' => $course->id]);
+        $digestforum2 = $generator->create_module('digestforum', ['course' => $course->id]);
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+
+        // Prevent the non-editing teacher from reading private replies in digestforum 2.
+        $teacherroleid = $DB->get_field('role', 'id', ['shortname' => 'teacher']);
+        $digestforum2cm = get_coursemodule_from_instance('digestforum', $digestforum2->id);
+        $digestforum2context = \context_module::instance($digestforum2cm->id);
+        role_change_permission($teacherroleid, $digestforum2context, 'mod/digestforum:readprivatereplies', CAP_PREVENT);
+
+        // Create discussion by s1.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'userid' => $s1->id,
+        ];
+        $discussion1 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Create discussion by s2.
+        $discussiondata->userid = $s2->id;
+        $discussion2 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Create discussion by s3.
+        $discussiondata->userid = $s3->id;
+        $discussion3 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Post a normal reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'discussion' => $discussion1->id,
+            'userid' => $t1->id,
+        ];
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a normal reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a normal reply to s3's discussion as the editing teacher.
+        $replydata->discussion = $discussion3->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a private reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata->discussion = $discussion1->id;
+        $replydata->userid = $t1->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+        // Post another private reply to s1 as the teacher.
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a private reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $replydata->privatereplyto = $s2->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Create discussion by s1 in digestforum 2.
+        $discussiondata->digestforum = $digestforum2->id;
+        $discussiondata->userid = $s1->id;
+        $discussion11 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Post a private reply to s1's discussion in digestforum 2 as the editing teacher.
+        $replydata->discussion = $discussion11->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Let's count!
+        // S1 should see 8 unread posts 3 discussions posts + 2 private replies + 3 normal replies.
+        $this->setUser($s1);
+        $digestforum1cm = get_coursemodule_from_instance('digestforum', $digestforum1->id);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(8, $result);
+
+        // S2 should see 7 unread posts 3 discussions posts + 1 private reply + 3 normal replies.
+        $this->setUser($s2);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(7, $result);
+
+        // S3 should see 6 unread posts 3 discussions posts + 3 normal replies. No private replies.
+        $this->setUser($s3);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(6, $result);
+
+        // The editing teacher should see 9 unread posts in digestforum 1:
+        // 3 discussions posts + 3 normal replies + 3 private replies.
+        $this->setUser($t1);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(9, $result);
+
+        // Same with the non-editing teacher, since they can read private replies by default.
+        $this->setUser($t2);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(9, $result);
+
+        // But for digestforum 2, the non-editing teacher should only see 1 unread which is s1's discussion post.
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum2cm, $course);
+        $this->assertEquals(1, $result);
+    }
+
+    /**
+     * Test the logic in the digestforum_tp_count_digestforum_unread_posts() function when private replies are present
+     * and group modes are set.
+     */
+    public function test_digestforum_tp_count_digestforum_unread_posts_with_private_replies_and_separate_groups(): void {
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+
+        // Create 3 students.
+        $s1 = $generator->create_user(['username' => 's1', 'trackforums' => 1]);
+        $s2 = $generator->create_user(['username' => 's2', 'trackforums' => 1]);
+        // Editing teacher.
+        $t1 = $generator->create_user(['username' => 't1', 'trackforums' => 1]);
+
+        // Create our course.
+        $course = $generator->create_course();
+
+        // Enrol students, editing and non-editing teachers.
+        $generator->enrol_user($s1->id, $course->id, 'student');
+        $generator->enrol_user($s2->id, $course->id, 'student');
+        $generator->enrol_user($t1->id, $course->id, 'editingteacher');
+
+        // Create groups.
+        $g1 = $generator->create_group(['courseid' => $course->id]);
+        $g2 = $generator->create_group(['courseid' => $course->id]);
+        $generator->create_group_member(['groupid' => $g1->id, 'userid' => $s1->id]);
+        $generator->create_group_member(['groupid' => $g2->id, 'userid' => $s2->id]);
+
+        // Create digestforums.
+        $digestforum1 = $generator->create_module('digestforum', ['course' => $course->id, 'groupmode' => SEPARATEGROUPS]);
+        $digestforum2 = $generator->create_module('digestforum', ['course' => $course->id, 'groupmode' => VISIBLEGROUPS]);
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+
+        // Create discussion by s1.
+        $discussiondata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'userid' => $s1->id,
+            'groupid' => $g1->id,
+        ];
+        $discussion1 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Create discussion by s2.
+        $discussiondata->userid = $s2->id;
+        $discussiondata->groupid = $g2->id;
+        $discussion2 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Post a normal reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata = (object)[
+            'course' => $course->id,
+            'digestforum' => $digestforum1->id,
+            'discussion' => $discussion1->id,
+            'userid' => $t1->id,
+        ];
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a normal reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a private reply to s1's discussion in digestforum 1 as the editing teacher.
+        $replydata->discussion = $discussion1->id;
+        $replydata->userid = $t1->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+        // Post another private reply to s1 as the teacher.
+        $digestforumgenerator->create_post($replydata);
+
+        // Post a private reply to s2's discussion as the editing teacher.
+        $replydata->discussion = $discussion2->id;
+        $replydata->privatereplyto = $s2->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Create discussion by s1 in digestforum 2.
+        $discussiondata->digestforum = $digestforum2->id;
+        $discussiondata->userid = $s1->id;
+        $discussiondata->groupid = $g1->id;
+        $discussion21 = $digestforumgenerator->create_discussion($discussiondata);
+
+        // Post a private reply to s1's discussion in digestforum 2 as the editing teacher.
+        $replydata->discussion = $discussion21->id;
+        $replydata->privatereplyto = $s1->id;
+        $digestforumgenerator->create_post($replydata);
+
+        // Let's count!
+        // S1 should see 4 unread posts in digestforum 1 (1 discussions post + 2 private replies + 1 normal reply).
+        $this->setUser($s1);
+        $digestforum1cm = get_coursemodule_from_instance('digestforum', $digestforum1->id);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(4, $result);
+
+        // S2 should see 3 unread posts in digestforum 1 (1 discussions post + 1 private reply + 1 normal reply).
+        $this->setUser($s2);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(3, $result);
+
+        // S2 should see 1 unread posts in digestforum 2 (visible groups, 1 discussion post from s1).
+        $digestforum2cm = get_coursemodule_from_instance('digestforum', $digestforum2->id);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum2cm, $course, true);
+        $this->assertEquals(1, $result);
+
+        // The editing teacher should still see 7 unread posts (2 discussions posts + 2 normal replies + 3 private replies)
+        // in digestforum 1 since they have the capability to view all groups by default.
+        $this->setUser($t1);
+        $result = digestforum_tp_count_digestforum_unread_posts($digestforum1cm, $course, true);
+        $this->assertEquals(7, $result);
     }
 
     /**
      * Test subscription using automatic subscription on create.
      */
-    public function test_digestforum_auto_subscribe_on_create() {
+    public function test_digestforum_auto_subscribe_on_create(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
         $usercount = 5;
         $course = $this->getDataGenerator()->create_course();
-        $users = array();
+        $users = [];
 
         for ($i = 0; $i < $usercount; $i++) {
             $user = $this->getDataGenerator()->create_user();
@@ -611,7 +895,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE); // Automatic Subscription.
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE]; // Automatic Subscription.
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         $result = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum);
@@ -624,14 +908,14 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test subscription using forced subscription on create.
      */
-    public function test_digestforum_forced_subscribe_on_create() {
+    public function test_digestforum_forced_subscribe_on_create(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
         $usercount = 5;
         $course = $this->getDataGenerator()->create_course();
-        $users = array();
+        $users = [];
 
         for ($i = 0; $i < $usercount; $i++) {
             $user = $this->getDataGenerator()->create_user();
@@ -639,7 +923,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE); // Forced subscription.
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE]; // Forced subscription.
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         $result = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum);
@@ -652,14 +936,14 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test subscription using optional subscription on create.
      */
-    public function test_digestforum_optional_subscribe_on_create() {
+    public function test_digestforum_optional_subscribe_on_create(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
         $usercount = 5;
         $course = $this->getDataGenerator()->create_course();
-        $users = array();
+        $users = [];
 
         for ($i = 0; $i < $usercount; $i++) {
             $user = $this->getDataGenerator()->create_user();
@@ -667,7 +951,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE); // Subscription optional.
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE]; // Subscription optional.
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         $result = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum);
@@ -681,14 +965,14 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test subscription using disallow subscription on create.
      */
-    public function test_digestforum_disallow_subscribe_on_create() {
+    public function test_digestforum_disallow_subscribe_on_create(): void {
         global $CFG;
 
         $this->resetAfterTest();
 
         $usercount = 5;
         $course = $this->getDataGenerator()->create_course();
-        $users = array();
+        $users = [];
 
         for ($i = 0; $i < $usercount; $i++) {
             $user = $this->getDataGenerator()->create_user();
@@ -696,7 +980,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             $this->getDataGenerator()->enrol_user($user->id, $course->id);
         }
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE); // Subscription prevented.
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE]; // Subscription prevented.
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         $result = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum);
@@ -710,7 +994,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test that context fetching returns the appropriate context.
      */
-    public function test_digestforum_get_context() {
+    public function test_digestforum_get_context(): void {
         global $DB, $PAGE;
 
         $this->resetAfterTest();
@@ -719,7 +1003,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
         $coursecontext = \context_course::instance($course->id);
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
         $digestforumcm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $digestforumcontext = \context_module::instance($digestforumcm->id);
@@ -750,7 +1034,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(1, $aftercount - $startcount);
 
         // Set up the default page event to use the digestforum.
-        $PAGE = new moodle_page();
+        $PAGE = new \moodle_page();
         $PAGE->set_context($digestforumcontext);
         $PAGE->set_cm($digestforumcm, $course, $digestforum);
 
@@ -771,7 +1055,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertEquals(0, $aftercount - $startcount);
 
         // Now specify the page context of the course instead..
-        $PAGE = new moodle_page();
+        $PAGE = new \moodle_page();
         $PAGE->set_context($coursecontext);
 
         // Now specify a context which is not a context_module.
@@ -794,7 +1078,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test getting the neighbour threads of a discussion.
      */
-    public function test_digestforum_get_neighbours() {
+    public function test_digestforum_get_neighbours(): void {
         global $CFG, $DB;
         $this->resetAfterTest();
 
@@ -807,11 +1091,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
 
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -884,7 +1168,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $past = $now - 600;
         $future = $now + 600;
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -916,11 +1200,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Admin user ignores the timed settings of discussions.
         // Post ordering taking into account timestart:
-        //  8 = t
+        // 8 = t
         // 10 = t+3
         // 11 = t+4
         // 12 = t+5
-        //  9 = t+60
+        // 9 = t+60
         // 13 = t+61.
         $this->setAdminUser();
         $neighbours = digestforum_get_discussion_neighbours($cm, $disc8, $digestforum);
@@ -993,11 +1277,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Two discussions with identical timemodified will sort by id.
         $record->timemodified += 25;
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc3->id, 'timemodified' => $record->timemodified));
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc2->id, 'timemodified' => $record->timemodified));
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc12->id, 'timemodified' => $record->timemodified - 5));
-        $disc2 = $DB->get_record('digestforum_discussions', array('id' => $disc2->id));
-        $disc3 = $DB->get_record('digestforum_discussions', array('id' => $disc3->id));
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc3->id, 'timemodified' => $record->timemodified]);
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc2->id, 'timemodified' => $record->timemodified]);
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc12->id, 'timemodified' => $record->timemodified - 5]);
+        $disc2 = $DB->get_record('digestforum_discussions', ['id' => $disc2->id]);
+        $disc3 = $DB->get_record('digestforum_discussions', ['id' => $disc3->id]);
 
         $neighbours = digestforum_get_discussion_neighbours($cm, $disc3, $digestforum);
         $this->assertEquals($disc2->id, $neighbours['prev']->id);
@@ -1008,11 +1292,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertEquals($disc3->id, $neighbours['next']->id);
 
         // Set timemodified to not be identical.
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc2->id, 'timemodified' => $record->timemodified - 1));
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc2->id, 'timemodified' => $record->timemodified - 1]);
 
         // Test pinned posts behave correctly.
         $disc8->pinned = DFORUM_DISCUSSION_PINNED;
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc8->id, 'pinned' => $disc8->pinned));
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc8->id, 'pinned' => $disc8->pinned]);
         $neighbours = digestforum_get_discussion_neighbours($cm, $disc8, $digestforum);
         $this->assertEquals($disc3->id, $neighbours['prev']->id);
         $this->assertEmpty($neighbours['next']);
@@ -1023,9 +1307,9 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Test 3 pinned posts.
         $disc6->pinned = DFORUM_DISCUSSION_PINNED;
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc6->id, 'pinned' => $disc6->pinned));
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc6->id, 'pinned' => $disc6->pinned]);
         $disc4->pinned = DFORUM_DISCUSSION_PINNED;
-        $DB->update_record('digestforum_discussions', (object) array('id' => $disc4->id, 'pinned' => $disc4->pinned));
+        $DB->update_record('digestforum_discussions', (object) ['id' => $disc4->id, 'pinned' => $disc4->pinned]);
 
         $neighbours = digestforum_get_discussion_neighbours($cm, $disc6, $digestforum);
         $this->assertEquals($disc4->id, $neighbours['prev']->id);
@@ -1043,7 +1327,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test getting the neighbour threads of a blog-like digestforum.
      */
-    public function test_digestforum_get_neighbours_blog() {
+    public function test_digestforum_get_neighbours_blog(): void {
         global $CFG, $DB;
         $this->resetAfterTest();
 
@@ -1056,11 +1340,11 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $user = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
 
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'blog'));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'blog']);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -1128,7 +1412,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $past = $now - 600;
         $future = $now + 600;
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -1218,8 +1502,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         $record->timemodified++;
         // Two blog posts with identical creation time will sort by id.
-        $DB->update_record('digestforum_posts', (object) array('id' => $disc2->firstpost, 'created' => $record->timemodified));
-        $DB->update_record('digestforum_posts', (object) array('id' => $disc3->firstpost, 'created' => $record->timemodified));
+        $DB->update_record('digestforum_posts', (object) ['id' => $disc2->firstpost, 'created' => $record->timemodified]);
+        $DB->update_record('digestforum_posts', (object) ['id' => $disc3->firstpost, 'created' => $record->timemodified]);
 
         $neighbours = digestforum_get_discussion_neighbours($cm, $disc2, $digestforum);
         $this->assertEquals($disc12->id, $neighbours['prev']->id);
@@ -1233,7 +1517,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test getting the neighbour threads of a discussion.
      */
-    public function test_digestforum_get_neighbours_with_groups() {
+    public function test_digestforum_get_neighbours_with_groups(): void {
         $this->resetAfterTest();
 
         $timenow = time();
@@ -1242,23 +1526,29 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Setup test data.
         $digestforumgen = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $course = $this->getDataGenerator()->create_course();
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user1->id, $course->id);
         $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $user1->id, 'groupid' => $group1->id));
+        $this->getDataGenerator()->create_group_member(['userid' => $user1->id, 'groupid' => $group1->id]);
 
-        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'groupmode' => VISIBLEGROUPS));
-        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'groupmode' => SEPARATEGROUPS));
+        $digestforum1 = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id, 'groupmode' => VISIBLEGROUPS],
+        );
+        $digestforum2 = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id, 'groupmode' => SEPARATEGROUPS],
+        );
         $cm1 = get_coursemodule_from_instance('digestforum', $digestforum1->id);
         $cm2 = get_coursemodule_from_instance('digestforum', $digestforum2->id);
-        $context1 = context_module::instance($cm1->id);
-        $context2 = context_module::instance($cm2->id);
+        $context1 = \context_module::instance($cm1->id);
+        $context2 = \context_module::instance($cm2->id);
 
         // Creating discussions in both digestforums.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum1->id;
@@ -1430,7 +1720,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test getting the neighbour threads of a blog-like digestforum with groups involved.
      */
-    public function test_digestforum_get_neighbours_with_groups_blog() {
+    public function test_digestforum_get_neighbours_with_groups_blog(): void {
         $this->resetAfterTest();
 
         $timenow = time();
@@ -1439,25 +1729,25 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Setup test data.
         $digestforumgen = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
         $course = $this->getDataGenerator()->create_course();
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $user1 = $this->getDataGenerator()->create_user();
         $user2 = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user1->id, $course->id);
         $this->getDataGenerator()->enrol_user($user2->id, $course->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $user1->id, 'groupid' => $group1->id));
+        $this->getDataGenerator()->create_group_member(['userid' => $user1->id, 'groupid' => $group1->id]);
 
-        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'blog',
-                'groupmode' => VISIBLEGROUPS));
-        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id, 'type' => 'blog',
-                'groupmode' => SEPARATEGROUPS));
+        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'blog',
+                'groupmode' => VISIBLEGROUPS]);
+        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id, 'type' => 'blog',
+                'groupmode' => SEPARATEGROUPS]);
         $cm1 = get_coursemodule_from_instance('digestforum', $digestforum1->id);
         $cm2 = get_coursemodule_from_instance('digestforum', $digestforum2->id);
-        $context1 = context_module::instance($cm1->id);
-        $context2 = context_module::instance($cm2->id);
+        $context1 = \context_module::instance($cm1->id);
+        $context2 = \context_module::instance($cm2->id);
 
         // Creating blog posts in both digestforums.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user1->id;
         $record->digestforum = $digestforum1->id;
@@ -1627,30 +1917,30 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         digestforum_get_discussion_neighbours($cm2, $disc11, $digestforum2);
     }
 
-    public function test_count_discussion_replies_basic() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_basic(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
 
         // Count the discussion replies in the digestforum.
         $result = digestforum_count_discussion_replies($digestforum->id);
         $this->assertCount(10, $result);
     }
 
-    public function test_count_discussion_replies_limited() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_limited(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Adding limits shouldn't make a difference.
         $result = digestforum_count_discussion_replies($digestforum->id, "", 20);
         $this->assertCount(10, $result);
     }
 
-    public function test_count_discussion_replies_paginated() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_paginated(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Adding paging shouldn't make any difference.
         $result = digestforum_count_discussion_replies($digestforum->id, "", -1, 0, 100);
         $this->assertCount(10, $result);
     }
 
-    public function test_count_discussion_replies_paginated_sorted() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_paginated_sorted(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Specifying the digestforumsort should also give a good result. This follows a different path.
         $result = digestforum_count_discussion_replies($digestforum->id, "d.id asc", -1, 0, 100);
         $this->assertCount(10, $result);
@@ -1661,8 +1951,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         }
     }
 
-    public function test_count_discussion_replies_limited_sorted() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_limited_sorted(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Adding limits, and a digestforumsort shouldn't make a difference.
         $result = digestforum_count_discussion_replies($digestforum->id, "d.id asc", 20);
         $this->assertCount(10, $result);
@@ -1673,8 +1963,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         }
     }
 
-    public function test_count_discussion_replies_paginated_sorted_small() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_paginated_sorted_small(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Grabbing a smaller subset and they should be ordered as expected.
         $result = digestforum_count_discussion_replies($digestforum->id, "d.id asc", -1, 0, 5);
         $this->assertCount(5, $result);
@@ -1685,8 +1975,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         }
     }
 
-    public function test_count_discussion_replies_paginated_sorted_small_reverse() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_paginated_sorted_small_reverse(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Grabbing a smaller subset and they should be ordered as expected.
         $result = digestforum_count_discussion_replies($digestforum->id, "d.id desc", -1, 0, 5);
         $this->assertCount(5, $result);
@@ -1697,8 +1987,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         }
     }
 
-    public function test_count_discussion_replies_limited_sorted_small_reverse() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+    public function test_count_discussion_replies_limited_sorted_small_reverse(): void {
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         // Adding limits, and a digestforumsort shouldn't make a difference.
         $result = digestforum_count_discussion_replies($digestforum->id, "d.id desc", 5);
         $this->assertCount(5, $result);
@@ -1708,25 +1998,104 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             $this->assertEquals($discussionid, $row->discussion);
         }
     }
-    public function test_discussion_pinned_sort() {
-        list($digestforum, $discussionids) = $this->create_multiple_discussions_with_replies(10, 5);
+
+    /**
+     * Test the reply count when used with private replies.
+     */
+    public function test_digestforum_count_discussion_replies_private(): void {
+        global $DB;
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $context = \context_module::instance($digestforum->cmid);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
+
+        $student = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id);
+
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id);
+
+        $privilegeduser = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($privilegeduser->id, $course->id, 'editingteacher');
+
+        $otheruser = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($otheruser->id, $course->id);
+
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+
+        // Create a discussion with some replies.
+        $record = new \stdClass();
+        $record->course = $digestforum->course;
+        $record->digestforum = $digestforum->id;
+        $record->userid = $student->id;
+        $discussion = $generator->create_discussion($record);
+        $replycount = 5;
+        $replyto = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
+
+        // Create a couple of standard replies.
+        $post = new \stdClass();
+        $post->userid = $student->id;
+        $post->discussion = $discussion->id;
+        $post->parent = $replyto->id;
+
+        for ($i = 0; $i < $replycount; $i++) {
+            $post = $generator->create_post($post);
+        }
+
+        // Create a private reply post from the teacher back to the student.
+        $reply = new \stdClass();
+        $reply->userid = $teacher->id;
+        $reply->discussion = $discussion->id;
+        $reply->parent = $replyto->id;
+        $reply->privatereplyto = $replyto->userid;
+        $generator->create_post($reply);
+
+        // The user is the author of the private reply.
+        $this->setUser($teacher->id);
+        $counts = digestforum_count_discussion_replies($digestforum->id);
+        $this->assertEquals($replycount + 1, $counts[$discussion->id]->replies);
+
+        // The user is the intended recipient.
+        $this->setUser($student->id);
+        $counts = digestforum_count_discussion_replies($digestforum->id);
+        $this->assertEquals($replycount + 1, $counts[$discussion->id]->replies);
+
+        // The user is not the author or recipient, but does have the readprivatereplies capability.
+        $this->setUser($privilegeduser->id);
+        $counts = digestforum_count_discussion_replies($digestforum->id, "", -1, -1, 0, true);
+        $this->assertEquals($replycount + 1, $counts[$discussion->id]->replies);
+
+        // The user is not allowed to view this post.
+        $this->setUser($otheruser->id);
+        $counts = digestforum_count_discussion_replies($digestforum->id);
+        $this->assertEquals($replycount, $counts[$discussion->id]->replies);
+    }
+
+    public function test_discussion_pinned_sort(): void {
+        $this->setAdminUser();
+        [$digestforum, $discussionids] = $this->create_multiple_discussions_with_replies(10, 5);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $discussions = digestforum_get_discussions($cm);
         // First discussion should be pinned.
         $first = reset($discussions);
         $this->assertEquals(1, $first->pinned, "First discussion should be pinned discussion");
     }
-    public function test_digestforum_view() {
+    public function test_digestforum_view(): void {
         global $CFG;
 
         $CFG->enablecompletion = 1;
         $this->resetAfterTest();
 
         // Setup test data.
-        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id),
-                                                            array('completion' => 2, 'completionview' => 1));
-        $context = context_module::instance($digestforum->cmid);
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $digestforum = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1]
+        );
+        $context = \context_module::instance($digestforum->cmid);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         // Trigger and capture the event.
@@ -1743,32 +2112,31 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\course_module_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $url = new \moodle_url('/mod/digestforum/view.php', array('f' => $digestforum->id));
+        $url = new \moodle_url('/mod/digestforum/view.php', ['f' => $digestforum->id]);
         $this->assertEquals($url, $event->get_url());
         $this->assertEventContextNotUsed($event);
         $this->assertNotEmpty($event->get_name());
 
         // Check completion status.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completiondata = $completion->get_data($cm);
         $this->assertEquals(1, $completiondata->completionstate);
-
     }
 
     /**
      * Test digestforum_discussion_view.
      */
-    public function test_digestforum_discussion_view() {
+    public function test_digestforum_discussion_view(): void {
         global $CFG, $USER;
 
         $this->resetAfterTest();
 
         // Setup test data.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $discussion = $this->create_single_discussion_with_replies($digestforum, $USER, 2);
 
-        $context = context_module::instance($digestforum->cmid);
+        $context = \context_module::instance($digestforum->cmid);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         // Trigger and capture the event.
@@ -1784,13 +2152,9 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Checking that the event contains the expected values.
         $this->assertInstanceOf('\mod_digestforum\event\discussion_viewed', $event);
         $this->assertEquals($context, $event->get_context());
-        $expected = array($course->id, 'digestforum', 'view discussion', "discuss.php?d={$discussion->id}",
-            $discussion->id, $digestforum->cmid);
-        $this->assertEventLegacyLogData($expected, $event);
         $this->assertEventContextNotUsed($event);
 
         $this->assertNotEmpty($event->get_name());
-
     }
 
     /**
@@ -1806,12 +2170,12 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Setup the content.
         $user = $this->getDataGenerator()->create_user();
         $course = $this->getDataGenerator()->create_course();
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $record);
 
         // Create 10 discussions with replies.
-        $discussionids = array();
+        $discussionids = [];
         for ($i = 0; $i < $discussioncount; $i++) {
             // Pin 3rd discussion.
             if ($i == 3) {
@@ -1822,7 +2186,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
             $discussionids[] = $discussion->id;
         }
-        return array($digestforum, $discussionids);
+        return [$digestforum, $discussionids];
     }
 
     /**
@@ -1838,17 +2202,17 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         $generator = self::getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $digestforum->course;
         $record->digestforum = $digestforum->id;
         $record->userid = $user->id;
         $discussion = $generator->create_discussion($record);
 
         // Retrieve the first post.
-        $replyto = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $replyto = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
         // Create the replies.
-        $post = new stdClass();
+        $post = new \stdClass();
         $post->userid = $user->id;
         $post->discussion = $discussion->id;
         $post->parent = $replyto->id;
@@ -1872,7 +2236,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         $generator = self::getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $digestforum->course;
         $record->digestforum = $digestforum->id;
         $record->userid = $user->id;
@@ -1880,10 +2244,10 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $discussion = $generator->create_discussion($record);
 
         // Retrieve the first post.
-        $replyto = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $replyto = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
         // Create the replies.
-        $post = new stdClass();
+        $post = new \stdClass();
         $post->userid = $user->id;
         $post->discussion = $discussion->id;
         $post->parent = $replyto->id;
@@ -1901,20 +2265,20 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
      * @throws coding_exception
      * @throws rating_exception
      */
-    public function test_mod_digestforum_rating_can_see_item_ratings() {
+    public function test_mod_digestforum_rating_can_see_item_ratings(): void {
         global $DB;
 
         $this->resetAfterTest();
 
         // Setup test data.
-        $course = new stdClass();
+        $course = new \stdClass();
         $course->groupmode = SEPARATEGROUPS;
         $course->groupmodeforce = true;
         $course = $this->getDataGenerator()->create_course($course);
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         $generator = self::getDataGenerator()->get_plugin_generator('mod_digestforum');
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
         // Create users.
         $user1 = $this->getDataGenerator()->create_user();
@@ -1923,20 +2287,20 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $user4 = $this->getDataGenerator()->create_user();
 
         // Groups and stuff.
-        $role = $DB->get_record('role', array('shortname' => 'teacher'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'teacher'], '*', MUST_EXIST);
         $this->getDataGenerator()->enrol_user($user1->id, $course->id, $role->id);
         $this->getDataGenerator()->enrol_user($user2->id, $course->id, $role->id);
         $this->getDataGenerator()->enrol_user($user3->id, $course->id, $role->id);
         $this->getDataGenerator()->enrol_user($user4->id, $course->id, $role->id);
 
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         groups_add_member($group1, $user1);
         groups_add_member($group1, $user2);
         groups_add_member($group2, $user3);
         groups_add_member($group2, $user4);
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $digestforum->course;
         $record->digestforum = $digestforum->id;
         $record->userid = $user1->id;
@@ -1944,25 +2308,25 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $discussion = $generator->create_discussion($record);
 
         // Retrieve the first post.
-        $post = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
+        $post = $DB->get_record('digestforum_posts', ['discussion' => $discussion->id]);
 
-        $ratingoptions = new stdClass;
+        $ratingoptions = new \stdClass();
         $ratingoptions->context = $context;
         $ratingoptions->ratingarea = 'post';
         $ratingoptions->component = 'mod_digestforum';
         $ratingoptions->itemid  = $post->id;
         $ratingoptions->scaleid = 2;
         $ratingoptions->userid  = $user2->id;
-        $rating = new rating($ratingoptions);
+        $rating = new \rating($ratingoptions);
         $rating->update_rating(2);
 
         // Now try to access it as various users.
         unassign_capability('moodle/site:accessallgroups', $role->id);
-        $params = array('contextid' => 2,
+        $params = ['contextid' => 2,
                         'component' => 'mod_digestforum',
                         'ratingarea' => 'post',
                         'itemid' => $post->id,
-                        'scaleid' => 2);
+                        'scaleid' => 2];
         $this->setUser($user1);
         $this->assertTrue(mod_digestforum_rating_can_see_item_ratings($params));
         $this->setUser($user2);
@@ -1995,38 +2359,37 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertTrue(mod_digestforum_rating_can_see_item_ratings($params));
         $this->setUser($user4);
         $this->assertTrue(mod_digestforum_rating_can_see_item_ratings($params));
-
     }
 
     /**
      * Test digestforum_get_discussions
      */
-    public function test_digestforum_get_discussions_with_groups() {
+    public function test_digestforum_get_discussions_with_groups(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
         // Create course to add the module.
-        $course = self::getDataGenerator()->create_course(array('groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0));
+        $course = self::getDataGenerator()->create_course(['groupmode' => VISIBLEGROUPS, 'groupmodeforce' => 0]);
         $user1 = self::getDataGenerator()->create_user();
         $user2 = self::getDataGenerator()->create_user();
         $user3 = self::getDataGenerator()->create_user();
 
-        $role = $DB->get_record('role', array('shortname' => 'student'), '*', MUST_EXIST);
+        $role = $DB->get_record('role', ['shortname' => 'student'], '*', MUST_EXIST);
         self::getDataGenerator()->enrol_user($user1->id, $course->id, $role->id);
         self::getDataGenerator()->enrol_user($user2->id, $course->id, $role->id);
         self::getDataGenerator()->enrol_user($user3->id, $course->id, $role->id);
 
         // Forum forcing separate gropus.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
-        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, array('groupmode' => SEPARATEGROUPS));
+        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, ['groupmode' => SEPARATEGROUPS]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         // Create groups.
-        $group1 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'group1'));
-        $group2 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'group2'));
-        $group3 = self::getDataGenerator()->create_group(array('courseid' => $course->id, 'name' => 'group3'));
+        $group1 = self::getDataGenerator()->create_group(['courseid' => $course->id, 'name' => 'group1']);
+        $group2 = self::getDataGenerator()->create_group(['courseid' => $course->id, 'name' => 'group2']);
+        $group3 = self::getDataGenerator()->create_group(['courseid' => $course->id, 'name' => 'group3']);
 
         // Add the user1 to g1 and g2 groups.
         groups_add_member($group1->id, $user1->id);
@@ -2037,7 +2400,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         groups_add_member($group3->id, $user3->id);
 
         // Add a few discussions.
-        $record = array();
+        $record = [];
         $record['course'] = $course->id;
         $record['digestforum'] = $digestforum->id;
         $record['userid'] = $user1->id;
@@ -2114,28 +2477,27 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         // Get all my g3 discussions (I'm not enrolled in that group).
         $discussions = digestforum_get_discussions($cm, '', true, -1, -1, false, -1, 0, $group3->id);
         self::assertCount(0, $discussions);
-
     }
 
     /**
      * Test digestforum_user_can_post_discussion
      */
-    public function test_digestforum_user_can_post_discussion() {
-        global $CFG, $DB;
+    public function test_digestforum_user_can_post_discussion(): void {
+        global $DB;
 
         $this->resetAfterTest(true);
 
         // Create course to add the module.
-        $course = self::getDataGenerator()->create_course(array('groupmode' => SEPARATEGROUPS, 'groupmodeforce' => 1));
+        $course = self::getDataGenerator()->create_course(['groupmode' => SEPARATEGROUPS, 'groupmodeforce' => 1]);
         $user = self::getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Forum forcing separate gropus.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
-        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, array('groupmode' => SEPARATEGROUPS));
+        $digestforum = self::getDataGenerator()->create_module('digestforum', $record, ['groupmode' => SEPARATEGROUPS]);
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
-        $context = context_module::instance($cm->id);
+        $context = \context_module::instance($cm->id);
 
         self::setUser($user);
 
@@ -2144,7 +2506,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertFalse($can);
 
         // Create a group.
-        $group = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
 
         // Try to post in a group the user is not enrolled.
         $can = digestforum_user_can_post_discussion($digestforum, $group->id, -1, $cm, $context);
@@ -2194,7 +2556,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertTrue($can);
 
         // Post now.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -2219,9 +2581,43 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     }
 
     /**
+     * Test digestforum_user_can_post_discussion_after_cutoff
+     */
+    public function test_digestforum_user_can_post_discussion_after_cutoff(): void {
+        $this->resetAfterTest(true);
+
+        // Create course to add the module.
+        $course = self::getDataGenerator()->create_course(['groupmode' => SEPARATEGROUPS, 'groupmodeforce' => 1]);
+        $student = self::getDataGenerator()->create_user();
+        $teacher = self::getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($student->id, $course->id);
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, 'editingteacher');
+
+        // Forum forcing separate gropus.
+        $record = new \stdClass();
+        $record->course = $course->id;
+        $record->cutoffdate = time() - 1;
+        $digestforum = self::getDataGenerator()->create_module('digestforum', $record);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
+        $context = \context_module::instance($cm->id);
+
+        self::setUser($student);
+
+        // Students usually don't have the mod/digestforum:canoverridecutoff capability.
+        $can = digestforum_user_can_post_discussion($digestforum, null, -1, $cm, $context);
+        $this->assertFalse($can);
+
+        self::setUser($teacher);
+
+        // Teachers usually have the mod/digestforum:canoverridecutoff capability.
+        $can = digestforum_user_can_post_discussion($digestforum, null, -1, $cm, $context);
+        $this->assertTrue($can);
+    }
+
+    /**
      * Test digestforum_user_has_posted_discussion with no groups.
      */
-    public function test_digestforum_user_has_posted_discussion_no_groups() {
+    public function test_digestforum_user_has_posted_discussion_no_groups(): void {
         global $CFG;
 
         $this->resetAfterTest(true);
@@ -2239,7 +2635,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertFalse(digestforum_user_has_posted_discussion($digestforum->id, $other->id));
 
         // Post in the digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->digestforum = $digestforum->id;
@@ -2253,7 +2649,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test digestforum_user_has_posted_discussion with multiple digestforums
      */
-    public function test_digestforum_user_has_posted_discussion_multiple_digestforums() {
+    public function test_digestforum_user_has_posted_discussion_multiple_digestforums(): void {
         global $CFG;
 
         $this->resetAfterTest(true);
@@ -2271,7 +2667,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertFalse(digestforum_user_has_posted_discussion($digestforum2->id, $author->id));
 
         // Post in the digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->digestforum = $digestforum1->id;
@@ -2285,7 +2681,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test digestforum_user_has_posted_discussion with multiple groups.
      */
-    public function test_digestforum_user_has_posted_discussion_multiple_groups() {
+    public function test_digestforum_user_has_posted_discussion_multiple_groups(): void {
         global $CFG;
 
         $this->resetAfterTest(true);
@@ -2294,8 +2690,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $author = self::getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($author->id, $course->id);
 
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course->id));
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
+        $group2 = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         groups_add_member($group1->id, $author->id);
         groups_add_member($group2->id, $author->id);
 
@@ -2311,7 +2707,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertFalse(digestforum_user_has_posted_discussion($digestforum->id, $author->id, $group2->id));
 
         // Post in one group.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->digestforum = $digestforum->id;
@@ -2324,7 +2720,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertFalse(digestforum_user_has_posted_discussion($digestforum->id, $author->id, $group2->id));
 
         // Post in the other group.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $author->id;
         $record->digestforum = $digestforum->id;
@@ -2338,9 +2734,42 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     }
 
     /**
+     * Test the logic for digestforum_get_user_posted_mailnow where the user can select if qanda digestforum post
+     * should be sent without delay
+     */
+    public function test_digestforum_get_user_posted_mailnow(): void {
+        $this->resetAfterTest();
+
+        // Create a digestforum.
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $author = $this->getDataGenerator()->create_user();
+        $authorid = $author->id;
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+
+        // Create a discussion.
+        $record = new \stdClass();
+        $record->course = $digestforum->course;
+        $record->digestforum = $digestforum->id;
+        $record->userid = $authorid;
+        $discussion = $generator->create_discussion($record);
+        $did = $discussion->id;
+
+        // Return False if no post exists with 'mailnow' selected.
+        $generator->create_post(['userid' => $authorid, 'discussion' => $did, 'digestforum' => $digestforum->id, 'mailnow' => 0]);
+        $result = digestforum_get_user_posted_mailnow($did, $authorid);
+        $this->assertFalse($result);
+
+        // Return True only if any post has 'mailnow' selected.
+        $generator->create_post(['userid' => $authorid, 'discussion' => $did, 'digestforum' => $digestforum->id, 'mailnow' => 1]);
+        $result = digestforum_get_user_posted_mailnow($did, $authorid);
+        $this->assertTrue($result);
+    }
+
+    /**
      * Tests the mod_digestforum_myprofile_navigation() function.
      */
-    public function test_mod_digestforum_myprofile_navigation() {
+    public function test_mod_digestforum_myprofile_navigation(): void {
         $this->resetAfterTest(true);
 
         // Set up the test.
@@ -2354,9 +2783,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_digestforum_myprofile_navigation($tree, $user, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
-        $nodes->setAccessible(true);
         $this->assertArrayHasKey('digestforumposts', $nodes->getValue($tree));
         $this->assertArrayHasKey('digestforumdiscussions', $nodes->getValue($tree));
     }
@@ -2364,7 +2792,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Tests the mod_digestforum_myprofile_navigation() function as a guest.
      */
-    public function test_mod_digestforum_myprofile_navigation_as_guest() {
+    public function test_mod_digestforum_myprofile_navigation_as_guest(): void {
         global $USER;
 
         $this->resetAfterTest(true);
@@ -2379,9 +2807,8 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_digestforum_myprofile_navigation($tree, $USER, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
-        $nodes->setAccessible(true);
         $this->assertArrayNotHasKey('digestforumposts', $nodes->getValue($tree));
         $this->assertArrayNotHasKey('digestforumdiscussions', $nodes->getValue($tree));
     }
@@ -2389,7 +2816,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Tests the mod_digestforum_myprofile_navigation() function as a user viewing another user's profile.
      */
-    public function test_mod_digestforum_myprofile_navigation_different_user() {
+    public function test_mod_digestforum_myprofile_navigation_different_user(): void {
         $this->resetAfterTest(true);
 
         // Set up the test.
@@ -2404,336 +2831,69 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Check the node tree is correct.
         mod_digestforum_myprofile_navigation($tree, $user, $iscurrentuser, $course);
-        $reflector = new ReflectionObject($tree);
+        $reflector = new \ReflectionObject($tree);
         $nodes = $reflector->getProperty('nodes');
-        $nodes->setAccessible(true);
         $this->assertArrayHasKey('digestforumposts', $nodes->getValue($tree));
         $this->assertArrayHasKey('digestforumdiscussions', $nodes->getValue($tree));
-    }
-
-    public function test_print_overview() {
-        $this->resetAfterTest();
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-
-        // Create an author user.
-        $author = self::getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($author->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($author->id, $course2->id);
-
-        // Create a viewer user.
-        $viewer = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($viewer->id, $course2->id);
-
-        // Create two digestforums - one in each course.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $digestforum1 = self::getDataGenerator()->create_module('digestforum', (object) array('course' => $course1->id));
-        $digestforum2 = self::getDataGenerator()->create_module('digestforum', (object) array('course' => $course2->id));
-
-        // A standard post in the digestforum.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $record->userid = $author->id;
-        $record->digestforum = $digestforum1->id;
-        $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-
-        $this->setUser($viewer->id);
-        $courses = array(
-            $course1->id => clone $course1,
-            $course2->id => clone $course2,
-        );
-
-        foreach ($courses as $courseid => $course) {
-            $courses[$courseid]->lastaccess = 0;
-        }
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        // There should be one entry for course1, and no others.
-        $this->assertCount(1, $results);
-
-        // There should be one entry for a digestforum in course1.
-        $this->assertCount(1, $results[$course1->id]);
-        $this->assertArrayHasKey('digestforum', $results[$course1->id]);
-    }
-
-    public function test_print_overview_groups() {
-        $this->resetAfterTest();
-        $course1 = self::getDataGenerator()->create_course();
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
-
-        // Create an author user.
-        $author = self::getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($author->id, $course1->id);
-
-        // Create two viewer users - one in each group.
-        $viewer1 = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer1->id, $course1->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $viewer1->id, 'groupid' => $group1->id));
-
-        $viewer2 = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer2->id, $course1->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $viewer2->id, 'groupid' => $group2->id));
-
-        // Create a digestforum.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $digestforum1 = self::getDataGenerator()->create_module('digestforum', (object) array(
-            'course'        => $course1->id,
-            'groupmode'     => SEPARATEGROUPS,
-        ));
-
-        // A post in the digestforum for group1.
-        $record = new stdClass();
-        $record->course     = $course1->id;
-        $record->userid     = $author->id;
-        $record->digestforum      = $digestforum1->id;
-        $record->groupid    = $group1->id;
-        $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-
-        $course1->lastaccess = 0;
-        $courses = array($course1->id => $course1);
-
-        // As viewer1 (same group as post).
-        $this->setUser($viewer1->id);
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        // There should be one entry for course1.
-        $this->assertCount(1, $results);
-
-        // There should be one entry for a digestforum in course1.
-        $this->assertCount(1, $results[$course1->id]);
-        $this->assertArrayHasKey('digestforum', $results[$course1->id]);
-
-        $this->setUser($viewer2->id);
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        // There should be one entry for course1.
-        $this->assertCount(0, $results);
-    }
-
-    /**
-     * @dataProvider print_overview_timed_provider
-     */
-    public function test_print_overview_timed($config, $hasresult) {
-        $this->resetAfterTest();
-        $course1 = self::getDataGenerator()->create_course();
-
-        // Create an author user.
-        $author = self::getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($author->id, $course1->id);
-
-        // Create a viewer user.
-        $viewer = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer->id, $course1->id);
-
-        // Create a digestforum.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $digestforum1 = self::getDataGenerator()->create_module('digestforum', (object) array('course' => $course1->id));
-
-        // A timed post with a timestart in the past (24 hours ago).
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $record->userid = $author->id;
-        $record->digestforum = $digestforum1->id;
-        if (isset($config['timestartmodifier'])) {
-            $record->timestart = time() + $config['timestartmodifier'];
-        }
-        if (isset($config['timeendmodifier'])) {
-            $record->timeend = time() + $config['timeendmodifier'];
-        }
-        $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-
-        $course1->lastaccess = 0;
-        $courses = array($course1->id => $course1);
-
-        // As viewer, check the digestforum_print_overview result.
-        $this->setUser($viewer->id);
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        if ($hasresult) {
-            // There should be one entry for course1.
-            $this->assertCount(1, $results);
-
-            // There should be one entry for a digestforum in course1.
-            $this->assertCount(1, $results[$course1->id]);
-            $this->assertArrayHasKey('digestforum', $results[$course1->id]);
-        } else {
-            // There should be no entries for any course.
-            $this->assertCount(0, $results);
-        }
-    }
-
-    /**
-     * @dataProvider print_overview_timed_provider
-     */
-    public function test_print_overview_timed_groups($config, $hasresult) {
-        $this->resetAfterTest();
-        $course1 = self::getDataGenerator()->create_course();
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
-        $group2 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
-
-        // Create an author user.
-        $author = self::getDataGenerator()->create_user();
-        $this->getDataGenerator()->enrol_user($author->id, $course1->id);
-
-        // Create two viewer users - one in each group.
-        $viewer1 = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer1->id, $course1->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $viewer1->id, 'groupid' => $group1->id));
-
-        $viewer2 = self::getDataGenerator()->create_user((object) array('trackforums' => 1));
-        $this->getDataGenerator()->enrol_user($viewer2->id, $course1->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $viewer2->id, 'groupid' => $group2->id));
-
-        // Create a digestforum.
-        $record = new stdClass();
-        $record->course = $course1->id;
-        $digestforum1 = self::getDataGenerator()->create_module('digestforum', (object) array(
-            'course'        => $course1->id,
-            'groupmode'     => SEPARATEGROUPS,
-        ));
-
-        // A post in the digestforum for group1.
-        $record = new stdClass();
-        $record->course     = $course1->id;
-        $record->userid     = $author->id;
-        $record->digestforum      = $digestforum1->id;
-        $record->groupid    = $group1->id;
-        if (isset($config['timestartmodifier'])) {
-            $record->timestart = time() + $config['timestartmodifier'];
-        }
-        if (isset($config['timeendmodifier'])) {
-            $record->timeend = time() + $config['timeendmodifier'];
-        }
-        $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($record);
-
-        $course1->lastaccess = 0;
-        $courses = array($course1->id => $course1);
-
-        // As viewer1 (same group as post).
-        $this->setUser($viewer1->id);
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        if ($hasresult) {
-            // There should be one entry for course1.
-            $this->assertCount(1, $results);
-
-            // There should be one entry for a digestforum in course1.
-            $this->assertCount(1, $results[$course1->id]);
-            $this->assertArrayHasKey('digestforum', $results[$course1->id]);
-        } else {
-            // There should be no entries for any course.
-            $this->assertCount(0, $results);
-        }
-
-        $this->setUser($viewer2->id);
-        $results = array();
-        digestforum_print_overview($courses, $results);
-        $this->assertDebuggingCalledCount(2);
-
-        // There should be one entry for course1.
-        $this->assertCount(0, $results);
-    }
-
-    public function print_overview_timed_provider() {
-        return array(
-            'timestart_past' => array(
-                'discussionconfig' => array(
-                    'timestartmodifier' => -86000,
-                ),
-                'hasresult'         => true,
-            ),
-            'timestart_future' => array(
-                'discussionconfig' => array(
-                    'timestartmodifier' => 86000,
-                ),
-                'hasresult'         => false,
-            ),
-            'timeend_past' => array(
-                'discussionconfig' => array(
-                    'timeendmodifier'   => -86000,
-                ),
-                'hasresult'         => false,
-            ),
-            'timeend_future' => array(
-                'discussionconfig' => array(
-                    'timeendmodifier'   => 86000,
-                ),
-                'hasresult'         => true,
-            ),
-        );
     }
 
     /**
      * Test test_pinned_discussion_with_group.
      */
-    public function test_pinned_discussion_with_group() {
+    public function test_pinned_discussion_with_group(): void {
         global $SESSION;
 
         $this->resetAfterTest();
         $course1 = $this->getDataGenerator()->create_course();
-        $group1 = $this->getDataGenerator()->create_group(array('courseid' => $course1->id));
+        $group1 = $this->getDataGenerator()->create_group(['courseid' => $course1->id]);
 
         // Create an author user.
         $author = $this->getDataGenerator()->create_user();
         $this->getDataGenerator()->enrol_user($author->id, $course1->id);
 
         // Create two viewer users - one in a group, one not.
-        $viewer1 = $this->getDataGenerator()->create_user((object) array('trackforums' => 1));
+        $viewer1 = $this->getDataGenerator()->create_user((object) ['trackforums' => 1]);
         $this->getDataGenerator()->enrol_user($viewer1->id, $course1->id);
 
-        $viewer2 = $this->getDataGenerator()->create_user((object) array('trackforums' => 1));
+        $viewer2 = $this->getDataGenerator()->create_user((object) ['trackforums' => 1]);
         $this->getDataGenerator()->enrol_user($viewer2->id, $course1->id);
-        $this->getDataGenerator()->create_group_member(array('userid' => $viewer2->id, 'groupid' => $group1->id));
+        $this->getDataGenerator()->create_group_member(['userid' => $viewer2->id, 'groupid' => $group1->id]);
 
-        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', (object) array(
+        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', (object) [
             'course' => $course1->id,
             'groupmode' => SEPARATEGROUPS,
-        ));
+        ]);
 
         $coursemodule = get_coursemodule_from_instance('digestforum', $digestforum1->id);
 
-        $alldiscussions = array();
-        $group1discussions = array();
+        $alldiscussions = [];
+        $group1discussions = [];
 
         // Create 4 discussions in all participants group and group1, where the first
         // discussion is pinned in each group.
-        $allrecord = new stdClass();
+        $allrecord = new \stdClass();
         $allrecord->course = $course1->id;
         $allrecord->userid = $author->id;
         $allrecord->digestforum = $digestforum1->id;
         $allrecord->pinned = DFORUM_DISCUSSION_PINNED;
 
-        $group1record = new stdClass();
+        $group1record = new \stdClass();
         $group1record->course = $course1->id;
         $group1record->userid = $author->id;
         $group1record->digestforum = $digestforum1->id;
         $group1record->groupid = $group1->id;
         $group1record->pinned = DFORUM_DISCUSSION_PINNED;
 
-        $alldiscussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($allrecord);
-        $group1discussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($group1record);
+        $digestforumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
+        $alldiscussions[] = $digestforumgenerator->create_discussion($allrecord);
+        $group1discussions[] = $digestforumgenerator->create_discussion($group1record);
 
         // Create unpinned discussions.
         $allrecord->pinned = DFORUM_DISCUSSION_UNPINNED;
         $group1record->pinned = DFORUM_DISCUSSION_UNPINNED;
         for ($i = 0; $i < 3; $i++) {
-            $alldiscussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($allrecord);
-            $group1discussions[] = $this->getDataGenerator()->get_plugin_generator('mod_digestforum')->create_discussion($group1record);
+            $alldiscussions[] = $digestforumgenerator->create_discussion($allrecord);
+            $group1discussions[] = $digestforumgenerator->create_discussion($group1record);
         }
 
         // As viewer1 (no group). This user shouldn't see any of group1's discussions
@@ -2809,7 +2969,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test test_pinned_with_timed_discussions.
      */
-    public function test_pinned_with_timed_discussions() {
+    public function test_pinned_with_timed_discussions(): void {
         global $CFG;
 
         $CFG->digestforum_enabletimedposts = true;
@@ -2822,19 +2982,19 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) array(
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) [
             'course' => $course->id,
             'groupmode' => SEPARATEGROUPS,
-        ));
+        ]);
 
         $coursemodule = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $now = time();
-        $discussions = array();
+        $discussions = [];
         $discussiongenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -2881,7 +3041,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     /**
      * Test test_pinned_timed_discussions_with_timed_discussions.
      */
-    public function test_pinned_timed_discussions_with_timed_discussions() {
+    public function test_pinned_timed_discussions_with_timed_discussions(): void {
         global $CFG;
 
         $CFG->digestforum_enabletimedposts = true;
@@ -2894,19 +3054,19 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->getDataGenerator()->enrol_user($user->id, $course->id);
 
         // Create a digestforum.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) array(
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', (object) [
             'course' => $course->id,
             'groupmode' => SEPARATEGROUPS,
-        ));
+        ]);
 
         $coursemodule = get_coursemodule_from_instance('digestforum', $digestforum->id);
         $now = time();
-        $discussions = array();
+        $discussions = [];
         $discussiongenerator = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
 
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->course = $course->id;
         $record->userid = $user->id;
         $record->digestforum = $digestforum->id;
@@ -2962,68 +3122,9 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
     }
 
     /**
-     * @dataProvider digestforum_get_unmailed_posts_provider
-     */
-    public function test_digestforum_get_unmailed_posts($discussiondata, $enabletimedposts, $expectedcount, $expectedreplycount) {
-        global $CFG, $DB;
-
-        $this->resetAfterTest();
-
-        // Configure timed posts.
-        $CFG->digestforum_enabletimedposts = $enabletimedposts;
-
-        $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
-        $user = $this->getDataGenerator()->create_user();
-        $digestforumgen = $this->getDataGenerator()->get_plugin_generator('mod_digestforum');
-
-        // Keep track of the start time of the test. Do not use time() after this point to prevent random failures.
-        $time = time();
-
-        $record = new stdClass();
-        $record->course = $course->id;
-        $record->userid = $user->id;
-        $record->digestforum = $digestforum->id;
-        if (isset($discussiondata['timecreated'])) {
-            $record->timemodified = $time + $discussiondata['timecreated'];
-        }
-        if (isset($discussiondata['timestart'])) {
-            $record->timestart = $time + $discussiondata['timestart'];
-        }
-        if (isset($discussiondata['timeend'])) {
-            $record->timeend = $time + $discussiondata['timeend'];
-        }
-        if (isset($discussiondata['mailed'])) {
-            $record->mailed = $discussiondata['mailed'];
-        }
-
-        $discussion = $digestforumgen->create_discussion($record);
-
-        // Fetch the unmailed posts.
-        $timenow   = $time;
-        $endtime   = $timenow - $CFG->maxeditingtime;
-        $starttime = $endtime - 2 * DAYSECS;
-
-        $unmailed = digestforum_get_unmailed_posts($starttime, $endtime, $timenow);
-        $this->assertCount($expectedcount, $unmailed);
-
-        // Add a reply just outside the maxeditingtime.
-        $replyto = $DB->get_record('digestforum_posts', array('discussion' => $discussion->id));
-        $reply = new stdClass();
-        $reply->userid = $user->id;
-        $reply->discussion = $discussion->id;
-        $reply->parent = $replyto->id;
-        $reply->created = max($replyto->created, $endtime - 1);
-        $digestforumgen->create_post($reply);
-
-        $unmailed = digestforum_get_unmailed_posts($starttime, $endtime, $timenow);
-        $this->assertCount($expectedreplycount, $unmailed);
-    }
-
-    /**
      * Test for digestforum_is_author_hidden.
      */
-    public function test_digestforum_is_author_hidden() {
+    public function test_digestforum_is_author_hidden(): void {
         // First post, different digestforum type.
         $post = (object) ['parent' => 0];
         $digestforum = (object) ['type' => 'standard'];
@@ -3055,172 +3156,31 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         digestforum_is_author_hidden($post, $digestforum);
     }
 
-    public function digestforum_get_unmailed_posts_provider() {
-        return [
-            'Untimed discussion; Single post; maxeditingtime not expired' => [
-                'discussion'        => [
-                ],
-                'timedposts'        => false,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-            'Untimed discussion; Single post; maxeditingtime expired' => [
-                'discussion'        => [
-                    'timecreated'   => - DAYSECS,
-                ],
-                'timedposts'        => false,
-                'postcount'         => 1,
-                'replycount'        => 2,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime not expired' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => 0,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 1,
-                'replycount'        => 2,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired; timeend not reached' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                    'timeend'       => + DAYSECS
-                ],
-                'timedposts'        => true,
-                'postcount'         => 1,
-                'replycount'        => 2,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired; timeend passed' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                    'timeend'       => - HOURSECS,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timeend not reached' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timeend'       => + DAYSECS
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 1,
-            ],
-            'Timed discussion; Single post; Posted 1 week ago; timeend passed' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timeend'       => - DAYSECS,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-
-            'Previously mailed; Untimed discussion; Single post; maxeditingtime not expired' => [
-                'discussion'        => [
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => false,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-
-            'Previously mailed; Untimed discussion; Single post; maxeditingtime expired' => [
-                'discussion'        => [
-                    'timecreated'   => - DAYSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => false,
-                'postcount'         => 0,
-                'replycount'        => 1,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime not expired' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => 0,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 1,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired; timeend not reached' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                    'timeend'       => + DAYSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 1,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timestart maxeditingtime expired; timeend passed' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timestart'     => - DAYSECS,
-                    'timeend'       => - HOURSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timeend not reached' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timeend'       => + DAYSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 1,
-            ],
-            'Previously mailed; Timed discussion; Single post; Posted 1 week ago; timeend passed' => [
-                'discussion'        => [
-                    'timecreated'   => - WEEKSECS,
-                    'timeend'       => - DAYSECS,
-                    'mailed'        => 1,
-                ],
-                'timedposts'        => true,
-                'postcount'         => 0,
-                'replycount'        => 0,
-            ],
-        ];
-    }
-
     /**
      * Test the digestforum_discussion_is_locked function.
      *
-     * @dataProvider digestforum_discussion_is_locked_provider
-     * @param   stdClass    $digestforum
-     * @param   stdClass    $discussion
+     * @param   \stdClass $digestforum
+     * @param   \stdClass $discussion
      * @param   bool        $expect
      */
-    public function test_digestforum_discussion_is_locked($digestforum, $discussion, $expect) {
+    #[\PHPUnit\Framework\Attributes\DataProvider('digestforum_discussion_is_locked_provider')]
+    public function test_digestforum_discussion_is_locked($digestforum, $discussion, $expect): void {
+        $this->resetAfterTest();
+
+        $datagenerator = $this->getDataGenerator();
+        $plugingenerator = $datagenerator->get_plugin_generator('mod_digestforum');
+
+        $course = $datagenerator->create_course();
+        $user = $datagenerator->create_user();
+        $digestforum = $datagenerator->create_module('digestforum', (object) array_merge([
+            'course' => $course->id,
+        ], $digestforum));
+        $discussion = $plugingenerator->create_discussion((object) array_merge([
+            'course' => $course->id,
+            'userid' => $user->id,
+            'digestforum' => $digestforum->id,
+        ], $discussion));
+
         $this->assertEquals($expect, digestforum_discussion_is_locked($digestforum, $discussion));
     }
 
@@ -3229,50 +3189,134 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
      *
      * @return  array
      */
-    public function digestforum_discussion_is_locked_provider() {
+    public static function digestforum_discussion_is_locked_provider(): array {
         return [
-            'Unlocked: lockdiscussionafter is unset' => [
-                (object) [],
-                (object) [],
-                false
-            ],
             'Unlocked: lockdiscussionafter is false' => [
-                (object) ['lockdiscussionafter' => false],
-                (object) [],
-                false
-            ],
-            'Unlocked: lockdiscussionafter is null' => [
-                (object) ['lockdiscussionafter' => null],
-                (object) [],
-                false
+                ['lockdiscussionafter' => false],
+                [],
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; digestforum is of type single; post is recent' => [
-                (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'single'],
-                (object) ['timemodified' => time()],
-                false
+                ['lockdiscussionafter' => DAYSECS, 'type' => 'single'],
+                ['timemodified' => time()],
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; digestforum is of type single; post is old' => [
-                (object) ['lockdiscussionafter' => MINSECS, 'type' => 'single'],
-                (object) ['timemodified' => time() - DAYSECS],
-                false
+                ['lockdiscussionafter' => MINSECS, 'type' => 'single'],
+                ['timemodified' => time() - DAYSECS],
+                false,
             ],
             'Unlocked: lockdiscussionafter is set; digestforum is of type eachuser; post is recent' => [
-                (object) ['lockdiscussionafter' => DAYSECS, 'type' => 'eachuser'],
-                (object) ['timemodified' => time()],
-                false
+                ['lockdiscussionafter' => DAYSECS, 'type' => 'eachuser'],
+                ['timemodified' => time()],
+                false,
             ],
             'Locked: lockdiscussionafter is set; digestforum is of type eachuser; post is old' => [
-                (object) ['lockdiscussionafter' => MINSECS, 'type' => 'eachuser'],
-                (object) ['timemodified' => time() - DAYSECS],
-                true
+                ['lockdiscussionafter' => MINSECS, 'type' => 'eachuser'],
+                ['timemodified' => time() - DAYSECS],
+                true,
             ],
         ];
     }
 
     /**
-     * Test that {@link digestforum_update_post()} keeps correct digestforum_discussions usermodified.
+     * Test the digestforum_is_cutoff_date_reached function.
+     *
+     * @param   array   $digestforum
+     * @param   bool    $expect
      */
-    public function test_digestforum_update_post_keeps_discussions_usermodified() {
+    #[\PHPUnit\Framework\Attributes\DataProvider('digestforum_is_cutoff_date_reached_provider')]
+    public function test_digestforum_is_cutoff_date_reached($digestforum, $expect): void {
+        $this->resetAfterTest();
+
+        $datagenerator = $this->getDataGenerator();
+        $course = $datagenerator->create_course();
+        $digestforum = $datagenerator->create_module('digestforum', (object) array_merge([
+            'course' => $course->id,
+        ], $digestforum));
+
+        $this->assertEquals($expect, digestforum_is_cutoff_date_reached($digestforum));
+    }
+
+    /**
+     * Dataprovider for digestforum_is_cutoff_date_reached tests.
+     *
+     * @return  array
+     */
+    public static function digestforum_is_cutoff_date_reached_provider(): array {
+        $now = time();
+        return [
+            'cutoffdate is unset' => [
+                [],
+                false,
+            ],
+            'cutoffdate is 0' => [
+                ['cutoffdate' => 0],
+                false,
+            ],
+            'cutoffdate is set and is in future' => [
+                ['cutoffdate' => $now + 86400],
+                false,
+            ],
+            'cutoffdate is set and is in past' => [
+                ['cutoffdate' => $now - 86400],
+                true,
+            ],
+        ];
+    }
+
+    /**
+     * Test the digestforum_is_due_date_reached function.
+     *
+     * @param   \stdClass $digestforum
+     * @param   bool        $expect
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('digestforum_is_due_date_reached_provider')]
+    public function test_digestforum_is_due_date_reached($digestforum, $expect): void {
+        $this->resetAfterTest();
+
+        $this->setAdminUser();
+
+        $datagenerator = $this->getDataGenerator();
+        $course = $datagenerator->create_course();
+        $digestforum = $datagenerator->create_module('digestforum', (object) array_merge([
+            'course' => $course->id,
+        ], $digestforum));
+
+        $this->assertEquals($expect, digestforum_is_due_date_reached($digestforum));
+    }
+
+    /**
+     * Dataprovider for digestforum_is_due_date_reached tests.
+     *
+     * @return  array
+     */
+    public static function digestforum_is_due_date_reached_provider(): array {
+        $now = time();
+        return [
+            'duedate is unset' => [
+                [],
+                false,
+            ],
+            'duedate is 0' => [
+                ['duedate' => 0],
+                false,
+            ],
+            'duedate is set and is in future' => [
+                ['duedate' => $now + 86400],
+                false,
+            ],
+            'duedate is set and is in past' => [
+                ['duedate' => $now - 86400],
+                true,
+            ],
+        ];
+    }
+
+    /**
+     * Test that {@see digestforum_update_post()} keeps correct digestforum_discussions usermodified.
+     */
+    public function test_digestforum_update_post_keeps_discussions_usermodified(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -3364,18 +3408,21 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertGreaterThan($pasttime, $DB->get_field('digestforum_posts', 'modified', ['id' => $reply->id]));
     }
 
-    public function test_digestforum_core_calendar_provide_event_action() {
+    public function test_digestforum_core_calendar_provide_event_action(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
         // Create the activity.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id,
-            'completionreplies' => 5, 'completiondiscussions' => 2));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id,
+            'completionreplies' => 5, 'completiondiscussions' => 2]);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Create an action factory.
         $factory = new \core_calendar\action_factory();
@@ -3391,7 +3438,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_digestforum_core_calendar_provide_event_action_in_hidden_section() {
+    public function test_digestforum_core_calendar_provide_event_action_in_hidden_section(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -3404,15 +3451,19 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
 
         // Create the activity.
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id,
-                'completionreplies' => 5, 'completiondiscussions' => 2));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id,
+                'completionreplies' => 5, 'completiondiscussions' => 2]);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-                \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Set sections 0 as hidden.
-        set_section_visible($course->id, 0, 0);
+        $sectioninfo = get_fast_modinfo($course->id)->get_section_info(0);
+        \core_courseformat\formatactions::section($course->id)->set_visibility($sectioninfo, false);
 
         // Now, log out.
         $CFG->forcelogin = true; // We don't want to be logged in as guest, as guest users might still have some capabilities.
@@ -3428,7 +3479,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_digestforum_core_calendar_provide_event_action_for_user() {
+    public function test_digestforum_core_calendar_provide_event_action_for_user(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -3441,12 +3492,15 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
 
         // Create the activity.
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id,
-                'completionreplies' => 5, 'completiondiscussions' => 2));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id,
+                'completionreplies' => 5, 'completiondiscussions' => 2]);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-                \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Now log out.
         $CFG->forcelogin = true; // We don't want to be logged in as guest, as guest users might still have some capabilities.
@@ -3466,7 +3520,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertTrue($actionevent->is_actionable());
     }
 
-    public function test_digestforum_core_calendar_provide_event_action_as_non_user() {
+    public function test_digestforum_core_calendar_provide_event_action_as_non_user(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -3474,11 +3528,14 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
 
         // Create the activity.
         $course = $this->getDataGenerator()->create_course();
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id));
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Log out the user and set force login to true.
         \core\session\manager::init_empty_session();
@@ -3494,7 +3551,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_digestforum_core_calendar_provide_event_action_already_completed() {
+    public function test_digestforum_core_calendar_provide_event_action_already_completed(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -3503,19 +3560,25 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $CFG->enablecompletion = 1;
 
         // Create the activity.
-        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id),
-            array('completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS));
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
+        $digestforum = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]
+        );
 
         // Get some additional data.
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Mark the activity as completed.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completion->set_module_viewed($cm);
 
         // Create an action factory.
@@ -3528,7 +3591,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_digestforum_core_calendar_provide_event_action_already_completed_for_user() {
+    public function test_digestforum_core_calendar_provide_event_action_already_completed_for_user(): void {
         global $CFG;
 
         $this->resetAfterTest();
@@ -3537,24 +3600,30 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $CFG->enablecompletion = 1;
 
         // Create a course.
-        $course = $this->getDataGenerator()->create_course(array('enablecompletion' => 1));
+        $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
 
         // Create a student.
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
 
         // Create the activity.
-        $digestforum = $this->getDataGenerator()->create_module('digestforum', array('course' => $course->id),
-            array('completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS));
+        $digestforum = $this->getDataGenerator()->create_module(
+            'digestforum',
+            ['course' => $course->id],
+            ['completion' => 2, 'completionview' => 1, 'completionexpected' => time() + DAYSECS]
+        );
 
         // Get some additional data.
         $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
 
         // Create a calendar event.
-        $event = $this->create_action_event($course->id, $digestforum->id,
-            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED);
+        $event = $this->create_action_event(
+            $course->id,
+            $digestforum->id,
+            \core_completion\api::COMPLETION_EVENT_TYPE_DATE_COMPLETION_EXPECTED
+        );
 
         // Mark the activity as completed for the student.
-        $completion = new completion_info($course);
+        $completion = new \completion_info($course);
         $completion->set_module_viewed($cm, $student->id);
 
         // Create an action factory.
@@ -3567,7 +3636,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $this->assertNull($actionevent);
     }
 
-    public function test_mod_digestforum_get_tagged_posts() {
+    public function test_mod_digestforum_get_tagged_posts(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -3578,80 +3647,104 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $course3 = $this->getDataGenerator()->create_course();
         $course2 = $this->getDataGenerator()->create_course();
         $course1 = $this->getDataGenerator()->create_course();
-        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course1->id));
-        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course2->id));
-        $digestforum3 = $this->getDataGenerator()->create_module('digestforum', array('course' => $course3->id));
-        $post11 = $digestforumgenerator->create_content($digestforum1, array('tags' => array('Cats', 'Dogs')));
-        $post12 = $digestforumgenerator->create_content($digestforum1, array('tags' => array('Cats', 'mice')));
-        $post13 = $digestforumgenerator->create_content($digestforum1, array('tags' => array('Cats')));
+        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course1->id]);
+        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course2->id]);
+        $digestforum3 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course3->id]);
+        $post11 = $digestforumgenerator->create_content($digestforum1, ['tags' => ['Cats', 'Dogs']]);
+        $post12 = $digestforumgenerator->create_content($digestforum1, ['tags' => ['Cats', 'mice']]);
+        $post13 = $digestforumgenerator->create_content($digestforum1, ['tags' => ['Cats']]);
         $post14 = $digestforumgenerator->create_content($digestforum1);
-        $post15 = $digestforumgenerator->create_content($digestforum1, array('tags' => array('Cats')));
-        $post16 = $digestforumgenerator->create_content($digestforum1, array('tags' => array('Cats'), 'hidden' => true));
-        $post21 = $digestforumgenerator->create_content($digestforum2, array('tags' => array('Cats')));
-        $post22 = $digestforumgenerator->create_content($digestforum2, array('tags' => array('Cats', 'Dogs')));
-        $post23 = $digestforumgenerator->create_content($digestforum2, array('tags' => array('mice', 'Cats')));
-        $post31 = $digestforumgenerator->create_content($digestforum3, array('tags' => array('mice', 'Cats')));
+        $post15 = $digestforumgenerator->create_content($digestforum1, ['tags' => ['Cats']]);
+        $post16 = $digestforumgenerator->create_content($digestforum1, ['tags' => ['Cats'], 'hidden' => true]);
+        $post21 = $digestforumgenerator->create_content($digestforum2, ['tags' => ['Cats']]);
+        $post22 = $digestforumgenerator->create_content($digestforum2, ['tags' => ['Cats', 'Dogs']]);
+        $post23 = $digestforumgenerator->create_content($digestforum2, ['tags' => ['mice', 'Cats']]);
+        $post31 = $digestforumgenerator->create_content($digestforum3, ['tags' => ['mice', 'Cats']]);
 
-        $tag = core_tag_tag::get_by_name(0, 'Cats');
+        $tag = \core_tag_tag::get_by_name(0, 'Cats');
 
         // Admin can see everything.
-        $res = mod_digestforum_get_tagged_posts($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$post = */0);
-        $this->assertRegExp('/'.$post11->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post12->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post13->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post14->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post15->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post16->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post21->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post22->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post23->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post31->subject.'</', $res->content);
+        $res = mod_digestforum_get_tagged_posts(
+            $tag, /*$exclusivemode = */
+            false,
+            /*$fromctx = */0, /*$ctx = */
+            0, /*$rec = */
+            1, /*$post = */
+            0
+        );
+        $this->assertMatchesRegularExpression('/' . $post11->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post12->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post13->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post14->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post15->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post16->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post21->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post22->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post23->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post31->subject . '</', $res->content);
         $this->assertEmpty($res->prevpageurl);
         $this->assertNotEmpty($res->nextpageurl);
-        $res = mod_digestforum_get_tagged_posts($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$post = */1);
-        $this->assertNotRegExp('/'.$post11->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post12->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post13->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post14->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post15->subject.'</', $res->content);
-        $this->assertNotRegExp('/'.$post16->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post21->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post22->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post23->subject.'</', $res->content);
-        $this->assertRegExp('/'.$post31->subject.'</', $res->content);
+        $res = mod_digestforum_get_tagged_posts(
+            $tag, /*$exclusivemode = */
+            false,
+            /*$fromctx = */0, /*$ctx = */
+            0, /*$rec = */
+            1, /*$post = */
+            1
+        );
+        $this->assertDoesNotMatchRegularExpression('/' . $post11->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post12->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post13->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post14->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post15->subject . '</', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post16->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post21->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post22->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post23->subject . '</', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post31->subject . '</', $res->content);
         $this->assertNotEmpty($res->prevpageurl);
         $this->assertEmpty($res->nextpageurl);
 
         // Create and enrol a user.
         $student = self::getDataGenerator()->create_user();
-        $studentrole = $DB->get_record('role', array('shortname' => 'student'));
+        $studentrole = $DB->get_record('role', ['shortname' => 'student']);
         $this->getDataGenerator()->enrol_user($student->id, $course1->id, $studentrole->id, 'manual');
         $this->getDataGenerator()->enrol_user($student->id, $course2->id, $studentrole->id, 'manual');
         $this->setUser($student);
-        core_tag_index_builder::reset_caches();
+        \core_tag_index_builder::reset_caches();
 
         // User can not see posts in course 3 because he is not enrolled.
-        $res = mod_digestforum_get_tagged_posts($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */0, /*$rec = */1, /*$post = */1);
-        $this->assertRegExp('/'.$post22->subject.'/', $res->content);
-        $this->assertRegExp('/'.$post23->subject.'/', $res->content);
-        $this->assertNotRegExp('/'.$post31->subject.'/', $res->content);
+        $res = mod_digestforum_get_tagged_posts(
+            $tag, /*$exclusivemode = */
+            false,
+            /*$fromctx = */0, /*$ctx = */
+            0, /*$rec = */
+            1, /*$post = */
+            1
+        );
+        $this->assertMatchesRegularExpression('/' . $post22->subject . '/', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post23->subject . '/', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post31->subject . '/', $res->content);
 
         // User can search digestforum posts inside a course.
-        $coursecontext = context_course::instance($course1->id);
-        $res = mod_digestforum_get_tagged_posts($tag, /*$exclusivemode = */false,
-            /*$fromctx = */0, /*$ctx = */$coursecontext->id, /*$rec = */1, /*$post = */0);
-        $this->assertRegExp('/'.$post11->subject.'/', $res->content);
-        $this->assertRegExp('/'.$post12->subject.'/', $res->content);
-        $this->assertRegExp('/'.$post13->subject.'/', $res->content);
-        $this->assertNotRegExp('/'.$post14->subject.'/', $res->content);
-        $this->assertRegExp('/'.$post15->subject.'/', $res->content);
-        $this->assertRegExp('/'.$post16->subject.'/', $res->content);
-        $this->assertNotRegExp('/'.$post21->subject.'/', $res->content);
-        $this->assertNotRegExp('/'.$post22->subject.'/', $res->content);
-        $this->assertNotRegExp('/'.$post23->subject.'/', $res->content);
+        $coursecontext = \context_course::instance($course1->id);
+        $res = mod_digestforum_get_tagged_posts(
+            $tag, /*$exclusivemode = */
+            false,
+            /*$fromctx = */0, /*$ctx = */
+            $coursecontext->id, /*$rec = */
+            1, /*$post = */
+            0
+        );
+        $this->assertMatchesRegularExpression('/' . $post11->subject . '/', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post12->subject . '/', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post13->subject . '/', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post14->subject . '/', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post15->subject . '/', $res->content);
+        $this->assertMatchesRegularExpression('/' . $post16->subject . '/', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post21->subject . '/', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post22->subject . '/', $res->content);
+        $this->assertDoesNotMatchRegularExpression('/' . $post23->subject . '/', $res->content);
         $this->assertEmpty($res->nextpageurl);
     }
 
@@ -3664,7 +3757,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
      * @return bool|calendar_event
      */
     private function create_action_event($courseid, $instanceid, $eventtype) {
-        $event = new stdClass();
+        $event = new \stdClass();
         $event->name = 'Calendar event';
         $event->modulename  = 'digestforum';
         $event->courseid = $courseid;
@@ -3673,7 +3766,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
         $event->eventtype = $eventtype;
         $event->timestart = time();
 
-        return calendar_event::create($event);
+        return \calendar_event::create($event);
     }
 
     /**
@@ -3681,7 +3774,7 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
      * This function should work given either an instance of the module (cm_info), such as when checking the active rules,
      * or if passed a stdClass of similar structure, such as when checking the the default completion settings for a mod type.
      */
-    public function test_mod_digestforum_completion_get_active_rule_descriptions() {
+    public function test_mod_digestforum_completion_get_active_rule_descriptions(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -3692,37 +3785,574 @@ class mod_digestforum_lib_testcase extends advanced_testcase {
             'completion' => 2,
             'completiondiscussions' => 3,
             'completionreplies' => 3,
-            'completionposts' => 3
+            'completionposts' => 3,
         ]);
         $digestforum2 = $this->getDataGenerator()->create_module('digestforum', [
             'course' => $course->id,
             'completion' => 2,
             'completiondiscussions' => 0,
             'completionreplies' => 0,
-            'completionposts' => 0
+            'completionposts' => 0,
         ]);
-        $cm1 = cm_info::create(get_coursemodule_from_instance('digestforum', $digestforum1->id));
-        $cm2 = cm_info::create(get_coursemodule_from_instance('digestforum', $digestforum2->id));
+        $cm1 = \cm_info::create(get_coursemodule_from_instance('digestforum', $digestforum1->id));
+        $cm2 = \cm_info::create(get_coursemodule_from_instance('digestforum', $digestforum2->id));
 
         // Data for the stdClass input type.
         // This type of input would occur when checking the default completion rules for an activity type, where we don't have
         // any access to cm_info, rather the input is a stdClass containing completion and customdata attributes, just like cm_info.
-        $moddefaults = new stdClass();
+        $moddefaults = new \stdClass();
         $moddefaults->customdata = ['customcompletionrules' => [
             'completiondiscussions' => 3,
             'completionreplies' => 3,
-            'completionposts' => 3
+            'completionposts' => 3,
         ]];
         $moddefaults->completion = 2;
 
         $activeruledescriptions = [
             get_string('completiondiscussionsdesc', 'digestforum', 3),
             get_string('completionrepliesdesc', 'digestforum', 3),
-            get_string('completionpostsdesc', 'digestforum', 3)
+            get_string('completionpostsdesc', 'digestforum', 3),
         ];
         $this->assertEquals(mod_digestforum_get_completion_active_rule_descriptions($cm1), $activeruledescriptions);
         $this->assertEquals(mod_digestforum_get_completion_active_rule_descriptions($cm2), []);
         $this->assertEquals(mod_digestforum_get_completion_active_rule_descriptions($moddefaults), $activeruledescriptions);
-        $this->assertEquals(mod_digestforum_get_completion_active_rule_descriptions(new stdClass()), []);
+        $this->assertEquals(mod_digestforum_get_completion_active_rule_descriptions(new \stdClass()), []);
+    }
+
+    /**
+     * Test the digestforum_post_is_visible_privately function used in private replies.
+     */
+    public function test_digestforum_post_is_visible_privately(): void {
+        $this->resetAfterTest();
+
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $context = \context_module::instance($digestforum->cmid);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
+
+        $author = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($author->id, $course->id);
+
+        $recipient = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($recipient->id, $course->id);
+
+        $privilegeduser = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($privilegeduser->id, $course->id, 'editingteacher');
+
+        $otheruser = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($otheruser->id, $course->id);
+
+        // Fake a post - this does not need to be persisted to the DB.
+        $post = new \stdClass();
+        $post->userid = $author->id;
+        $post->privatereplyto = $recipient->id;
+
+        // The user is the author.
+        $this->setUser($author->id);
+        $this->assertTrue(digestforum_post_is_visible_privately($post, $cm));
+
+        // The user is the intended recipient.
+        $this->setUser($recipient->id);
+        $this->assertTrue(digestforum_post_is_visible_privately($post, $cm));
+
+        // The user is not the author or recipient, but does have the readprivatereplies capability.
+        $this->setUser($privilegeduser->id);
+        $this->assertTrue(digestforum_post_is_visible_privately($post, $cm));
+
+        // The user is not allowed to view this post.
+        $this->setUser($otheruser->id);
+        $this->assertFalse(digestforum_post_is_visible_privately($post, $cm));
+    }
+
+    /**
+     * An unkown event type should not have any limits
+     */
+    public function test_mod_digestforum_core_calendar_get_valid_event_timestart_range_unknown_event(): void {
+        global $CFG;
+        require_once($CFG->dirroot . "/calendar/lib.php");
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $duedate = time() + DAYSECS;
+        $digestforum = new \stdClass();
+        $digestforum->duedate = $duedate;
+
+        // Create a valid event.
+        $event = new \calendar_event([
+            'name' => 'Test event',
+            'description' => '',
+            'format' => 1,
+            'courseid' => $course->id,
+            'groupid' => 0,
+            'userid' => 2,
+            'modulename' => 'digestforum',
+            'instance' => 1,
+            'eventtype' => DFORUM_EVENT_TYPE_DUE . "SOMETHING ELSE",
+            'timestart' => 1,
+            'timeduration' => 86400,
+            'visible' => 1,
+        ]);
+
+         [$min, $max] = mod_digestforum_core_calendar_get_valid_event_timestart_range($event, $digestforum);
+        $this->assertNull($min);
+        $this->assertNull($max);
+    }
+
+    /**
+     * Forums configured without a cutoff date should not have any limits applied.
+     */
+    public function test_mod_digestforum_core_calendar_get_valid_event_timestart_range_due_no_limit(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/calendar/lib.php');
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $duedate = time() + DAYSECS;
+        $digestforum = new \stdClass();
+        $digestforum->duedate = $duedate;
+
+        // Create a valid event.
+        $event = new \calendar_event([
+            'name' => 'Test event',
+            'description' => '',
+            'format' => 1,
+            'courseid' => $course->id,
+            'groupid' => 0,
+            'userid' => 2,
+            'modulename' => 'digestforum',
+            'instance' => 1,
+            'eventtype' => DFORUM_EVENT_TYPE_DUE,
+            'timestart' => 1,
+            'timeduration' => 86400,
+            'visible' => 1,
+        ]);
+
+        [$min, $max] = mod_digestforum_core_calendar_get_valid_event_timestart_range($event, $digestforum);
+        $this->assertNull($min);
+        $this->assertNull($max);
+    }
+
+    /**
+     * Forums should be top bound by the cutoff date.
+     */
+    public function test_mod_digestforum_core_calendar_get_valid_event_timestart_range_due_with_limits(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/calendar/lib.php');
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $duedate = time() + DAYSECS;
+        $cutoffdate = $duedate + DAYSECS;
+        $digestforum = new \stdClass();
+        $digestforum->duedate = $duedate;
+        $digestforum->cutoffdate = $cutoffdate;
+
+        // Create a valid event.
+        $event = new \calendar_event([
+            'name' => 'Test event',
+            'description' => '',
+            'format' => 1,
+            'courseid' => $course->id,
+            'groupid' => 0,
+            'userid' => 2,
+            'modulename' => 'digestforum',
+            'instance' => 1,
+            'eventtype' => DFORUM_EVENT_TYPE_DUE,
+            'timestart' => 1,
+            'timeduration' => 86400,
+            'visible' => 1,
+        ]);
+
+        [$min, $max] = mod_digestforum_core_calendar_get_valid_event_timestart_range($event, $digestforum);
+        $this->assertNull($min);
+        $this->assertEquals($cutoffdate, $max[0]);
+        $this->assertNotEmpty($max[1]);
+    }
+
+    /**
+     * An unknown event type should not change the digestforum instance.
+     */
+    public function test_mod_digestforum_core_calendar_event_timestart_updated_unknown_event(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . "/calendar/lib.php");
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+        $duedate = time() + DAYSECS;
+        $cutoffdate = $duedate + DAYSECS;
+        $digestforum = $digestforumgenerator->create_instance(['course' => $course->id]);
+        $digestforum->duedate = $duedate;
+        $digestforum->cutoffdate = $cutoffdate;
+        $DB->update_record('digestforum', $digestforum);
+
+        // Create a valid event.
+        $event = new \calendar_event([
+            'name' => 'Test event',
+            'description' => '',
+            'format' => 1,
+            'courseid' => $course->id,
+            'groupid' => 0,
+            'userid' => 2,
+            'modulename' => 'digestforum',
+            'instance' => $digestforum->id,
+            'eventtype' => DFORUM_EVENT_TYPE_DUE . "SOMETHING ELSE",
+            'timestart' => 1,
+            'timeduration' => 86400,
+            'visible' => 1,
+        ]);
+
+        mod_digestforum_core_calendar_event_timestart_updated($event, $digestforum);
+
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
+        $this->assertEquals($duedate, $digestforum->duedate);
+        $this->assertEquals($cutoffdate, $digestforum->cutoffdate);
+    }
+
+    /**
+     * Due date events should update the digestforum due date.
+     */
+    public function test_mod_digestforum_core_calendar_event_timestart_updated_due_event(): void {
+        global $CFG, $DB;
+        require_once($CFG->dirroot . "/calendar/lib.php");
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+        $duedate = time() + DAYSECS;
+        $cutoffdate = $duedate + DAYSECS;
+        $newduedate = $duedate + 1;
+        $digestforum = $digestforumgenerator->create_instance(['course' => $course->id]);
+        $digestforum->duedate = $duedate;
+        $digestforum->cutoffdate = $cutoffdate;
+        $DB->update_record('digestforum', $digestforum);
+
+        // Create a valid event.
+        $event = new \calendar_event([
+            'name' => 'Test event',
+            'description' => '',
+            'format' => 1,
+            'courseid' => $course->id,
+            'groupid' => 0,
+            'userid' => 2,
+            'modulename' => 'digestforum',
+            'instance' => $digestforum->id,
+            'eventtype' => DFORUM_EVENT_TYPE_DUE,
+            'timestart' => $newduedate,
+            'timeduration' => 86400,
+            'visible' => 1,
+        ]);
+
+        mod_digestforum_core_calendar_event_timestart_updated($event, $digestforum);
+
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
+        $this->assertEquals($newduedate, $digestforum->duedate);
+        $this->assertEquals($cutoffdate, $digestforum->cutoffdate);
+    }
+
+    /**
+     * Test digestforum_get_layout_modes function.
+     */
+    public function test_digestforum_get_layout_modes(): void {
+        $expectednormal = [
+            DFORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'digestforum'),
+            DFORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'digestforum'),
+            DFORUM_MODE_THREADED   => get_string('modethreaded', 'digestforum'),
+            DFORUM_MODE_NESTED => get_string('modenested', 'digestforum'),
+        ];
+        $expectedexperimental = [
+            DFORUM_MODE_FLATOLDEST => get_string('modeflatoldestfirst', 'digestforum'),
+            DFORUM_MODE_FLATNEWEST => get_string('modeflatnewestfirst', 'digestforum'),
+            DFORUM_MODE_THREADED   => get_string('modethreaded', 'digestforum'),
+            DFORUM_MODE_NESTED_V2 => get_string('modenestedv2', 'digestforum'),
+        ];
+
+        $this->assertEquals($expectednormal, digestforum_get_layout_modes());
+        $this->assertEquals($expectednormal, digestforum_get_layout_modes(false));
+        $this->assertEquals($expectedexperimental, digestforum_get_layout_modes(true));
+    }
+
+    /**
+     * Provides data for tests that cause digestforum_check_throttling to return early.
+     *
+     * @return array
+     */
+    public static function digestforum_check_throttling_early_returns_provider(): array {
+        return [
+            'Empty blockafter' => [(object)['id' => 1, 'course' => SITEID, 'blockafter' => 0]],
+            'Empty blockperiod' => [(object)['id' => 1, 'course' => SITEID, 'blockafter' => DAYSECS, 'blockperiod' => 0]],
+        ];
+    }
+
+    /**
+     * Tests the early return scenarios of digestforum_check_throttling.
+     *
+     * @param \stdClass $digestforum The digestforum data.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('digestforum_check_throttling_early_returns_provider')]
+    public function test_digestforum_check_throttling_early_returns(\stdClass $digestforum): void {
+        $this->assertFalse(digestforum_check_throttling($digestforum));
+    }
+
+    /**
+     * Provides data for tests that cause digestforum_check_throttling to throw exceptions early.
+     *
+     * @return array
+     */
+    public static function digestforum_check_throttling_early_exceptions_provider(): array {
+        return [
+            'Non-object digestforum' => ['a'],
+            'Forum ID not set' => [(object)['id' => false]],
+            'Course ID not set' => [(object)['id' => 1]],
+        ];
+    }
+
+    /**
+     * Tests the early exception scenarios of digestforum_check_throttling.
+     *
+     * @param mixed $digestforum The digestforum data.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('digestforum_check_throttling_early_exceptions_provider')]
+    public function test_digestforum_check_throttling_early_exceptions($digestforum): void {
+        $this->expectException(\coding_exception::class);
+        $this->assertFalse(digestforum_check_throttling($digestforum));
+    }
+
+    /**
+     * Tests digestforum_check_throttling when a non-existent numeric ID is passed for its digestforum parameter.
+     */
+    public function test_digestforum_check_throttling_nonexistent_numeric_id(): void {
+        $this->resetAfterTest();
+
+        $this->expectException(\moodle_exception::class);
+        digestforum_check_throttling(1);
+    }
+
+    /**
+     * Tests digestforum_check_throttling when a non-existent digestforum record is passed for its digestforum parameter.
+     */
+    public function test_digestforum_check_throttling_nonexistent_digestforum_cm(): void {
+        $this->resetAfterTest();
+
+        $dummydigestforum = (object)[
+            'id' => 1,
+            'course' => SITEID,
+            'blockafter' => 2,
+            'blockperiod' => DAYSECS,
+        ];
+        $this->expectException(\moodle_exception::class);
+        digestforum_check_throttling($dummydigestforum);
+    }
+
+    /**
+     * Tests digestforum_check_throttling when a user with the 'mod/digestforum:postwithoutthrottling' capability.
+     */
+    public function test_digestforum_check_throttling_teacher(): void {
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $teacher = $generator->create_and_enrol($course, 'teacher');
+
+        /** @var mod_digestforum_generator $digestforumgenerator */
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+        // Forum that limits students from creating more than two posts per day.
+        $digestforum = $digestforumgenerator->create_instance(
+            [
+                'course' => $course->id,
+                'blockafter' => 2,
+                'blockperiod' => DAYSECS,
+            ]
+        );
+
+        $this->setUser($teacher);
+        $discussionrecord = [
+            'course' => $course->id,
+            'digestforum' => $digestforum->id,
+            'userid' => $teacher->id,
+        ];
+        $discussion = $digestforumgenerator->create_discussion($discussionrecord);
+        // Create a digestforum post as the teacher.
+        $postrecord = [
+            'userid' => $teacher->id,
+            'discussion' => $discussion->id,
+        ];
+        $digestforumgenerator->create_post($postrecord);
+        // Create another digestforum post.
+        $digestforumgenerator->create_post($postrecord);
+
+        $this->assertFalse(digestforum_check_throttling($digestforum));
+    }
+
+    /**
+     * Tests digestforum_check_throttling for students.
+     */
+    public function test_digestforum_check_throttling_student(): void {
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $student = $generator->create_and_enrol($course, 'student');
+
+        /** @var mod_digestforum_generator $digestforumgenerator */
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+        // Forum that limits students from creating more than two posts per day.
+        $digestforum = $digestforumgenerator->create_instance(
+            [
+                'course' => $course->id,
+                'blockafter' => 2,
+                'blockperiod' => DAYSECS,
+                'warnafter' => 1,
+            ]
+        );
+
+        $this->setUser($student);
+
+        // Student hasn't posted yet so no warning will be shown.
+        $throttling = digestforum_check_throttling($digestforum);
+        $this->assertFalse($throttling);
+
+        // Create a discussion.
+        $discussionrecord = [
+            'course' => $course->id,
+            'digestforum' => $digestforum->id,
+            'userid' => $student->id,
+        ];
+        $discussion = $digestforumgenerator->create_discussion($discussionrecord);
+
+        // A warning will be shown to the student, but they should still be able to post.
+        $throttling = digestforum_check_throttling($digestforum);
+        $this->assertIsObject($throttling);
+        $this->assertTrue($throttling->canpost);
+
+        // Create another digestforum post as the student.
+        $postrecord = [
+            'userid' => $student->id,
+            'discussion' => $discussion->id,
+        ];
+        $digestforumgenerator->create_post($postrecord);
+
+        // Student should now be unable to post after their second post.
+        $throttling = digestforum_check_throttling($digestforum);
+        $this->assertIsObject($throttling);
+        $this->assertFalse($throttling->canpost);
+    }
+
+    /**
+     * Tests digestforum_count_discussions.
+     */
+    public function test_digestforum_count_discussions(): void {
+        $this->resetAfterTest();
+
+        $generator = $this->getDataGenerator();
+        $digestforumgenerator = $generator->get_plugin_generator('mod_digestforum');
+        $course1 = $generator->create_course();
+        $course2 = $generator->create_course();
+        $student = $generator->create_user(['trackforums' => 1]);
+
+        // First digestforum.
+        $digestforumobj1 = new \stdClass();
+        $digestforumobj1->introformat = FORMAT_HTML;
+        $digestforumobj1->course = $course1->id;
+        $digestforumobj1->trackingtype = DFORUM_TRACKING_FORCED;
+        $digestforum1 = $generator->create_module('digestforum', $digestforumobj1);
+        $digestforum1cm = get_coursemodule_from_id('digestforum', $digestforum1->cmid, 0, false, MUST_EXIST);
+
+        // Second digestforum.
+        $digestforumobj2 = new \stdClass();
+        $digestforumobj2->introformat = FORMAT_HTML;
+        $digestforumobj2->course = $course2->id;
+        $digestforumobj2->trackingtype = DFORUM_TRACKING_OFF;
+        $digestforum2 = $generator->create_module('digestforum', $digestforumobj2);
+        $digestforum2cm = get_coursemodule_from_id('digestforum', $digestforum2->cmid, 0, false, MUST_EXIST);
+
+        // Third digestforum.
+        $digestforumobj3 = new \stdClass();
+        $digestforumobj3->introformat = FORMAT_HTML;
+        $digestforumobj3->course = $course2->id;
+        $digestforumobj3->trackingtype = DFORUM_TRACKING_OFF;
+        $digestforum3 = $generator->create_module('digestforum', $digestforumobj3);
+        $digestforum3cm = get_coursemodule_from_id('digestforum', $digestforum3->cmid, 0, false, MUST_EXIST);
+
+        // First make sure there are no discussions for any of the digestforums.
+        $f1discussionscount = digestforum_count_discussions($digestforum1, $digestforum1cm, $course1);
+        $this->assertEquals(0, $f1discussionscount);
+        $f2discussionscount = digestforum_count_discussions($digestforum2, $digestforum2cm, $course2);
+        $this->assertEquals(0, $f2discussionscount);
+        $f3discussionscount = digestforum_count_discussions($digestforum3, $digestforum3cm, $course2);
+        $this->assertEquals(0, $f3discussionscount);
+
+        // Add 3 discussions to digestforum 1.
+        $discussionobj1 = new \stdClass();
+        $discussionobj1->course = $course1->id;
+        $discussionobj1->userid = $student->id;
+        $discussionobj1->digestforum = $digestforum1->id;
+        $digestforumgenerator->create_discussion($discussionobj1);
+        $digestforumgenerator->create_discussion($discussionobj1);
+        $digestforumgenerator->create_discussion($discussionobj1);
+
+        // Make sure there are 3 discussions.
+        $f1discussionscount = digestforum_count_discussions($digestforum1, $digestforum1cm, $course1);
+        $this->assertEquals(3, $f1discussionscount);
+
+        // Add 4 discussions to digestforum 2.
+        $discussionobj2 = new \stdClass();
+        $discussionobj2->course = $course2->id;
+        $discussionobj2->userid = $student->id;
+        $discussionobj2->digestforum = $digestforum2->id;
+        $digestforumgenerator->create_discussion($discussionobj2);
+        $digestforumgenerator->create_discussion($discussionobj2);
+        $digestforumgenerator->create_discussion($discussionobj2);
+        $discussion24 = $digestforumgenerator->create_discussion($discussionobj2);
+
+        // Make sure there are 4 discussions.
+        $f2discussionscount = digestforum_count_discussions($digestforum2, $digestforum2cm, $course2);
+        $this->assertEquals(4, $f2discussionscount);
+
+        // Delete one discussion from digestforum 2.
+        digestforum_delete_discussion($discussion24, true, $course2, $digestforum2cm, $digestforum2);
+        $f2discussionscount = digestforum_count_discussions($digestforum2, $digestforum2cm, $course2);
+        $this->assertEquals(3, $f2discussionscount);
+
+        // Make sure there are no discussions.
+        $f3discussionscount = digestforum_count_discussions($digestforum3, $digestforum3cm, $course2);
+        $this->assertEquals(0, $f3discussionscount);
+    }
+
+    public function test_digestforum_reset_userdata(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $now = time();
+
+        $course = $this->getDataGenerator()->create_course();
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', [
+            'course' => $course->id,
+            'duedate' => $now + HOURSECS,
+            'cutoffdate' => $now + DAYSECS,
+        ]);
+
+        digestforum_reset_userdata((object) [
+            'courseid' => $course->id,
+            'timeshift' => DAYSECS * 2,
+        ]);
+
+        // Reload the instance data.
+        $instance = $DB->get_record('digestforum', ['id' => $digestforum->id]);
+
+        $this->assertEquals($digestforum->duedate + (DAYSECS * 2), $instance->duedate);
+        $this->assertEquals($digestforum->cutoffdate + (DAYSECS * 2), $instance->cutoffdate);
     }
 }

@@ -14,6 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace mod_digestforum;
+
+use mod_digestforum_tests_generator_trait;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once(__DIR__ . '/generator_trait.php');
+require_once("{$CFG->dirroot}/mod/digestforum/lib.php");
+
 /**
  * The module digestforums tests
  *
@@ -21,23 +31,18 @@
  * @copyright  2013 Frédéric Massart
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-global $CFG;
-require_once($CFG->dirroot . '/mod/digestforum/lib.php');
-require_once(__DIR__ . '/helper.php');
-
-class mod_digestforum_subscriptions_testcase extends advanced_testcase {
+#[\PHPUnit\Framework\Attributes\CoversClass(\mod_digestforum\event\subscription_mode_updated::class)]
+final class subscriptions_test extends \advanced_testcase {
     // Include the mod_digestforum test helpers.
     // This includes functions to create digestforums, users, discussions, and posts.
-    use helper;
+    use mod_digestforum_tests_generator_trait;
 
     /**
      * Test setUp.
      */
-    public function setUp() {
+    public function setUp(): void {
         global $DB;
+        parent::setUp();
 
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
@@ -48,14 +53,18 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test tearDown.
      */
-    public function tearDown() {
+    public function tearDown(): void {
         // We must clear the subscription caches. This has to be done both before each test, and after in case of other
         // tests using these functions.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
         \mod_digestforum\subscriptions::reset_discussion_cache();
+        parent::tearDown();
     }
 
-    public function test_subscription_modes() {
+    /**
+     * Test subscription modes modifications.
+     */
+    public function test_subscription_modes(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -63,48 +72,85 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id);
+        $options = ['course' => $course->id];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
+        $context = \context_module::instance($digestforum->cmid);
 
         // Create a user enrolled in the course as a student.
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Must be logged in as the current user.
         $this->setUser($user);
 
-        \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_FORCESUBSCRIBE);
-        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum->id));
+        $sink = $this->redirectEvents(); // Capturing the event.
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_FORCESUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
         $this->assertEquals(DFORUM_FORCESUBSCRIBE, \mod_digestforum\subscriptions::get_subscription_mode($digestforum));
         $this->assertTrue(\mod_digestforum\subscriptions::is_forcesubscribed($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribable($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::subscription_disabled($digestforum));
 
-        \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_DISALLOWSUBSCRIBE);
-        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum->id));
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertInstanceOf('\mod_digestforum\event\subscription_mode_updated', $event);
+        $this->assertEquals($context, $event->get_context());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+
+        $sink = $this->redirectEvents(); // Capturing the event.
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_DISALLOWSUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
         $this->assertEquals(DFORUM_DISALLOWSUBSCRIBE, \mod_digestforum\subscriptions::get_subscription_mode($digestforum));
         $this->assertTrue(\mod_digestforum\subscriptions::subscription_disabled($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribable($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::is_forcesubscribed($digestforum));
 
-        \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_INITIALSUBSCRIBE);
-        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum->id));
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertInstanceOf('\mod_digestforum\event\subscription_mode_updated', $event);
+        $this->assertEquals($context, $event->get_context());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+
+        $sink = $this->redirectEvents(); // Capturing the event.
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_INITIALSUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
         $this->assertEquals(DFORUM_INITIALSUBSCRIBE, \mod_digestforum\subscriptions::get_subscription_mode($digestforum));
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribable($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::subscription_disabled($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::is_forcesubscribed($digestforum));
 
-        \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_CHOOSESUBSCRIBE);
-        $digestforum = $DB->get_record('digestforum', array('id' => $digestforum->id));
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertInstanceOf('\mod_digestforum\event\subscription_mode_updated', $event);
+        $this->assertEquals($context, $event->get_context());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
+
+        $sink = $this->redirectEvents(); // Capturing the event.
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_CHOOSESUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
         $this->assertEquals(DFORUM_CHOOSESUBSCRIBE, \mod_digestforum\subscriptions::get_subscription_mode($digestforum));
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribable($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::subscription_disabled($digestforum));
         $this->assertFalse(\mod_digestforum\subscriptions::is_forcesubscribed($digestforum));
+
+        $events = $sink->get_events();
+        $this->assertCount(1, $events);
+        $event = reset($events);
+        $this->assertInstanceOf('\mod_digestforum\event\subscription_mode_updated', $event);
+        $this->assertEquals($context, $event->get_context());
+        $this->assertEventContextNotUsed($event);
+        $this->assertNotEmpty($event->get_name());
     }
 
     /**
      * Test fetching unsubscribable digestforums.
      */
-    public function test_unsubscribable_digestforums() {
+    public function test_unsubscribable_digestforums(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -113,7 +159,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
 
         // Create a user enrolled in the course as a student.
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Must be logged in as the current user.
         $this->setUser($user);
@@ -123,13 +169,13 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertEquals(0, count($result));
 
         // Create the digestforums.
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $forcedigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE];
         $disallowdigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $choosedigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $initialdigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // At present the user is only subscribed to the initial digestforum.
@@ -165,7 +211,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
      * Test that toggling the digestforum-level subscription for a different user does not affect their discussion-level
      * subscriptions.
      */
-    public function test_digestforum_subscribe_toggle_as_other() {
+    public function test_digestforum_subscribe_toggle_as_other(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -173,14 +219,14 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create a user enrolled in the course as a student.
-        list($author) = $this->helper_create_users($course, 1);
+        [$author] = $this->helper_create_users($course, 1);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Check that the user is currently not subscribed to the digestforum.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
@@ -189,188 +235,187 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // Check that we have no records in either of the subscription tables.
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribing to the digestforum should create a record in the subscriptions table, but not the digestforum discussion
         // subscriptions table.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Unsubscribing should remove the record from the digestforum subscriptions table, and not modify the digestforum
         // discussion subscriptions table.
         \mod_digestforum\subscriptions::unsubscribe_user($author->id, $digestforum);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Enroling the user in the discussion should add one record to the digestforum discussion table without modifying the
         // form subscriptions.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Unsubscribing should remove the record from the digestforum subscriptions table, and not modify the digestforum
         // discussion subscriptions table.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Re-subscribe to the discussion so that we can check the effect of digestforum-level subscriptions.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribing to the digestforum should have no effect on the digestforum discussion subscriptions table if the user did
         // not request the change themself.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Unsubscribing from the digestforum should have no effect on the digestforum discussion subscriptions table if the user
         // did not request the change themself.
         \mod_digestforum\subscriptions::unsubscribe_user($author->id, $digestforum);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribing to the digestforum should remove the per-discussion subscription preference if the user requested the
         // change themself.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum, null, true);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Now unsubscribe from the current discussion whilst being subscribed to the digestforum as a whole.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Unsubscribing from the digestforum should remove the per-discussion subscription preference if the user requested the
         // change themself.
         \mod_digestforum\subscriptions::unsubscribe_user($author->id, $digestforum, null, true);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribe to the discussion.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribe to the digestforum without removing the discussion preferences.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Unsubscribing from the discussion should result in a change.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
-
+        ]));
     }
 
     /**
      * Test that a user unsubscribed from a digestforum is not subscribed to it's discussions by default.
      */
-    public function test_digestforum_discussion_subscription_digestforum_unsubscribed() {
+    public function test_digestforum_discussion_subscription_digestforum_unsubscribed(): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create users enrolled in the course as students.
-        list($author) = $this->helper_create_users($course, 1);
+        [$author] = $this->helper_create_users($course, 1);
 
         // Check that the user is currently not subscribed to the digestforum.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Check that the user is unsubscribed from the discussion too.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
@@ -379,21 +424,21 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the act of subscribing to a digestforum subscribes the user to it's discussions by default.
      */
-    public function test_digestforum_discussion_subscription_digestforum_subscribed() {
+    public function test_digestforum_discussion_subscription_digestforum_subscribed(): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create users enrolled in the course as students.
-        list($author) = $this->helper_create_users($course, 1);
+        [$author] = $this->helper_create_users($course, 1);
 
         // Enrol the user in the digestforum.
         // If a subscription was added, we get the record ID.
-        $this->assertInternalType('int', \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
+        $this->assertIsInt(\mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
 
         // If we already have a subscription when subscribing the user, we get a boolean (true).
         $this->assertTrue(\mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum));
@@ -402,7 +447,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Check that the user is subscribed to the discussion too.
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
@@ -411,23 +456,23 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that a user unsubscribed from a digestforum can be subscribed to a discussion.
      */
-    public function test_digestforum_discussion_subscription_digestforum_unsubscribed_discussion_subscribed() {
+    public function test_digestforum_discussion_subscription_digestforum_unsubscribed_discussion_subscribed(): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create a user enrolled in the course as a student.
-        list($author) = $this->helper_create_users($course, 1);
+        [$author] = $this->helper_create_users($course, 1);
 
         // Check that the user is currently not subscribed to the digestforum.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Attempting to unsubscribe from the discussion should not make a change.
         $this->assertFalse(\mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion));
@@ -445,17 +490,17 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that a user subscribed to a digestforum can be unsubscribed from a discussion.
      */
-    public function test_digestforum_discussion_subscription_digestforum_subscribed_discussion_unsubscribed() {
+    public function test_digestforum_discussion_subscription_digestforum_subscribed_discussion_unsubscribed(): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author) = $this->helper_create_users($course, 2);
+        [$author] = $this->helper_create_users($course, 2);
 
         // Enrol the student in the digestforum.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum);
@@ -464,7 +509,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Then unsubscribe them from the discussion.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -479,7 +524,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test the effect of toggling the discussion subscription status when subscribed to the digestforum.
      */
-    public function test_digestforum_discussion_toggle_digestforum_subscribed() {
+    public function test_digestforum_discussion_toggle_digestforum_subscribed(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -487,11 +532,11 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author) = $this->helper_create_users($course, 2);
+        [$author] = $this->helper_create_users($course, 2);
 
         // Enrol the student in the digestforum.
         \mod_digestforum\subscriptions::subscribe_user($author->id, $digestforum);
@@ -500,7 +545,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Check that the user is initially subscribed to that discussion.
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
@@ -509,14 +554,14 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion));
 
         // And there should be no discussion subscriptions (and one digestforum subscription).
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // Then unsubscribe them from the discussion.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -528,29 +573,29 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion));
 
         // And there should be a discussion subscriptions (and one digestforum subscription).
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // But unsubscribed from the discussion.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be a record in the discussion subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And one in the digestforum subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // Now subscribe the user again to the discussion.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
@@ -562,16 +607,16 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be no record in the discussion subscription tracking table.
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And one in the digestforum subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // And unsubscribe again.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -583,16 +628,16 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be a record in the discussion subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And one in the digestforum subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // And subscribe the user again to the discussion.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
@@ -605,16 +650,16 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be no record in the discussion subscription tracking table.
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And one in the digestforum subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // And unsubscribe again.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -626,40 +671,40 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be a record in the discussion subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And one in the digestforum subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // Now unsubscribe the user from the digestforum.
         $this->assertTrue(\mod_digestforum\subscriptions::unsubscribe_user($author->id, $digestforum, null, true));
 
         // This removes both the digestforum_subscriptions, and the digestforum_discussion_subs records.
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $author->id,
             'digestforum'         => $digestforum->id,
-        )));
+        ]));
 
         // And should have reset the discussion cache value.
         $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $author->id);
-        $this->assertInternalType('array', $result);
+        $this->assertIsArray($result);
         $this->assertFalse(isset($result[$discussion->id]));
     }
 
     /**
      * Test the effect of toggling the discussion subscription status when unsubscribed from the digestforum.
      */
-    public function test_digestforum_discussion_toggle_digestforum_unsubscribed() {
+    public function test_digestforum_discussion_toggle_digestforum_unsubscribed(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -667,17 +712,17 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create two users enrolled in the course as students.
-        list($author) = $this->helper_create_users($course, 2);
+        [$author] = $this->helper_create_users($course, 2);
 
         // Check that the user is currently unsubscribed to the digestforum.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum));
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
 
         // Check that the user is initially unsubscribed to that discussion.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
@@ -695,10 +740,10 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be a record in the discussion subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Now unsubscribe the user again from the discussion.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -710,10 +755,10 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be no record in the discussion subscription tracking table.
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And subscribe the user again to the discussion.
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($author->id, $discussion);
@@ -725,10 +770,10 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertTrue(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be a record in the discussion subscription tracking table.
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // And unsubscribe again.
         \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($author->id, $discussion);
@@ -740,24 +785,24 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($author->id, $digestforum, $discussion->id));
 
         // There should be no record in the discussion subscription tracking table.
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $author->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
     }
 
     /**
      * Test that the correct users are returned when fetching subscribed users from a digestforum where users can choose to
      * subscribe and unsubscribe.
      */
-    public function test_fetch_subscribed_users_subscriptions() {
+    public function test_fetch_subscribed_users_subscriptions(): void {
         global $DB, $CFG;
 
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum. where users are initially subscribed.
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some user enrolled in the course as a student.
@@ -788,14 +833,14 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
      * Test that the correct users are returned hwen fetching subscribed users from a digestforum where users are forcibly
      * subscribed.
      */
-    public function test_fetch_subscribed_users_forced() {
+    public function test_fetch_subscribed_users_forced(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum. where users are initially subscribed.
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some user enrolled in the course as a student.
@@ -810,21 +855,21 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that unusual combinations of discussion subscriptions do not affect the subscribed user list.
      */
-    public function test_fetch_subscribed_users_discussion_subscriptions() {
+    public function test_fetch_subscribed_users_discussion_subscriptions(): void {
         global $DB;
 
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum. where users are initially subscribed.
         $course = $this->getDataGenerator()->create_course();
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some user enrolled in the course as a student.
         $usercount = 5;
         $users = $this->helper_create_users($course, $usercount);
 
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $users[0]);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $users[0]);
 
         // All users should be subscribed.
         $subscribers = \mod_digestforum\subscriptions::fetch_subscribed_users($digestforum);
@@ -843,7 +888,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertEquals($usercount, count($subscribers));
 
         // Manually insert an extra subscription for one of the users.
-        $record = new stdClass();
+        $record = new \stdClass();
         $record->userid = $users[2]->id;
         $record->digestforum = $digestforum->id;
         $record->discussion = $discussion->id;
@@ -882,7 +927,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test whether a user is force-subscribed to a digestforum.
      */
-    public function test_force_subscribed_to_digestforum() {
+    public function test_force_subscribed_to_digestforum(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -890,7 +935,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create a user enrolled in the course as a student.
@@ -914,7 +959,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the subscription cache can be pre-filled.
      */
-    public function test_subscription_cache_prefill() {
+    public function test_subscription_cache_prefill(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -922,7 +967,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some users.
@@ -949,7 +994,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the subscription cache can filled user-at-a-time.
      */
-    public function test_subscription_cache_fill() {
+    public function test_subscription_cache_fill(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -957,7 +1002,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some users.
@@ -980,7 +1025,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the discussion subscription cache can filled course-at-a-time.
      */
-    public function test_discussion_subscription_cache_fill_for_course() {
+    public function test_discussion_subscription_cache_fill_for_course(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -989,11 +1034,11 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $course = $this->getDataGenerator()->create_course();
 
         // Create the digestforums.
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE];
         $disallowdigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $choosedigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $initialdigestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some users and keep a reference to the first user.
@@ -1028,7 +1073,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the discussion subscription cache can be forcibly updated for a user.
      */
-    public function test_discussion_subscription_cache_prefill() {
+    public function test_discussion_subscription_cache_prefill(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -1036,36 +1081,68 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some users.
         $users = $this->helper_create_users($course, 20);
 
         // Post some discussions to the digestforum.
-        $discussions = array();
+        $discussions = [];
         $author = $users[0];
+        $userwithnosubs = $users[1];
+
         for ($i = 0; $i < 20; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
             $discussions[] = $discussion;
         }
 
         // Unsubscribe half the users from the half the discussions.
         $digestforumcount = 0;
         $usercount = 0;
+        $userwithsubs = null;
         foreach ($discussions as $data) {
+            // Unsubscribe user from all discussions.
+            \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($userwithnosubs->id, $data);
+
             if ($digestforumcount % 2) {
                 continue;
             }
             foreach ($users as $user) {
                 if ($usercount % 2) {
+                    $userwithsubs = $user;
                     continue;
                 }
-                \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($user->id, $discussion);
+                \mod_digestforum\subscriptions::unsubscribe_user_from_discussion($user->id, $data);
                 $usercount++;
             }
             $digestforumcount++;
         }
+
+        // Reset the subscription caches.
+        \mod_digestforum\subscriptions::reset_digestforum_cache();
+        \mod_digestforum\subscriptions::reset_discussion_cache();
+
+        // A user with no subscriptions should only be fetched once.
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache(
+            $digestforum->id,
+            $userwithnosubs->id,
+        ));
+        $startcount = $DB->perf_get_reads();
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache(
+            $digestforum->id,
+            $userwithnosubs->id,
+        ));
+        $this->assertEquals($startcount, $DB->perf_get_reads());
+
+        // Confirm subsequent calls properly tries to fetch subs.
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache($digestforum->id, $userwithsubs->id));
+        $this->assertNotEquals($startcount, $DB->perf_get_reads());
+
+        // Another read should be performed to get all subscriptions for the digestforum.
+        $startcount = $DB->perf_get_reads();
+        $this->assertNull(\mod_digestforum\subscriptions::fill_discussion_subscription_cache($digestforum->id));
+        $this->assertNotEquals($startcount, $DB->perf_get_reads());
 
         // Reset the subscription caches.
         \mod_digestforum\subscriptions::reset_digestforum_cache();
@@ -1081,7 +1158,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // the cache and not perform additional queries.
         foreach ($users as $user) {
             $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $user->id);
-            $this->assertInternalType('array', $result);
+            $this->assertIsArray($result);
         }
         $finalcount = $DB->perf_get_reads();
         $this->assertEquals(0, $finalcount - $postfillcount);
@@ -1090,7 +1167,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
     /**
      * Test that the discussion subscription cache can filled user-at-a-time.
      */
-    public function test_discussion_subscription_cache_fill() {
+    public function test_discussion_subscription_cache_fill(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -1098,17 +1175,17 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_INITIALSUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create some users.
         $users = $this->helper_create_users($course, 20);
 
         // Post some discussions to the digestforum.
-        $discussions = array();
+        $discussions = [];
         $author = $users[0];
         for ($i = 0; $i < 20; $i++) {
-            list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $author);
+            [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
             $discussions[] = $discussion;
         }
 
@@ -1139,7 +1216,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // the cache and not perform additional queries.
         foreach ($users as $user) {
             $result = \mod_digestforum\subscriptions::fetch_discussion_subscription($digestforum->id, $user->id);
-            $this->assertInternalType('array', $result);
+            $this->assertIsArray($result);
         }
         $finalcount = $DB->perf_get_reads();
         $this->assertNotEquals($finalcount, $startcount);
@@ -1149,7 +1226,7 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
      * Test that after toggling the digestforum subscription as another user,
      * the discussion subscription functionality works as expected.
      */
-    public function test_digestforum_subscribe_toggle_as_other_repeat_subscriptions() {
+    public function test_digestforum_subscribe_toggle_as_other_repeat_subscriptions(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -1157,14 +1234,14 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_CHOOSESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create a user enrolled in the course as a student.
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Post a discussion to the digestforum.
-        list($discussion, $post) = $this->helper_post_to_digestforum($digestforum, $user);
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $user);
 
         // Confirm that the user is currently not subscribed to the digestforum.
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($user->id, $digestforum));
@@ -1173,26 +1250,26 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribed($user->id, $digestforum, $discussion->id));
 
         // Confirm that we have no records in either of the subscription tables.
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $user->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $user->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribing to the digestforum should create a record in the subscriptions table, but not the digestforum discussion
         // subscriptions table.
         \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum);
-        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(1, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $user->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(0, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $user->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Now unsubscribe from the discussion. This should return true.
         $this->assertTrue(\mod_digestforum\subscriptions::unsubscribe_user_from_discussion($user->id, $discussion));
@@ -1212,32 +1289,32 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // And unsubscribing from the digestforum but not as a request from the user should maintain their preference.
         \mod_digestforum\subscriptions::unsubscribe_user($user->id, $digestforum);
 
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $user->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $user->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
 
         // Subscribing to the discussion should return truthfully because a change was made.
         $this->assertTrue(\mod_digestforum\subscriptions::subscribe_user_to_discussion($user->id, $discussion));
-        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', array(
+        $this->assertEquals(0, $DB->count_records('digestforum_subscriptions', [
             'userid'        => $user->id,
             'digestforum'         => $digestforum->id,
-        )));
-        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', array(
+        ]));
+        $this->assertEquals(1, $DB->count_records('digestforum_discussion_subs', [
             'userid'        => $user->id,
             'discussion'    => $discussion->id,
-        )));
+        ]));
     }
 
     /**
      * Test that providing a context_module instance to is_subscribed does not result in additional lookups to retrieve
      * the context_module.
      */
-    public function test_is_subscribed_cm() {
+    public function test_is_subscribed_cm(): void {
         global $DB;
 
         $this->resetAfterTest(true);
@@ -1245,11 +1322,11 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         // Create a course, with a digestforum.
         $course = $this->getDataGenerator()->create_course();
 
-        $options = array('course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE);
+        $options = ['course' => $course->id, 'forcesubscribe' => DFORUM_FORCESUBSCRIBE];
         $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
 
         // Create a user enrolled in the course as a student.
-        list($user) = $this->helper_create_users($course, 1);
+        [$user] = $this->helper_create_users($course, 1);
 
         // Retrieve the $cm now.
         $cm = get_fast_modinfo($digestforum->course)->instances['digestforum'][$digestforum->id];
@@ -1282,7 +1359,12 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertGreaterThan($suppliedcmcount, $calculatedcmcount);
     }
 
-    public function is_subscribable_digestforums() {
+    /**
+     * The digestforum settings to test subscribability with.
+     *
+     * @return array
+     */
+    public static function is_subscribable_digestforums(): array {
         return [
             [
                 'forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE,
@@ -1299,19 +1381,22 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         ];
     }
 
-    public function is_subscribable_provider() {
+    /**
+     * Data provider for test_is_subscribable_logged_out() and test_is_subscribable_is_guest().
+     *
+     * @return array
+     */
+    public static function is_subscribable_provider(): array {
         $data = [];
-        foreach ($this->is_subscribable_digestforums() as $digestforum) {
+        foreach (self::is_subscribable_digestforums() as $digestforum) {
             $data[] = [$digestforum];
         }
 
         return $data;
     }
 
-    /**
-     * @dataProvider is_subscribable_provider
-     */
-    public function test_is_subscribable_logged_out($options) {
+    #[\PHPUnit\Framework\Attributes\DataProvider('is_subscribable_provider')]
+    public function test_is_subscribable_logged_out($options): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
@@ -1322,14 +1407,12 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribable($digestforum));
     }
 
-    /**
-     * @dataProvider is_subscribable_provider
-     */
-    public function test_is_subscribable_is_guest($options) {
+    #[\PHPUnit\Framework\Attributes\DataProvider('is_subscribable_provider')]
+    public function test_is_subscribable_is_guest($options): void {
         global $DB;
         $this->resetAfterTest(true);
 
-        $guest = $DB->get_record('user', array('username'=>'guest'));
+        $guest = $DB->get_record('user', ['username' => 'guest']);
         $this->setUser($guest);
 
         // Create a course, with a digestforum.
@@ -1340,7 +1423,12 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->assertFalse(\mod_digestforum\subscriptions::is_subscribable($digestforum));
     }
 
-    public function is_subscribable_loggedin_provider() {
+    /**
+     * Data provider for test_is_subscribable_loggedin().
+     *
+     * @return array
+     */
+    public static function is_subscribable_loggedin_provider(): array {
         return [
             [
                 ['forcesubscribe' => DFORUM_DISALLOWSUBSCRIBE],
@@ -1361,10 +1449,8 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         ];
     }
 
-    /**
-     * @dataProvider is_subscribable_loggedin_provider
-     */
-    public function test_is_subscribable_loggedin($options, $expect) {
+    #[\PHPUnit\Framework\Attributes\DataProvider('is_subscribable_loggedin_provider')]
+    public function test_is_subscribable_loggedin($options, $expect): void {
         $this->resetAfterTest(true);
 
         // Create a course, with a digestforum.
@@ -1377,5 +1463,74 @@ class mod_digestforum_subscriptions_testcase extends advanced_testcase {
         $this->setUser($user);
 
         $this->assertEquals($expect, \mod_digestforum\subscriptions::is_subscribable($digestforum));
+    }
+
+    public function test_get_user_default_subscription(): void {
+        global $DB;
+        $this->resetAfterTest(true);
+
+        // Create a course, with a digestforum.
+        $course = $this->getDataGenerator()->create_course();
+        $context = \context_course::instance($course->id);
+        $options['course'] = $course->id;
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', $options);
+        $cm = get_coursemodule_from_instance("digestforum", $digestforum->id, $course->id);
+
+        // Create a user enrolled in the course as a student.
+        [$author, $student] = $this->helper_create_users($course, 2, 'student');
+        // Post a discussion to the digestforum.
+        [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author);
+
+        // A guest user.
+        $this->setUser(0);
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
+
+        // A user enrolled in the course.
+        $this->setUser($author->id);
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
+
+        // Subscribption disabled.
+        $this->setUser($student->id);
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_DISALLOWSUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
+        $this->assertFalse((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
+
+        \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_FORCESUBSCRIBE);
+        $digestforum = $DB->get_record('digestforum', ['id' => $digestforum->id]);
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
+
+        // Admin user.
+        $this->setAdminUser();
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription(
+            $digestforum,
+            $context,
+            $cm,
+            $discussion->id,
+        ));
+        $this->assertTrue((bool)\mod_digestforum\subscriptions::get_user_default_subscription($digestforum, $context, $cm, null));
     }
 }

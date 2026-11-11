@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -23,13 +22,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum conversion handler
  */
 class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
-
     /** @var moodle1_file_manager */
     protected $fileman = null;
 
@@ -39,7 +35,7 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
     /**
      * Declare the paths in moodle.xml we are able to convert
      *
-     * The method returns list of {@link convert_path} instances.
+     * The method returns list of {@see convert_path} instances.
      * For each path returned, the corresponding conversion method must be
      * defined.
      *
@@ -47,43 +43,47 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * actually exist in the file. The last element with the module name was
      * appended by the moodle1_converter class.
      *
-     * @return array of {@link convert_path} instances
+     * @return array of {@see convert_path} instances
      */
     public function get_paths() {
-        return array(
-            new convert_path('digestforum', '/MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM',
-                array(
-                    'renamefields' => array(
+        return [
+            new convert_path(
+                'digestforum',
+                '/MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM',
+                [
+                    'renamefields' => [
                         'format' => 'messageformat',
-                    ),
-                    'newfields' => array(
+                    ],
+                    'newfields' => [
                         'completiondiscussions' => 0,
                         'completionreplies' => 0,
                         'completionpost' => 0,
                         'maxattachments' => 1,
                         'introformat' => 0,
-                    ),
-                )
+                    ],
+                ]
             ),
-        );
+        ];
     }
 
     /**
      * Converts /MOODLE_BACKUP/COURSE/MODULES/MOD/DFORUM data
+     *
+     * @param array $data The digestforum data
      */
     public function process_digestforum($data) {
         global $CFG;
 
-        // get the course module id and context id
+        // Get the course module id and context id.
         $instanceid     = $data['id'];
         $cminfo         = $this->get_cminfo($instanceid);
         $this->moduleid = $cminfo['id'];
         $contextid      = $this->converter->get_contextid(CONTEXT_MODULE, $this->moduleid);
 
-        // get a fresh new file manager for this instance
+        // Get a fresh new file manager for this instance.
         $this->fileman = $this->converter->get_file_manager($contextid, 'mod_digestforum');
 
-        // convert course files embedded into the intro
+        // Convert course files embedded into the intro.
         $this->fileman->filearea = 'intro';
         $this->fileman->itemid   = 0;
         $data['intro'] = moodle1_converter::migrate_referenced_files($data['intro'], $this->fileman);
@@ -94,11 +94,11 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
             $data['introformat'] = FORMAT_HTML;
         }
 
-        // start writing digestforum.xml
+        // Start writing digestforum.xml.
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/digestforum.xml");
-        $this->xmlwriter->begin_tag('activity', array('id' => $instanceid, 'moduleid' => $this->moduleid,
-            'modulename' => 'digestforum', 'contextid' => $contextid));
-        $this->xmlwriter->begin_tag('digestforum', array('id' => $instanceid));
+        $this->xmlwriter->begin_tag('activity', ['id' => $instanceid, 'moduleid' => $this->moduleid,
+            'modulename' => 'digestforum', 'contextid' => $contextid]);
+        $this->xmlwriter->begin_tag('digestforum', ['id' => $instanceid]);
 
         foreach ($data as $field => $value) {
             if ($field <> 'id') {
@@ -115,18 +115,18 @@ class moodle1_mod_digestforum_handler extends moodle1_mod_handler {
      * This is executed when we reach the closing </MOD> tag of our 'digestforum' path
      */
     public function on_digestforum_end() {
-        // finish writing digestforum.xml
+        // Finish writing digestforum.xml.
         $this->xmlwriter->end_tag('discussions');
         $this->xmlwriter->end_tag('digestforum');
         $this->xmlwriter->end_tag('activity');
         $this->close_xml_writer();
 
-        // write inforef.xml
+        // Write inforef.xml.
         $this->open_xml_writer("activities/digestforum_{$this->moduleid}/inforef.xml");
         $this->xmlwriter->begin_tag('inforef');
         $this->xmlwriter->begin_tag('fileref');
         foreach ($this->fileman->get_fileids() as $fileid) {
-            $this->write_xml('file', array('id' => $fileid));
+            $this->write_xml('file', ['id' => $fileid]);
         }
         $this->xmlwriter->end_tag('fileref');
         $this->xmlwriter->end_tag('inforef');

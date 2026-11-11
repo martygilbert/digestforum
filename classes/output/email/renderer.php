@@ -37,7 +37,6 @@ require_once(__DIR__ . '/../../../renderer.php');
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \mod_digestforum_renderer {
-
     /**
      * The template name for this renderer.
      *
@@ -65,10 +64,16 @@ class renderer extends \mod_digestforum_renderer {
             $post->id,
             [
                 'includetoken' => true,
-            ]);
+            ]
+        );
         $options = new \stdClass();
         $options->para = true;
         $options->context = $context;
+        $options->filter = false;   // Disable auto-filters to apply them manually below.
+
+        // Apply filters, excluding those incompatible with email output.
+        $skipfilters = ['mediaplugin'];
+        $message = \core_filters\filter_manager::instance()->filter_text($message, $context, [], $skipfilters);
         return format_text($message, $post->messageformat, $options);
     }
 

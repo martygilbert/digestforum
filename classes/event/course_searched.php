@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\event;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * The mod_digestforum course searched event class.
  *
@@ -41,7 +39,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_searched extends \core\event\base {
-
     /**
      * Init method.
      *
@@ -78,20 +75,10 @@ class course_searched extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/mod/digestforum/search.php',
-            array('id' => $this->courseid, 'search' => $this->other['searchterm']));
-    }
-
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        // The legacy log table expects a relative path to /mod/digestforum/.
-        $logurl = substr($this->get_url()->out_as_local_url(), strlen('/mod/digestforum/'));
-
-        return array($this->courseid, 'digestforum', 'search', $logurl, $this->other['searchterm']);
+        return new \moodle_url(
+            '/mod/digestforum/search.php',
+            ['id' => $this->courseid, 'search' => $this->other['searchterm']]
+        );
     }
 
     /**
@@ -111,8 +98,8 @@ class course_searched extends \core\event\base {
         }
     }
 
+    #[\Override]
     public static function get_other_mapping() {
         return false;
     }
 }
-

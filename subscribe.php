@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,17 +30,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require(__DIR__.'/../../config.php');
-require_once($CFG->dirroot.'/mod/digestforum/lib.php');
+require(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/mod/digestforum/lib.php');
 
 $id             = required_param('id', PARAM_INT);             // The digestforum to set subscription on.
 $mode           = optional_param('mode', null, PARAM_INT);     // The digestforum's subscription mode.
 $user           = optional_param('user', 0, PARAM_INT);        // The userid of the user to subscribe, defaults to $USER.
 $discussionid   = optional_param('d', null, PARAM_INT);        // The discussionid to subscribe.
 $sesskey        = optional_param('sesskey', null, PARAM_RAW);
-$returnurl      = optional_param('returnurl', null, PARAM_RAW);
+$returnurl      = optional_param('returnurl', null, PARAM_LOCALURL);
+$edit           = optional_param('edit', 'off', PARAM_ALPHANUM);
 
-$url = new moodle_url('/mod/digestforum/subscribe.php', array('id'=>$id));
+$url = new moodle_url('/mod/digestforum/subscribe.php', ['id' => $id]);
 if (!is_null($mode)) {
     $url->param('mode', $mode);
 }
@@ -53,23 +53,26 @@ if (!is_null($sesskey)) {
 }
 if (!is_null($discussionid)) {
     $url->param('d', $discussionid);
-    if (!$discussion = $DB->get_record('digestforum_discussions', array('id' => $discussionid, 'digestforum' => $id))) {
-        print_error('invaliddiscussionid', 'digestforum');
+    if (!$discussion = $DB->get_record('digestforum_discussions', ['id' => $discussionid, 'digestforum' => $id])) {
+        throw new \moodle_exception('invaliddiscussionid', 'digestforum');
     }
 }
 $PAGE->set_url($url);
+// Core Boost styles forums through this body class.
+$PAGE->add_body_class('path-mod-forum');
+$PAGE->set_show_navigation_footer(false);
 
-$digestforum   = $DB->get_record('digestforum', array('id' => $id), '*', MUST_EXIST);
-$course  = $DB->get_record('course', array('id' => $digestforum->course), '*', MUST_EXIST);
+$digestforum   = $DB->get_record('digestforum', ['id' => $id], '*', MUST_EXIST);
+$course  = $DB->get_record('course', ['id' => $digestforum->course], '*', MUST_EXIST);
 $cm      = get_coursemodule_from_instance('digestforum', $digestforum->id, $course->id, false, MUST_EXIST);
 $context = context_module::instance($cm->id);
 
 if ($user) {
     require_sesskey();
     if (!has_capability('mod/digestforum:managesubscriptions', $context)) {
-        print_error('nopermissiontosubscribe', 'digestforum');
+        throw new \moodle_exception('nopermissiontosubscribe', 'digestforum');
     }
-    $user = $DB->get_record('user', array('id' => $user), '*', MUST_EXIST);
+    $user = $DB->get_record('user', ['id' => $user], '*', MUST_EXIST);
 } else {
     $user = $USER;
 }
@@ -85,97 +88,101 @@ $issubscribed = \mod_digestforum\subscriptions::is_subscribed($user->id, $digest
 // For a user to subscribe when a groupmode is set, they must have access to at least one group.
 if ($groupmode && !$issubscribed && !has_capability('moodle/site:accessallgroups', $context)) {
     if (!groups_get_all_groups($course->id, $USER->id)) {
-        print_error('cannotsubscribe', 'digestforum');
+        throw new \moodle_exception('cannotsubscribe', 'digestforum');
     }
 }
 
 require_login($course, false, $cm);
 
-if (is_null($mode) and !is_enrolled($context, $USER, '', true)) {   // Guests and visitors can't subscribe - only enrolled
+if (is_null($mode) && !is_enrolled($context, $USER, '', true)) {
+    // Guests and visitors can't subscribe - only enrolled.
     $PAGE->set_title($course->shortname);
     $PAGE->set_heading($course->fullname);
     if (isguestuser()) {
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('subscribeenrolledonly', 'digestforum').'<br /><br />'.get_string('liketologin'),
-                     get_login_url(), new moodle_url('/mod/digestforum/view.php', array('f'=>$id)));
+        echo $OUTPUT->confirm(
+            get_string('subscribeenrolledonly', 'digestforum') . '<br /><br />' . get_string('liketologin'),
+            get_login_url(),
+            new moodle_url('/mod/digestforum/view.php', ['f' => $id])
+        );
         echo $OUTPUT->footer();
         exit;
     } else {
         // There should not be any links leading to this place, just redirect.
         redirect(
-                new moodle_url('/mod/digestforum/view.php', array('f'=>$id)),
-                get_string('subscribeenrolledonly', 'digestforum'),
-                null,
-                \core\output\notification::NOTIFY_ERROR
-            );
+            new moodle_url('/mod/digestforum/view.php', ['f' => $id]),
+            get_string('subscribeenrolledonly', 'digestforum'),
+            null,
+            \core\output\notification::NOTIFY_ERROR
+        );
     }
 }
 
-$returnto = optional_param('backtoindex',0,PARAM_INT)
-    ? "index.php?id=".$course->id
+$returnto = optional_param('backtoindex', 0, PARAM_INT)
+    ? "index.php?id=" . $course->id
     : "view.php?f=$id";
 
 if ($returnurl) {
     $returnto = $returnurl;
 }
 
-if (!is_null($mode) and has_capability('mod/digestforum:managesubscriptions', $context)) {
+$subscribersurl = new moodle_url('/mod/digestforum/subscribers.php', ['id' => $id, 'edit' => $edit]);
+
+if (!is_null($mode) && has_capability('mod/digestforum:managesubscriptions', $context)) {
     require_sesskey();
     switch ($mode) {
-        case DFORUM_CHOOSESUBSCRIBE : // 0
-            \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_CHOOSESUBSCRIBE);
+        case DFORUM_CHOOSESUBSCRIBE: // 0
+            \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_CHOOSESUBSCRIBE);
             redirect(
-                    $returnto,
-                    get_string('everyonecannowchoose', 'digestforum'),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $subscribersurl,
+                get_string('everyonecannowchoose', 'digestforum'),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
             break;
-        case DFORUM_FORCESUBSCRIBE : // 1
-            \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_FORCESUBSCRIBE);
+        case DFORUM_FORCESUBSCRIBE: // 1
+            \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_FORCESUBSCRIBE);
             redirect(
-                    $returnto,
-                    get_string('everyoneisnowsubscribed', 'digestforum'),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $subscribersurl,
+                get_string('everyoneisnowsubscribed', 'digestforum'),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
             break;
-        case DFORUM_INITIALSUBSCRIBE : // 2
+        case DFORUM_INITIALSUBSCRIBE: // 2
+            \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_INITIALSUBSCRIBE);
             if ($digestforum->forcesubscribe <> DFORUM_INITIALSUBSCRIBE) {
+                // Reload the digestforum again to get the updated forcesubscribe field.
+                $digestforum = $DB->get_record('digestforum', ['id' => $id], '*', MUST_EXIST);
                 $users = \mod_digestforum\subscriptions::get_potential_subscribers($context, 0, 'u.id, u.email', '');
                 foreach ($users as $user) {
                     \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum, $context);
                 }
             }
-            \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_INITIALSUBSCRIBE);
             redirect(
-                    $returnto,
-                    get_string('everyoneisnowsubscribed', 'digestforum'),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $subscribersurl,
+                get_string('everyoneisnowsubscribed', 'digestforum'),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
             break;
-        case DFORUM_DISALLOWSUBSCRIBE : // 3
-            \mod_digestforum\subscriptions::set_subscription_mode($digestforum->id, DFORUM_DISALLOWSUBSCRIBE);
+        case DFORUM_DISALLOWSUBSCRIBE: // 3
+            \mod_digestforum\subscriptions::set_subscription_mode($digestforum, DFORUM_DISALLOWSUBSCRIBE);
             redirect(
-                    $returnto,
-                    get_string('noonecansubscribenow', 'digestforum'),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $subscribersurl,
+                get_string('noonecansubscribenow', 'digestforum'),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
             break;
         default:
-            print_error(get_string('invalidforcesubscribe', 'digestforum'));
+            throw new \moodle_exception(get_string('invalidforcesubscribe', 'digestforum'));
     }
 }
 
 if (\mod_digestforum\subscriptions::is_forcesubscribed($digestforum)) {
-    redirect(
-            $returnto,
-            get_string('everyoneisnowsubscribed', 'digestforum'),
-            null,
-            \core\output\notification::NOTIFY_SUCCESS
-        );
+    $subscribersurl->param('notification', 'everyoneisnowsubscribed');
+    redirect($subscribersurl);
 }
 
 $info = new stdClass();
@@ -189,16 +196,22 @@ if ($issubscribed) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
 
-        $viewurl = new moodle_url('/mod/digestforum/view.php', array('f' => $id));
+        $viewurl = new moodle_url('/mod/digestforum/view.php', ['f' => $id]);
         if ($discussionid) {
             $a = new stdClass();
             $a->digestforum = format_string($digestforum->name);
             $a->discussion = format_string($discussion->name);
-            echo $OUTPUT->confirm(get_string('confirmunsubscribediscussion', 'digestforum', $a),
-                    $PAGE->url, $viewurl);
+            echo $OUTPUT->confirm(
+                get_string('confirmunsubscribediscussion', 'digestforum', $a),
+                $PAGE->url,
+                $viewurl
+            );
         } else {
-            echo $OUTPUT->confirm(get_string('confirmunsubscribe', 'digestforum', format_string($digestforum->name)),
-                    $PAGE->url, $viewurl);
+            echo $OUTPUT->confirm(
+                get_string('confirmunsubscribe', 'digestforum', format_string($digestforum->name)),
+                $PAGE->url,
+                $viewurl
+            );
         }
         echo $OUTPUT->footer();
         exit;
@@ -207,34 +220,39 @@ if ($issubscribed) {
     if ($discussionid === null) {
         if (\mod_digestforum\subscriptions::unsubscribe_user($user->id, $digestforum, $context, true)) {
             redirect(
-                    $returnto,
-                    get_string('nownotsubscribed', 'digestforum', $info),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $returnto,
+                get_string('nownotsubscribed', 'digestforum', $info),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
         } else {
-            print_error('cannotunsubscribe', 'digestforum', get_local_referer(false));
+            throw new \moodle_exception('cannotunsubscribe', 'digestforum', get_local_referer(false));
         }
     } else {
         if (\mod_digestforum\subscriptions::unsubscribe_user_from_discussion($user->id, $discussion, $context)) {
             $info->discussion = $discussion->name;
             redirect(
-                    $returnto,
-                    get_string('discussionnownotsubscribed', 'digestforum', $info),
-                    null,
-                    \core\output\notification::NOTIFY_SUCCESS
-                );
+                $returnto,
+                get_string('discussionnownotsubscribed', 'digestforum', $info),
+                null,
+                \core\output\notification::NOTIFY_SUCCESS
+            );
         } else {
-            print_error('cannotunsubscribe', 'digestforum', get_local_referer(false));
+            throw new \moodle_exception('cannotunsubscribe', 'digestforum', get_local_referer(false));
         }
     }
-
-} else {  // subscribe
-    if (\mod_digestforum\subscriptions::subscription_disabled($digestforum) && !has_capability('mod/digestforum:managesubscriptions', $context)) {
-        print_error('disallowsubscribe', 'digestforum', get_local_referer(false));
+} else {
+    // Subscribe.
+    if (
+        \mod_digestforum\subscriptions::subscription_disabled($digestforum) && !has_capability(
+            'mod/digestforum:managesubscriptions',
+            $context,
+        )
+    ) {
+        throw new \moodle_exception('disallowsubscribe', 'digestforum', get_local_referer(false));
     }
     if (!has_capability('mod/digestforum:viewdiscussion', $context)) {
-        print_error('noviewdiscussionspermission', 'digestforum', get_local_referer(false));
+        throw new \moodle_exception('noviewdiscussionspermission', 'digestforum', get_local_referer(false));
     }
     if (is_null($sesskey)) {
         // We came here via link in email.
@@ -242,16 +260,22 @@ if ($issubscribed) {
         $PAGE->set_heading($course->fullname);
         echo $OUTPUT->header();
 
-        $viewurl = new moodle_url('/mod/digestforum/view.php', array('f' => $id));
+        $viewurl = new moodle_url('/mod/digestforum/view.php', ['f' => $id]);
         if ($discussionid) {
             $a = new stdClass();
             $a->digestforum = format_string($digestforum->name);
             $a->discussion = format_string($discussion->name);
-            echo $OUTPUT->confirm(get_string('confirmsubscribediscussion', 'digestforum', $a),
-                    $PAGE->url, $viewurl);
+            echo $OUTPUT->confirm(
+                get_string('confirmsubscribediscussion', 'digestforum', $a),
+                $PAGE->url,
+                $viewurl
+            );
         } else {
-            echo $OUTPUT->confirm(get_string('confirmsubscribe', 'digestforum', format_string($digestforum->name)),
-                    $PAGE->url, $viewurl);
+            echo $OUTPUT->confirm(
+                get_string('confirmsubscribe', 'digestforum', format_string($digestforum->name)),
+                $PAGE->url,
+                $viewurl
+            );
         }
         echo $OUTPUT->footer();
         exit;
@@ -260,19 +284,19 @@ if ($issubscribed) {
     if ($discussionid == null) {
         \mod_digestforum\subscriptions::subscribe_user($user->id, $digestforum, $context, true);
         redirect(
-                $returnto,
-                get_string('nowsubscribed', 'digestforum', $info),
-                null,
-                \core\output\notification::NOTIFY_SUCCESS
-            );
+            $returnto,
+            get_string('nowsubscribed', 'digestforum', $info),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     } else {
         $info->discussion = $discussion->name;
         \mod_digestforum\subscriptions::subscribe_user_to_discussion($user->id, $discussion, $context);
         redirect(
-                $returnto,
-                get_string('discussionnowsubscribed', 'digestforum', $info),
-                null,
-                \core\output\notification::NOTIFY_SUCCESS
-            );
+            $returnto,
+            get_string('discussionnowsubscribed', 'digestforum', $info),
+            null,
+            \core\output\notification::NOTIFY_SUCCESS
+        );
     }
 }

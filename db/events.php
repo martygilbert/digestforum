@@ -23,33 +23,33 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// List of observers.
-$observers = array(
+defined('MOODLE_INTERNAL') || die();
 
-    array(
+// List of observers.
+$observers = [
+
+    [
         'eventname'   => '\core\event\user_enrolment_deleted',
         'callback'    => 'mod_digestforum_observer::user_enrolment_deleted',
-    ),
+    ],
 
-    array(
+    [
         'eventname' => '\core\event\role_assigned',
-        'callback' => 'mod_digestforum_observer::role_assigned'
-    ),
+        'callback' => 'mod_digestforum_observer::role_assigned',
+    ],
 
-    array(
+    [
         'eventname' => '\core\event\course_module_created',
         'callback'  => 'mod_digestforum_observer::course_module_created',
-    ),
+    ],
 
-	/*
-    array(
+    [
         'eventname' => '\core\event\course_created',
         'callback'  => 'mod_digestforum_observer::course_created',
-    ),
+    ],
 
-    array(
+    [
         'eventname' => '\core\event\course_updated',
         'callback'  => 'mod_digestforum_observer::course_updated',
-    ),
-	*/
-);
+    ],
+];

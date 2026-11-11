@@ -24,8 +24,6 @@
 
 namespace mod_digestforum\output\emaildigestbasic;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Forum post renderable.
  *
@@ -35,7 +33,6 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \mod_digestforum\output\email\renderer {
-
     /**
      * The template name for this renderer.
      *
