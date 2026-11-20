@@ -159,7 +159,8 @@ final class mobile_test extends advanced_testcase {
         $this->assertEquals($reply->id, $posts[1]->id);
         $this->assertEquals('Original subject', $posts[0]->subject);
         $this->assertStringContainsString('original message', $posts[0]->message);
-        $this->assertStringContainsString('Re: Original subject', $posts[0]->replysubject);
+        // As on the website, a reply's subject defaults to the subject of the post being replied to.
+        $this->assertEquals('Original subject', $posts[0]->replysubject);
         $this->assertEquals(fullname($author), $posts[0]->author);
         $this->assertTrue($posts[0]->canreply);
 
