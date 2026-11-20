@@ -136,8 +136,9 @@ final class mobile_test extends advanced_testcase {
         $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
         [$author, $student] = $this->helper_create_users($course, 2);
 
+        // The first post's subject is the discussion name.
         [$discussion, $post] = $this->helper_post_to_digestforum($digestforum, $author, [
-            'subject' => 'Original subject',
+            'name' => 'Original subject',
             'message' => '<p>{{ 6 * 7 }} original message</p>',
         ]);
         $this->helper_update_post_time($post, -10);

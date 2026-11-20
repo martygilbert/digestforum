@@ -78,12 +78,20 @@ JS;
 
         $discussions = external_api::clean_returnvalue(
             \mod_digestforum_external::get_digestforum_discussions_returns(),
-            \mod_digestforum_external::get_digestforum_discussions($digestforum->id, -1, $page, self::DISCUSSIONS_PER_PAGE + 1)
+            \mod_digestforum_external::get_digestforum_discussions($digestforum->id, -1, $page, self::DISCUSSIONS_PER_PAGE)
         )['discussions'];
 
-        // One extra discussion was fetched to find out whether there is another page.
-        $hasolder = count($discussions) > self::DISCUSSIONS_PER_PAGE;
-        $discussions = array_slice($discussions, 0, self::DISCUSSIONS_PER_PAGE);
+        // There is an older page if a discussion exists just past this one. The web service's offset is page * perpage,
+        // so ask for a single discussion on the page that starts there.
+        $hasolder = !empty(external_api::clean_returnvalue(
+            \mod_digestforum_external::get_digestforum_discussions_returns(),
+            \mod_digestforum_external::get_digestforum_discussions(
+                $digestforum->id,
+                -1,
+                ($page + 1) * self::DISCUSSIONS_PER_PAGE,
+                1
+            )
+        )['discussions']);
 
         $canadd = $page === 0 && external_api::clean_returnvalue(
             \mod_digestforum_external::can_add_discussion_returns(),
