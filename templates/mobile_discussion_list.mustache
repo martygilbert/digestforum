@@ -1,0 +1,127 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_digestforum/mobile_discussion_list
+
+    The discussion list for a digestforum in the Moodle app, with a form to start a new discussion.
+
+    This is an Ionic template compiled by the app. The mustache delimiters are changed so that Angular's {{ }} is
+    left for the app. Anything written by users comes from CONTENT_OTHERDATA, which the app binds safely:
+    * intro string - The formatted digestforum description
+    * discussions array - The discussions on this page: id, name, author, timemodified, replies, numunread, pinned, locked
+
+    Context variables required for this template:
+    * cmid int - The course module id
+    * courseid int - The course id
+    * digestforumid int - The digestforum id
+    * canadd boolean - Whether the user can start a discussion
+    * hasnewer boolean - Whether there is a page of newer discussions
+    * newerpage int - The page number of the newer discussions
+    * hasolder boolean - Whether there is a page of older discussions
+    * olderpage int - The page number of the older discussions
+
+    Example context (json):
+    {
+        "cmid": 2,
+        "courseid": 3,
+        "digestforumid": 4,
+        "canadd": true,
+        "hasnewer": false,
+        "newerpage": -1,
+        "hasolder": true,
+        "olderpage": 1
+    }
+}}
+{{=<% %>=}}
+<div>
+    <core-format-text *ngIf="CONTENT_OTHERDATA.intro" [text]="CONTENT_OTHERDATA.intro" component="mod_digestforum"
+        [componentId]="<% cmid %>" contextLevel="module" [contextInstanceId]="<% cmid %>" [courseId]="<% courseid %>">
+    </core-format-text>
+
+    <%#canadd%>
+    <ion-button expand="block" *ngIf="!CONTENT_OTHERDATA.showaddform" (click)="CONTENT_OTHERDATA.showaddform = 1">
+        <%#str%>addanewdiscussion, mod_digestforum<%/str%>
+    </ion-button>
+    <ion-list *ngIf="CONTENT_OTHERDATA.showaddform">
+        <ion-item>
+            <ion-input label="<%#str%>subject, mod_digestforum<%/str%>" labelPlacement="stacked" maxlength="255"
+                [(ngModel)]="CONTENT_OTHERDATA.subject">
+            </ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-textarea label="<%#str%>message, mod_digestforum<%/str%>" labelPlacement="stacked" rows="6" [autoGrow]="true"
+                [(ngModel)]="CONTENT_OTHERDATA.message">
+            </ion-textarea>
+        </ion-item>
+        <ion-button expand="block" core-site-plugins-call-ws name="mod_digestforum_add_discussion"
+            [params]="{digestforumid: <% digestforumid %>, subject: CONTENT_OTHERDATA.subject,
+                message: textToHtml(CONTENT_OTHERDATA.message)}"
+            [preSets]="{getFromCache: 0, saveToCache: 0}"
+            [disabled]="!CONTENT_OTHERDATA.subject.trim() || !CONTENT_OTHERDATA.message.trim()"
+            successMessage="<%#str%>postaddedsuccess, mod_digestforum<%/str%>"
+            refreshOnSuccess="true">
+            <%#str%>posttodigestforum, mod_digestforum<%/str%>
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="CONTENT_OTHERDATA.showaddform = 0">
+            <%#str%>cancel<%/str%>
+        </ion-button>
+    </ion-list>
+    <%/canadd%>
+
+    <ion-list>
+        <ion-item *ngIf="!CONTENT_OTHERDATA.discussions.length">
+            <ion-label><%#str%>nodiscussions, mod_digestforum<%/str%></ion-label>
+        </ion-item>
+        <ion-item *ngFor="let discussion of CONTENT_OTHERDATA.discussions" button detail="true"
+            core-site-plugins-new-content component="mod_digestforum" method="mobile_discussion_view"
+            [args]="{cmid: <% cmid %>, courseid: <% courseid %>, discussionid: discussion.id}"
+            [title]="discussion.name">
+            <ion-label>
+                <h2>
+                    <ion-icon *ngIf="discussion.pinned" name="fas-thumbtack"
+                        aria-label="<%#str%>discussionpinned, mod_digestforum<%/str%>">
+                    </ion-icon>
+                    <ion-icon *ngIf="discussion.locked" name="fas-lock"
+                        aria-label="<%#str%>discussionlocked, mod_digestforum<%/str%>">
+                    </ion-icon>
+                    {{ discussion.name }}
+                </h2>
+                <p>{{ discussion.author }} · {{ discussion.timemodified }}</p>
+                <p>{{ discussion.replies }}</p>
+            </ion-label>
+            <ion-badge slot="end" *ngIf="discussion.numunread"
+                aria-label="<%#str%>unreadposts, mod_digestforum<%/str%>">
+                {{ discussion.numunread }}
+            </ion-badge>
+        </ion-item>
+    </ion-list>
+
+    <%#hasnewer%>
+    <ion-button expand="block" fill="outline" core-site-plugins-new-content component="mod_digestforum"
+        method="mobile_course_view" [args]="{cmid: <% cmid %>, courseid: <% courseid %>, page: <% newerpage %>}"
+        title="<%#str%>newerdiscussions, mod_digestforum<%/str%>">
+        <%#str%>newerdiscussions, mod_digestforum<%/str%>
+    </ion-button>
+    <%/hasnewer%>
+    <%#hasolder%>
+    <ion-button expand="block" fill="outline" core-site-plugins-new-content component="mod_digestforum"
+        method="mobile_course_view" [args]="{cmid: <% cmid %>, courseid: <% courseid %>, page: <% olderpage %>}"
+        title="<%#str%>olderdiscussions, mod_digestforum<%/str%>">
+        <%#str%>olderdiscussions, mod_digestforum<%/str%>
+    </ion-button>
+    <%/hasolder%>
+</div>

@@ -477,6 +477,7 @@ $string['namenews_help'] = 'The course announcements digest forum is a special d
 $string['namesocial'] = 'Social digest forum';
 $string['nameteacher'] = 'Teacher digest forum';
 $string['newdigestforumposts'] = 'New digest forum posts';
+$string['newerdiscussions'] = 'Newer discussions';
 $string['nextdiscussion'] = 'Next discussion';
 $string['nextdiscussiona'] = 'Next discussion: {$a}';
 $string['nextuser'] = 'Save changes and proceed to the next user';

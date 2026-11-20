@@ -1,0 +1,88 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template mod_digestforum/mobile_discussion
+
+    The posts in a digestforum discussion in the Moodle app, with a form to reply to each post.
+
+    This is an Ionic template compiled by the app. The mustache delimiters are changed so that Angular's {{ }} is
+    left for the app. Anything written by users comes from CONTENT_OTHERDATA, which the app binds safely:
+    * posts array - The posts, oldest first: id, subject, replysubject, message, author, authorpicture, timecreated,
+      unread, isprivatereply, canreply
+
+    Context variables required for this template:
+    * cmid int - The course module id
+    * courseid int - The course id
+
+    Example context (json):
+    {
+        "cmid": 2,
+        "courseid": 3
+    }
+}}
+{{=<% %>=}}
+<div>
+    <ion-card *ngFor="let post of CONTENT_OTHERDATA.posts">
+        <ion-item lines="none">
+            <ion-avatar slot="start" *ngIf="post.authorpicture">
+                <img [src]="post.authorpicture" core-external-content alt="">
+            </ion-avatar>
+            <ion-label>
+                <h2>{{ post.subject }}</h2>
+                <p>{{ post.author }} · {{ post.timecreated }}</p>
+                <p *ngIf="post.isprivatereply"><%#str%>postisprivatereply, mod_digestforum<%/str%></p>
+            </ion-label>
+            <ion-badge slot="end" *ngIf="post.unread"><%#str%>unread, mod_digestforum<%/str%></ion-badge>
+        </ion-item>
+        <ion-card-content>
+            <core-format-text [text]="post.message" component="mod_digestforum" [componentId]="<% cmid %>"
+                contextLevel="module" [contextInstanceId]="<% cmid %>" [courseId]="<% courseid %>">
+            </core-format-text>
+        </ion-card-content>
+
+        <ion-button fill="clear" *ngIf="post.canreply && CONTENT_OTHERDATA.replyto != post.id"
+            (click)="CONTENT_OTHERDATA.replyto = post.id; CONTENT_OTHERDATA.subject = post.replysubject;
+                CONTENT_OTHERDATA.message = ''">
+            <%#str%>reply, mod_digestforum<%/str%>
+        </ion-button>
+
+        <ion-list *ngIf="CONTENT_OTHERDATA.replyto == post.id">
+            <ion-item>
+                <ion-input label="<%#str%>subject, mod_digestforum<%/str%>" labelPlacement="stacked" maxlength="255"
+                    [(ngModel)]="CONTENT_OTHERDATA.subject">
+                </ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-textarea label="<%#str%>message, mod_digestforum<%/str%>" labelPlacement="stacked" rows="6"
+                    [autoGrow]="true" [(ngModel)]="CONTENT_OTHERDATA.message">
+                </ion-textarea>
+            </ion-item>
+            <ion-button expand="block" core-site-plugins-call-ws name="mod_digestforum_add_discussion_post"
+                [params]="{postid: post.id, subject: CONTENT_OTHERDATA.subject,
+                    message: textToHtml(CONTENT_OTHERDATA.message)}"
+                [preSets]="{getFromCache: 0, saveToCache: 0}"
+                [disabled]="!CONTENT_OTHERDATA.subject.trim() || !CONTENT_OTHERDATA.message.trim()"
+                successMessage="<%#str%>postaddedsuccess, mod_digestforum<%/str%>"
+                refreshOnSuccess="true">
+                <%#str%>posttodigestforum, mod_digestforum<%/str%>
+            </ion-button>
+            <ion-button expand="block" fill="outline" (click)="CONTENT_OTHERDATA.replyto = 0">
+                <%#str%>cancel<%/str%>
+            </ion-button>
+        </ion-list>
+    </ion-card>
+</div>
