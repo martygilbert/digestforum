@@ -2119,4 +2119,193 @@ final class provider_test extends \core_privacy\tests\provider_testcase {
             'description' => get_string('discussionlistsortbystarterasc', 'mod_digestforum'),
         ], $preferences['digestforum_discussionlistsortorder']);
     }
+
+    /**
+     * Helper to add a digest email open-tracking record.
+     *
+     * @param   int     $userid The user the digest was sent to.
+     * @param   int     $digestforumid The digestforum that sent the digest.
+     * @param   string  $digestdate The date the digest was sent.
+     * @param   int     $numviews The number of times the digest was opened.
+     * @param   int     $firstviewed When the digest was first opened.
+     * @param   int     $lastviewed When the digest was last opened.
+     * @return  int     The id of the new record.
+     */
+    protected function helper_add_digest_tracker(
+        int $userid,
+        int $digestforumid,
+        string $digestdate,
+        int $numviews = 0,
+        int $firstviewed = 0,
+        int $lastviewed = 0
+    ): int {
+        global $DB;
+
+        return $DB->insert_record('digestforum_tracker', (object) [
+            'mdluserid' => $userid,
+            'digestforumid' => $digestforumid,
+            'digestdate' => $digestdate,
+            'numviews' => $numviews,
+            'firstviewed' => $firstviewed,
+            'lastviewed' => $lastviewed,
+        ]);
+    }
+
+    /**
+     * Test that digest email open tracking is found, exported, and deleted for a user.
+     */
+    public function test_user_digest_open_tracking(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course();
+
+        $digestforum1 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $cm1 = get_coursemodule_from_instance('digestforum', $digestforum1->id);
+        $context1 = \context_module::instance($cm1->id);
+
+        $digestforum2 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $cm2 = get_coursemodule_from_instance('digestforum', $digestforum2->id);
+        $context2 = \context_module::instance($cm2->id);
+
+        $digestforum3 = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+
+        [$user, $otheruser] = $this->helper_create_users($course, 2);
+
+        // The user opened one digest from digestforum1, and did not open another.
+        $this->helper_add_digest_tracker($user->id, $digestforum1->id, '2026-11-01', 3, 1761998400, 1762084800);
+        $this->helper_add_digest_tracker($user->id, $digestforum1->id, '2026-11-02');
+        $this->helper_add_digest_tracker($user->id, $digestforum2->id, '2026-11-01', 1, 1761998400, 1761998400);
+        $this->helper_add_digest_tracker($otheruser->id, $digestforum1->id, '2026-11-01');
+        $this->helper_add_digest_tracker($otheruser->id, $digestforum3->id, '2026-11-01');
+
+        // Only the digestforums which sent this user a digest are included.
+        $contextlist = $this->get_contexts_for_userid($user->id, 'mod_digestforum');
+        $this->assertCount(2, $contextlist);
+        $contextids = $contextlist->get_contextids();
+        sort($contextids);
+        $expected = [$context1->id, $context2->id];
+        sort($expected);
+        $this->assertEquals($expected, $contextids);
+
+        // Export the data for digestforum1.
+        $this->export_context_data_for_user($user->id, $context1, 'mod_digestforum');
+        $writer = \core_privacy\local\request\writer::with_context($context1);
+        $data = $writer->get_data([get_string('privacy:digestopens', 'mod_digestforum')]);
+        $this->assertCount(2, $data->digests);
+
+        [$opened, $unopened] = $data->digests;
+        $this->assertEquals('2026-11-01', $opened->digestdate);
+        $this->assertEquals(3, $opened->numviews);
+        $this->assertEquals(\core_privacy\local\request\transform::datetime(1761998400), $opened->firstviewed);
+        $this->assertEquals(\core_privacy\local\request\transform::datetime(1762084800), $opened->lastviewed);
+
+        $this->assertEquals('2026-11-02', $unopened->digestdate);
+        $this->assertEquals(0, $unopened->numviews);
+        $this->assertNull($unopened->firstviewed);
+        $this->assertNull($unopened->lastviewed);
+
+        // Delete the data for the user in digestforum1 only.
+        $approvedcontextlist = new \core_privacy\tests\request\approved_contextlist(
+            \core_user::get_user($user->id),
+            'mod_digestforum',
+            [$context1->id]
+        );
+        provider::delete_data_for_user($approvedcontextlist);
+
+        $this->assertFalse($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $user->id, 'digestforumid' => $digestforum1->id],
+        ));
+        $this->assertTrue($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $user->id, 'digestforumid' => $digestforum2->id],
+        ));
+        $this->assertTrue($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $otheruser->id, 'digestforumid' => $digestforum1->id],
+        ));
+    }
+
+    /**
+     * Ensure that all users who were sent a tracked digest are included as a user in the context.
+     */
+    public function test_get_users_in_context_with_digest_open_tracking(): void {
+        $component = 'mod_digestforum';
+
+        $course = $this->getDataGenerator()->create_course();
+
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
+        $context = \context_module::instance($cm->id);
+
+        $otherdigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+
+        [$user, $otheruser, $nodigestuser] = $this->helper_create_users($course, 3);
+
+        $this->helper_add_digest_tracker($user->id, $digestforum->id, '2026-11-01', 1, 1761998400, 1761998400);
+        $this->helper_add_digest_tracker($user->id, $digestforum->id, '2026-11-02');
+        $this->helper_add_digest_tracker($otheruser->id, $digestforum->id, '2026-11-01');
+        $this->helper_add_digest_tracker($nodigestuser->id, $otherdigestforum->id, '2026-11-01');
+
+        $userlist = new \core_privacy\local\request\userlist($context, $component);
+        provider::get_users_in_context($userlist);
+
+        $expected = [$user->id, $otheruser->id];
+        sort($expected);
+
+        $actual = $userlist->get_userids();
+        sort($actual);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Test that digest email open tracking is deleted for a list of users, and for all users in a context.
+     */
+    public function test_delete_digest_open_tracking(): void {
+        global $DB;
+
+        $course = $this->getDataGenerator()->create_course();
+
+        $digestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+        $cm = get_coursemodule_from_instance('digestforum', $digestforum->id);
+        $context = \context_module::instance($cm->id);
+
+        $otherdigestforum = $this->getDataGenerator()->create_module('digestforum', ['course' => $course->id]);
+
+        [$user1, $user2, $user3] = $this->helper_create_users($course, 3);
+
+        foreach ([$user1, $user2, $user3] as $user) {
+            $this->helper_add_digest_tracker($user->id, $digestforum->id, '2026-11-01');
+            $this->helper_add_digest_tracker($user->id, $otherdigestforum->id, '2026-11-01');
+        }
+
+        // Delete the data for two of the users in one digestforum.
+        $approveduserlist = new \core_privacy\local\request\approved_userlist(
+            $context,
+            'mod_digestforum',
+            [$user1->id, $user2->id]
+        );
+        provider::delete_data_for_users($approveduserlist);
+
+        $this->assertFalse($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $user1->id, 'digestforumid' => $digestforum->id],
+        ));
+        $this->assertFalse($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $user2->id, 'digestforumid' => $digestforum->id],
+        ));
+        $this->assertTrue($DB->record_exists(
+            'digestforum_tracker',
+            ['mdluserid' => $user3->id, 'digestforumid' => $digestforum->id],
+        ));
+        $this->assertEquals(3, $DB->count_records('digestforum_tracker', ['digestforumid' => $otherdigestforum->id]));
+
+        // Delete the data for all users in the same digestforum.
+        provider::delete_data_for_all_users_in_context($context);
+
+        $this->assertEquals(0, $DB->count_records('digestforum_tracker', ['digestforumid' => $digestforum->id]));
+        $this->assertEquals(3, $DB->count_records('digestforum_tracker', ['digestforumid' => $otherdigestforum->id]));
+    }
 }

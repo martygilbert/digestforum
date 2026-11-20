@@ -141,6 +141,16 @@ class provider implements
             'grade' => 'privacy:metadata:digestforum_grades:grade',
         ], 'privacy:metadata:digestforum_grades');
 
+        // The 'digestforum_tracker' table records each digest email sent, and when it was opened.
+        $items->add_database_table('digestforum_tracker', [
+            'mdluserid' => 'privacy:metadata:digestforum_tracker:mdluserid',
+            'digestforumid' => 'privacy:metadata:digestforum_tracker:digestforumid',
+            'digestdate' => 'privacy:metadata:digestforum_tracker:digestdate',
+            'numviews' => 'privacy:metadata:digestforum_tracker:numviews',
+            'firstviewed' => 'privacy:metadata:digestforum_tracker:firstviewed',
+            'lastviewed' => 'privacy:metadata:digestforum_tracker:lastviewed',
+        ], 'privacy:metadata:digestforum_tracker');
+
         // Forum posts can be tagged and rated.
         $items->link_subsystem('core_tag', 'privacy:metadata:core_tag');
         $items->link_subsystem('core_rating', 'privacy:metadata:core_rating');
@@ -280,6 +290,17 @@ class provider implements
         ";
         $contextlist->add_from_sql($sql, $params);
 
+        // Digest email open tracking.
+        $sql = "SELECT c.id
+                  FROM {context} c
+                  JOIN {course_modules} cm ON cm.id = c.instanceid AND c.contextlevel = :contextlevel
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modname
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_tracker} tr ON tr.digestforumid = f.id
+                 WHERE tr.mdluserid = :userid
+        ";
+        $contextlist->add_from_sql($sql, $params);
+
         return $contextlist;
     }
 
@@ -382,6 +403,15 @@ class provider implements
                   JOIN {digestforum_grades} fg ON fg.digestforum = f.id
                  WHERE cm.id = :instanceid";
         $userlist->add_from_sql('userid', $sql, $params);
+
+        // Digest email open tracking.
+        $sql = "SELECT tr.mdluserid
+                  FROM {course_modules} cm
+                  JOIN {modules} m ON m.id = cm.module AND m.name = :modulename
+                  JOIN {digestforum} f ON f.id = cm.instance
+                  JOIN {digestforum_tracker} tr ON tr.digestforumid = f.id
+                 WHERE cm.id = :instanceid";
+        $userlist->add_from_sql('mdluserid', $sql, $params);
     }
 
     /**
@@ -662,6 +692,7 @@ class provider implements
             if (isset($grades[$digestforum->contextid])) {
                 static::export_grading_data($userid, $digestforum, $grades[$digestforum->contextid]);
             }
+            static::export_digest_open_data($userid, $digestforum);
         }
         $digestforums->close();
 
@@ -1116,6 +1147,44 @@ class provider implements
     }
 
     /**
+     * Store data about the digest emails sent to the user, and when they were opened.
+     *
+     * @param   int         $userid The userid of the user whose data is to be exported.
+     * @param   \stdClass   $digestforum The digestforum whose data is being exported.
+     * @return  bool        Whether any data was stored.
+     */
+    protected static function export_digest_open_data(int $userid, \stdClass $digestforum) {
+        global $DB;
+
+        $records = $DB->get_records(
+            'digestforum_tracker',
+            ['mdluserid' => $userid, 'digestforumid' => $digestforum->id],
+            'digestdate ASC, id ASC'
+        );
+        if (empty($records)) {
+            return false;
+        }
+
+        $digests = [];
+        foreach ($records as $record) {
+            $digests[] = (object) [
+                'digestdate' => $record->digestdate,
+                'numviews' => $record->numviews,
+                'firstviewed' => $record->firstviewed ? transform::datetime($record->firstviewed) : null,
+                'lastviewed' => $record->lastviewed ? transform::datetime($record->lastviewed) : null,
+            ];
+        }
+
+        writer::with_context(\context_module::instance($digestforum->cmid))
+            ->export_data(
+                [get_string('privacy:digestopens', 'mod_digestforum')],
+                (object) ['digests' => $digests]
+            );
+
+        return true;
+    }
+
+    /**
      * Export the advanced grading data for a user's whole-forum grade.
      *
      * @param int $userid The user whose grade is exported
@@ -1236,6 +1305,7 @@ class provider implements
         $DB->delete_records('digestforum_grades', ['digestforum' => $digestforumid]);
         $DB->delete_records('digestforum_read', ['digestforumid' => $digestforumid]);
         $DB->delete_records('digestforum_digests', ['digestforum' => $digestforumid]);
+        $DB->delete_records('digestforum_tracker', ['digestforumid' => $digestforumid]);
 
         // Delete advanced grading information.
         $gradingmanager = get_grading_manager($context, 'mod_digestforum', 'digestforum');
@@ -1308,6 +1378,11 @@ class provider implements
             $DB->delete_records('digestforum_digests', [
                 'digestforum' => $digestforum->id,
                 'userid' => $userid,
+            ]);
+
+            $DB->delete_records('digestforum_tracker', [
+                'digestforumid' => $digestforum->id,
+                'mdluserid' => $userid,
             ]);
 
             // Delete all discussion items.
@@ -1406,6 +1481,7 @@ class provider implements
         $DB->delete_records_select('digestforum_track_prefs', "digestforumid = :digestforumid AND userid {$userinsql}", $params);
         $DB->delete_records_select('digestforum_subscriptions', "digestforum = :digestforumid AND userid {$userinsql}", $params);
         $DB->delete_records_select('digestforum_read', "digestforumid = :digestforumid AND userid {$userinsql}", $params);
+        $DB->delete_records_select('digestforum_tracker', "digestforumid = :digestforumid AND mdluserid {$userinsql}", $params);
         $DB->delete_records_select(
             'digestforum_queue',
             "userid {$userinsql} AND discussionid IN (SELECT id FROM {digestforum_discussions} WHERE digestforum = :digestforumid)",
